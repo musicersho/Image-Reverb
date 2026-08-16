@@ -1,0 +1,193 @@
+{
+  "version": "0.1",
+  "description": "T-03 材質吸音係數表（對應 SPEC §6）。α 為各八度頻段的吸音係數（0=全反射，1=全吸收）。",
+  "band_center_freqs_hz": [125, 250, 500, 1000, 2000, 4000],
+  "confidence_levels": {
+    "high": "各家建築聲學表格數值一致、材質構造單純，可直接使用",
+    "medium": "數值隨安裝方式/厚度變化明顯，此處取典型構造的代表值",
+    "low": "數值高度依實際情況而定（種類、含水量、密度、座椅型式），僅供起始估計"
+  },
+  "fallback_id": "generic_wall",
+  "materials": [
+    {
+      "id": "concrete",
+      "name_zh": "混凝土（澆置光滑面）",
+      "name_en": "Concrete, poured smooth / sealed",
+      "alpha": {
+        "125": 0.01,
+        "250": 0.01,
+        "500": 0.02,
+        "1000": 0.02,
+        "2000": 0.02,
+        "4000": 0.03
+      },
+      "confidence": "high",
+      "source": "建築聲學教科書通用吸音係數表中「poured concrete, smooth/sealed」欄位的典型值（如 M. D. Egan《Architectural Acoustics》附錄吸音係數表、Vér & Beranek《Noise and Vibration Control Engineering》材料表）。光滑密實混凝土在全頻段幾乎不吸音，α 約 0.01–0.03；未封孔的粗糙混凝土砌塊高頻會高一些（約 0.05–0.09），本表取光滑面。"
+    },
+    {
+      "id": "brick",
+      "name_zh": "磚（清水磚、未上釉）",
+      "name_en": "Brick, unglazed",
+      "alpha": {
+        "125": 0.03,
+        "250": 0.03,
+        "500": 0.03,
+        "1000": 0.04,
+        "2000": 0.05,
+        "4000": 0.07
+      },
+      "confidence": "high",
+      "source": "建築聲學標準表中「unglazed brick」的經典數值（0.03 / 0.03 / 0.03 / 0.04 / 0.05 / 0.07），見 Egan《Architectural Acoustics》附錄與同源的 Acoustical Society 材料表。上漆磚（painted brick）會再低一些（約 0.01–0.03）。"
+    },
+    {
+      "id": "wood_panel",
+      "name_zh": "木板（角材上釘薄木夾板）",
+      "name_en": "Wood paneling, thin plywood on studs (air gap behind)",
+      "alpha": {
+        "125": 0.28,
+        "250": 0.22,
+        "500": 0.17,
+        "1000": 0.09,
+        "2000": 0.1,
+        "4000": 0.11
+      },
+      "confidence": "medium",
+      "source": "通用表中「plywood paneling, 3/8 in. thick, on studs with airspace」典型值（0.28 / 0.22 / 0.17 / 0.09 / 0.10 / 0.11）。薄板加背後空氣層形成板振動吸音器，低頻吸收明顯高於高頻。標 medium 是因為 α 對板厚與背後空腔深度非常敏感：厚實木地板/實木牆的低頻 α 會降到 0.10 以下。"
+    },
+    {
+      "id": "gypsum_board",
+      "name_zh": "石膏板（輕隔間，1/2 吋板釘於立柱）",
+      "name_en": "Gypsum board, 1/2 in. on studs",
+      "alpha": {
+        "125": 0.29,
+        "250": 0.1,
+        "500": 0.05,
+        "1000": 0.04,
+        "2000": 0.07,
+        "4000": 0.09
+      },
+      "confidence": "medium",
+      "source": "通用表中「gypsum board, 1/2 in., nailed to 2x4 studs 16 in. o.c.」典型值（0.29 / 0.10 / 0.05 / 0.04 / 0.07 / 0.09）。與木夾板同屬板振動吸音，低頻共振吸收高、中高頻近乎反射。標 medium 是因為雙層板或板背填吸音棉會大幅改變低頻 α。"
+    },
+    {
+      "id": "glass",
+      "name_zh": "玻璃（一般窗玻璃）",
+      "name_en": "Glass, ordinary window",
+      "alpha": {
+        "125": 0.35,
+        "250": 0.25,
+        "500": 0.18,
+        "1000": 0.12,
+        "2000": 0.07,
+        "4000": 0.04
+      },
+      "confidence": "medium",
+      "source": "通用表中「ordinary window glass」典型值（0.35 / 0.25 / 0.18 / 0.12 / 0.07 / 0.04）。薄玻璃低頻會被振動帶走能量，高頻則幾乎全反射。標 medium 是因為厚重的強化/膠合玻璃（heavy plate glass）低頻 α 會降到約 0.18 以下，落差很大。"
+    },
+    {
+      "id": "marble",
+      "name_zh": "大理石／磁磚（硬質光滑面）",
+      "name_en": "Marble or glazed tile",
+      "alpha": {
+        "125": 0.01,
+        "250": 0.01,
+        "500": 0.01,
+        "1000": 0.01,
+        "2000": 0.02,
+        "4000": 0.02
+      },
+      "confidence": "high",
+      "source": "通用表中「marble or glazed tile」的經典數值（0.01 / 0.01 / 0.01 / 0.01 / 0.02 / 0.02），見 Egan《Architectural Acoustics》附錄。全頻段幾乎不吸音，是浴室/大廳長殘響的主因。"
+    },
+    {
+      "id": "carpet",
+      "name_zh": "地毯（厚地毯直接鋪在混凝土上）",
+      "name_en": "Carpet, heavy, on concrete",
+      "alpha": {
+        "125": 0.02,
+        "250": 0.06,
+        "500": 0.14,
+        "1000": 0.37,
+        "2000": 0.6,
+        "4000": 0.65
+      },
+      "confidence": "high",
+      "source": "通用表中「heavy carpet on concrete」的經典數值（0.02 / 0.06 / 0.14 / 0.37 / 0.60 / 0.65）。多孔吸音材的典型特徵：低頻幾乎不吸、高頻吸收強。若下方加毛氈或泡棉墊（on 40 oz hairfelt padding），中頻 α 會再提高約一倍。"
+    },
+    {
+      "id": "curtain_fabric",
+      "name_zh": "布幕／織物（厚絨布，打摺至半面積）",
+      "name_en": "Heavy velour drapery, draped to half area",
+      "alpha": {
+        "125": 0.14,
+        "250": 0.35,
+        "500": 0.55,
+        "1000": 0.72,
+        "2000": 0.7,
+        "4000": 0.65
+      },
+      "confidence": "medium",
+      "source": "通用表中「fabric, heavy velour ~18 oz/yd², draped to half area」典型值（0.14 / 0.35 / 0.55 / 0.72 / 0.70 / 0.65）。標 medium 是因為 α 極度取決於打摺率與離牆距離：同樣的布料平貼牆面（hung flat）中頻 α 只剩約三分之一。"
+    },
+    {
+      "id": "acoustic_panel",
+      "name_zh": "吸音板（1 吋玻璃棉板，貼牆安裝）",
+      "name_en": "Acoustic panel, 1 in. glass fiber board, wall mounted",
+      "alpha": {
+        "125": 0.08,
+        "250": 0.25,
+        "500": 0.65,
+        "1000": 0.85,
+        "2000": 0.95,
+        "4000": 0.9
+      },
+      "confidence": "medium",
+      "source": "廠商 NRC/α 資料表中 1 吋（25mm）玻璃棉吸音板貼牆（A-mount）的代表值，約 0.08 / 0.25 / 0.65 / 0.85 / 0.95 / 0.90，與 Cox & D'Antonio《Acoustic Absorbers and Diffusers》中多孔吸音體的理論曲線一致。標 medium 是因為板厚與離牆空腔是決定性變因：2 吋板或離牆 50mm 安裝，500Hz 以下 α 會明顯上升。"
+    },
+    {
+      "id": "audience_seating",
+      "name_zh": "人群／座椅（有人就座的軟墊座椅，以地板面積計）",
+      "name_en": "Audience seated in upholstered seats (per m2 of floor area)",
+      "alpha": {
+        "125": 0.6,
+        "250": 0.74,
+        "500": 0.88,
+        "1000": 0.96,
+        "2000": 0.93,
+        "4000": 0.85
+      },
+      "confidence": "low",
+      "source": "音樂廳聲學文獻（L. Beranek《Concert Halls and Opera Houses》觀眾席吸音研究，以及據此編成的教科書表）中「audience in upholstered seats」以座位區地板面積歸一化後的代表值。標 low 有兩個理由：(1) 數值隨座椅軟墊面積差異極大（硬木座椅低頻 α 只有約 0.15–0.25）；(2) 這是把三維的人與座椅折算成平面 α 的等效值，本身就帶有系統誤差，做幾何模擬時只能當起始估計。"
+    },
+    {
+      "id": "grass_soil",
+      "name_zh": "草地／泥土（戶外地面）",
+      "name_en": "Grass or soft earth (outdoor ground)",
+      "alpha": {
+        "125": 0.11,
+        "250": 0.26,
+        "500": 0.6,
+        "1000": 0.69,
+        "2000": 0.92,
+        "4000": 0.99
+      },
+      "confidence": "low",
+      "source": "戶外聲學文獻中「grass, approx. 2 in. high / soft earth」的常引數值（約 0.11 / 0.26 / 0.60 / 0.69 / 0.92 / 0.99）。標 low 的理由：戶外地面實際上要用流阻（flow resistivity）與地面阻抗模型描述，折算成 α 只是粗略等效；且乾土、濕土、雪地、碎石差異可達數倍。乾硬夯實土地的 α 會明顯低於此表。"
+    },
+    {
+      "id": "generic_wall",
+      "name_zh": "一般牆面（磚/砌體上抹灰泥，光滑面）— 無法辨識時的 fallback",
+      "name_en": "Generic wall: plaster, smooth finish on masonry",
+      "alpha": {
+        "125": 0.013,
+        "250": 0.015,
+        "500": 0.02,
+        "1000": 0.03,
+        "2000": 0.04,
+        "4000": 0.05
+      },
+      "confidence": "medium",
+      "source": "通用表中「plaster, gypsum or lime, smooth finish on tile or brick」典型值（0.013 / 0.015 / 0.02 / 0.03 / 0.04 / 0.05）。依 SPEC §6，分割模型無法辨識的表面 fallback 到本項。標 medium 是因為抹灰若做在木摺條（on lath）上會形成板振動，低頻 α 上升到 0.14 左右。"
+    }
+  ]
+}
