@@ -22,8 +22,19 @@ __pycache__/
 .venv/
 venv/
 
-# 產出的音檔不進 git
-output/
+# 產出的音檔/圖檔不進 git，但 REPORT 等 .md 分析報告要進版控
+# （REPORT.md 是 T-05/T-06 最有價值的產出，不能被 rm -rf output/ 清掉）
+output/**
+!output/**/
+!output/**/*.md
+
+# 第三方對照 IR 與場地照片：可免費下載供本機開發，但未取得再散布授權
+# （EchoThief © Dr. Chris Warren；MIT Reverb Survey 見各 INFO.md）
+# 只讓 INFO.md 進 git 保留出處紀錄，媒體檔請依 INFO.md 的網址自行下載
+assets/reference_irs/**/*.wav
+assets/reference_irs/**/*.jpg
+assets/reference_irs/**/*.jpeg
+assets/reference_irs/**/*.png
 
 # Logs
 *.log
