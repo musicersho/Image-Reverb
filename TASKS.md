@@ -158,7 +158,7 @@
 ---
 
 ### T-04 收集測試素材與對照 IR
-- **狀態**：🚧 **等使用者決定**（AI 無法自行推進：需要照片，且下載須先徵得同意）
+- **狀態**：✅ 通過（素材部分，2026-08-16）｜🚧 **照片來源連結待使用者補**（自我檢查第 2 項未達成）
 - **前置**：T-00
 - **對應 SPEC**：§7 驗收標準
 - **產出**：`assets/photos/` 內 5 類空間照片、`assets/reference_irs/` 內 ≥ 3 個 OpenAIR 真實 IR、`assets/SOURCES.md`
@@ -174,16 +174,37 @@
   - SOURCES.md 每一項都有來源連結
 - **Opus 驗證重點**：IR 與照片是同一場地（抽查 OpenAIR 頁面）；授權允許開發使用
 - **交接筆記**：
-  - **這是 Phase 0 第一個 AI 推不動的卡**。T-00~T-03 全部完成後就卡在這裡，需要使用者回答兩件事：
-    1. 5 類空間照片（浴室／客廳／教堂或大空間／樓梯間走廊／車內）**自己拍**，還是授權從
-       免授權圖庫（Unsplash 等）下載？
-    2. 是否同意從 OpenAIR（openairlib.net）下載 ≥ 3 組「IR + 場地照片」？
-  - T-05／T-06／T-07 全部前置於這張卡，所以這裡不解決，Phase 0 剩下的全部停擺。
+  - **⚠️ OpenAIR 已停站**：`openair.hosted.york.ac.uk` 與 `openairlib.net` 兩個域名都轉到
+    主機商的 `suspendedpage.cgi`，站台實質關閉。經使用者同意後改用 **EchoThief + MIT Reverb Survey**。
+    這是對任務卡的來源替換，理由記於此與 `assets/SOURCES.md` §3.1。
+  - **產出（超額）**：對照 IR **8 個場地**（卡片要求 ≥3），全部 IR + 場地照片 + INFO.md 成對：
+    - EchoThief 5 組：`cathedral_room_shasta_lake_caverns`（石灰岩洞窟）、`steinman_hall`（音樂廳）、
+      `racquetball_court_4`（壁球場）、`tunnel_to_hell`（混凝土隧道）、`divorce_beach`（戶外沙灘）
+    - MIT 3 組：`mit_department_store`、`mit_gym`、`mit_restaurant`
+    - 全部跑過 check_audio.py，RMS 0.0094–0.0488 皆非靜音。
+  - **測試照片 9 張**（卡片要求 ≥5），T-04 的 5 類全部涵蓋，另加 Live House 與 CGI ×2。
+  - **🔴 授權：媒體檔已加入 .gitignore，只有 INFO.md 進版控。** EchoThief 網站從未有過
+    License/Terms 頁（已查證首頁、WordPress REST API 全 73 頁、Wayback 1077 筆歷史 URL、
+    以及 EchoThief.zip 中央目錄內也無 LICENSE 檔），唯一權利聲明是頁尾的
+    `copyright 2013-2026 Dr. Chris Warren`。**免費下載可用於研究，但未授予再散布權。**
+    公開發佈前須寫信 cwarren@sdsu.edu。
+  - **🔴 未竟事項（自我檢查第 2 項「SOURCES.md 每一項都有來源連結」未達成）**：
+    `assets/photos/` 9 張照片的來源網址全部沒有記錄（5 張 YouTube 截圖只有畫面上可見的影片標題，
+    4 張網路圖片完全無出處）。已在 `assets/SOURCES.md` §2 明確標記待補。**需要使用者補上。**
+  - **💡 重大發現：8 張場地照片有 5 張是 360° 環景**（steinman_hall、divorce_beach、
+    cathedral_room、racquetball_court_4 為 equirectangular；只有 tunnel_to_hell 與 3 張 MIT 是一般透視）。
+    Depth Anything V2 / SegFormer 都用透視影像訓練，環景直接餵幾何會歪掉
+    → **SPEC §7 驗收第 2 條（RT60 誤差 <20%）目前只有 4 個場地能用**。
+    但反面是機會：環景沒有「視野外」，可直接解掉 SPEC §8 的已知風險「照片視野外的空間未知」。
+    **架構決策，留給 T-08。**
+  - **💡 必測反例（EchoThief agent 建議）**：`racquetball_court_4` 是 8 個場地裡空間最小的，
+    殘響卻最長（3.538s，比大洞窟的 1.529s 長一倍多），因為全是木頭與玻璃硬面。
+    任何「空間看起來小就給短殘響」的天真規則在這個場地一定會爆掉。
 
 ---
 
 ### T-05 深度估計模型測試
-- **狀態**：⬜ 未開始
+- **狀態**：✅ 通過（Opus 驗證 2026-08-16）｜⚠️ **產出重大負面結論，影響 MVP 路線**
 - **前置**：T-00、T-04（需要測試照片）
 - **對應 SPEC**：F-02
 - **產出**：`scripts/test_depth.py`、`output/depth/`（每張照片的深度圖 PNG）、`output/depth/REPORT.md`
@@ -200,11 +221,38 @@
   - REPORT.md 有逐張的觀察紀錄（不是空泛的「都很好」）
 - **Opus 驗證重點**：REPORT 誠實記錄失敗案例；深度圖用肉眼抽查 2 張是否合理；紅旗：用隨機數假裝模型輸出
 - **交接筆記**：
+  - 產出：`scripts/test_depth.py`、`output/depth/`（9 張深度視覺化 PNG + `depth_stats.json`）、
+    `output/depth/REPORT.md`（21KB，9 章）。模型：`depth-anything/Depth-Anything-V2-Small-hf`。
+    環境：torch 2.8.0、MPS 可用。
+  - **🔴 本卡最重要的結論（REPORT §7）——「不要用單張深度圖去估房間體積」**：
+    - 模型輸出是每張圖各自正規化的 **相對 disparity**，不是距離。
+    - 實測 9 張的深度動態範圍與實際空間大小**完全沒有單調關係**：
+      SUV 車內（~2m）核心 p95/p5 = **91.5x**，體育館（~150m）只有 **11.7x**，差 8 倍且方向相反。
+    - 就算給絕對錨點用 `距離 = k/disparity` 換算也會壞：飯店長廊消失點 disparity=0
+      推出 **3,747,829 公尺**；浴室實際進深 2.5–3.5m，推得 5.50m，**高估 60–120%**。
+    - Sabine 公式 RT60 ∝ V，體積誤差會以平方/立方級放大到 RT60
+      → **直接衝擊 SPEC F-02 的「±30% 誤差目標」**。
+    - REPORT 建議的替代路線：偵測已知尺寸參考物（門 ~2.0m、人 ~1.7m）取絕對錨點且只在近距離推算；
+      或改用 metric depth 模型（Depth-Anything-V2-Metric / UniDepth / Metric3D）。**留給 T-08 決策。**
+  - **必要的前處理三步**（REPORT §7.3）：(a) 裁掉 letterbox/UI；(b) 濾掉 disparity≈0 的區域
+    （窗外、天空、消失點）；(c) clamp 負值。車內那張證明 (b) 的威力——套用後動態範圍
+    從「無限大」收斂到 6.33x，跟浴室同級。
+  - **逐張評級**：✅ bathroom / bedroom / cgi_cave_lab；⚠️ car / stairwell / corridor / cgi_cavern；
+    ❌ livehouse（舞台被壓平且**深度排序反轉**：布幕 0.897 比站在布幕前的吉他手 0.618 更「近」）、
+    ❌ arena（大空間 + 全套 YouTube UI 污染）。
+  - **鏡子沒失敗但不能當通則**：浴室鏡子這次過關，但 REPORT 主動自我設限——
+    「這面鏡子照到的是同樣平淡的米色磁磚牆…這是簡單模式的鏡子」。**玻璃則確實失敗**
+    （淋浴門被看穿，disparity 1.28 vs 同距馬桶 3.01）。
+  - **YouTube 黑邊會污染深度**：corridor 那張的左右黑邊 disparity 7.88，比畫面內最近的木門 5.96 還高，
+    是全圖最大值的來源——**黑邊不裁掉會直接毀掉正規化基準**。
+  - **Opus 反造假查核**：重跑後 27 個輸出檔 MD5 **完全相同**（亂數不可能 bit-identical）；
+    disparity 陣列 lag-1 空間自相關 0.9952–1.0000（均勻雜訊會趨近 0）；
+    REPORT 的 ROI 數字用 `--probe` 重現一字不差。確認無造假。
 
 ---
 
 ### T-06 語意分割模型測試
-- **狀態**：⬜ 未開始
+- **狀態**：✅ 通過（Opus 驗證 2026-08-16）｜⚠️ **產出重大負面結論，影響材質模組設計**
 - **前置**：T-05（環境已含 torch/transformers）
 - **對應 SPEC**：F-03
 - **產出**：`scripts/test_segmentation.py`、`output/seg/`（分割疊圖 PNG）、`output/seg/REPORT.md`
@@ -219,6 +267,35 @@
   - REPORT.md 含「ADE20K 類別 → 我們的材質 id」的初版對照表
 - **Opus 驗證重點**：對照表合理性；REPORT 是否誠實記錄分割失敗的照片
 - **交接筆記**：
+  - 產出：`scripts/test_segmentation.py`、`output/seg/`（9 張分割疊圖 PNG + 9 個 labelmap.npy）、
+    `output/seg/REPORT.md`（24KB，6 章）。模型：`nvidia/segformer-b4-finetuned-ade-512-512`（ADE20K 150 類）。
+  - **一句話結論**：牆/地板/天花板在「一般建築室內」能正確分出（bedroom / bathroom / corridor /
+    stairwell 四張可用），但在「非建築空間」（車內、CGI 洞窟）與「人群主導的大空間」
+    （體育館、Live House）會**系統性失敗，且模型對失敗毫無自覺**——一律輸出高置信度的 wall/floor/ceiling。
+  - **🔴 最危險的失敗：地毯（REPORT §2.3）**。飯店走廊是滿鋪地毯，但只有 **29.6%** 被判成 `rug`，
+    **70.4% 被判成 `floor`**。換算吸音係數的後果：0.296×0.65 + 0.704×0.02 = **0.207**，
+    正確值應是 0.65 → **高頻吸音只剩 32%**。REPORT 的結論是
+    「`floor` 這個類別在本專案裡是不可信的」。
+  - **🔴 車內是已證實的最大失敗案例（REPORT §2.9）**：ADE20K 沒有任何車輛內裝類別。
+    實測車頂內襯、窗外樹林（92.4%）、連車外橘色烤漆（100%）**全部被判成 `wall`**。
+    結論：「目前的材質辨識管線對非建築空間是無能為力的，而且會**安靜地輸出看似合理的錯誤結果**」。
+  - **鏡子**：浴室鏡子被判成 `mirror` 82.0%（分得出來），但玻璃淋浴門被判成 `screen door` 30.5%
+    且**吞掉後方的磁磚牆** → 表面積歸類錯誤，不是細節誤差。
+  - **✅ 產出 T-06 要求的對照表**（REPORT §4）：9 張圖實際出現的 **42 個 ADE20K 類別 → materials.json
+    材質 id**，含 🟢/🟡/🔴 信心分級 + §4.2 缺口清單。兩個最該注意的 🔴：
+    - `wall`（id 0）佔比最高（最高 69.81%）也最不可靠——磁磚牆、抹灰牆、岩壁、車頂內襯、
+      窗外樹林、YouTube 黑邊全叫 wall
+    - `floor`（id 3）只表示「地面」，木地板／磁磚／地毯完全無法區分
+  - **CGI 沒被一竿子打翻**：AI 生成臥室的分割品質與真實照片無異（可信），但兩張 CGI 洞窟判 ❌ 不可用。
+    REPORT 還提出可操作的防呆規則：**「封閉洞窟出現 `sky` 類別 = 模型正在猜」的可偵測訊號**。
+  - **⚠️ 已知小瑕疵（留給下一張卡）**：`test_segmentation.py` 在「所有輸入圖片都解碼失敗」時
+    仍回傳 exit code 0 並寫出空的 stats.json；同情境下 `test_depth.py` 會 exit 1。
+    兩支腳本行為不一致，自動化串接時 seg 會把「全部失敗」誤判成成功。
+  - **Opus 反造假查核**：`grep -nEi "random|rand\(|randn|fake|dummy|mock"` 無命中；
+    重跑後 9 個 seg PNG + 9 個 labelmap.npy MD5 完全相同；
+    **獨立重算 REPORT 裡 14 組區域統計，全部吻合到小數第二位**
+    （如 bathroom 鏡子 bbox 宣稱 82.0/16.9/1.1，實測 82.45/16.45/1.10）；
+    42 個 ADE20K id↔類別名用 model.config.id2label 逐一核對全部正確。確認無造假。
 
 ---
 
