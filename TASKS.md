@@ -9,7 +9,7 @@
 ## Phase 0 — 可行性驗證
 
 ### T-00 建立開發環境
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證
 - **前置**：無
 - **對應 SPEC**：§5（技術棧基礎）
 - **產出**：`.venv/`、`requirements.txt`、`assets/`、`output/`、`scripts/` 資料夾、`scripts/check_audio.py`
@@ -25,7 +25,16 @@
   - `source .venv/bin/activate && python -c "import pyroomacoustics, soundfile, numpy; print('OK')"` 印出 OK
   - `python scripts/check_audio.py` 不帶參數時印出用法說明而非 crash
 - **Opus 驗證重點**：requirements.txt 存在且非空；check_audio.py 對不存在的檔案給清楚錯誤訊息
-- **交接筆記**：（完成後填寫）
+- **交接筆記**：
+  - 用 `python3 -m venv .venv` 建立虛擬環境（系統 Python 3.9.6），`pip install numpy scipy soundfile matplotlib pyroomacoustics pillow` 全部安裝成功，無需額外處理相依性問題。
+  - `pip freeze > requirements.txt` 產出 19 個套件（含被動安裝的相依套件如 Cython、cffi 等），非空。
+  - 建立資料夾：`assets/photos/`、`assets/dry/`、`assets/reference_irs/`、`output/`、`scripts/`（皆為空資料夾，git 不會追蹤空目錄，之後有檔案放入時會自動被追蹤）。
+  - `scripts/check_audio.py`：用 soundfile 讀檔，印出取樣率/長度/聲道數/RMS/峰值；RMS < 0.0001 印「⚠️ 近乎靜音」；不帶參數印用法說明（exit code 0，不 crash）；檔案不存在時印清楚中文錯誤訊息（exit code 1）。
+  - `.gitignore` 新增 `output/`（`.venv/` 原本就已存在）。
+  - 自我檢查兩項皆通過（見下方指令輸出）：
+    - `python -c "import pyroomacoustics, soundfile, numpy; print('OK')"` → `OK`
+    - `python scripts/check_audio.py`（無參數）→ 印用法說明，exit code 0
+  - 沒有遇到坑。下一步：T-01（用手動參數生成第一個 IR）。
 
 ---
 

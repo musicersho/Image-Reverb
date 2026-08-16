@@ -1,5 +1,15 @@
 # Dev Log
 
+## 2026-08-16 (4)
+
+- T-00 完成（Sonnet 執行，狀態改為 🔵 待驗證，待 Opus 審查）。
+- 建立 `.venv/` 虛擬環境，安裝 numpy/scipy/soundfile/matplotlib/pyroomacoustics/pillow，
+  `pip freeze > requirements.txt`（19 個套件）。
+- 建立 `assets/photos/`、`assets/dry/`、`assets/reference_irs/`、`output/`、`scripts/` 資料夾。
+- 新增 `scripts/check_audio.py`：印出音訊檔取樣率/長度/聲道數/RMS/峰值，近乎靜音會警告，
+  無參數印用法說明，檔案不存在給清楚錯誤訊息。
+- `.gitignore` 新增 `output/`。自我檢查兩項皆通過。
+
 ## 2026-08-16 (3)
 
 - 建立多視窗協作系統：Fable 規劃 / Opus 驗證 / Sonnet 執行。

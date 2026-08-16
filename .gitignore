@@ -22,5 +22,8 @@ __pycache__/
 .venv/
 venv/
 
+# 產出的音檔不進 git
+output/
+
 # Logs
 *.log
