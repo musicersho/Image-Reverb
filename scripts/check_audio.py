@@ -2,18 +2,23 @@
 """檢查音訊檔的基本資訊：取樣率、長度、聲道數、RMS、峰值。"""
 
 import sys
+from pathlib import Path
 
 import numpy as np
 import soundfile as sf
 
 
 def check_audio(path):
-    try:
-        data, samplerate = sf.read(path, always_2d=True)
-    except FileNotFoundError:
+    # soundfile 對「檔案不存在」拋的是泛用的 LibsndfileError（System error），
+    # 訊息看不出是路徑打錯，所以先自己判斷存在性再交給 sf.read。
+    if not Path(path).exists():
         print(f"❌ 錯誤：找不到檔案「{path}」")
         sys.exit(1)
-    except Exception as e:
+
+    try:
+        data, samplerate = sf.read(path, always_2d=True)
+    except sf.LibsndfileError as e:
+        # 檔案存在但讀不了（例如不是音訊格式、格式不支援）：印出真正的原因
         print(f"❌ 錯誤：無法讀取「{path}」（{e}）")
         sys.exit(1)
 
