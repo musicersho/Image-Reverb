@@ -1,7 +1,10 @@
 # 交接文件 — 給下一個視窗
 
-> 最後更新：2026-08-16（Opus 視窗）｜對應 commit：`a9d2ee7` 之後
+> 最後更新：2026-08-16（Opus 視窗）｜對應 commit：`6523b57`
 > **新視窗請先讀 [CLAUDE.md](CLAUDE.md) 知道自己的角色，再讀本檔知道現在的狀況。**
+>
+> 驗證本檔是否過期：`git log --oneline -1`。若 HEAD 不是上面那個 commit，
+> 表示本檔之後又有異動，請一併看 [DEV_LOG.md](DEV_LOG.md) 最上面幾筆。
 
 ---
 
@@ -92,7 +95,19 @@ Phase 0 的實測結果**否定了 SPEC 原本假設的兩個關鍵環節**。�
 3. **環景處理**：要不要做「環景 → 多視角透視投影 → 融合」？做了可順便解掉 SPEC §8 的風險，
    但增加 Phase 1 範圍。
 
+### ⚠️ 另有兩條「已定案、不需決策，但 T-08 細化任務卡時必須寫進去」的約束
+
+這兩條是 Phase 0 實測出來的硬性結論，不是選項：
+
+| # | 約束 | 影響的卡 | 實證 |
+|---|---|---|---|
+| A | **材質必須逐表面指定**（地板／天花板／各面牆分開），不可全域套單一材質 | T-12 | 全鋪地毯 vs 只有地板鋪地毯，低頻 RT60 差 **11.8 倍**（4.093s vs 0.348s）；使用者試聽形容現況「像用手拍鐵筒子」 |
+| B | **RT60 必須逐頻段獨立計算**，不可用平均 α 算單一寬頻值 | T-13 | 地毯房間 125Hz RT60 = 4.093s、4kHz = 0.126s（差 32 倍）；平均 α 算出 0.267s，實測 T30 是 4.023s（**差 15 倍**） |
+
+細節見本檔第 6 節地雷第 8、9 條，以及 [TASKS.md](TASKS.md) T-03 卡的交接筆記。
+
 決策完成後，T-08 要把 Phase 1 的 T-10~T-17 補到可執行的細節（目前只有標題）。
+**請把上表的 A、B 兩條直接寫進 T-12 與 T-13 的任務卡執行步驟，不要只留在地雷區。**
 
 ---
 
@@ -124,6 +139,24 @@ source .venv/bin/activate          # 跑任何 python 前都要先做這件事
 | `python scripts/test_segmentation.py` | 語意分割批次處理 `assets/photos/` |
 
 環境：Python 3.9.6 / torch 2.8.0（MPS 可用）/ pyroomacoustics 0.10.1 / numpy 2.0.2。
+
+### 產生材質試聽對照組（要請使用者用耳朵驗收時用）
+
+`output/` 不進 git，所以這些檔案在新視窗／新 clone 都要重新產生：
+
+```bash
+python scripts/gen_ir_manual.py small                      # 預設 α=0.3
+python scripts/gen_ir_manual.py small --material marble
+python scripts/gen_ir_manual.py small --material carpet
+for m in ir_room_small:default ir_room_small_marble:marble ir_room_small_carpet:carpet; do
+  python scripts/convolve.py assets/dry/clap_synth.wav "output/${m%%:*}.wav" \
+    "output/listen_${m##*:}.wav" --mix 0.6
+done
+```
+
+聽感基準（2026-08-16 使用者實聽）：`marble` ✅ 自然、`default` ✅ 自然、
+**`carpet` ❌「像用手拍鐵筒子」** ← 這是地雷第 9 條的模型缺陷，T-12 修好後應該要消失。
+**修好 T-12 之後請重跑這組並再請使用者聽一次，確認鐵筒子聲不見了。**
 
 ---
 
