@@ -1,5 +1,20 @@
 # Dev Log
 
+## 2026-08-16 (5)
+
+- 用多 agent workflow 一口氣跑完 T-01／T-02／T-03，每張卡配獨立驗證者依 WORKFLOW §5 三層標準
+  親自執行指令審查。三張卡都 **0 修正輪直接通過**，另加一輪跨任務總稽核。
+- T-01：`gen_ir_manual.py`，small RT60 0.219s／hall 4.55s，48kHz/24bit/mono、峰值 -3dBFS。
+  反造假交叉驗證：直達音到達時間 vs 幾何理論值誤差 < 0.4ms，確認 IR 真的來自房間模擬。
+- T-02：`convolve.py` + 合成乾拍手 + `wet_demo.wav`（10.437s，無爆音）。乾濕比實證有效
+  （mix=0 尾段 RMS 0.0、mix=1 為 0.00069906）。
+- T-03：`materials.json` 12 種材質、72 個 α 全在 0–1，係數對照建築聲學標準表抽查正確，
+  `--material` 選項可用（marble RT60 6.40s，是預設的 29 倍）。
+- 總稽核抓到 4 個錯誤處理缺陷（壞輸入吐 traceback），另開一輪修正 + 複驗，PASS。
+  順帶修掉 T-00 `check_audio.py` 的死分支 bug（`except FileNotFoundError` 永遠抓不到，
+  因為 soundfile 拋的是 `LibsndfileError`），並把過寬的 `except Exception` 收窄。
+- T-00 驗證通過。**Phase 0 卡在 T-04**：需要使用者提供照片、並同意下載 OpenAIR IR 與 AI 模型。
+
 ## 2026-08-16 (4)
 
 - T-00 完成（Sonnet 執行，狀態改為 🔵 待驗證，待 Opus 審查）。

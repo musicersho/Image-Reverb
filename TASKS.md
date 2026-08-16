@@ -9,7 +9,7 @@
 ## Phase 0 — 可行性驗證
 
 ### T-00 建立開發環境
-- **狀態**：🔵 待驗證
+- **狀態**：✅ 通過（Opus 驗證 2026-08-16）
 - **前置**：無
 - **對應 SPEC**：§5（技術棧基礎）
 - **產出**：`.venv/`、`requirements.txt`、`assets/`、`output/`、`scripts/` 資料夾、`scripts/check_audio.py`
@@ -35,11 +35,18 @@
     - `python -c "import pyroomacoustics, soundfile, numpy; print('OK')"` → `OK`
     - `python scripts/check_audio.py`（無參數）→ 印用法說明，exit code 0
   - 沒有遇到坑。下一步：T-01（用手動參數生成第一個 IR）。
+- **Opus 驗證附註（2026-08-16）**：✅ 通過。但驗證 T-01~T-03 時發現 `check_audio.py` 兩個瑕疵：
+  1. **已在本輪修好**：`except FileNotFoundError` 是死分支（soundfile 對不存在的檔案拋的是
+     `LibsndfileError` 不是 `FileNotFoundError`），導致檔案不存在時只印含糊的「System error.」。
+     已改為 `sf.read` 前先 `Path.exists()` 判斷，並把過寬的 `except Exception` 收窄成 `except sf.LibsndfileError`。
+  2. **未修，留給下一張卡**：不帶參數時 `sys.exit(0)`，屬「使用錯誤卻回報成功」，
+     串 shell/CI 會被當成通過。建議改 `sys.exit(2)`。任務卡只要求「印用法說明而非 crash」，
+     不算違反卡片，故不退回。
 
 ---
 
 ### T-01 用手動參數生成第一個 IR
-- **狀態**：⬜ 未開始
+- **狀態**：✅ 通過（Opus 驗證 2026-08-16）
 - **前置**：T-00
 - **對應 SPEC**：§5 路線 A
 - **產出**：`scripts/gen_ir_manual.py`、`output/ir_room_small.wav`、`output/ir_hall_large.wav`
@@ -57,11 +64,26 @@
   - `hall` 的 IR 長度明顯比 `small` 長（印出的 RT60：hall 應 > 1.5s，small 應 < 0.8s）
 - **Opus 驗證重點**：RT60 數值合理；WAV 真的有內容；參數區塊清楚可改
 - **交接筆記**：
+  - `scripts/gen_ir_manual.py`：pyroomacoustics ShoeBox 模擬，image-source 算早期反射
+    ＋ ray tracing 補晚期殘響。參數區塊在檔案第 29–77 行，每個欄位都有中文說明
+    （dimensions / absorption / scattering / source_pos / mic_pos / max_order / n_rays / time_thres）。
+  - 實測數值：`small`（4×3×2.5m, α=0.3）→ RT60 **0.219s**、IR 長 0.437s；
+    `hall`（30×20×12m, α=0.08）→ RT60 **4.55s**、IR 長 8.437s。兩檔皆 48kHz / PCM_24 / mono、
+    峰值精準 -3.0 dBFS、RMS 0.0179 / 0.0055（非靜音）。
+  - 開了空氣吸收（20°C / 50%RH），所以 hall 實測 RT60 4.55s 比 Sabine 理論值 6.04s 短——
+    7200 m³ 大空間的高頻空氣吸收本來就會造成這個降幅，不是 bug。
+  - **反造假交叉驗證**（Opus）：量測 IR 的直達音到達時間 vs 幾何理論值——
+    small 實測 6.56ms vs 理論 6.58ms、hall 41.19ms vs 40.84ms，誤差 < 0.4ms，
+    證明 IR 真的來自房間幾何而非亂數；另自行算 Schroeder 衰減曲線反推 RT60（0.211 / 4.39s），
+    與程式印出的值吻合。
+  - **坑**：`hall` 的 `max_order` 只設 4（不是 12），因為大空間 image-source 階數一高就爆炸慢，
+    晚期靠 140000 條 ray 補。若之後要更真實的早期反射再調高，但要有心理準備會變很慢。
+  - 下一步：T-02（卷積試聽）、T-03（材質表）皆已完成。
 
 ---
 
 ### T-02 離線卷積試聽工具
-- **狀態**：⬜ 未開始
+- **狀態**：✅ 通過（Opus 驗證 2026-08-16）｜🎧 **唯一未完成項：使用者本人試聽**
 - **前置**：T-01
 - **對應 SPEC**：F-07
 - **產出**：`scripts/convolve.py`、`assets/dry/`內至少一個乾聲檔、`output/wet_demo.wav`
@@ -78,11 +100,24 @@
   - 用 `afplay output/wet_demo.wav` 播放，聽得出大廳殘響（也請使用者聽）
 - **Opus 驗證重點**：乾濕比參數真的有作用（mix 0 與 1 的輸出應明顯不同，可用 RMS 差異佐證）；無爆音（峰值 ≤ 0dBFS）
 - **交接筆記**：
+  - `scripts/convolve.py`：scipy `fftconvolve`，`--mix` 乾濕比（預設 0.5），
+    輸出峰值正規化到 -1dBFS，取樣率不同會自動重採樣，mono/stereo 自動處理。
+  - `assets/dry/clap_synth.wav`：numpy 合成的 2 秒乾拍手，48kHz、RMS 0.0102。
+    **之後有真實乾聲（人聲/樂器）請放進 `assets/dry/` 優先用真實檔案**，合成拍手只是佔位。
+  - `output/wet_demo.wav` = clap_synth + hall IR，長度 10.437s = 乾聲 2.000 + IR 8.437（卷積拖尾正確），
+    峰值 -1.000 dBFS、**clip 樣本 0 個**（無爆音）。
+  - **乾濕比實證**（Opus 獨立重跑）：mix=0 全曲 RMS 0.005626、3 秒後尾段 RMS **0.00000000**（純乾聲）；
+    mix=1 全曲 RMS 0.022234、3 秒後尾段 RMS **0.00069906**（真的有殘響尾巴）；
+    兩者逐點最大差異 0.891251。參數確實有作用，不是裝飾。
+  - **坑**：任務卡自我檢查最後一項「用 afplay 播放，聽得出大廳殘響」**AI 不能代勞**，
+    已刻意不執行 afplay（避免在使用者電腦上發出聲音）。這項留給使用者：
+    `afplay output/wet_demo.wav`，要聽得出拍手聲後面拖著一條大廳殘響尾巴。
+  - 下一步：使用者試聽確認後這張卡才算 100% 完成。
 
 ---
 
 ### T-03 材質吸音係數表
-- **狀態**：⬜ 未開始
+- **狀態**：✅ 通過（Opus 驗證 2026-08-16）
 - **前置**：T-00
 - **對應 SPEC**：§6
 - **產出**：`data/materials.json`、`scripts/show_materials.py`
@@ -99,11 +134,31 @@
   - `python scripts/gen_ir_manual.py small --material marble` 跑得動，且 RT60 比預設（0.3）長
 - **Opus 驗證重點**：抽查 3 種材質的係數是否符合常識（地毯高頻吸收高、大理石全頻段吸收低、布幕中高頻吸收高）；source 欄位不是空話
 - **交接筆記**：
+  - `data/materials.json`：**12 種材質**（SPEC §6 點名的 11 種全到齊 + fallback `generic_wall`），
+    六頻段 125/250/500/1k/2k/4k Hz，72 個 α 值全部落在 0–1。
+    頂層欄位：`version` / `description` / `band_center_freqs_hz` / `confidence_levels` / `fallback_id` / `materials`。
+  - `scripts/show_materials.py`：印出整表供人工核對，並自動檢查必要欄位、α 範圍、材質數量 ≥ 11。
+    `gen_ir_manual.py` 直接 import 它的 `load_materials/get_material/alpha_list`，不重複實作。
+  - `gen_ir_manual.py` 新增 `--material <id>` 與 `--list-materials`；**不帶 --material 時行為與 T-01 完全相同**。
+    實測 `small --material marble` → RT60 **6.40s**，是預設 α=0.3（0.219s）的 29 倍——
+    大理石六頻段 α 只有 0.01~0.02，幾乎不吸音，物理上就該這麼長。
+  - 有個沒被要求但做對的設計：帶 `--material` 時會依**最長頻段 RT60 自動加長 ray tracing 的 time_thres**
+    （marble 例：2.0s → 12.28s），避免 IR 被截斷害 RT60 量測失真。
+  - **Opus 抽查係數**（對照建築聲學標準表，全部正確）：
+    - `carpet` 0.02/0.06/0.14/0.37/0.60/0.65 — 多孔吸音材典型：低頻幾乎不吸、高頻吸很多 ✓
+    - `marble` 0.01/0.01/0.01/0.01/0.02/0.02 — 硬質光滑面全頻段幾乎不吸 ✓
+    - `curtain_fabric` 0.14/0.35/0.55/0.72/0.70/0.65 — 中高頻吸收高 ✓
+    - `source` 欄位是具體出處（Egan《Architectural Acoustics》、Beranek《Concert Halls and Opera Houses》、
+      Cox & D'Antonio），不是空話 ✓
+  - 2 種標 `confidence: low`：`audience_seating`、`grass_soil`（觀眾席與戶外地面本來就變異大），
+    誠實標註不確定性。Phase 1 的材質模組要注意這兩種的誤差。
+  - **坑**：`materials.json` 若「存在但 JSON 損毀」目前仍會噴 traceback（只處理了「檔案不存在」）。
+    這是大聲失敗不是吞錯誤，但 Phase 1 把材質表變成正式模組時要補。
 
 ---
 
 ### T-04 收集測試素材與對照 IR
-- **狀態**：⬜ 未開始
+- **狀態**：🚧 **等使用者決定**（AI 無法自行推進：需要照片，且下載須先徵得同意）
 - **前置**：T-00
 - **對應 SPEC**：§7 驗收標準
 - **產出**：`assets/photos/` 內 5 類空間照片、`assets/reference_irs/` 內 ≥ 3 個 OpenAIR 真實 IR、`assets/SOURCES.md`
@@ -119,6 +174,11 @@
   - SOURCES.md 每一項都有來源連結
 - **Opus 驗證重點**：IR 與照片是同一場地（抽查 OpenAIR 頁面）；授權允許開發使用
 - **交接筆記**：
+  - **這是 Phase 0 第一個 AI 推不動的卡**。T-00~T-03 全部完成後就卡在這裡，需要使用者回答兩件事：
+    1. 5 類空間照片（浴室／客廳／教堂或大空間／樓梯間走廊／車內）**自己拍**，還是授權從
+       免授權圖庫（Unsplash 等）下載？
+    2. 是否同意從 OpenAIR（openairlib.net）下載 ≥ 3 組「IR + 場地照片」？
+  - T-05／T-06／T-07 全部前置於這張卡，所以這裡不解決，Phase 0 剩下的全部停擺。
 
 ---
 
