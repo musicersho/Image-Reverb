@@ -355,29 +355,261 @@
 ---
 
 ### T-08 Phase 0 總結與路線決策（🔮 Fable 任務，Sonnet 不要做）
-- **狀態**：⬜ 未開始
+- **狀態**：✅ 完成（Fable，2026-08-16）
 - **前置**：T-01 ~ T-07 完成（T-07 可為失敗結案）
 - **內容**：Fable 讀所有 REPORT，確認 MVP 路線（維持或修改 SPEC §5 的 A+B 混合決策），
   更新 SPEC/ROADMAP，把 Phase 1 任務卡（T-10 起）補充到可執行的細節
 - **交接筆記**：
+  - **三個決策（理由與實證都已寫進 SPEC v0.2 與 ROADMAP）**：
+    1. **深度路線**：主路線改 **metric depth 模型**（`depth-anything/Depth-Anything-V2-Metric-Indoor-Small-hf`，
+       與 T-05 用過的 transformers pipeline 同款，遷移成本最低）。已知尺寸參考物（門 ~2.0m）
+       **降級為尺度校驗**，不當主路線（T-05 已證 k/disparity 錨定會壞）。手動尺寸覆寫升 P0。
+       ⚠️ metric depth 在本專案照片上的精度**尚未驗證**，所以 T-11 內建「評測關卡」：
+       先對已知尺寸場地實測誤差，達標才往下接，不達標就停下來回報 Fable。
+    2. **材質路線**：**併用**。ADE20K 分割只負責「切出表面的幾何角色」（哪塊是地板/天花板/牆），
+       材質標籤一律交給**區域級二階分類器**——v1 用 CLIP zero-shot（transformers 已裝、不用訓練、
+       有機率值可做信心 gating）。`floor`/`wall` 的 ADE20K 語意不再採信（T-06 實證）。
+       CLIP 不夠好再評估 MINC/DMS 類材質專用模型（記在 SPEC §8 對策欄，不進 Phase 1 範圍）。
+    3. **環景**：**做，最小範圍**——T-10 前處理模組加 equirect→多視角透視投影（純幾何運算，無新模型），
+       融合只做「多視角結果的簡單統計」。換到的是：SPEC §7 驗收場地 4 個 → 8 個全可用，
+       並提前解掉 §8「視野外空間未知」風險的環景部分。
+  - **IR 生成路線維持 A+B 混合**：Phase 0 試聽已由人耳確認 pyroomacoustics 這條鏈路可用，不改。
+  - 已把 HANDOFF §3 的兩條硬約束寫進任務卡執行步驟：**約束 A（逐表面材質）→ T-12 步驟 2**、
+    **約束 B（逐頻段 RT60）→ T-13 步驟 2**，各自的自我檢查也含對應的迴歸數字。
+  - 文件更新：SPEC v0.1→v0.2（F-02/F-03/F-04/F-09、§5/§6/§7/§8）、ROADMAP（Phase 0 結案
+    含決策紀錄、Phase 1 對應 T-10~T-17、Phase 3 影片輸入定位調整）、本檔 Phase 1 八張卡細化。
+  - **給 Sonnet 的執行順序**：T-10 → T-11 與 T-12 可並行（都只依賴 T-10）→ T-13 → T-14 → T-15 → T-16 → T-17。
+    T-11 若在評測關卡不達標，會標 🔴 卡關，這是設計內的結果，不是失敗。
 
 ---
 
-## Phase 1 — MVP：照片 → IR（T-08 後由 Fable 細化，以下為預排框架）
+## Phase 1 — MVP：照片 → IR（T-08 已細化，2026-08-16）
 
-### T-10 專案骨架（`src/` 套件結構、CLI 入口、設定檔）
-- **狀態**：⬜ 未開始 ｜ **前置**：T-08
-### T-11 幾何估計模組（深度圖 → 房間尺寸/體積，含尺度校正與手動覆寫）
-- **狀態**：⬜ 未開始 ｜ **前置**：T-10
-### T-12 材質模組（分割 → materials.json 對應 → 各表面吸音係數）
-- **狀態**：⬜ 未開始 ｜ **前置**：T-10
-### T-13 聲學參數計算（Sabine/Eyring → 六頻段 RT60、pre-delay）
-- **狀態**：⬜ 未開始 ｜ **前置**：T-11、T-12
-### T-14 IR 合成引擎 v1（image-source 早期反射 + shaped-noise 晚期殘響）
-- **狀態**：⬜ 未開始 ｜ **前置**：T-13
+> 執行順序：T-10 → T-11 與 T-12 可並行 → T-13 → T-14 → T-15 → T-16 → T-17。
+> **Phase 1 通則（每張卡都適用）**：(1) 改動 IR 生成邏輯後必須產生試聽檔請使用者聽——
+> Phase 0 實證「數字合理 ≠ 聽起來對」；(2) 分析結果信心不足時必須輸出明示警示，
+> 禁止安靜 fallback；(3) 需要下載新模型時先告知大小並徵求使用者同意。
+
+### T-10 專案骨架與影像前處理
+- **狀態**：⬜ 未開始
+- **前置**：T-08
+- **對應 SPEC**：§5（架構）、F-01
+- **產出**：`src/image_reverb/` 套件（`__init__.py`、`config.py`、`preprocess.py`、`cli.py`）、
+  `requirements.txt` 更新
+- **執行步驟**：
+  1. 建立 `src/image_reverb/` 套件骨架：`config.py`（管線參數集中：投影視角數、FOV、模型 id 等，
+     附中文註解）、`cli.py`（入口 `python -m src.image_reverb <photo>`，本卡先只跑前處理並存中間結果）
+  2. `preprocess.py` 實作三件事：
+     a. **letterbox/UI 黑邊偵測與裁切**——地雷第 4 條：YouTube 截圖的黑邊 disparity 比畫面內容還高，
+        會毀掉深度正規化。用邊緣列/欄的亮度變異數偵測純色邊框並裁掉
+     b. **環景偵測**：長寬比 ≈ 2:1（容差 ±5%）判定為 equirectangular；不能只看檔名
+     c. **equirect → 多視角透視投影**：水平 4 視角（方位角 0/90/180/270°、FOV 90°）＋仰角 ±45° 上下各 1，
+        共 6 視角，輸出透視圖清單與各自的方位/仰角 metadata。可用 py360convert（純 numpy 幾何運算）
+        或自行實作 spherical→perspective 重投影
+  3. HEIC 輸入支援：`pip install pillow-heif`（F-01 要求 JPG/PNG/HEIC），更新 requirements.txt
+  4. 一般透視照的行為：判定非環景 → 只做黑邊裁切，原樣通過
+- **自我檢查**：
+  - 對 corridor 那張 YouTube 截圖跑前處理，輸出圖的左右黑邊已被裁掉（肉眼查 + 邊緣列亮度統計）
+  - 對 `assets/reference_irs/steinman_hall/` 的環景照片跑，判定為環景且輸出 6 張透視視角，
+    視角圖裡的直線（牆緣、柱子）不彎曲
+  - 對 bathroom 照片跑，判定為非環景、僅裁切通過
+  - `python -m src.image_reverb assets/photos/<任一張>` 跑得動，中間結果存到 `output/preprocess/`
+- **Opus 驗證重點**：投影幾何正確性（equirect 直線在透視圖中應為直線）；環景偵測是看長寬比不是檔名；
+  黑邊裁切不會誤砍正常照片的暗色邊緣（拿一張四周偏暗但非黑邊的照片反測）
+- **交接筆記**：
+
+### T-11 幾何估計模組（metric depth → 房間尺寸/體積）
+- **狀態**：⬜ 未開始
+- **前置**：T-10
+- **對應 SPEC**：F-02、F-09（尺寸覆寫）
+- **產出**：`src/image_reverb/geometry.py`、`output/geometry/REPORT.md`（評測報告）
+- **執行步驟**：
+  1. 模型換成 **metric depth**：`depth-anything/Depth-Anything-V2-Metric-Indoor-Small-hf`
+     （transformers depth-estimation pipeline，與 T-05 同款用法，但輸出是**公尺**）。
+     下載前告知使用者大小並徵求同意。**禁止退回相對深度模型**（T-05 已否定該路線）
+  2. 輸入一律先過 T-10 前處理（裁黑邊；環景則對各視角分別估深度）。
+     沿用 T-05 REPORT §7.3 的防呆：濾掉極遠區域（窗外/天空/消失點）、clamp 異常值
+  3. 從 metric 深度估 ShoeBox 尺寸（MVP 簡化為長方體）：以深度 robust 統計（p5/p50/p95）
+     ＋假設相機水平 FOV（EXIF 有就用，沒有預設 60°）推進深/寬/高；環景用多視角深度合併估四壁距離
+  4. **尺度校驗**（不是主路線）：若分割結果中有 door 類別，用門高 ~2.0m 反推尺度並與 metric 深度比對，
+     偏差 > 50% 時在輸出標 `confidence: low` 警示
+  5. **評測關卡（本卡的通過條件）**：對已知尺寸的照片實測並寫進 `output/geometry/REPORT.md`：
+     浴室（實際進深 2.5–3.5m）、飯店走廊（~30m）、車內（~2m）、體育館（~150m）。判準：
+     一般室內（浴室、走廊近端）尺寸誤差 ≤ ±30%；車內與超大空間**允許數字不準，
+     但必須輸出 `confidence: low`**，不得給出自信的錯誤數字。
+     達不到 → 狀態改 🔴 卡關，把誤差表寫進 REPORT，回報 Fable 重新決策（這是設計內的結果）
+  6. 手動覆寫：CLI 參數 `--override-dims 長x寬x高`（公尺），覆寫後下游一律用覆寫值，
+     且輸出 JSON 標記 `dims_source: "manual"`
+- **自我檢查**：
+  - bathroom 估出的進深誤差 ≤ ±30%（對照實際 2.5–3.5m）
+  - 車內照片的輸出含 `confidence: low`，而非自信的錯誤數字
+  - `--override-dims 4x3x2.5` 後，輸出 JSON 的尺寸就是 4×3×2.5 且標 `manual`
+  - `output/geometry/REPORT.md` 有逐場地誤差表（不是空泛的「都很好」）
+- **Opus 驗證重點**：REPORT 誤差表誠實、沒有只挑好看的照片；確認程式真的在用 metric 模型的公尺輸出
+  （紅旗：又拿相對深度自己正規化）；評測關卡判準沒有被改寬鬆
+- **交接筆記**：
+
+### T-12 材質模組（表面分割 + 二階材質分類 → 逐表面吸音係數）
+- **狀態**：⬜ 未開始
+- **前置**：T-10（可與 T-11 並行）
+- **對應 SPEC**：F-03、§6、F-09（材質覆寫）
+- **產出**：`src/image_reverb/materials.py`（材質表模組）、`src/image_reverb/surfaces.py`
+  （分割＋二階分類）、`gen_ir_manual.py` 逐表面支援、重生的試聽對照組
+- **執行步驟**：
+  1. 把 `data/materials.json` 的讀取模組化成 `src/image_reverb/materials.py`
+     （沿用 T-03 的 load/get/alpha 介面），補上「JSON 存在但損毀」的清楚錯誤訊息（T-03 交接筆記的坑）
+  2. **【約束 A——Phase 0 實證的硬性需求】定義逐表面材質資料結構**：
+     `SurfaceMaterials`＝floor / ceiling / 四面牆（north/south/east/west）**六個面各自**的材質 id
+     與六頻段 α。**禁止全域套用單一材質**——Phase 0 實測全鋪地毯 vs 只有地板鋪地毯，
+     低頻 RT60 差 **11.8 倍**（4.093s vs 0.348s），使用者試聽形容「像用手拍鐵筒子」。
+     傳入 pyroomacoustics 時用 ShoeBox 原生的 per-wall `pra.Material` dict（技術上無障礙）
+  3. 改 `scripts/gen_ir_manual.py`：`--material <id>` 之外新增逐表面介面
+     `--materials floor=carpet,ceiling=gypsum_board,walls=gypsum_board`（材質 id 以
+     `--list-materials` 實際輸出為準）。未指定的面預設石膏板類牆面材質，**不是**複製地板材質。
+     保留舊的 `--material`（全六面同材質）但執行時印警告「⚠️ 單一材質套六面是不現實的模型（T-03）」
+  4. `surfaces.py` 兩階段辨識：
+     a. SegFormer ADE20K 分割（沿用 T-06 的模型與腳本邏輯）→ 只取**幾何角色**：
+        哪些像素屬於地板/天花板/牆面/大面積物件
+     b. 對每個表面區域 crop 後跑 **CLIP zero-shot 分類**（transformers 的
+        zero-shot-image-classification pipeline，候選標籤＝materials.json 的 12 種材質的英文描述）。
+        ADE20K 的 `floor`/`wall` **類別語意不採信**（T-06 實證：滿鋪地毯 70.4% 判成 floor）。
+        語意可信的類別（mirror、window、curtain 等 output/seg/REPORT.md §4 的 🟢 級）可直接映射。
+        CLIP 模型下載前徵求使用者同意
+  5. 信心 gating：二階分類 top-1 機率低於閾值（config 可調，預設 0.4）→ fallback `generic_wall`
+     並在輸出 JSON 記 `warnings`；封閉空間出現 `sky` 類別 → 加「模型在猜」全圖警示（T-06 防呆規則）
+  6. **驗證「鐵筒子」缺陷已修復**：用逐表面材質重生地毯房間 IR
+     （floor=carpet、其餘=石膏板，4×3×2.5m）：
+     a. 量測 125Hz 頻段 RT60 應 ≈ 0.35s（±20%），不再是全 carpet 的 4.09s
+     b. 重跑 HANDOFF §5 的試聽對照組（marble / default / carpet 逐表面版），
+        **請使用者試聽確認鐵筒子聲消失**（這是本卡的必要通過條件，AI 不能代勞）
+- **自我檢查**：
+  - 逐表面 API：floor=carpet＋其餘石膏板的 125Hz RT60 ≈ 0.35s；全 carpet 仍 ≈ 4.09s——
+    兩者明顯不同，證明 per-wall 真的生效
+  - 對 corridor（滿鋪地毯走廊）跑兩階段管線，地板區域被二階分類器判成 carpet
+    （修正 T-06 的 29.6% 問題）；若判錯，誠實記錄在交接筆記，不改判準
+  - 車內照片輸出帶警示（低信心 fallback），而非安靜輸出 wall
+  - 試聽對照組已重生並請使用者聽過，回饋記錄在交接筆記
+- **Opus 驗證重點**：per-wall 材質真的逐面傳進 pyroomacoustics（紅旗：先把六面 α 平均再套用——
+  這等於繞過約束 A）；CLIP 分類是真的跑模型而非 hardcode 對照；信心 gating 有警示輸出
+- **交接筆記**：
+
+### T-13 聲學參數計算（Sabine/Eyring → 逐頻段 RT60、pre-delay）
+- **狀態**：⬜ 未開始
+- **前置**：T-11、T-12
+- **對應 SPEC**：F-04
+- **產出**：`src/image_reverb/acoustics.py`
+- **執行步驟**：
+  1. 輸入：房間尺寸（T-11 或手動覆寫）＋逐表面六頻段 α（T-12）。
+     輸出 JSON schema：`dims`、`volume`、`surfaces`（逐表面材質）、`rt60_bands`（六值）、
+     `predelay_ms`、`confidence` / `warnings`（從上游透傳）
+  2. **【約束 B——Phase 0 實證的硬性結論】RT60 必須逐頻段獨立計算**：
+     對 125/250/500/1k/2k/4k Hz 六頻段，各自用該頻段的 Σ Sᵢ·αᵢ(band) 算 Sabine 與 Eyring。
+     **禁止把六段 α 平均後算單一寬頻 RT60**——Phase 0 實測地毯房間 125Hz RT60=4.093s、
+     4kHz=0.126s（差 32 倍）；平均 α 算出 0.267s，實測 T30 卻是 4.023s，**差 15 倍**，
+     因為殘響尾巴完全由低頻決定。程式裡不得存在「mean(α) → RT60」的計算路徑。
+     若要給單一代表值（顯示用），必須從頻段結果取（如 500Hz/1kHz 平均）並命名為 `rt60_mid`，
+     不可由平均 α 重算
+  3. 大空間加空氣吸收項（Sabine 的 4mV 修正，20°C/50%RH，m 隨頻段變化）——
+     T-01 已證實 hall 級空間高頻空氣吸收顯著（4.55s vs 理論 6.04s）
+  4. pre-delay：由房間尺寸與聲源/麥克風假設位置（config 預設）算直達距離 → ms
+  5. **迴歸自檢（數字直接對照 T-03 卡的實測表）**：
+     a. 全 carpet 六面（4×3×2.5m）：125Hz ≈ 4.09s、1kHz ≈ 0.22s、4kHz ≈ 0.126s
+     b. floor=carpet＋其餘石膏板：125Hz ≈ 0.348s、1kHz ≈ 0.764s、4kHz ≈ 0.401s
+     c. 誤差各 ±10% 內（同公式同輸入，理應幾乎一致）
+- **自我檢查**：
+  - 輸出 JSON 的 `rt60_bands` 恆為 6 個值；不存在由平均 α 算出的欄位
+  - 迴歸自檢 a、b 兩組六個數字全部落在 ±10%
+  - `grep -n "mean" src/image_reverb/acoustics.py` 逐一人工確認沒有 α 平均進 RT60 公式的路徑
+  - Eyring 與 Sabine 在高 α（>0.3）時的差異有呈現（Eyring 較短），低 α 時兩者趨近
+- **Opus 驗證重點**：**約束 B 的紅旗＝程式裡任何「先平均 α 再算 RT60」的路徑**（包括藏在
+  「顯示用摘要值」裡的）；空氣吸收對大空間高頻確實有效果（開/關比較）；迴歸數字不是 hardcode
+  （改輸入尺寸後數字要跟著變）
+- **交接筆記**：
+
+### T-14 IR 合成引擎 v1（image-source 早期 + shaped-noise 晚期）
+- **狀態**：⬜ 未開始
+- **前置**：T-13
+- **對應 SPEC**：F-05、§5 路線 A+B
+- **產出**：`src/image_reverb/ir_synth.py`、試聽檔一組
+- **執行步驟**：
+  1. 早期反射（路線 A）：pyroomacoustics ShoeBox image-source，**用 T-12 的逐表面材質**
+     （不是單一 α），取前 ~80–100ms
+  2. 晚期殘響（路線 B）：六頻段 shaped-noise——白噪音過八度頻段濾波器組（Butterworth），
+     每頻段按 T-13 的 `rt60_bands[band]` 做指數衰減，疊加後與早期反射在交接點做能量匹配的 crossfade
+  3. 輸出 48kHz/24bit mono WAV、峰值 -3dBFS；IR 長度 ≥ max(rt60_bands) × 1.2（避免截尾，T-03 的坑）
+  4. **閉環驗證**：對合成出的 IR 獨立量測各頻段 T30（Schroeder 積分，量測程式碼與合成程式碼分離），
+     與輸入的 `rt60_bands` 比對，各頻段誤差 < 20%（SPEC §4 非功能需求）
+  5. 產生試聽檔：clap＋（若 `assets/dry/` 有真實人聲/樂器則優先）對 small 房間（逐表面地毯版）
+     與 hall 兩組，`convolve.py --mix 0.6`，**請使用者試聽**，以 T-02 的「還算自然」為基準線求進步
+- **自我檢查**：
+  - 逐表面地毯房 IR 的量測 T30：125Hz 對目標誤差 < 20%，且無鐵筒子聽感
+  - hall 的 IR 與 T-01 純 image-source 版本試聽對照，不得明顯劣化
+  - IR 尾端無突然截斷（最後 10% 樣本 RMS 顯著低於整體）
+  - 使用者至少試聽一次並記錄回饋
+- **Opus 驗證重點**：晚期不是未 shaping 的白噪音直接貼上（頻譜應隨時間高頻先衰減）；
+  T30 量測程式與合成程式是獨立實作（紅旗：量測函式直接回傳輸入值）；crossfade 點無能量跳變
+- **交接筆記**：
+
 ### T-15 CLI 整合（照片 → IR WAV + 分析報告 JSON）
-- **狀態**：⬜ 未開始 ｜ **前置**：T-14
+- **狀態**：⬜ 未開始
+- **前置**：T-14
+- **對應 SPEC**：F-01、F-06、F-07、F-09
+- **產出**：完整命令 `python -m src.image_reverb <photo> -o output/<name>/`
+- **執行步驟**：
+  1. 串起全鏈：T-10 前處理 → T-11 幾何 → T-12 材質 → T-13 參數 → T-14 IR
+  2. 輸出到 `output/<name>/`：`ir_mono.wav`（48kHz/24bit）、`ir_stereo.wav`
+     （簡單 decorrelation：晚期 noise 用兩個不同 seed 生成左右聲道，早期共用）、
+     `analysis.json`（T-13 schema＋各階段 warnings 彙整）、`wet_preview.wav`（自動用 clap 卷積）
+  3. 手動覆寫參數透傳：`--override-dims 長x寬x高`、`--override-material floor=carpet`
+     （可多次指定不同表面）。RT60 直接覆寫不做（SPEC 列 P1）
+  4. 錯誤處理：非圖片/壞檔 → 清楚中文錯誤訊息、exit code ≠ 0；
+     low confidence → stderr 印警示但仍完成輸出（警示同時進 analysis.json）
+  5. 印出總耗時，對照 SPEC §4 目標 ≤ 60 秒（超過不擋驗收，但要記錄）
+- **自我檢查**：
+  - 9 張測試照片全部跑完不 crash（車內、CGI 洞窟允許 low-confidence fallback，但必須有輸出與警示）
+  - 所有輸出 WAV 過 `check_audio.py`：48kHz、非靜音、無爆音
+  - `analysis.json` 的數值與各模組單獨執行的結果一致（抽 1 張人工比對）
+  - 給壞輸入（文字檔改名 .jpg）→ 清楚錯誤、exit ≠ 0
+- **Opus 驗證重點**：乾淨環境（新 shell、只靠 requirements.txt）end-to-end 重跑成功；
+  JSON 與中間模組輸出一致；覆寫參數真的生效到 IR（覆寫前後 IR 應不同）
+- **交接筆記**：
+
 ### T-16 分析視覺化（材質疊圖 + 參數報告）
-- **狀態**：⬜ 未開始 ｜ **前置**：T-15
-### T-17 MVP 驗收（SPEC §7 三項標準，Opus 主導）
-- **狀態**：⬜ 未開始 ｜ **前置**：T-16
+- **狀態**：⬜ 未開始
+- **前置**：T-15
+- **對應 SPEC**：F-08
+- **產出**：`src/image_reverb/visualize.py`、每張照片的 `output/<name>/analysis.png`
+- **執行步驟**：
+  1. matplotlib 拼版單張 PNG：原圖（前處理後）｜表面分割疊色圖（標二階分類的材質名與 α@1kHz）｜
+     深度圖｜六頻段 RT60 長條圖｜文字欄（尺寸/體積/pre-delay/confidence）
+  2. 有 warnings 的照片，PNG 上顯著標示警示文字（如車內的 low-confidence）
+  3. 環景照片：顯示投影後的主視角並註明「環景已展開為 N 視角」
+  4. 掛進 CLI：預設產生，`--no-viz` 可關
+- **自我檢查**：
+  - 9 張照片各有 analysis.png，圖上材質標籤與 analysis.json 一致
+  - 車內那張 PNG 上看得到警示字樣
+  - RT60 長條圖的六個值與 JSON 的 `rt60_bands` 一致
+- **Opus 驗證重點**：視覺化的數字直接取自 JSON，不是另外重算（紅旗：兩邊數字不一致）
+- **交接筆記**：
+
+### T-17 MVP 驗收（SPEC §7 四項標準，Opus 主導）
+- **狀態**：⬜ 未開始
+- **前置**：T-16
+- **對應 SPEC**：§7
+- **產出**：`output/mvp_acceptance/REPORT.md`
+- **執行步驟**：
+  1. **§7-1 盲聽配對**：5 類空間照片（浴室、客廳/臥室、大空間、走廊/樓梯間、車內）各生成 IR 與 wet 檔，
+     檔名打亂後請使用者盲聽配對空間類型，目標 ≥ 4/5
+  2. **§7-2 RT60 對照**：8 個對照場地（環景經 T-10 投影，全部可用）跑完整管線，
+     量測生成 IR 的各頻段 RT60 vs 真實 IR 的 T30，目標各頻段誤差 < 20%。
+     逐場地逐頻段列誤差表，**不得只挑會過的場地**。必測反例 `racquetball_court_4`
+     （最小空間、最長殘響 3.538s）：若被做成短殘響，直接記為未達標項
+  3. **§7-3 外部相容性**：匯出 WAV 請使用者載入任一 convolution reverb（如 Logic 的 Space Designer）
+     確認可正常使用
+  4. **§7-4 人耳試聽**：每個場地的 wet 檔請使用者聽，記錄鐵筒子類 artifact 與整體聽感
+  5. 彙整成 REPORT.md：達標/未達標逐項列，未達標項寫明量化差距與可能原因，交 Fable 決定
+     是否加 Phase 1.5 修正輪
+- **自我檢查**：REPORT.md 四項標準都有結果（含未達標的誠實記錄）；使用者的盲聽與試聽回饋已記錄
+- **Opus 驗證重點**：誤差表完整涵蓋 8 場地 × 6 頻段；盲聽流程真的是盲的（檔名不洩露答案）；
+  失敗案例的記錄足以讓 Fable 判斷下一步
+- **交接筆記**：
