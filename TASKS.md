@@ -300,7 +300,7 @@
 ---
 
 ### T-07（選做，限時）跑通 Image2Reverb baseline
-- **狀態**：⬜ 未開始
+- **狀態**：⏸️ **暫緩— 使用者未授權下載**（2026-08-16 詢問時未勾選此項；前置 T-04 已完成，隨時可啟動）
 - **前置**：T-04
 - **對應 SPEC**：§5 路線 C 評估
 - **產出**：`output/image2reverb/`（生成的 IR 與試聽 wet 檔）或 `output/image2reverb/FAILURE.md`
