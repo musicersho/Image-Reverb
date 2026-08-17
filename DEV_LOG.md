@@ -1,5 +1,19 @@
 # Dev Log
 
+## 2026-08-17 (9)
+
+- **T-10 完成自檢，待 Opus 驗證**：新增 `src/image_reverb/` 套件（`config.py`/`preprocess.py`/`cli.py`/
+  `__main__.py`），`python -m src.image_reverb <photo>` 可跑。三件事都實作：黑邊/letterbox 裁切、
+  環景（equirect）偵測、equirect→6 視角透視投影（`py360convert.e2p`）。
+- 黑邊裁切改用 **p90-p10 亮度分佈範圍**判定純色邊框（不是「夠不夠暗」），同時抓到 corridor 的
+  黑色左右邊與白色底部細邊；用洞穴暗邊照片反測未誤裁（僅 1px 安全誤差）。
+- corridor（YouTube 截圖，非環景）→ 左右黑邊裁掉；Steinman Hall（4096×2048，環景）→ 判定正確、
+  6 視角肉眼確認直線不彎曲；bathroom（一般照片）→ 僅原樣通過，無誤裁。
+- requirements.txt 新增 `py360convert==1.0.4`、`pillow_heif==1.1.1`（HEIC 支援）。
+- 補上一個 WORKFLOW §5 第三層要求的錯誤處理漏洞：非圖片輸入原本會噴完整 traceback，
+  已改成清楚中文錯誤訊息＋exit code 2。
+- 下一步：T-11（幾何估計）與 T-12（材質模組）可並行進行，兩者前置皆為 T-10。
+
 ## 2026-08-16 (8)
 
 - **T-08 完成（Fable）：Phase 0 結案，三個路線決策定案。**

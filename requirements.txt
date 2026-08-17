@@ -21,7 +21,9 @@ networkx==3.2.1
 numpy==2.0.2
 packaging==26.3
 pillow==11.3.0
+pillow_heif==1.1.1
 psutil==7.2.2
+py360convert==1.0.4
 pycparser==2.23
 pyparsing==3.3.2
 pyroomacoustics==0.10.1

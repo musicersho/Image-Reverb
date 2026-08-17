@@ -391,7 +391,7 @@
 > 禁止安靜 fallback；(3) 需要下載新模型時先告知大小並徵求使用者同意。
 
 ### T-10 專案骨架與影像前處理
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證
 - **前置**：T-08
 - **對應 SPEC**：§5（架構）、F-01
 - **產出**：`src/image_reverb/` 套件（`__init__.py`、`config.py`、`preprocess.py`、`cli.py`）、
@@ -417,6 +417,27 @@
 - **Opus 驗證重點**：投影幾何正確性（equirect 直線在透視圖中應為直線）；環景偵測是看長寬比不是檔名；
   黑邊裁切不會誤砍正常照片的暗色邊緣（拿一張四周偏暗但非黑邊的照片反測）
 - **交接筆記**：
+  - 新增 `src/image_reverb/`：`__init__.py`、`config.py`（黑邊門檻、環景長寬比、六視角參數集中於此）、
+    `preprocess.py`（三件事都實作：黑邊裁切、環景偵測、equirect→6 視角投影）、`cli.py`、`__main__.py`；
+    根目錄加 `src/__init__.py` 讓 `python -m src.image_reverb <photo>` 可執行。
+  - 黑邊裁切用 **p90-p10（去除離群值後的亮度分佈範圍）而非「夠不夠暗」判定純色邊框**：
+    純色邊框 p90-p10 會趨近 0，不管邊框是黑是白都抓得到；反之畫面偏暗但有紋理的正常內容
+    p90-p10 明顯偏高、不會被誤裁。已用 `assets/photos/cgi_cave_lab_sophy.png`（邊緣暗但有紋理）
+    反測，僅裁到 1px（安全誤差），沒有被錯誤大量裁切。加了 `BORDER_MAX_CROP_RATIO`（單邊上限 45%）
+    防止極端情況把照片裁光。
+  - corridor 那張黑邊其實左右是黑色（各裁掉 50px/30px），底部另外還有一條 6px 的**白色**細邊
+    （字幕條殘留），同一套 p90-p10 邏輯一併抓到並裁掉，肉眼確認乾淨。
+  - equirect 投影直接用 `py360convert.e2p`（純 numpy 球面幾何重投影，非 AI 模型），比自行重寫穩妥；
+    已把 `py360convert`、`pillow_heif` 加進 `requirements.txt`（版本鎖定 1.0.4 / 1.1.1）。
+  - 六視角用 `SteinmanHall.jpg`（4096×2048，長寬比剛好 2.0）跑出，肉眼檢查 az000（正面舞台）與
+    el+45（往上看的天花板網格/樑）直線都沒有彎曲。
+  - HEIC 支援靠 `pillow_heif.register_heif_opener()`，已驗證 `.heic` 有進 `Image.registered_extensions()`；
+    專案裡目前沒有 .heic 測試檔，沒有拿真檔案跑過，之後若使用者提供 HEIC 照片要再驗一次。
+  - 錯誤處理：CLI 對「檔案不存在」與「檔案存在但不是圖片」都會印清楚中文錯誤訊息＋非 0 exit code，
+    不會丟原始 traceback（原本非圖片輸入會噴 `UnidentifiedImageError` 的完整 traceback，已補 try/except）。
+  - `output/preprocess/` 已在 `.gitignore` 的 `output/**` 規則下自動排除，不用額外處理。
+  - 下一步：T-11（幾何估計）與 T-12（材質模組）可並行，兩者都要先呼叫這裡的
+    `preprocess.preprocess_image()`（環景會拿到 6 張透視圖清單，非環景拿到裁切後單張圖）。
 
 ### T-11 幾何估計模組（metric depth → 房間尺寸/體積）
 - **狀態**：⬜ 未開始
