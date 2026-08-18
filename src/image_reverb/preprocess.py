@@ -115,15 +115,36 @@ def project_equirect_to_perspectives(
 
 
 def preprocess_image(path: str | Path, output_dir: str | Path | None = None) -> dict[str, Any]:
-    """跑完整前處理：裁黑邊 → 判環景 → (環景才)投影六視角。中間結果存到 output_dir。"""
+    """跑完整前處理：判環景 → 環景跳過黑邊裁切／非環景才裁 → (環景才)投影六視角。
+
+    地雷第 11 條：equirect 的第一列/最後一列是天頂/天底被拉伸成整列，依定義完全
+    均勻，若先裁黑邊會把極點誤判成純色邊框裁掉，靜默破壞投影幾何。因此環景判定
+    一律用**原圖**；一旦判定為環景，完全跳過黑邊裁切（equirect 是完整球面渲染，
+    本來就不會有 letterbox）。
+    """
     path = Path(path)
     output_dir = Path(output_dir) if output_dir is not None else config.OUTPUT_DIR
     stem_dir = output_dir / path.stem
     stem_dir.mkdir(parents=True, exist_ok=True)
 
     img = load_image(path)
-    cropped, border_info = detect_and_crop_border(img)
-    equirect = is_equirect(cropped)
+    equirect = is_equirect(img)
+
+    if equirect:
+        cropped = img
+        w, h = img.size
+        border_info: dict[str, Any] = {
+            "original_size": [w, h],
+            "cropped_size": [w, h],
+            "crop_left_px": 0,
+            "crop_right_px": 0,
+            "crop_top_px": 0,
+            "crop_bottom_px": 0,
+            "spread_threshold": config.BORDER_SPREAD_THRESHOLD,
+            "skipped_equirect": True,
+        }
+    else:
+        cropped, border_info = detect_and_crop_border(img)
 
     summary: dict[str, Any] = {
         "input": str(path),

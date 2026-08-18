@@ -391,9 +391,11 @@
 > 禁止安靜 fallback；(3) 需要下載新模型時先告知大小並徵求使用者同意。
 
 ### T-10 專案骨架與影像前處理
-- **狀態**：🟠 退回（Opus 驗證，2026-08-17）— 前處理**順序錯誤**：先裁黑邊再判環景，
-  導致 equirect 的均勻極點列被當成黑邊裁掉，靜默破壞投影幾何。詳見下方「Opus 驗證結果」。
-  其餘（投影幾何、環景判定依據、反測、錯誤處理、HEIC）**全部通過**，只需修這一處順序問題。
+- **狀態**：🔵 待驗證（Sonnet，2026-08-18）— 已修正 Opus 退回的順序缺陷，待 Opus 重新驗證。
+  上一版狀態：🟠 退回（Opus 驗證，2026-08-17）— 前處理**順序錯誤**：先裁黑邊再判環景，
+  導致 equirect 的均勻極點列被當成黑邊裁掉，靜默破壞投影幾何。詳見下方「Opus 驗證結果」（保留存查）
+  與新增的「順序缺陷修正（2026-08-18）」。
+  其餘（投影幾何、環景判定依據、反測、錯誤處理、HEIC）**全部通過**，未再變動。
 - **前置**：T-08
 - **對應 SPEC**：§5（架構）、F-01
 - **產出**：`src/image_reverb/` 套件（`__init__.py`、`config.py`、`preprocess.py`、`cli.py`）、
@@ -498,6 +500,29 @@
     （目前沒被改動所以無害，但是壞味道）
   - 輸出檔名 `view_el+45.png` 含 `+`，在 shell glob／URL 情境容易出事，建議改 `el_up45`
   - 傳目錄當輸入時訊息是「找不到檔案」，語意不精確（路徑其實存在），建議分開處理
+  （以上三項本輪未動，範圍只限修順序缺陷，仍待之後順手處理）
+
+- **順序缺陷修正（Sonnet，2026-08-18）**：只動 `preprocess_image()` 一處，其餘（`is_equirect()`
+  本身的長寬比邏輯、`detect_and_crop_border()` 的 p90-p10 判定、投影函式）未改動。
+  - 把原本的 `裁黑邊 → is_equirect(裁後圖)` 改成 `is_equirect(原圖) → 環景則跳過裁切／非環景才裁`。
+    `is_equirect()` 函式簽章本身沒變（本來就吃 `img` 參數），只是呼叫方改傳原圖而非裁切後的圖。
+  - 判定為環景時，`border_crop` 欄位仍保留與非環景相同的欄位結構（`crop_*_px` 全填 0、
+    多一個 `skipped_equirect: true`），維持 CLI 輸出格式與 `meta.json` schema 相容，不用改 CLI 程式碼。
+  - 新增 `scripts/test_preprocess.py`：合成兩張圖做迴歸測試——
+    (a) 1024×1024 equirect（長寬比精確 2:1），上 30 列／下 30 列各填純色模擬天頂/天底極點，
+        中間隨機紋理；驗證 `is_equirect` 仍為 True、`border_crop` 的 `crop_*_px` 全為 0、
+        天頂/天底像素與原圖逐 pixel 相同（`np.array_equal`）、6 視角正常輸出。
+    (b) 800×450 非環景照片、左右各 60px 純黑 letterbox；驗證 `is_equirect` 為 False、
+        左右仍被正常裁掉（回歸防呆：確保這次改動沒有連帶弄壞非環景的黑邊裁切路徑）。
+    跑法：`python scripts/test_preprocess.py`（純合成資料，不依賴 git 沒有的環景照片，
+    任何 clone 都能重跑，彌補「5 張環景照片只有 1 張測得到」的驗證缺口）。
+  - 對真實 `SteinmanHall.jpg` 重跑 `python -m src.image_reverb`，確認 `border_crop` 四邊
+    皆為 0px（先前版本因餘裕剛好 0.0 而僥倖沒裁到，現在是「保證不裁」而非「運氣好沒裁」），
+    6 視角照常輸出。對 `corridor_hotel_carpet.png`（非環景 letterbox）與 `bathroom_tiled.png`
+    （一般照片）重跑，裁切結果與退回前完全一致（左50/右30/上0/下6 px、0px），確認非環景路徑未受影響。
+  - 未動：SPEC/ROADMAP/WORKFLOW、其他任務的 `scripts/`、`config.py` 任何數值門檻。
+  - 下一步：請 Opus 依 WORKFLOW.md §5 重新驗證這一處修正（含跑 `scripts/test_preprocess.py`），
+    通過後 T-11／T-12 即可並行開工。
 
 ### T-11 幾何估計模組（metric depth → 房間尺寸/體積）
 - **狀態**：⬜ 未開始

@@ -1,5 +1,22 @@
 # Dev Log
 
+## 2026-08-18 (11)
+
+- **T-10 順序缺陷已修，待重新驗證。** `preprocess_image()` 原本 `裁黑邊 → is_equirect(裁後圖)`，
+  改成 `is_equirect(原圖) → 環景則整段跳過黑邊裁切／非環景才裁`。equirect 判定的 `is_equirect()`
+  函式本身沒改，只是呼叫方不再把裁切後的圖餵進去。環景時 `border_crop` 欄位保留與非環景一致的
+  結構（`crop_*_px` 全 0，多一個 `skipped_equirect: true`），CLI 與 `meta.json` 不用跟著改。
+- 新增 `scripts/test_preprocess.py`：合成極點均勻的 equirect（上下各 30 列純色模擬天頂/天底）
+  做迴歸測試，驗證裁切完全跳過、極點像素逐 pixel 不變、6 視角照常輸出；另外合成一張非環景
+  letterbox 照片驗證黑邊裁切沒被連帶弄壞。純合成資料、不依賴 git 裡沒有的環景照片，
+  彌補上一輪「5 張環景照只有 1 張測得到」的驗證缺口，任何 clone 都能重跑。
+- 重跑真實 `SteinmanHall.jpg`：`border_crop` 四邊確認皆 0px（上一版是餘裕剛好 0.0 的僥倖，
+  這次是保證不裁）。重跑 corridor／bathroom：裁切結果與退回前完全一致，非環景路徑未受影響。
+- 範圍乾淨：只動 `src/image_reverb/preprocess.py` 一個函式＋新增一支測試腳本，
+  未動 SPEC/ROADMAP/WORKFLOW、`config.py` 任何門檻、其他任務的檔案。
+- 下一步：Opus 依 WORKFLOW.md §5 重新驗證這一處（含跑 `scripts/test_preprocess.py`），
+  通過後 T-11／T-12 並行開工。
+
 ## 2026-08-17 (10)
 
 - **T-10 Opus 驗證：🟠 退回，一個必修缺陷（前處理順序反了）。**
