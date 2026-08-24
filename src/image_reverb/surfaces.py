@@ -1,0 +1,374 @@
+"""T-12：表面辨識 —— 兩階段（ADE20K 分割取幾何角色 → CLIP zero-shot 判材質）。
+
+**為什麼要兩階段**（T-06 實證，見 `output/seg/REPORT.md` §2.3、§4）：
+ADE20K 的 `floor`／`wall` 類別語意在本專案**不可信**——滿鋪地毯的飯店走廊只有
+29.6% 的像素被判成 `rug`，70.4% 判成 `floor`；換算吸音係數是 0.207，正確值應是 0.65，
+高頻吸音只剩 32%。而且模型對失敗毫無自覺，一律輸出高信心結果。
+
+所以分工是：
+  第一階段 ADE20K → **只回答「這塊像素是地板／天花板／牆」這個幾何角色**
+  第二階段 CLIP  → **回答「這塊表面是什麼材質」**（候選標籤＝materials.json 的 12 種材質）
+
+語意可信的類別（mirror、windowpane、curtain 等 REPORT §4 的 🟢 級）可直接映射，
+不必繞 CLIP。
+"""
+
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+from PIL import Image
+
+from . import config
+from .materials import SurfaceMaterials, load_materials
+
+# ------------------------------------------------------------
+# 第一階段：ADE20K 類別 → 幾何角色（只取角色，不取材質語意）
+# ------------------------------------------------------------
+# ADE20K class id（nvidia/segformer-b4-finetuned-ade-512-512 的 id2label）
+ADE_FLOOR_IDS = {3: "floor", 28: "rug", 13: "earth", 46: "sand", 53: "path", 6: "road"}
+ADE_CEILING_IDS = {5: "ceiling"}
+ADE_WALL_IDS = {0: "wall", 1: "building", 25: "house"}
+
+# 語意可信、可直接映射材質的類別（REPORT §4 的 🟢 級）——這些不必問 CLIP
+ADE_TRUSTED_MATERIAL = {
+    27: "glass",           # mirror → 玻璃
+    8: "glass",            # windowpane → 玻璃
+    147: "glass",          # glass
+    18: "curtain_fabric",  # curtain
+    31: "audience_seating",  # seat
+    30: "audience_seating",  # armchair
+    23: "audience_seating",  # sofa
+    9: "grass_soil",       # grass
+    12: "audience_seating",  # person（人是強吸音體，以座椅類近似）
+}
+
+# 封閉空間不該出現的類別 → 觸發「模型在猜」全圖警示（T-06 防呆規則）
+ADE_OUTDOOR_IDS = {2: "sky"}
+
+# 門（T-11 的尺度校驗要用，這裡順手一起輸出，避免兩張卡各跑一次分割）
+ADE_DOOR_IDS = {14: "door", 58: "screen door"}
+
+# ------------------------------------------------------------
+# 第二階段：CLIP zero-shot 的候選標籤
+# 每個材質給一句英文描述（zero-shot 對描述句比對單詞敏感）
+# ------------------------------------------------------------
+CLIP_MATERIAL_PROMPTS = {
+    "concrete": "a smooth poured concrete surface",
+    "brick": "a bare unglazed brick surface",
+    "wood_panel": "a wooden panel or wood plank surface",
+    "gypsum_board": "a painted plasterboard drywall surface",
+    "glass": "a pane of clear glass or a window",
+    "marble": "a polished marble or ceramic tile surface",
+    "carpet": "a thick carpet or textile floor covering",
+    "curtain_fabric": "a heavy fabric curtain or drape",
+    "acoustic_panel": "a fibrous acoustic absorption panel",
+    "audience_seating": "rows of upholstered seats with an audience",
+    "grass_soil": "natural grass or bare soil ground",
+    "generic_wall": "a plain smooth plastered wall",
+}
+
+# 「以上皆非」的域外候選（out-of-domain）。
+#
+# 為什麼需要這個：CLIP 的 softmax 是在**封閉候選集**上做的，機率永遠加總為 1，
+# 所以它無法表達「這根本不是建築表面」——只會把機率分給最像的那個材質。
+# 實測（2026-08-18）：車內照片在只有 12 個材質候選時，floor 判成 curtain_fabric
+# 信心 0.760、wall 判成 acoustic_panel 信心 0.489，**兩者都在 0.4 門檻之上，
+# 完全不會觸發警示**——正是 HANDOFF §2 洞二「模型對失敗毫無自覺」的重演。
+# 單純調高門檻無效：要擋住車內的 0.760 得把門檻設到 0.8，那會連
+# corridor 天花板（0.599）這種判對的案例一起擋掉，模組就沒用了。
+#
+# 加入域外候選後，softmax 才有地方可以「投給以上皆非」。
+# top-1 落在這裡 → fallback ＋ 明確警示，不假裝量到了材質。
+CLIP_OOD_PROMPTS = {
+    "__vehicle_interior": "the inside of a car or vehicle cabin",
+    "__outdoor_scene": "an outdoor landscape with sky and trees",
+    "__object_closeup": "a close-up photograph of a small object",
+    "__person": "a photograph of a person's face or body",
+}
+OOD_PREFIX = "__"
+
+# equirect 的六視角 → ShoeBox 六個面。用得上 T-10 投影出來的方位資訊：
+# 方位角 0/90/180/270 對到四面牆，仰角 ±45 對到天花板/地板。
+VIEW_TO_SURFACE = {
+    "az000_el00": "north",
+    "az090_el00": "east",
+    "az180_el00": "south",
+    "az270_el00": "west",
+    "el+45": "ceiling",
+    "el-45": "floor",
+}
+
+
+@dataclass
+class SurfaceObservation:
+    """一個幾何角色區域的觀測結果。"""
+
+    role: str                  # "floor" / "ceiling" / "wall"
+    pixel_ratio: float         # 佔整張圖的像素比例
+    material_id: str           # 二階分類的結果（或 fallback）
+    confidence: float          # top-1 機率（直接映射的類別記 1.0）
+    method: str                # "clip" / "ade_trusted" / "fallback"
+    top3: list[tuple[str, float]] = field(default_factory=list)
+    note: str = ""
+
+
+def _load_segmenter():
+    """載入 ADE20K 分割模型（沿用 T-06 的模型）。"""
+    from transformers import SegformerForSemanticSegmentation, SegformerImageProcessor
+
+    processor = SegformerImageProcessor.from_pretrained(config.SEGMENTATION_MODEL_ID)
+    model = SegformerForSemanticSegmentation.from_pretrained(config.SEGMENTATION_MODEL_ID)
+    model.eval()
+    return processor, model
+
+
+def _load_clip():
+    """載入 CLIP zero-shot 分類模型。"""
+    from transformers import CLIPModel, CLIPProcessor
+
+    processor = CLIPProcessor.from_pretrained(config.CLIP_MODEL_ID)
+    model = CLIPModel.from_pretrained(config.CLIP_MODEL_ID)
+    model.eval()
+    return processor, model
+
+
+def segment_roles(img: Image.Image, processor, model) -> tuple[np.ndarray, dict[int, float]]:
+    """跑 ADE20K 分割，回傳 (labelmap, {class_id: 像素比例})。"""
+    import torch
+    import torch.nn.functional as F
+
+    inputs = processor(images=img, return_tensors="pt")
+    with torch.no_grad():
+        logits = model(**inputs).logits
+    # 上採樣回原圖大小再取 argmax（先 argmax 再放大會產生鋸齒假邊界）
+    logits = F.interpolate(logits, size=img.size[::-1], mode="bilinear", align_corners=False)
+    labelmap = logits.argmax(dim=1)[0].cpu().numpy().astype(np.int32)
+
+    total = labelmap.size
+    ids, counts = np.unique(labelmap, return_counts=True)
+    ratios = {int(i): float(c) / total for i, c in zip(ids, counts)}
+    return labelmap, ratios
+
+
+def classify_region_material(
+    img: Image.Image,
+    mask: np.ndarray,
+    clip_processor,
+    clip_model,
+    threshold: float = config.CLIP_CONFIDENCE_THRESHOLD,
+) -> tuple[str, float, list[tuple[str, float]], str]:
+    """對一個表面區域跑 CLIP zero-shot，回傳 (材質 id, 信心, top3, 方法)。
+
+    信心 gating：top-1 機率低於 threshold → fallback `generic_wall`，
+    呼叫端要把警示寫進輸出 JSON（不能安靜地當成量到的結果）。
+    """
+    import torch
+
+    ys, xs = np.nonzero(mask)
+    if len(ys) == 0:
+        return config.DEFAULT_WALL_MATERIAL, 0.0, [], "fallback"
+
+    # 取遮罩的 bounding box 裁切，並把遮罩外的像素塗成中性灰，
+    # 避免 CLIP 看到隔壁表面的內容（例如判牆面時被地板干擾）
+    y0, y1, x0, x1 = ys.min(), ys.max() + 1, xs.min(), xs.max() + 1
+    arr = np.asarray(img.convert("RGB")).copy()
+    arr[~mask] = 128
+    crop = Image.fromarray(arr[y0:y1, x0:x1])
+
+    # 候選集＝12 種材質 ＋ 域外選項，讓 softmax 有辦法表達「以上皆非」
+    all_prompts = {**CLIP_MATERIAL_PROMPTS, **CLIP_OOD_PROMPTS}
+    ids = list(all_prompts.keys())
+    prompts = [all_prompts[i] for i in ids]
+    inputs = clip_processor(text=prompts, images=crop, return_tensors="pt", padding=True)
+    with torch.no_grad():
+        out = clip_model(**inputs)
+    probs = out.logits_per_image.softmax(dim=1)[0].cpu().numpy()
+
+    order = np.argsort(probs)[::-1]
+    top3 = [(ids[i], float(probs[i])) for i in order[:3]]
+    best_id, best_p = top3[0]
+
+    # top-1 落在域外候選 → 模型認不出這是建築表面，不能給材質數字
+    if best_id.startswith(OOD_PREFIX):
+        return config.DEFAULT_WALL_MATERIAL, best_p, top3, "out_of_domain"
+
+    if best_p < threshold:
+        return config.DEFAULT_WALL_MATERIAL, best_p, top3, "fallback"
+    return best_id, best_p, top3, "clip"
+
+
+def analyse_image(
+    img: Image.Image,
+    seg=None,
+    clip=None,
+    threshold: float = config.CLIP_CONFIDENCE_THRESHOLD,
+) -> dict[str, Any]:
+    """對單張透視圖跑兩階段辨識，回傳各幾何角色的觀測結果與警示。"""
+    seg_processor, seg_model = seg if seg is not None else _load_segmenter()
+    clip_processor, clip_model = clip if clip is not None else _load_clip()
+
+    labelmap, ratios = segment_roles(img, seg_processor, seg_model)
+    warnings: list[str] = []
+
+    # T-06 防呆規則：封閉空間出現 sky → 模型在猜
+    for cid, name in ADE_OUTDOOR_IDS.items():
+        r = ratios.get(cid, 0.0)
+        if r > 0.01:
+            warnings.append(
+                f"分割結果有 {r*100:.1f}% 的像素被判成 '{name}'（室外類別）。"
+                f"若這是室內空間，代表模型在猜，整張圖的材質判定都要打折看待（T-06 防呆規則）。"
+            )
+
+    observations: dict[str, SurfaceObservation] = {}
+    role_ids = {"floor": ADE_FLOOR_IDS, "ceiling": ADE_CEILING_IDS, "wall": ADE_WALL_IDS}
+
+    for role, id_map in role_ids.items():
+        mask = np.isin(labelmap, list(id_map.keys()))
+        ratio = float(mask.mean())
+        if ratio < config.MIN_SURFACE_AREA_RATIO:
+            # 區域太小就不判，免得拿一小撮雜點決定整面牆的材質
+            continue
+
+        # 這個角色裡有沒有「語意可信」的類別佔多數？有就直接映射，不必問 CLIP
+        trusted_hits = {
+            mid: sum(ratios.get(cid, 0.0) for cid, m in ADE_TRUSTED_MATERIAL.items() if m == mid)
+            for mid in set(ADE_TRUSTED_MATERIAL.values())
+        }
+        best_trusted = max(trusted_hits.items(), key=lambda kv: kv[1], default=(None, 0.0))
+
+        mid, conf, top3, method = classify_region_material(
+            img, mask, clip_processor, clip_model, threshold
+        )
+        note = ""
+        if method == "out_of_domain":
+            ood_name = top3[0][0].lstrip(OOD_PREFIX)
+            note = (
+                f"CLIP 認為這塊區域最像「{ood_name}」（機率 {conf:.2f}）而非任何建築材質——"
+                f"模型認不出這是建築表面，改用 fallback '{config.DEFAULT_WALL_MATERIAL}'。"
+                f"這個空間的材質判定不可信，請人工用 --materials 覆寫。"
+            )
+            warnings.append(f"{role}：{note}")
+        elif method == "fallback":
+            note = (
+                f"CLIP top-1 機率 {conf:.2f} 低於門檻 {threshold}，"
+                f"改用 fallback '{config.DEFAULT_WALL_MATERIAL}'"
+            )
+            warnings.append(f"{role}：{note}")
+        if best_trusted[0] is not None and best_trusted[1] > ratio * 0.5:
+            note += (
+                f"（另註：分割結果有 {best_trusted[1]*100:.1f}% 像素屬語意可信類別 "
+                f"→ {best_trusted[0]}，與 CLIP 判定 {mid} 併看）"
+            )
+
+        observations[role] = SurfaceObservation(
+            role=role, pixel_ratio=ratio, material_id=mid,
+            confidence=conf, method=method, top3=top3, note=note,
+        )
+
+    door_ratio = sum(ratios.get(cid, 0.0) for cid in ADE_DOOR_IDS)
+
+    return {
+        "observations": observations,
+        "warnings": warnings,
+        "class_ratios": ratios,
+        "door_pixel_ratio": door_ratio,
+        "labelmap": labelmap,
+    }
+
+
+def surfaces_from_preprocess(
+    preprocess_summary: dict[str, Any],
+    threshold: float = config.CLIP_CONFIDENCE_THRESHOLD,
+) -> tuple[SurfaceMaterials, dict[str, Any]]:
+    """吃 T-10 `preprocess_image()` 的輸出，產生逐表面材質（約束 A）。
+
+    - **環景**：T-10 已投影出六視角，方位資訊剛好對應 ShoeBox 六個面
+      （az000→north、az090→east、az180→south、az270→west、el+45→ceiling、el-45→floor），
+      所以四面牆可以**各自**判材質，不必共用一個值。
+    - **一般透視照**：一張照片看不到背後的牆，四面牆只能共用同一個判定值；
+      這件事會如實寫進 `sources` 與 `warnings`，不假裝有四面獨立資訊。
+    """
+    data = load_materials()
+    seg = _load_segmenter()
+    clip = _load_clip()
+
+    surfaces = SurfaceMaterials()
+    detail: dict[str, Any] = {"mode": None, "views": {}, "warnings": []}
+
+    if preprocess_summary.get("is_equirect"):
+        detail["mode"] = "equirect_6views"
+        for view_name, view_meta in preprocess_summary["views"].items():
+            surface = VIEW_TO_SURFACE.get(view_name)
+            if surface is None:
+                continue
+            img = Image.open(view_meta["path"]).convert("RGB")
+            res = analyse_image(img, seg, clip, threshold)
+            detail["warnings"].extend(f"[{view_name}] {w}" for w in res["warnings"])
+
+            # 這個視角對應的面，優先採用同角色的觀測；沒有就退回牆面觀測
+            role = "floor" if surface == "floor" else ("ceiling" if surface == "ceiling" else "wall")
+            obs = res["observations"].get(role) or res["observations"].get("wall")
+            if obs is None:
+                detail["warnings"].append(
+                    f"[{view_name}] 沒有偵測到足夠大的 {role} 區域，{surface} 面保持預設材質"
+                )
+                continue
+            surfaces.set_surface(surface, obs.material_id, source=obs.method)
+            detail["views"][view_name] = {
+                "surface": surface, "role": obs.role, "material_id": obs.material_id,
+                "confidence": round(obs.confidence, 4), "method": obs.method,
+                "pixel_ratio": round(obs.pixel_ratio, 4),
+                "top3": [(m, round(p, 4)) for m, p in obs.top3],
+                "note": obs.note,
+            }
+    else:
+        detail["mode"] = "single_perspective"
+        img = Image.open(preprocess_summary["cropped"]).convert("RGB")
+        res = analyse_image(img, seg, clip, threshold)
+        detail["warnings"].extend(res["warnings"])
+
+        for role, obs in res["observations"].items():
+            if role == "wall":
+                surfaces.set_walls(obs.material_id, source=obs.method)
+            else:
+                surfaces.set_surface(role, obs.material_id, source=obs.method)
+            detail["views"].setdefault("single", {})[role] = {
+                "material_id": obs.material_id, "confidence": round(obs.confidence, 4),
+                "method": obs.method, "pixel_ratio": round(obs.pixel_ratio, 4),
+                "top3": [(m, round(p, 4)) for m, p in obs.top3], "note": obs.note,
+            }
+        if "wall" in res["observations"]:
+            detail["warnings"].append(
+                "單張透視照看不到背後的牆，四面牆共用同一個材質判定值。"
+                "若要四面各自判定，請用 360° 環景照片（T-10 會投影出六視角）。"
+            )
+        detail["door_pixel_ratio"] = res["door_pixel_ratio"]
+
+    surfaces.warnings.extend(detail["warnings"])
+    surfaces.validate(data)
+
+    if surfaces.is_uniform():
+        surfaces.warnings.append(
+            "六個面被判成同一種材質——這是約束 A 要避免的退化情況，請人工檢查／用 --materials 覆寫。"
+        )
+
+    return surfaces, detail
+
+
+def save_detail(detail: dict[str, Any], surfaces: SurfaceMaterials, out_path: str | Path) -> Path:
+    """把辨識明細與逐表面結果存成 JSON（含 warnings，不隱藏低信心）。"""
+    out_path = Path(out_path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "surfaces": surfaces.as_dict(),
+        "sources": surfaces.sources,
+        "warnings": surfaces.warnings,
+        "detail": {k: v for k, v in detail.items() if k != "labelmap"},
+    }
+    out_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    return out_path

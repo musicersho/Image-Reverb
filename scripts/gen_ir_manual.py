@@ -13,6 +13,13 @@ T-03 新增：--material <id> 可從 data/materials.json 讀取分頻段吸音�
     python scripts/gen_ir_manual.py small --material marble
     python scripts/gen_ir_manual.py --list-materials
 不帶 --material 時，行為與 T-01 完全相同（用 preset 裡的單一 α、輸出同一個檔名）。
+
+T-12 新增：--materials 逐表面指定材質（約束 A，Phase 0 實證的硬性需求）。
+    python scripts/gen_ir_manual.py small --materials floor=carpet,walls=gypsum_board
+    python scripts/gen_ir_manual.py small --materials floor=carpet,ceiling=acoustic_panel,north=glass
+六個面：floor / ceiling / west / east / south / north，另可用 walls= 一次指定四面牆。
+沒指定的面預設 gypsum_board（石膏板類牆面），**不是**複製地板材質。
+舊的 --material（六面同材質）保留但會印警告——那是不現實的模型（地雷第 9 條）。
 """
 
 import argparse
@@ -25,6 +32,14 @@ import soundfile as sf
 
 # 共用材質表讀取工具（同一個 scripts/ 目錄）
 from show_materials import alpha_list, get_material, load_materials
+
+# T-12 的逐表面材質資料結構（src/image_reverb/materials.py）
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from src.image_reverb.materials import (  # noqa: E402
+    SURFACE_NAMES,
+    parse_surface_spec,
+)
+from src.image_reverb.materials import load_materials as load_surface_materials_data  # noqa: E402
 
 # ============================================================
 # 參數區塊 — 想調整 IR 就改這裡
@@ -89,6 +104,62 @@ def sabine_rt60(dimensions, absorption):
     volume = lx * ly * lz
     surface = 2.0 * (lx * ly + lx * lz + ly * lz)
     return 0.161 * volume / (surface * absorption)
+
+
+def surface_areas(dimensions):
+    """回傳六個面各自的面積 (m²)，key 與 pyroomacoustics 的 wall_names 一致。
+
+    ShoeBox 的 (lx, ly, lz) = (東西向長, 南北向寬, 高)：
+    west/east 是 ly×lz、south/north 是 lx×lz、floor/ceiling 是 lx×ly。
+    """
+    lx, ly, lz = dimensions
+    return {
+        "west": ly * lz,
+        "east": ly * lz,
+        "south": lx * lz,
+        "north": lx * lz,
+        "floor": lx * ly,
+        "ceiling": lx * ly,
+    }
+
+
+def sabine_rt60_per_surface(dimensions, alpha_by_surface):
+    """逐表面的 Sabine RT60：RT60 = 0.161·V / Σ(Sᵢ·αᵢ)。
+
+    **這裡刻意用面積加權的 Σ(Sᵢ·αᵢ)，不是「先把六面 α 平均再乘總面積」。**
+    後者等於繞過約束 A（T-12 卡明列的 Opus 紅旗）：地毯房間只有地板鋪地毯時，
+    12 m² 的地毯 α=0.02 對總吸音的貢獻遠小於 47 m² 的石膏板 α=0.29，
+    平均掉就看不出差別了。
+
+    alpha_by_surface: {面名稱: 該面在**單一頻段**的 α}
+    """
+    lx, ly, lz = dimensions
+    volume = lx * ly * lz
+    areas = surface_areas(dimensions)
+    total_absorption = sum(areas[name] * alpha_by_surface[name] for name in areas)
+    if total_absorption <= 0.0:
+        raise ValueError("總吸音量為 0（六面 α 全為 0），RT60 無限大，無法計算")
+    return 0.161 * volume / total_absorption
+
+
+def build_surface_material_dict(surfaces, data, scattering):
+    """把 SurfaceMaterials 轉成 pyroomacoustics ShoeBox 要的 per-wall dict。
+
+    回傳 {面名稱: pra.Material}，六個面**各自**帶自己的六頻段係數，
+    整條路徑上不存在任何跨面平均（那是約束 A 禁止的）。
+    """
+    band_freqs, alpha_table = surfaces.alpha_table(data)
+    materials = {}
+    for name in SURFACE_NAMES:
+        materials[name] = pra.Material(
+            energy_absorption={
+                "description": f"{name}: {getattr(surfaces, name)}",
+                "coeffs": alpha_table[name],
+                "center_freqs": list(band_freqs),
+            },
+            scattering=scattering,
+        )
+    return materials, band_freqs, alpha_table
 
 
 def build_material(preset, material_entry=None, band_freqs=None):
@@ -167,6 +238,14 @@ def main():
         "（不指定時沿用 preset 內建的單一 α）",
     )
     parser.add_argument(
+        "--materials",
+        default=None,
+        metavar="SPEC",
+        help="逐表面指定材質（T-12 約束 A），格式 面=材質id 以逗號分隔，例如 "
+        "floor=carpet,walls=gypsum_board。可用的面：floor/ceiling/west/east/south/north，"
+        "walls= 可一次指定四面牆；沒指定的面預設 gypsum_board（不會複製地板材質）",
+    )
+    parser.add_argument(
         "--list-materials",
         action="store_true",
         help="列出材質表裡可用的 id 後結束",
@@ -191,9 +270,39 @@ def main():
     preset = PRESETS[args.preset]
     dims = preset["dimensions"]
 
+    # --- 三種模式互斥檢查 ---
+    if args.material is not None and args.materials is not None:
+        print("❌ 錯誤：--material（六面同材質）與 --materials（逐表面）不能同時使用。")
+        print("   建議用 --materials，逐表面才是現實的模型（T-03 地雷第 9 條）。")
+        sys.exit(2)
+
+    # --- 模式三（T-12）：逐表面材質 ---
+    surfaces = None
+    if args.materials is not None:
+        try:
+            data = load_surface_materials_data()
+            surfaces = parse_surface_spec(args.materials, data)
+            surfaces.validate(data)
+        except (FileNotFoundError, ValueError) as e:
+            print(f"❌ 錯誤：{e}")
+            sys.exit(2)
+        except KeyError as e:
+            print(f"❌ 錯誤：{e.args[0]}")
+            print("   （可用 python scripts/gen_ir_manual.py --list-materials 查看完整清單）")
+            sys.exit(2)
+        if surfaces.is_uniform():
+            print("⚠️  警告：你指定的六個面材質全部相同，這是不現實的模型（T-03 地雷第 9 條）。")
+            print("    真實房間的牆不會與地板同材質；建議至少把地板與牆面分開指定。")
+
     # --- 決定吸音係數：預設沿用 preset 的單一 α，有 --material 才改用材質表 ---
     material_entry = None
     band_freqs = None
+    if args.material is not None:
+        print("⚠️  警告：單一材質套六面是不現實的模型（T-03 地雷第 9 條）——"
+              "真實房間的牆不會與地板同材質。")
+        print("    Phase 0 實測：全鋪地毯 vs 只有地板鋪地毯，125 Hz RT60 差 11.8 倍"
+              "（4.093s vs 0.348s），使用者試聽形容全 carpet 版「像用手拍鐵筒子」。")
+        print("    建議改用 --materials floor=carpet,walls=gypsum_board（逐表面）。")
     if args.material is not None:
         try:
             data = load_materials()
@@ -213,7 +322,28 @@ def main():
     print(f"=== preset：{args.preset} ===")
     print(f"房間尺寸：{dims[0]}×{dims[1]}×{dims[2]} m（體積 {dims[0]*dims[1]*dims[2]:.1f} m³）")
 
-    if material_entry is None:
+    if surfaces is not None:
+        # ---- 模式三（T-12）：逐表面，每個面各自的六頻段 α ----
+        band_freqs, alpha_table = surfaces.alpha_table(data)
+        areas = surface_areas(dims)
+        print("逐表面材質（約束 A：每個面獨立指定，不做跨面平均）：")
+        for name in SURFACE_NAMES:
+            mid = getattr(surfaces, name)
+            entry = get_material(mid, data)
+            print(f"    {name:<8} {mid:<16} {entry['name_zh'][:18]:<20} 面積 {areas[name]:5.1f} m²")
+        print("各頻段 Sabine RT60（面積加權 Σ(Sᵢ·αᵢ)，逐頻段獨立算——地雷第 8 條）：")
+        band_rt60s = []
+        for i, freq in enumerate(band_freqs):
+            alpha_this_band = {name: alpha_table[name][i] for name in SURFACE_NAMES}
+            band_rt60 = sabine_rt60_per_surface(dims, alpha_this_band)
+            band_rt60s.append(band_rt60)
+            span = "  ".join(f"{name[:2]}={alpha_this_band[name]:.2f}" for name in SURFACE_NAMES)
+            print(f"    {freq:>5} Hz　RT60 ≈ {band_rt60:.3f} 秒　（{span}）")
+        longest_band_rt60 = max(band_rt60s)
+        print(f"最長頻段 RT60 ≈ {longest_band_rt60:.3f} 秒"
+              f"（{band_freqs[band_rt60s.index(longest_band_rt60)]} Hz，殘響尾巴由這個頻段決定）")
+        sabine = longest_band_rt60
+    elif material_entry is None:
         print(f"吸音係數 α：{preset['absorption']}（各面相同）")
         sabine = sabine_rt60(dims, preset["absorption"])
         longest_band_rt60 = sabine
@@ -236,14 +366,14 @@ def main():
     print(f"聲源位置：{preset['source_pos']}　麥克風位置：{preset['mic_pos']}")
     print(f"image-source 最高階數：{preset['max_order']}　ray tracing 射線數：{preset['n_rays']}")
 
-    if material_entry is None:
+    if material_entry is None and surfaces is None:
         print(f"Sabine 理論 RT60（參考值）：{sabine:.3f} 秒")
 
     # ray tracing 的追蹤時間必須涵蓋整段衰減，否則 IR 會被截斷、RT60 量測失真。
     # 不帶 --material 時完全沿用 preset 的值（維持 T-01 行為）；
     # 帶了材質才依「最長頻段 RT60」自動加長。
     time_thres = preset["time_thres"]
-    if material_entry is not None:
+    if material_entry is not None or surfaces is not None:
         needed = longest_band_rt60 * 1.5
         if needed > time_thres:
             time_thres = float(needed)
@@ -252,7 +382,11 @@ def main():
 
     print("模擬中，請稍候…")
 
-    material = build_material(preset, material_entry, band_freqs)
+    if surfaces is not None:
+        # per-wall dict：六個面各自一個 pra.Material（ShoeBox 原生支援）
+        material, _, _ = build_surface_material_dict(surfaces, data, preset["scattering"])
+    else:
+        material = build_material(preset, material_entry, band_freqs)
     room = build_room(preset, material, time_thres)
 
     ir = np.asarray(room.rir[0][0], dtype=np.float64)
@@ -266,7 +400,10 @@ def main():
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     # 不帶 --material 時檔名照 T-01 舊樣；帶了材質才加後綴，避免蓋掉預設版本
-    if material_entry is None:
+    if surfaces is not None:
+        # 檔名帶「地板材質 + surf」後綴，避免與全六面版本混淆
+        out_name = f"{preset['output_name']}_surf_{surfaces.floor}"
+    elif material_entry is None:
         out_name = preset["output_name"]
     else:
         out_name = f"{preset['output_name']}_{material_entry['id']}"
@@ -274,6 +411,14 @@ def main():
     sf.write(out_path, ir_normalized, SAMPLE_RATE, subtype=SUBTYPE)
 
     print(f"已輸出：{out_path}（{SAMPLE_RATE} Hz / 24bit / mono，峰值正規化到 {TARGET_PEAK_DBFS} dBFS）")
+
+    if surfaces is not None:
+        # 把真正送進 pyroomacoustics 的每個面 α 印出來，證明沒有被平均掉
+        print("送進 pyroomacoustics 的 per-wall 係數（每面獨立，未平均）：")
+        for name in SURFACE_NAMES:
+            coeffs = material[name].absorption_coeffs
+            print(f"    {name:<8} {getattr(surfaces, name):<16} α = "
+                  + " ".join(f"{c:.3f}" for c in coeffs))
 
 
 if __name__ == "__main__":

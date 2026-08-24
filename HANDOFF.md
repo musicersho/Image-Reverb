@@ -1,28 +1,36 @@
 # 交接文件 — 給下一個視窗
 
-> 最後更新：2026-08-17（Opus 視窗，T-10 驗證退回）｜對應 commit：`97d1a8c`
+> 最後更新：2026-08-18（T-11／T-12 執行視窗）｜對應 commit：見 `git log --oneline -1`
 > **新視窗請先讀 [CLAUDE.md](CLAUDE.md) 知道自己的角色，再讀本檔知道現在的狀況。**
 >
-> 驗證本檔是否過期：`git log --oneline -1`。若 HEAD 不是 `97d1a8c`，
-> 表示本檔之後又有異動，請一併看 [DEV_LOG.md](DEV_LOG.md) 最上面幾筆。
+> 驗證本檔是否過期：看 [DEV_LOG.md](DEV_LOG.md) 最上面一筆是不是 `2026-08-18 (13)`；
+> 若已有更新的紀錄，以 DEV_LOG 為準。
 
 ---
 
 ## 一分鐘進入狀況
 
-**Phase 0 已結案（含 T-08 路線決策），現在是 Phase 1，正在做 T-10。**
+**Phase 0 已結案（含 T-08 路線決策），現在是 Phase 1。**
 三個決策的結果與理由見本檔第 3 節與 TASKS.md T-08 卡的交接筆記。
 
-**T-10 已完成並通過 Opus 複驗（2026-08-18）。** 它曾因 equirect 前處理**順序反了**
-（先裁黑邊、再判環景 → 均勻極點被當黑邊裁掉）被退回；現已修正：`is_equirect()` 改吃原圖、
-判定為環景就完全跳過黑邊裁切，並補上 `scripts/test_preprocess.py` 合成迴歸測試。
-複驗的關鍵一項是**拿舊程式碼跑這個新測試會失敗（exit 1）**，證明測試有真實診斷力；
-非環景照片的裁切量與修正前逐張比對完全一致。詳見 [TASKS.md](TASKS.md) T-10 卡
-「Opus 複驗結果（2026-08-18）」與本檔第 6 節地雷第 11 條（含一項殘留限制）。
+**T-10 ✅ 通過｜T-12 🔵 待驗證（等你試聽）｜T-11 🔴 卡關（等 Fable 決策）。**
 
-**下一步：T-11（幾何估計）與 T-12（材質模組）可並行開工**，兩者前置都只有 T-10。
-⚠️ T-11 內含**評測關卡**：metric depth 模型精度未驗證，先對已知尺寸場地實測，
-誤差 >±30% 就 🔴 卡關回報 Fable，不要硬走（這是設計內的結果，不是失敗）。
+**先看這三件事：**
+
+1. 🎧 **T-12 等你的耳朵**：試聽檔已產生，聽 `output/listen_T12_surf_carpet.wav`（修好的）
+   vs `output/listen_T12_uniform_carpet.wav`（舊的鐵筒子版）。實測 125Hz 殘響
+   **3.95 秒 → 0.75 秒**、低頻/高頻比 **48.8 倍 → 1.27 倍**。地雷第 9 條的「鐵筒子」應該要消失。
+   這是 T-12 卡的**必要通過條件**，AI 不能代勞。
+
+2. 🔴 **T-11 評測關卡未通過，要 Fable 決策**：metric depth 模型的**量程只到 ~20m**——
+   走廊（~30m）估 12.79m（**−57%**）、體育館（~150m）模型全圖最遠只說 **3.61m**（**−98%**）。
+   浴室 +24% 在判準內。**這是 T-08 決策一設計內的評測關卡，不是實作失敗。**
+   5 個可能方向與完整誤差表在 [`output/geometry/REPORT.md`](output/geometry/REPORT.md) §6。
+
+3. ⛔ **T-13 先不要開工**：RT60 ∝ 體積，T-11 的尺寸來源沒定案就往下做會白做。
+
+**T-12 修好了 T-06 的地毯缺陷**：corridor 地板判成 `carpet` **信心 0.963**
+（T-06 只有 29.6% 判成 rug）。兩階段分工（ADE20K 只給幾何角色 + CLIP 判材質）有效。
 
 ---
 
@@ -40,7 +48,9 @@
 | T-07 | Image2Reverb baseline（選做） | ⏸️ 暫緩，使用者未授權下載 |
 | T-08 | Phase 0 總結與路線決策 | ✅ **完成（Fable，2026-08-16）** |
 | T-10 | 專案骨架與影像前處理（含環景投影） | ✅ **通過**（順序缺陷已修並經 Opus 複驗，2026-08-18） |
-| T-11~T-17 | Phase 1 其餘任務（已細化） | ⬜ **T-11／T-12 現在可並行開工** |
+| T-11 | 幾何估計（metric depth → 房間尺寸） | 🔴 **卡關**：評測關卡未通過，等 Fable 決策 |
+| T-12 | 材質模組（逐表面材質） | 🔵 **待驗證**：程式與自檢完成，**等使用者試聽** |
+| T-13~T-17 | Phase 1 其餘任務（已細化） | ⛔ T-13 暫不開工（等 T-11 定案） |
 
 逐卡的詳細交接筆記在 [TASKS.md](TASKS.md) 每張卡的「交接筆記」欄，本檔不重複。
 
@@ -147,6 +157,10 @@ source .venv/bin/activate          # 跑任何 python 前都要先做這件事
 | `python scripts/convolve.py <dry> <ir> <out> [--mix 0.5]` | 離線卷積，輸出 -1dBFS |
 | `python scripts/test_depth.py` | 深度估計批次處理 `assets/photos/` |
 | `python scripts/test_segmentation.py` | 語意分割批次處理 `assets/photos/` |
+| `python scripts/test_preprocess.py` | T-10 前處理迴歸測試（合成資料，任何 clone 可跑） |
+| `python scripts/gen_ir_manual.py small --materials floor=carpet,walls=gypsum_board` | **T-12 逐表面材質**生成 IR |
+| `python -m src.image_reverb <photo> --geometry --materials-detect` | T-11 幾何＋T-12 材質完整分析 |
+| `python -m src.image_reverb <photo> --override-dims 4x3x2.5` | 手動指定房間尺寸（F-09，不跑深度模型） |
 
 環境：Python 3.9.6 / torch 2.8.0（MPS 可用）/ pyroomacoustics 0.10.1 / numpy 2.0.2。
 
@@ -165,8 +179,20 @@ done
 ```
 
 聽感基準（2026-08-16 使用者實聽）：`marble` ✅ 自然、`default` ✅ 自然、
-**`carpet` ❌「像用手拍鐵筒子」** ← 這是地雷第 9 條的模型缺陷，T-12 修好後應該要消失。
-**修好 T-12 之後請重跑這組並再請使用者聽一次，確認鐵筒子聲不見了。**
+**`carpet` ❌「像用手拍鐵筒子」** ← 這是地雷第 9 條的模型缺陷。
+
+**T-12 修好後的對照組（2026-08-18 產生，等使用者試聽）：**
+
+```bash
+python scripts/gen_ir_manual.py small --materials floor=carpet,walls=gypsum_board,ceiling=gypsum_board
+python scripts/gen_ir_manual.py small --material carpet          # 舊的鐵筒子版（會印警告）
+python scripts/convolve.py assets/dry/clap_synth.wav output/ir_room_small_surf_carpet.wav \
+  output/listen_T12_surf_carpet.wav --mix 0.6
+python scripts/convolve.py assets/dry/clap_synth.wav output/ir_room_small_carpet.wav \
+  output/listen_T12_uniform_carpet.wav --mix 0.6
+```
+
+實測差異：125Hz T30 **3.952s → 0.748s**、低頻/高頻比 **48.8 倍 → 1.27 倍**。
 
 ---
 
@@ -216,6 +242,32 @@ done
    本來就不會有 letterbox）。這也是「安靜地輸出看似合理的錯誤結果」這一類（同地雷 #2 洞二、#9）。
    細節見 [TASKS.md](TASKS.md) T-10 卡「Opus 驗證結果」。
 
+12. **🔴 metric depth 模型有量程上限，超出就安靜地給錯數字。**
+   `Depth-Anything-V2-Metric-Indoor-Small` 在 9 張照片上的**最大預測距離全部落在 3.6–19.7 m**，
+   從沒超過 ~20m。體育館實際 ~150m，模型全圖最遠只說 3.61m（誤差 −98%）——
+   **任何公式都無法從 3.61m 推出 150m**，這不是參數調校問題。
+   更要緊的是：**體育館那筆的深度統計完全正常**（clamp 比例 0、百分位平順、離上限很遠），
+   只看深度輸出**無法發現它錯了 98%**。這是本專案第三次遇到「安靜地輸出看似合理的錯誤結果」
+   （前兩次是地雷 #2 洞二、#9）。
+   → 能發現的訊號在**分割**，不在深度：地板可見度 0.0%（vs 浴室 6.8%）、人群佔比、
+   以及 T-12 的 CLIP 域外判定。已實作成 `geometry.apply_scene_cue_confidence()` 三條規則。
+13. **🔴 CLIP zero-shot 的 top-1 機率不能單獨當信心指標。**
+   softmax 在**封閉候選集**上永遠加總為 1，所以模型無法表達「以上皆非」——
+   實測 SUV 車內的地板被判成 `curtain_fabric` **信心 0.760**、牆判成 `acoustic_panel` 0.489，
+   **兩者都在 0.4 門檻之上，完全不觸發任何警示**。
+   調高門檻無效：要 0.8 才擋得住車內，但那會連 corridor 天花板（0.599，判對的）一起擋掉。
+   → 解法是在候選集**加入域外選項**（`__vehicle_interior`、`__outdoor_scene` 等），
+   讓 softmax 有地方投「以上皆非」。修正後車內判為 `__vehicle_interior` 0.735 ＋明確警示。
+   **任何未來要加 zero-shot 分類的地方都要記得這件事。**
+14. **⚠️ Sabine 公式與實測 IR 在低頻差 2 倍以上（T-13 必讀）。**
+   實測：逐表面 floor=carpet 的 125Hz，Sabine 算 0.348s、**實際量測 IR 是 0.748s**；
+   六面全 gypsum 的 125Hz，Sabine 0.282s、實測 **0.772s**。
+   但 500Hz 幾乎完全吻合（1.638 vs 1.634），全 carpet 的 125Hz 也吻合（4.093 vs 3.952）。
+   用「六面均勻」當對照組確認**與逐表面改動無關**，是 α 高（0.29）時模擬 IR 與 Sabine
+   的系統性偏差（小房間低頻非擴散場）。
+   → **T-13 若只輸出 Sabine 數字，會與使用者實際聽到的差 2 倍以上**，
+   又是「數字合理但東西是錯的」。建議以量測 IR 為準，或兩者並列。
+
 ### ⚠️ 數值驗證抓不到的錯誤
 
 地雷第 9 條是這一輪最值得記住的教訓：那個錯誤的 RT60（4.023 s）**通過了 WORKFLOW §5 的全部三層檢查**
@@ -240,7 +292,9 @@ done
 【結束舊視窗】
   貼：「執行 WORKFLOW.md 第 4 節收工程序」
 
-【開新視窗 — 做 Phase 1 任務，下一張是 T-10】（模型選 Sonnet）
+【現在該做的：先試聽 T-12 的檔案，再開 Fable 視窗決策 T-11】
+
+【開新視窗 — 做 Phase 1 任務】（模型選 Sonnet）
   貼：「執行 TASKS.md 的任務 T-XX。先讀 CLAUDE.md 和該任務卡的全部內容再動工，
       完成後執行任務卡裡的自我檢查，最後照 WORKFLOW.md 第 4 節做收工程序。」
 

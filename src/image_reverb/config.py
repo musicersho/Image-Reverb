@@ -41,3 +41,57 @@ PERSPECTIVE_VIEWS = [
     {"name": "el+45", "azimuth_deg": 0, "elevation_deg": 45},
     {"name": "el-45", "azimuth_deg": 0, "elevation_deg": -45},
 ]
+
+# ------------------------------------------------------------
+# T-11 幾何估計（metric depth → 房間尺寸）
+#
+# 用 metric depth 模型（輸出單位是公尺），不是相對深度：
+# T-05 實測已否定相對深度路線（同一張圖各自正規化的 disparity 與實際空間大小
+# 沒有單調關係，車內 91.5x vs 體育館 11.7x）。**禁止退回相對深度模型。**
+# ------------------------------------------------------------
+METRIC_DEPTH_MODEL_ID = "depth-anything/Depth-Anything-V2-Metric-Indoor-Small-hf"
+
+# 相機水平視角（度）。EXIF 讀得到焦距就換算，讀不到才用這個預設值。
+DEFAULT_HFOV_DEG = 60.0
+
+# 深度防呆（沿用 T-05 REPORT §7.3）：窗外/天空/消失點會給出荒謬的遠距離，
+# 直接參與統計會把房間尺寸整個拉爆，所以先 clamp 再取 robust 統計。
+DEPTH_CLAMP_MIN_M = 0.3   # 比這更近的視為雜訊（鏡頭前的手指等）
+DEPTH_CLAMP_MAX_M = 50.0  # 比這更遠的視為「室內量不到」（窗外/天空/走廊消失點）
+DEPTH_PERCENTILES = (5, 50, 95)  # robust 統計用的百分位
+
+# 尺度校驗（不是主路線，只用來標低信心）：門高約 2.0m
+DOOR_HEIGHT_M = 2.0
+SCALE_CHECK_WARN_RATIO = 0.5  # metric 深度與門高反推的尺度偏差超過 ±50% 就標 confidence: low
+
+# 評測關卡（T-11 卡的通過條件）：一般室內誤差門檻。
+# ⚠️ 這個數字是 T-08 決策定的驗收判準，**不准為了讓測試通過而放寬**。
+GEOMETRY_ERROR_TOLERANCE = 0.30  # ±30%
+
+# 房間高度的合理範圍（metric 深度估不到天花板時的 fallback 上下限）
+ROOM_HEIGHT_MIN_M = 2.0
+ROOM_HEIGHT_MAX_M = 20.0
+
+GEOMETRY_OUTPUT_DIR = PROJECT_ROOT / "output" / "geometry"
+
+# ------------------------------------------------------------
+# T-12 材質模組
+# ------------------------------------------------------------
+MATERIALS_PATH = PROJECT_ROOT / "data" / "materials.json"
+
+# 未指定的面用這個材質，**不是**複製地板材質（真實房間的牆不會跟地板同材質）
+DEFAULT_WALL_MATERIAL = "gypsum_board"
+
+# 二階材質分類：ADE20K 只給幾何角色，材質標籤交給 CLIP zero-shot
+# （T-06 實證：滿鋪地毯只有 29.6% 被判成 rug、70.4% 判成 floor，
+#   所以 floor/wall 的類別語意不採信）
+SEGMENTATION_MODEL_ID = "nvidia/segformer-b4-finetuned-ade-512-512"
+CLIP_MODEL_ID = "openai/clip-vit-base-patch32"
+
+# 信心 gating：top-1 機率低於此值就 fallback generic_wall 並記 warnings
+CLIP_CONFIDENCE_THRESHOLD = 0.4
+
+# 表面區域太小就不送去分類（像素佔比），避免拿一小撮雜點決定整面牆的材質
+MIN_SURFACE_AREA_RATIO = 0.01
+
+SURFACES_OUTPUT_DIR = PROJECT_ROOT / "output" / "surfaces"
