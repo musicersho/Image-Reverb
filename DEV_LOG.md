@@ -1,5 +1,16 @@
 # Dev Log
 
+## 2026-08-25 (15)
+
+- ✅ **T-12 Opus 驗證通過。** 決定性檢查：(1) 直接讀 `pra.ShoeBox` 房間物件內部，
+  六面牆各自持有正確 α（floor 0.02 vs 牆 0.29 @125Hz），per-wall 不是只有 print；
+  (2) Opus 獨立實作頻段 T30 量測，全 carpet 低/高頻比 **49.0 倍** vs 逐表面 **1.1 倍**，
+  鐵筒子頻譜特徵確實消失；(3) corridor carpet 信心 0.9632 重跑可重現，非 hardcode。
+- 三個不阻擋附註記在 T-12 卡：fc688cd 混了兩張卡一個 commit（下不為例）；
+  交接筆記「wall_names 實際取得」與程式不符（實為 hardcode tuple，已驗證一致無害）；
+  步驟 6a 量測值 0.748s vs Sabine 0.35s 的落差**已明確交 T-13，不得再往後傳**。
+- 現況：T-12 ✅。瓶頸仍是 **T-11 等 Fable 決策**（metric depth 量程問題）。
+
 ## 2026-08-18 (14)
 
 - 🎧 **使用者試聽通過：「鐵筒子」缺陷正式結案。** 使用者實聽 `listen_T12_surf_carpet`

@@ -620,9 +620,9 @@
     尺寸來源未定案就往下做會白做。
 
 ### T-12 材質模組（表面分割 + 二階材質分類 → 逐表面吸音係數）
-- **狀態**：🔵 **待 Opus 驗證（Sonnet，2026-08-18）** — 程式與自檢**全部完成**，
-  含步驟 6b 的使用者試聽關卡：**使用者 2026-08-18 實聽確認「沒問題」** →
-  地雷第 9 條的「鐵筒子」缺陷正式結案。剩下的只有 Opus 依 WORKFLOW §5 的驗證。
+- **狀態**：✅ 通過（Opus 驗證 2026-08-25）— per-wall 材質實測進到 pyroomacoustics 房間物件內部、
+  獨立量測 T30 證實鐵筒子頻譜特徵消失（低/高頻比 49.0→1.1 倍）、CLIP 信心值可重現非 hardcode。
+  詳見下方「Opus 驗證結果（2026-08-25）」。
 - **前置**：T-10（可與 T-11 並行）
 - **對應 SPEC**：F-03、§6、F-09（材質覆寫）
 - **產出**：`src/image_reverb/materials.py`（材質表模組）、`src/image_reverb/surfaces.py`
@@ -718,6 +718,34 @@
     這一輪的量化改善（125Hz T30 3.952s→0.748s、低/高頻比 48.8→1.27 倍）**與聽感一致**。
   - 判準本身**沒有被改寬鬆**：`CLIP_CONFIDENCE_THRESHOLD` 仍是 0.4，
     域外候選是**新增**的判定路徑，不是放寬既有門檻。
+
+- **Opus 驗證結果（2026-08-25）：✅ 通過**
+
+  | 檢查項 | 方法 | 結果 |
+  |---|---|---|
+  | 逐表面 API：floor=carpet＋石膏板 | 乾淨重跑 `--materials floor=carpet,walls=gypsum_board` | ✅ 125Hz Sabine **0.348s**、每面 α 獨立印出（floor 0.020 vs 牆 0.290） |
+  | 全 carpet 對照組仍 4.09s＋警告 | 乾淨重跑 `--material carpet` | ✅ **4.093s**、不現實模型警告有印 |
+  | **紅旗：per-wall 是否真的進 pra** | 直接檢查 `pra.ShoeBox` 房間物件的 `room.walls[i].absorption` | ✅ 六面內部各自持有正確係數，**不是只有 print 好看** |
+  | 鐵筒子頻譜特徵是否真的消失 | **Opus 獨立實作** Butterworth 頻段濾波＋Schroeder 積分量 T30 | ✅ 全 carpet 低/高頻比 **49.0 倍** vs 逐表面 **1.1 倍**（宣稱 48.8/1.27，方法差在容差內）——per-wall 生效無法造假 |
+  | corridor 地板判 carpet（修 T-06） | 重跑 `--materials-detect`，讀 surfaces.json | ✅ **carpet 信心 0.9632**，與宣稱 0.963 一致（真跑模型，非 hardcode） |
+  | 車內域外警示 | 重跑 `--materials-detect` | ✅ wall → `vehicle_interior` 0.74 → out_of_domain＋「判定不可信請覆寫」明確警示 |
+  | 試聽檔存在且非靜音 | check_audio 4 個 listen_T12_* | ✅ RMS 0.015–0.033、峰值 -1dBFS 無爆音；使用者 2026-08-18 已實聽確認 |
+  | 錯誤處理 | 損毀 JSON／不存在材質 id／打錯面名／互斥參數／空 spec | ✅ 五種全是清楚中文訊息＋exit 2，無 traceback |
+  | T-01 迴歸 | 不帶材質參數重跑 small | ✅ RT60 0.220s（歷史值 0.219s），行為未變 |
+  | 是否偷改判準 | 讀 config.py diff | ✅ 門檻 0.4 未放寬；域外候選是新增路徑非放寬 |
+  | 範圍 | `git show --stat` | ✅ 未動 SPEC/ROADMAP/WORKFLOW |
+
+  **不阻擋的三個附註**：
+  1. **commit fc688cd 把 T-11 與 T-12 混在同一個 commit**，違反 WORKFLOW §4
+     「一個任務至少一個獨立 commit」。已推送不追改，但下次兩卡並行也要分開 commit。
+  2. 交接筆記寫「key 依 `pra.ShoeBox.wall_names` 實際取得」**與程式不符**——
+     實際是 `materials.py` 頂部 hardcode 的 `SURFACE_NAMES` tuple。本輪已實測該 tuple
+     與 pra 內部牆名一致所以無害，但若 pra 升版改名會靜默失效，T-14 用到時可加一行 assert。
+  3. 步驟 6a 的「量測 125Hz ≈ 0.35s」嚴格說**量測值是 0.748s 未達**（0.35s 是 Sabine 值）。
+     不退回的理由：卡片的 0.35s 目標本身就是 Phase 0 的 Sabine 計算值（Sabine 對 Sabine 吻合）；
+     Sonnet 用六面均勻對照組誠實證明落差是 pra-vs-Sabine 系統性偏差、與 per-wall 改動無關；
+     缺陷的真正特徵（病態低頻傾斜 49 倍）經獨立量測確認消失；且必要通過條件（使用者試聽）已過。
+     **此落差已交 T-13 處理，T-13 驗證時要盯著它，不得再往後傳。**
 
 ### T-13 聲學參數計算（Sabine/Eyring → 逐頻段 RT60、pre-delay）
 - **狀態**：⬜ 未開始
