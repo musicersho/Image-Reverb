@@ -840,9 +840,7 @@
      **此落差已交 T-13 處理，T-13 驗證時要盯著它，不得再往後傳。**
 
 ### T-13 聲學參數計算（Sabine/Eyring → 逐頻段 RT60、pre-delay）
-- **狀態**：⬜ 未開始（**已解除封鎖**——Fable 2026-08-25 定案 T-11 路線，尺寸來源確定為
-  「範圍內自動／範圍外手動／環景」三種，統一輸出 `dims + dims_source + confidence`。
-  本卡動 `acoustics.py`，與 T-11 決策補丁（動 `config.py`/`geometry.py`）**可並行**）
+- **狀態**：🔵 待驗證（Sonnet 完成，2026-08-26；自檢全部通過，等 Opus 審）
 - **前置**：T-11（路線決策已定案；決策補丁可與本卡並行）、T-12 ✅
 - **對應 SPEC**：F-04
 - **產出**：`src/image_reverb/acoustics.py`
@@ -881,6 +879,35 @@
   「顯示用摘要值」裡的）；空氣吸收對大空間高頻確實有效果（開/關比較）；迴歸數字不是 hardcode
   （改輸入尺寸後數字要跟著變）
 - **交接筆記**：
+  - 新增 `src/image_reverb/acoustics.py`：`compute_acoustics(estimate, surfaces, materials_data)`
+    吃 T-11 的 `RoomEstimate` ＋ T-12 的 `SurfaceMaterials`，回傳 `AcousticsResult`
+    （`.as_dict()` 輸出 `dims`/`dims_source`/`volume_m3`/`surfaces`/`band_center_freqs_hz`/
+    `rt60_bands_sabine`/`rt60_bands_eyring`/`rt60_mid_sabine`/`rt60_mid_eyring`/
+    `rt60_source`/`rt60_disclaimer`/`predelay_ms`/`confidence`/`warnings`）。
+  - **RT60 逐頻段計算**：對每個頻段獨立算 `Σ(表面積ᵢ×αᵢ(該頻段))`，Sabine
+    `RT60=0.161V/(ΣSᵢαᵢ+4mV)`、Eyring `RT60=0.161V/(-S·ln(1-ā)+4mV)`（ā=ΣSᵢαᵢ/S，
+    這是 Eyring 公式本身定義的**同頻段跨表面**面積加權平均，不是約束 B 禁止的
+    **跨頻段** α 平均——兩者是不同的軸）。全程式無 `mean()` 進 RT60 路徑
+    （`grep -n "mean" src/image_reverb/acoustics.py` 零命中）。
+  - **空氣吸收（4mV 修正）**：直接查 `pyroomacoustics.Physics(20°C,50%RH).get_air_absorption()`
+    的表，與 T-01/T-14 實際跑模擬用的是同一份資料來源，避免公式估計值與模擬結果因
+    查表來源不同而互相矛盾。新增 `config.AIR_TEMPERATURE_C`/`AIR_HUMIDITY_PCT`。
+  - **地雷第 14 條落地**：Sabine 與 Eyring 兩組並列輸出（不是單一「正確答案」），
+    `rt60_source: "formula"` ＋ `rt60_disclaimer` 固定字串在 JSON 裡明講「不是量測值，
+    最終聽感以 T-14 的 IR 實測 T30 為準」。
+  - **pre-delay**：沒有真正的聲源/麥克風位置資訊，用房間尺寸的固定比例
+    （`config.PREDELAY_SOURCE_POS_FRAC`/`_MIC_POS_FRAC`）推算直達距離，音速用同一組
+    溫濕度換算（`pra.Physics.get_sound_speed()`），與空氣吸收同源。
+  - 新增 `scripts/test_acoustics.py`：純公式回歸測試（不依賴模型/素材），覆蓋
+    task 卡步驟 5a/5b 的六個數字（全 carpet 125/1k/4kHz、floor=carpet+石膏板
+    125/1k/4kHz，全部 ±10% 內通過）、輸出 shape 檢查、Eyring vs Sabine 高低 α 行為、
+    換尺寸數字會變（非 hardcode）。`python scripts/test_acoustics.py` 全部通過。
+  - **與 T-11 的介接**：`RoomEstimate.dims_source` 直接透傳（值是 `metric_depth`/
+    `manual`/`equirect_multiview`，不是本卡文字描述裡寫的 `auto/manual/panorama`——
+    那只是中文敘述，實際欄位值遵照「上游透傳、不重新命名」的原則，與 T-11 保持一致）。
+  - 未動 `cli.py`——CLI 整合是 T-15 的範圍，本卡刻意不擴大範圍。
+  - 已知限制（非本卡要解決，記錄給下游）：pre-delay 的聲源/麥克風位置是假設值
+    （房間尺寸固定比例），不是真實錄音位置；等未來有更好的資訊來源再改。
 
 ### T-14 IR 合成引擎 v1（image-source 早期 + shaped-noise 晚期）
 - **狀態**：⬜ 未開始

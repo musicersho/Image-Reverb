@@ -107,3 +107,18 @@ CLIP_CONFIDENCE_THRESHOLD = 0.4
 MIN_SURFACE_AREA_RATIO = 0.01
 
 SURFACES_OUTPUT_DIR = PROJECT_ROOT / "output" / "surfaces"
+
+# ------------------------------------------------------------
+# T-13 聲學參數計算
+# ------------------------------------------------------------
+# 空氣溫濕度假設（20°C/50%RH，與 T-01 `gen_ir_manual.py` 的模擬設定一致）：
+# 用來查 pyroomacoustics 內建的空氣吸收表（Sabine 4mV 修正項）與換算音速。
+AIR_TEMPERATURE_C = 20.0
+AIR_HUMIDITY_PCT = 50.0
+
+# pre-delay 假設：沒有真正的聲源/麥克風位置資訊，用房間尺寸的固定比例
+# （進深, 寬度, 高度）推算，避免退化成同一點或貼牆角的直達距離。
+PREDELAY_SOURCE_POS_FRAC = (0.25, 0.33, 0.6)
+PREDELAY_MIC_POS_FRAC = (0.75, 0.67, 0.5)
+
+ACOUSTICS_OUTPUT_DIR = PROJECT_ROOT / "output" / "acoustics"

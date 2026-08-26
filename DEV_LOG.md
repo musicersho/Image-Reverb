@@ -1,5 +1,19 @@
 # Dev Log
 
+## 2026-08-26 (18)
+
+- 🔵 **T-13 聲學參數計算完成（Sonnet），待 Opus 驗證。** 新增 `src/image_reverb/acoustics.py`：
+  吃 T-11 的 `RoomEstimate` ＋ T-12 的 `SurfaceMaterials` → 逐頻段 Sabine/Eyring RT60、
+  pre-delay。約束 B（逐頻段獨立算，禁止平均 α）落地：`grep -n "mean"` 零命中；
+  地雷第 14 條落地：`rt60_source: "formula"` ＋ `rt60_disclaimer` 明講公式值不等於實測。
+- 空氣吸收（Sabine 4mV 修正）直接查 `pyroomacoustics.Physics` 內建表（20°C/50%RH），
+  與 T-01/T-14 模擬用同一份資料源，避免公式與模擬互相矛盾。
+- 新增 `scripts/test_acoustics.py` 純公式回歸測試：task 卡步驟 5a/5b 六個數字全部
+  ±10% 內通過（125/1k/4kHz，全 carpet 與 floor=carpet+石膏板兩組）；Eyring 高 α 較短、
+  低 α 趨近 Sabine；換房間尺寸數字會變（非 hardcode）。未動 `cli.py`（CLI 整合是 T-15）。
+- 下一步：Opus 驗證 T-13。T-11 決策補丁仍卡在步驟 9（Steinman 對照組），與本卡無關、
+  可獨立驗證。
+
 ## 2026-08-26 (17)
 
 - 🔴 **T-11 決策補丁執行（Sonnet）——步驟 7–8 完成，步驟 9 自檢卡關。**
