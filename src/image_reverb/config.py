@@ -72,6 +72,18 @@ GEOMETRY_ERROR_TOLERANCE = 0.30  # ±30%
 ROOM_HEIGHT_MIN_M = 2.0
 ROOM_HEIGHT_MAX_M = 20.0
 
+# 自動幾何（metric depth）的適用範圍上限（T-11 決策補丁，Fable 2026-08-25 定案）。
+#
+# 10m 這個數字的理由（不是拍腦袋）：模型實證天花板 ~20m（9 張照片最大預測距離
+# 落在 3.6–19.7m），且量程壓縮在天花板之前就開始（走廊實際 30m 被壓成 12.8m）
+# ——估值一旦超過這個門檻，就無法區分「真的 10–20m」與「被壓縮的 30m+」，
+# 這個區間的數字不可信。另外 ±30% 判準（GEOMETRY_ERROR_TOLERANCE）目前只在 3m
+# 級空間有 ground truth 驗證過（浴室 +24%）。10m = 天花板的一半，保守取值。
+#
+# 範圍外不是失敗，是正式行為分支：confidence 降為 low ＋警示，出口是
+# --override-dims（F-09）或改用 360° 環景輸入。詳見 TASKS.md T-11 卡「Fable 路線決策」。
+GEOMETRY_SCOPE_MAX_M = 10.0
+
 GEOMETRY_OUTPUT_DIR = PROJECT_ROOT / "output" / "geometry"
 
 # ------------------------------------------------------------

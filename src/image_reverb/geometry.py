@@ -212,6 +212,50 @@ def apply_scene_cue_confidence(estimate: RoomEstimate, cues: dict[str, float]) -
     return estimate
 
 
+def apply_scope_confidence(estimate: RoomEstimate) -> RoomEstimate:
+    """量程規則（T-11 決策補丁步驟 7，Fable 2026-08-25 定案）。
+
+    **為什麼需要這一層**：metric depth 模型量程實證天花板約 20m，且量程壓縮在
+    天花板之前就開始（走廊實際 30m 被壓成 12.8m）——估值一旦超過
+    `config.GEOMETRY_SCOPE_MAX_M`，就無法區分「真的 10–20m」與「被壓縮的 30m+」，
+    這個區間的數字不可信。範圍外不是失敗，是正式行為分支：`confidence: low` ＋
+    可操作警示，出口是 `--override-dims`（F-09）或改用環景輸入。
+
+    判定對象：
+    - 透視照（`dims_source == "metric_depth"`）：**任一維**（長/寬/高）超過門檻；
+    - 環景（`dims_source == "equirect_multiview"`）：**單面牆距**超過門檻——
+      不是相加後的總長，因為對牆相加會讓有效上限拉高到約 40m，用相加值判斷
+      會漏掉真正超量程的單面牆。
+
+    與既有三條場景線索規則（`apply_scene_cue_confidence`）並存：兩者都只會把
+    confidence 往下修（不會把 low 改回 medium/high），先跑哪個都一樣，取最嚴。
+    """
+    max_m = config.GEOMETRY_SCOPE_MAX_M
+    over: dict[str, float] = {}
+
+    if estimate.dims_source == "equirect_multiview":
+        wall_distances = estimate.depth_stats.get("wall_distances_m", {})
+        over = {k: v for k, v in wall_distances.items() if v is not None and v > max_m}
+    elif estimate.dims_source == "metric_depth":
+        dims = {
+            "length_m": estimate.length_m,
+            "width_m": estimate.width_m,
+            "height_m": estimate.height_m,
+        }
+        over = {k: v for k, v in dims.items() if v > max_m}
+
+    if over:
+        estimate.confidence = "low"
+        detail = "、".join(f"{k}={v:.1f}m" for k, v in over.items())
+        estimate.notes.append(
+            f"超出已驗證量程（適用範圍 ≤{max_m:.0f}m；{detail}）——metric depth 模型實證"
+            f"天花板約 20m，且量程壓縮在天花板之前就開始（走廊實際 30m 被壓成 12.8m），"
+            f"超過此門檻的估值無法區分「真的 10–20m」與「被壓縮的 30m+」，數字不可信 → "
+            f"confidence: low。建議用 --override-dims 指定實際尺寸，或改用 360° 環景照片輸入。"
+        )
+    return estimate
+
+
 def estimate_from_perspective(
     img: Image.Image, depth_pipe, hfov_deg: float | None = None
 ) -> RoomEstimate:
@@ -447,6 +491,7 @@ def estimate_room(
         img = Image.open(preprocess_summary["cropped"]).convert("RGB")
         est = estimate_from_perspective(img, depth_pipe)
 
+    est = apply_scope_confidence(est)
     if scene_cues:
         est = apply_scene_cue_confidence(est, scene_cues)
     return est

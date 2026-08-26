@@ -1,5 +1,20 @@
 # Dev Log
 
+## 2026-08-26 (17)
+
+- 🔴 **T-11 決策補丁執行（Sonnet）——步驟 7–8 完成，步驟 9 自檢卡關。**
+  `config.py` 加 `GEOMETRY_SCOPE_MAX_M = 10.0`；`geometry.py` 加
+  `apply_scope_confidence()`（透視照任一維、環景單面牆距 >10m → confidence 降 low），
+  與既有三條場景線索規則並存取最嚴。`GEOMETRY_ERROR_TOLERANCE`／`CLIP_CONFIDENCE_THRESHOLD`
+  未動。重跑全部 9 張照片＋Steinman：**A' 通過（浴室 +24%）、B' 通過（走廊/車內/體育館
+  全部翻/維持 low，走廊靠量程規則非 hardcode）**。
+- ⚠️ **對照組防濫殺卡關**：浴室維持 medium ✅，但 **Steinman 翻成 low**（決策文字寫
+  「單面牆距未超標」用的是總長÷2 粗估，實際六視角原始牆距 12.2/10.4/5.25/11.1m，
+  三個超過 10m，相機明顯偏心）。未調整規則讓它通過——如實記錄。細節在
+  `output/geometry/REPORT.md` §8.4、TASKS.md T-11 卡交接筆記。
+- 下一步：待 Fable 決定 (a) 接受 Steinman low 或 (b) 調整環景量程判定基準，
+  才能把 T-11 狀態改回 🔵 待 Opus 驗證。T-13（可並行）不受影響。
+
 ## 2026-08-25 (16)
 
 - 🔮 **Fable 定案 T-11 路線：b 為主幹＋c 為正式出口＋d 保留；a 延後；e 拒絕。**
