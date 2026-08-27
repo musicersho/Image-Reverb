@@ -1,5 +1,25 @@
 # Dev Log
 
+## 2026-08-27 (26)
+
+- 🔵 **T-20（文字場景→IR）與 T-21（複合場景引擎 v1）完成（Fable 執行），皆待 Opus 驗證
+  ＋使用者試聽。** T-20：13 個 preset＋關鍵字/顯式參數解析（`scene_text.py`），
+  迴歸 13 項全過；T-21：8 種構造 TL 表＋路徑串接引擎（`coupled.py`，支援 `tl_times`
+  與 `via_room`），迴歸 12 項全過（牆 vs 開口高/低頻比差 20.7dB、線性疊加誤差 3.9e-16、
+  延遲 50ms 實測 50.0ms、bit-identical）。
+- **T-20 執行中修了一個 preset 物理錯誤**：浴室六面全磁磚 Sabine mid 算出 3.65s
+  （真實 ~0.5-1s）——浴簾/毛巾/門才是主要吸音體，一面牆改 curtain_fabric 後 0.46s。
+  原則入卡：preset 要把家具吸音近似進表面選擇。13 preset 的 RT60 掃描：
+  浴室 0.46｜一般房間 1.33｜臥室 0.56｜客廳 0.64｜走廊 2.48｜樓梯間 4.85｜教室 0.49｜
+  辦公室 0.41｜音樂廳 1.53｜教堂 8.06｜體育館 7.68｜巨蛋 7.78｜洞窟 7.36（mid, 秒）。
+- **示範場景**（使用者兩個實際案例）：`stadium_corridor`（巨蛋演唱會→通道走廊，
+  開口+穿牆兩路徑，IR 21s）、`neighbor_voices`（隔壁講話，隔間牆/窗-戶外-窗/
+  門-走廊-門三路徑，IR 6.3s）。輸出 JSON 皆標 `method: path_cascade_v1`＋近似聲明。
+- 待使用者試聽 4 個檔：`listen_text_bathroom`／`listen_text_church`／
+  `listen_coupled_stadium_corridor`／`listen_coupled_neighbor_voices`。
+- 下一步：使用者試聽 → Opus 驗證順序 **T-14 → T-20 → T-21**（T-20/T-21 建立在
+  T-14 引擎上，先驗地基）。之後回 T-15（CLI 整合，含 `--text`/`--scene` 入口）。
+
 ## 2026-08-27 (25)
 
 - 🔮 **Fable 規劃 Phase 1.5（使用者需求新增）：F-16 文字場景輸入、F-17 複合場景。**
