@@ -3,7 +3,7 @@
 > 最後更新：2026-08-27（Fable 執行 T-14 視窗）｜對應 commit：見 `git log --oneline -1`
 > **新視窗請先讀 [CLAUDE.md](CLAUDE.md) 知道自己的角色，再讀本檔知道現在的狀況。**
 >
-> 驗證本檔是否過期：看 [DEV_LOG.md](DEV_LOG.md) 最上面一筆是不是 `2026-08-27 (23)`；
+> 驗證本檔是否過期：看 [DEV_LOG.md](DEV_LOG.md) 最上面一筆是不是 `2026-08-27 (24)`；
 > 若已有更新的紀錄，以 DEV_LOG 為準。
 
 ---
@@ -13,8 +13,9 @@
 **Phase 0 已結案，現在是 Phase 1。**
 **T-10 ✅｜T-11 ✅｜T-12 ✅｜T-13 ✅｜T-14 🔵 待驗證（Fable 執行完成 2026-08-27）。**
 
-🎯 **現在該做的：(1) 使用者試聽 3 個 `output/listen_T14_*` 檔（跑
-`python scripts/gen_t14_listen.py` 可重生）；(2) 開 Opus 視窗驗證 T-14（Prompt 在 §7）。**
+🎯 **現在該做的：開 Opus 視窗驗證 T-14（Prompt 在 §7）。**
+使用者已於 2026-08-27 實聽三個 `listen_T14_*` 檔，回饋「**目前聽起來 OK**」
+（試聽條件達成；檔案不在時跑 `python scripts/gen_t14_listen.py` 可重生）。
 
 ⚠️ **T-14 有一個執行中 Fable 裁決要知道**：閉環驗收原判準「量測 T30 對 Sabine 目標
 <20%」在陡峭頻段階梯下物理上不可達（pra ground truth 自己就 +115%——就是地雷 #14），
@@ -39,20 +40,13 @@
 
 ---
 
-## 0. 【現在該做的事】使用者試聽 T-14 → 開 Opus 視窗驗證
+## 0. 【現在該做的事】開 Opus 視窗驗證 T-14
 
-**第一步（使用者，2 分鐘）**：試聽下面 3 個檔案（`output/` 不進 git，
-檔案不在就先跑 `source .venv/bin/activate && python scripts/gen_t14_listen.py`）：
+✅ 使用者已試聽（2026-08-27）：`listen_T14_small_carpet` / `listen_T14_hall` /
+`listen_T14_hall_T01baseline` 三檔「**目前聽起來 OK**」——已記入 T-14 卡交接筆記。
+（`output/` 不進 git，重生指令：`source .venv/bin/activate && python scripts/gen_t14_listen.py`）
 
-```
-afplay output/listen_T14_small_carpet.wav      # 地毯小房間：短殘響、不能有鐵筒子聲
-afplay output/listen_T14_hall.wav              # 音樂廳：長殘響（新引擎）
-afplay output/listen_T14_hall_T01baseline.wav  # T-01 純 image-source 對照（新引擎不得明顯劣化）
-```
-
-基準線是 T-02 的「還算自然」。**把聽感回饋告訴任何一個視窗，記進 T-14 卡交接筆記。**
-
-**第二步：開 Opus 視窗驗證 T-14**（Prompt 在 §7）。
+**下一步：開 Opus 視窗驗證 T-14**（Prompt 在 §7）。
 
 > **給 Opus 的重點提醒**：
 > 1. T-14 有一個**執行中 Fable 裁決**（閉環驗收改兩層，證據在 TASKS.md T-14 卡）——
