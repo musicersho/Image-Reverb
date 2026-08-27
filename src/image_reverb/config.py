@@ -122,3 +122,38 @@ PREDELAY_SOURCE_POS_FRAC = (0.25, 0.33, 0.6)
 PREDELAY_MIC_POS_FRAC = (0.75, 0.67, 0.5)
 
 ACOUSTICS_OUTPUT_DIR = PROJECT_ROOT / "output" / "acoustics"
+
+# ------------------------------------------------------------
+# T-14 IR 合成引擎 v1（image-source 早期 + shaped-noise 晚期）
+# ------------------------------------------------------------
+IR_SAMPLE_RATE = 48000  # 與 T-01/T-02 的輸出規格一致
+IR_TARGET_PEAK_DBFS = -3.0
+
+# 晚期殘響目標值用哪一組公式（Fable 2026-08-27 定案，理由見 TASKS.md T-14 卡）：
+# "sabine"：專案全部迴歸錨點都是 Sabine 值，且地雷 #14 實證 α 高時實測 IR 比
+# Sabine 更長，Eyring 更短只會把落差拉更大。可切 "eyring" 做比較實驗。
+IR_RT60_BASIS = "sabine"
+
+# 早期反射（image-source）涵蓋長度與早期→晚期的 crossfade 長度
+IR_EARLY_MS = 90.0       # 卡片指定 ~80–100ms 之間
+IR_CROSSFADE_MS = 20.0   # raised-cosine 交接窗
+IR_ENERGY_MATCH_MS = 30.0  # 交接點前用來量早期能量的視窗（逐頻段能量匹配用）。
+# 30ms 的理由：大空間的早期反射稀疏（5ms 窗的 RMS 起伏可達 ±12dB），
+# 視窗太短會抓到空隙或反射簇的極端值；30ms 平均後 hall 的交接位準
+# 與反射簇位準一致（實測 -26dB vs -26.8dB）。早期與晚期用同一視窗量，
+# 視窗內的衰減偏差兩邊近似抵銷。
+
+# IR 總長 ≥ max(目標頻段 RT60) × 此係數（T-03 的坑：截尾會讓 RT60 量測失真）
+IR_TAIL_LENGTH_FACTOR = 1.25  # 卡片要求 ≥1.2，取 1.25 留餘裕
+
+IR_SCATTERING = 0.1        # 與 gen_ir_manual.py 的 preset 一致
+IR_MAX_IMAGE_ORDER = 20    # image-source 階數上限（防大空間組合爆炸）
+
+# 晚期 shaped-noise 的固定亂數種子：讓乾淨重跑 bit-identical，Opus 反造假可直接比 MD5
+IR_NOISE_SEED = 20260827
+
+# 量測 T30 的合理區間（WORKFLOW §5 第二層；T-13 Opus 建議 2：超出要警示，不得安靜通過）
+RT60_PLAUSIBLE_MIN_S = 0.1
+RT60_PLAUSIBLE_MAX_S = 12.0
+
+IR_SYNTH_OUTPUT_DIR = PROJECT_ROOT / "output" / "ir_synth"

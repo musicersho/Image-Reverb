@@ -1050,7 +1050,8 @@
      「上游透傳、不重新命名」才是對的），且已在交接筆記主動揭露，不算偏離規格。
 
 ### T-14 IR 合成引擎 v1（image-source 早期 + shaped-noise 晚期）
-- **狀態**：⬜ 可開工（Fable 2026-08-27 依 T-11/T-12/T-13 實際產出調整完畢）
+- **狀態**：🔵 待驗證（Fable 執行，2026-08-27）— 閉環迴歸測試 11 項全過；
+  **試聽檔已產生，等使用者實聽**（步驟 5 的必要條件，AI 不能代勞）
 - **前置**：T-13 ✅
 - **對應 SPEC**：F-05、§5 路線 A+B
 - **產出**：`src/image_reverb/ir_synth.py`（合成）、`src/image_reverb/ir_metrics.py`
@@ -1086,17 +1087,71 @@
   5. 產生試聽檔：clap＋（若 `assets/dry/` 有真實人聲/樂器則優先）對 small 房間（逐表面地毯版
      floor=carpet＋其餘 gypsum_board，4×3×2.5m）與 hall（30×20×12m，硬面材質）兩組，
      `convolve.py --mix 0.6`，**請使用者試聽**，以 T-02 的「還算自然」為基準線求進步
-- **自我檢查**：
-  - 逐表面地毯房 IR 的量測 T30：125Hz 對目標誤差 < 20%，且無鐵筒子聽感
-    （低頻/高頻 T30 比應在個位數倍，不是 30–50 倍的病態傾斜）
-  - hall 的 IR 與 T-01 純 image-source 版本試聽對照，不得明顯劣化
-  - IR 尾端無突然截斷（最後 10% 樣本 RMS 顯著低於整體）
-  - 閉環 JSON 存在，`rt60_bands_target` / `rt60_bands_measured` 六頻段並列且誤差表完整
-  - 使用者至少試聽一次並記錄回饋
-- **Opus 驗證重點**：晚期不是未 shaping 的白噪音直接貼上（頻譜應隨時間高頻先衰減）；
-  T30 量測程式與合成程式是獨立實作（紅旗：量測函式直接回傳輸入值）；crossfade 點無能量跳變；
-  紅旗：為了讓閉環誤差 < 20% 而把量測窗調到只量晚期尾巴（量測要對整條 IR 做）
-- **交接筆記**：
+- **🔮 Fable 執行中裁決（2026-08-27）——閉環驗收「對 Sabine 目標 <20%」在陡峭頻段階梯下
+  是物理上無法達成的判準，改為兩層閉環。證據（不是為了過關而放寬）**：
+  1. 實測發現：地毯房 125Hz 量測 T30 對 Sabine 目標 +105%。逐成分分解證實引擎沒錯
+     （125 頻段成分**單獨**量測 0.411s ≈ 目標 0.348s），偏差來自**八度頻帶量測的混頻**：
+     250Hz 頻段（目標 0.885s，2.5 倍階梯）與 125Hz 量測頻帶共享 177Hz 邊緣，
+     衰減慢的鄰帶能量以 -8dB 耦合主導量測尾段。加陡濾波器（Butterworth 3→8 階）實測無改善
+     ——共享邊緣在截止頻率兩側都是 -3dB，與階數無關。
+  2. **pra 完整物理模擬（ground truth）自己也過不了同一判準**：T-12 documented 實測
+     125Hz = 0.748s vs Sabine 0.348s（+115%）；本輪重跑 20k rays 全模擬多次落在
+     0.62–0.81s（ray tracing 非決定性，run-to-run 變異 ±20%）。連真值都 +115% 的判準，
+     只有造假（把量測窗調到只量尾巴——本卡明列的紅旗）才可能通過。
+  3. **改後的兩層閉環**（scripts/test_ir_synth.py 實作）：
+     - 機制閉環：六頻段目標**全部相同**（無階梯）時，量測對目標 ≤20% 全頻段
+       ——實測 0.5s/2.5s 兩組最大偏差 10.8%，證明濾波器組＋包絡＋crossfade＋量測整條鏈正確。
+     - 實例閉環：地毯房 125Hz 量測對 **T-12 文件化的物理模擬實測錨點 0.748s** ≤20%
+       ——實測 +1.1%（量測 vs 量測才是同類比較；錨點是固定的歷史常數，非本輪隨機模擬）。
+  4. T-17 驗收不受影響：§7-2 本來就是「生成 IR 量測 vs 真實 IR 量測」的同類比較，
+     混頻效應兩邊都在。JSON 仍誠實並列 target/measured 與 >20% 頻段的警示，不藏。
+- **自我檢查**（2026-08-27 執行結果，`python scripts/test_ir_synth.py` 可重跑）：
+  - ✅ 機制閉環（平坦目標 0.5s/2.5s）全頻段 ≤20%（最大 +10.8%）
+  - ✅ 地毯房 125Hz 量測 0.756s vs T-12 物理錨點 0.748s（+1.1%）；
+    無鐵筒子傾斜（125Hz/4kHz 比 1.89，鐵筒子缺陷時是 ~49）
+  - ✅ IR 長度 1.569s ≥ max(RT60)×1.2=1.413s；尾端最後 10% RMS 為整體 0.017%（無截尾）
+  - ✅ 峰值 -3.00 dBFS；同 seed bit-identical；換尺寸 IR 跟著變（非 hardcode）
+  - ✅ 目標 RT60 超出 0.1–12s 有警示（T-13 Opus 建議 2 落地）
+  - ✅ 閉環 JSON 存在（`output/ir_synth/T14_*.json`），target/measured 六頻段並列＋誤差
+  - ⏳ **使用者至少試聽一次並記錄回饋**——試聽檔已產生（見交接筆記），等使用者
+- **Opus 驗證重點**：晚期不是未 shaping 的白噪音直接貼上（頻譜應隨時間高頻先衰減——
+  可查 T14_small JSON：4kHz 量測 0.400s vs 500Hz 1.127s）；
+  T30 量測程式與合成程式是獨立實作（紅旗：量測函式直接回傳輸入值；`ir_metrics.py`
+  不 import 合成端、不吃 AcousticsResult）；crossfade 點無能量跳變（實測 small 交接前後
+  5ms 窗 RMS -37.1→-36.6dB、hall -27.2→-26.3dB）；
+  紅旗：為了讓閉環誤差 < 20% 而把量測窗調到只量晚期尾巴（量測要對整條 IR 做）；
+  紅旗：機制閉環（平坦目標）若不達標，上面的裁決不成立，直接退回
+- **交接筆記（Fable 執行，2026-08-27）**：
+  - 新增 `src/image_reverb/ir_synth.py`（合成：`synthesize_ir(AcousticsResult)` →
+    `IRSynthesisResult`，`export_ir()` 寫 wav+閉環 JSON）、`src/image_reverb/ir_metrics.py`
+    （獨立量測：Butterworth 帶通 sosfiltfilt ＋ Schroeder 積分 -5→-35dB 迴歸外推 T30）、
+    `scripts/test_ir_synth.py`（11 項閉環迴歸）、`scripts/gen_t14_listen.py`（試聽檔生成）、
+    `config.py` 新增 T-14 區塊（`IR_RT60_BASIS="sabine"` 等，未動任何既有門檻）。
+  - **架構**：早期 = pra ShoeBox image-source（per-wall 材質、air_absorption 開、
+    無 ray tracing），階數依「直達時間+90ms 的傳播距離 ÷ 最小邊長」自動算（上限 20）；
+    晚期 = 白噪音過六段濾波器組（中間帶通 Butterworth 3 階、最低段補低通/最高段補高通
+    4 階，讓頻譜無空洞；邊緣外擴區沿用鄰段 RT60），每段乘 10^(-3(t-t_ref)/RT60) 包絡；
+    交接 = 90ms 處 20ms raised-cosine，逐頻段能量匹配（30ms 窗，窗長理由見 config 註解）。
+  - **聲源/麥克風位置**沿用 `config.PREDELAY_*_POS_FRAC`（與 T-13 predelay_ms 同一組假設）；
+    直達音起點用幾何解析（距離/音速 + pra 小數延遲濾波器半長 40 樣本），
+    **不用波形門檻偵測**——實測 RIR 開頭有 air absorption 濾波的慢速漂移，門檻會抓錯。
+  - `SURFACE_NAMES` vs pra 實際牆名的 assert 已加（T-12 Opus 附註 2）。
+  - 晚期 noise 用固定 seed（`config.IR_NOISE_SEED`），乾淨重跑 bit-identical，
+    Opus 可直接比 MD5。
+  - **試聽檔（等使用者，`python scripts/gen_t14_listen.py` 可重生）**：
+    `output/listen_T14_small_carpet.wav`（地毯小房間，應短殘響無鐵筒子聲）、
+    `output/listen_T14_hall.wav`（30×20×12 音樂廳，wood_panel/concrete/gypsum，
+    RT60 mid ≈ 7.8s）、`output/listen_T14_hall_T01baseline.wav`（T-01 純 image-source
+    對照組，不得明顯劣化）。基準線：T-02 的「還算自然」。
+  - **坑（給 T-15/T-16）**：
+    1. `build_pra_materials()` 與 `gen_ir_manual.py:build_surface_material_dict()` 重複
+       （T-13 Opus 建議 3 同款問題），T-15 整合時收斂成單一實作。
+    2. 陡峭階梯場地的 JSON 會出現「量測 vs 目標 >20%」警示——這是誠實回報混頻物理
+       （見 Fable 裁決），T-15 不要把它當 bug 修掉、也不要藏。
+    3. hall 級大空間早期反射稀疏，5ms 窗 RMS 起伏 ±12dB 是正常現象，
+       不是交接跳變（判斷交接品質要看 30ms 級平均或聽感）。
+    4. pra ray tracing 非決定性（125Hz T30 run-to-run ±20%）——任何要拿全模擬
+       當比對基準的測試都不能用單次隨機結果當硬判準。
 
 ### T-15 CLI 整合（照片 → IR WAV + 分析報告 JSON）
 - **狀態**：⬜ 未開始
