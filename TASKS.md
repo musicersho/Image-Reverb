@@ -1233,7 +1233,7 @@
 > 依賴 T-14（🔵 待 Opus 驗證——若 T-14 被退回，本節兩卡需複測）。排在 T-15 之前。
 
 ### T-20 文字場景描述 → IR（scene preset 庫 + 解析器）
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證（Fable 執行，2026-08-27）— 迴歸測試 13 項全過；試聽檔已產生等使用者
 - **前置**：T-14（引擎介面），T-13 ✅
 - **對應 SPEC**：F-16
 - **產出**：`data/scene_presets.json`（≥10 種場景 preset）、`src/image_reverb/scene_text.py`
@@ -1268,7 +1268,24 @@
 - **Opus 驗證重點**：紅旗：比不中關鍵字時安靜 fallback 到任一 preset；
   紅旗：把六面 α 平均或全域套單一材質（約束 A）；preset 尺寸/材質數值合理性抽查 3 個；
   顯式尺寸與材質覆寫真的生效到 IR（覆寫前後數字要變）
-- **交接筆記**：
+- **交接筆記（Fable 執行，2026-08-27）**：
+  - 新增 `data/scene_presets.json`（**13 個 preset**：浴室/一般房間/臥室/客廳/走廊/樓梯間/
+    教室/辦公室/音樂廳/教堂/體育館/巨蛋/洞窟；只用 materials.json 現有 12 種材質）、
+    `src/image_reverb/scene_text.py`（`parse_scene_text()` → `ParsedScene`）、
+    `scripts/gen_ir_from_text.py`（含 `--list-scenes`）、`scripts/test_scene_text.py`（13 項全過）。
+  - **執行中修過一個 preset 物理錯誤**：浴室六面全磁磚的 Sabine RT60 mid 算出 **3.65s**
+    （真實浴室 ~0.5-1s）——因為現實中浴簾/毛巾/門是主要吸音體。修法：一面牆改
+    curtain_fabric 近似，修正後 mid 0.46s。這證明「preset 不能只放表面材質、要把
+    家具吸音近似進去」，其他 preset 已同步採此原則（臥室床鋪、客廳沙發窗簾均以
+    curtain_fabric 面近似），全 13 個 preset 的 RT60 掃描數字記錄在 DEV_LOG (26)。
+  - 大小修飾詞刻意用完整詞組（「很大」「寬敞」…）不用單字「大」——否則「大教堂」
+    會被誤觸放大規則（測試有覆蓋此案例）。
+  - 多場景同時命中（「體育館旁的走廊」）→ 取最長命中＋輸出歧義警示，不安靜選。
+  - 已知小瑕疵（非阻擋）：`estimate.notes` 經 T-13 會併入 warnings，CLI 顯示時解析
+    紀錄會帶 ⚠️ 前綴（其實是 note 不是警告）——T-15 整合時可把 notes/warnings 分流。
+  - 試聽檔（等使用者）：`output/listen_text_bathroom.wav`（浴室，短亮）、
+    `output/listen_text_church.wav`（大教堂，長殘響）。重生：
+    `python scripts/gen_ir_from_text.py "浴室"` / `"大教堂"`。
 
 ### T-21 複合場景引擎 v1（路徑串接：跨空間傳輸）
 - **狀態**：⬜ 未開始

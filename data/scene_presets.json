@@ -1,0 +1,231 @@
+{
+  "version": 1,
+  "description": "T-20 文字場景 preset 庫：每個 preset 是「典型」尺寸與逐表面材質（約束 A：六面獨立，禁止全域單一材質）。材質 id 全部引用 data/materials.json。典型尺寸有變異，confidence 多為 medium；可被文字中的顯式尺寸/材質關鍵字覆寫。",
+  "dims_note": "dims_m = [長(進深), 寬, 高]，單位公尺，與 RoomEstimate 的座標慣例一致",
+  "unsupported_keywords_zh": ["車內", "汽車", "車裡", "車上", "轎車", "休旅車", "船艙", "機艙", "飛機", "客機", "駕駛艙"],
+  "unsupported_keywords_en": ["car interior", "inside a car", "cockpit", "cabin", "airplane"],
+  "unsupported_reason": "非建築空間（車內/船艙/機艙）：Phase 0 實證分析模型對這類空間不可靠（HANDOFF 地雷 #2/#13），文字路徑更沒有資訊可救。請改用照片輸入＋手動覆寫（--override-dims / --materials）。",
+  "presets": [
+    {
+      "id": "bathroom",
+      "name_zh": "浴室",
+      "keywords_zh": ["浴室", "衛浴", "淋浴間", "廁所", "盥洗室", "浴間"],
+      "keywords_en": ["bathroom", "shower room", "restroom", "toilet"],
+      "dims_m": [2.5, 2.0, 2.4],
+      "surfaces": {
+        "floor": "marble",
+        "ceiling": "gypsum_board",
+        "west": "marble",
+        "east": "marble",
+        "south": "marble",
+        "north": "curtain_fabric"
+      },
+      "confidence": "medium",
+      "note": "磁磚以 marble 近似；浴簾/毛巾/木門的吸音以一面 curtain_fabric 牆近似——六面全磁磚的 Sabine RT60 會到 3.6s，真實浴室因這些吸音體只有 ~0.5-1s"
+    },
+    {
+      "id": "generic_room",
+      "name_zh": "一般房間",
+      "keywords_zh": ["房間", "室內", "普通房間"],
+      "keywords_en": ["room", "small room"],
+      "dims_m": [4.0, 3.0, 2.5],
+      "surfaces": {
+        "floor": "wood_panel",
+        "ceiling": "gypsum_board",
+        "west": "gypsum_board",
+        "east": "gypsum_board",
+        "south": "gypsum_board",
+        "north": "gypsum_board"
+      },
+      "confidence": "medium",
+      "note": "與 T-01/T-14 的 small preset 同尺寸，地板預設木地板"
+    },
+    {
+      "id": "bedroom",
+      "name_zh": "臥室",
+      "keywords_zh": ["臥室", "睡房", "寢室"],
+      "keywords_en": ["bedroom"],
+      "dims_m": [4.0, 3.5, 2.5],
+      "surfaces": {
+        "floor": "wood_panel",
+        "ceiling": "gypsum_board",
+        "west": "gypsum_board",
+        "east": "gypsum_board",
+        "south": "curtain_fabric",
+        "north": "gypsum_board"
+      },
+      "confidence": "medium",
+      "note": "床/寢具的吸音以一面 curtain_fabric 牆近似（v1 簡化）"
+    },
+    {
+      "id": "living_room",
+      "name_zh": "客廳",
+      "keywords_zh": ["客廳", "起居室"],
+      "keywords_en": ["living room", "lounge"],
+      "dims_m": [6.0, 4.5, 2.7],
+      "surfaces": {
+        "floor": "wood_panel",
+        "ceiling": "gypsum_board",
+        "west": "gypsum_board",
+        "east": "glass",
+        "south": "gypsum_board",
+        "north": "curtain_fabric"
+      },
+      "confidence": "medium",
+      "note": "east=落地窗玻璃、north=窗簾＋沙發布面近似"
+    },
+    {
+      "id": "corridor",
+      "name_zh": "走廊",
+      "keywords_zh": ["走廊", "通道", "廊道", "長廊"],
+      "keywords_en": ["corridor", "hallway"],
+      "dims_m": [20.0, 2.5, 3.0],
+      "surfaces": {
+        "floor": "concrete",
+        "ceiling": "gypsum_board",
+        "west": "gypsum_board",
+        "east": "gypsum_board",
+        "south": "gypsum_board",
+        "north": "gypsum_board"
+      },
+      "confidence": "medium",
+      "note": "預設硬地面；飯店滿鋪地毯走廊請在描述加「地毯」覆寫 floor"
+    },
+    {
+      "id": "stairwell",
+      "name_zh": "樓梯間",
+      "keywords_zh": ["樓梯間", "樓梯"],
+      "keywords_en": ["stairwell", "staircase"],
+      "dims_m": [3.0, 3.0, 12.0],
+      "surfaces": {
+        "floor": "concrete",
+        "ceiling": "concrete",
+        "west": "concrete",
+        "east": "concrete",
+        "south": "concrete",
+        "north": "concrete"
+      },
+      "confidence": "medium",
+      "note": "混凝土豎井，垂直向長；六面同硬質是此空間的真實狀態（非約束 A 違例）"
+    },
+    {
+      "id": "classroom",
+      "name_zh": "教室",
+      "keywords_zh": ["教室", "講堂"],
+      "keywords_en": ["classroom", "lecture room"],
+      "dims_m": [9.0, 7.0, 3.0],
+      "surfaces": {
+        "floor": "wood_panel",
+        "ceiling": "acoustic_panel",
+        "west": "gypsum_board",
+        "east": "glass",
+        "south": "gypsum_board",
+        "north": "gypsum_board"
+      },
+      "confidence": "medium",
+      "note": "east=窗側玻璃、天花板吸音板（現代教室常見）"
+    },
+    {
+      "id": "office",
+      "name_zh": "辦公室",
+      "keywords_zh": ["辦公室", "開放式辦公"],
+      "keywords_en": ["office"],
+      "dims_m": [12.0, 8.0, 2.7],
+      "surfaces": {
+        "floor": "carpet",
+        "ceiling": "acoustic_panel",
+        "west": "gypsum_board",
+        "east": "glass",
+        "south": "gypsum_board",
+        "north": "gypsum_board"
+      },
+      "confidence": "medium",
+      "note": "地毯＋吸音天花板＋玻璃帷幕一側"
+    },
+    {
+      "id": "concert_hall",
+      "name_zh": "音樂廳",
+      "keywords_zh": ["音樂廳", "演奏廳", "演藝廳"],
+      "keywords_en": ["concert hall"],
+      "dims_m": [30.0, 20.0, 12.0],
+      "surfaces": {
+        "floor": "audience_seating",
+        "ceiling": "gypsum_board",
+        "west": "wood_panel",
+        "east": "wood_panel",
+        "south": "wood_panel",
+        "north": "wood_panel"
+      },
+      "confidence": "medium",
+      "note": "與 T-14 hall 同尺寸；地板=觀眾席（materials.json 標 low confidence 的材質，變異大）"
+    },
+    {
+      "id": "church",
+      "name_zh": "教堂",
+      "keywords_zh": ["教堂", "大教堂", "禮拜堂", "聖堂"],
+      "keywords_en": ["church", "cathedral", "chapel"],
+      "dims_m": [25.0, 15.0, 15.0],
+      "surfaces": {
+        "floor": "marble",
+        "ceiling": "wood_panel",
+        "west": "brick",
+        "east": "brick",
+        "south": "brick",
+        "north": "brick"
+      },
+      "confidence": "medium",
+      "note": "石地板＋磚石牆＋木頂；長殘響場景的代表"
+    },
+    {
+      "id": "gymnasium",
+      "name_zh": "體育館",
+      "keywords_zh": ["體育館", "室內球場", "籃球場"],
+      "keywords_en": ["gymnasium", "gym", "indoor court"],
+      "dims_m": [40.0, 25.0, 10.0],
+      "surfaces": {
+        "floor": "wood_panel",
+        "ceiling": "generic_wall",
+        "west": "concrete",
+        "east": "concrete",
+        "south": "concrete",
+        "north": "concrete"
+      },
+      "confidence": "medium",
+      "note": "木地板＋混凝土牆；金屬頂棚以 generic_wall 近似。地雷 #6 同型空間（硬面小吸音、殘響長）"
+    },
+    {
+      "id": "stadium_dome",
+      "name_zh": "巨蛋體育場",
+      "keywords_zh": ["巨蛋", "體育場", "競技場", "演唱會場館", "大型場館"],
+      "keywords_en": ["stadium", "arena", "dome"],
+      "dims_m": [200.0, 160.0, 55.0],
+      "surfaces": {
+        "floor": "audience_seating",
+        "ceiling": "generic_wall",
+        "west": "concrete",
+        "east": "concrete",
+        "south": "concrete",
+        "north": "concrete"
+      },
+      "confidence": "low",
+      "note": "尺寸與內裝變異巨大（低信心）；地板=滿場觀眾近似、頂棚以 generic_wall 近似。ShoeBox 對非長方體巨蛋是粗近似"
+    },
+    {
+      "id": "cave",
+      "name_zh": "洞窟",
+      "keywords_zh": ["洞穴", "洞窟", "山洞", "岩洞"],
+      "keywords_en": ["cave", "cavern"],
+      "dims_m": [20.0, 10.0, 8.0],
+      "surfaces": {
+        "floor": "brick",
+        "ceiling": "brick",
+        "west": "brick",
+        "east": "brick",
+        "south": "brick",
+        "north": "brick"
+      },
+      "confidence": "low",
+      "note": "岩壁以 brick 近似（粗糙硬面）；不規則洞窟用 ShoeBox 是粗近似（低信心）"
+    }
+  ]
+}
