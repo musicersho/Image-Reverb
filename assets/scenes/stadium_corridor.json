@@ -1,0 +1,20 @@
+{
+  "name": "stadium_corridor",
+  "description_zh": "巨蛋體育場內開演唱會，聽者站在場館內部的通道走廊：主要聲音從敞開的通道口傳進走廊（帶巨蛋長殘響、繞路稍遠），另有一部分低頻直接穿過混凝土牆。",
+  "source_room": { "preset": "stadium_dome" },
+  "listener_room": { "preset": "corridor" },
+  "paths": [
+    {
+      "type": "opening_open",
+      "gain_db": -6,
+      "extra_delay_ms": 30,
+      "note_zh": "敞開的通道口（主要路徑）：TL≈0 但繞路較遠、口徑有限，-6dB 與 +30ms 近似"
+    },
+    {
+      "type": "concrete_wall_20cm",
+      "gain_db": 0,
+      "extra_delay_ms": 0,
+      "note_zh": "混凝土牆直接透射：高頻被牆吃掉，只剩低頻悶悶地穿牆"
+    }
+  ]
+}

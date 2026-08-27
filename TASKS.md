@@ -1288,7 +1288,8 @@
     `python scripts/gen_ir_from_text.py "浴室"` / `"大教堂"`。
 
 ### T-21 複合場景引擎 v1（路徑串接：跨空間傳輸）
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證（Fable 執行，2026-08-27）— 迴歸測試 12 項全過；兩個示範場景
+  已產生試聽檔等使用者
 - **前置**：T-14（引擎）、T-20（room preset 引用）
 - **對應 SPEC**：F-17
 - **產出**：`data/transmission.json`（傳輸損失表）、`src/image_reverb/coupled.py`、
@@ -1322,4 +1323,25 @@
   質量定律：TL 隨頻率上升）；紅旗：TL 濾波實際沒生效（牆路徑與開口路徑輸出頻譜相同）；
   紅旗：JSON 缺 `method`/近似聲明（把近似包裝成精確模擬）；
   聽者空間 IR 是否真的對全部路徑生效（卷積順序）
-- **交接筆記**：
+- **交接筆記（Fable 執行，2026-08-27）**：
+  - 新增 `data/transmission.json`（8 種構造：混凝土牆/磚牆/石膏板隔間/單層玻璃/
+    雙層玻璃/實心門/空心門/敞開口；六頻段 TL＋出處＋信心，比照 materials.json 規格）、
+    `src/image_reverb/coupled.py`（`synthesize_coupled(scene)` → `CoupledResult`、
+    `export_coupled()` 寫 wav＋JSON）、兩個示範場景 JSON（`assets/scenes/`，進版控）、
+    `scripts/gen_ir_coupled.py`（含 `--list-types`）、`scripts/test_coupled.py`（12 項全過）。
+  - **實作細節**：聽者空間 IR 對「全部路徑加總後」只卷積一次（線性系統等價、省算）；
+    schema 支援 `tl_times`（穿過同構造幾次，窗-戶外-窗＝玻璃 ×2）與 `via_room` 中繼空間
+    （門-走廊-門帶走廊殘響）；各空間 seed = base+n 遞增（決定性保留、避免兩空間共用
+    同段 noise 造成相關染色）；TL 濾波沿用 T-14 的濾波器組（頻譜無空洞）。
+  - **量化自檢結果**：牆 vs 開口路徑的高頻/低頻能量比差 20.7dB（TL 真的生效）；
+    延遲 50ms 實測位移 50.0ms；線性疊加最大相對誤差 3.9e-16；bit-identical 重跑。
+  - **示範場景實測**：`stadium_corridor` 巨蛋 T30 13.4→5.3s（低→高頻）、走廊 1.2→2.7s，
+    合成 IR 21s，巨蛋 125Hz 目標 13.68s 超合理區間有警示（誠實，巨蛋本來就這麼長）；
+    `neighbor_voices` 三路徑（隔間牆/雙層玻璃×2/門-走廊-門），合成 IR 6.3s。
+  - **已知限制（記給下游與 T-17）**：路徑間相對音量（gain_db）是場景作者設定值，
+    非物理推導（要物理推導需要傳輸面積與收發位置，v1 沒有）；乾聲只有合成拍手，
+    隔壁人聲情境等有真實說話聲乾聲再重聽；巨蛋 200m 尺度遠超 T-14 引擎驗證過的範圍
+    （引擎機制是尺寸無關的公式與濾波，但聽感未經對照驗證）。
+  - 試聽檔（等使用者）：`output/listen_coupled_stadium_corridor.wav`（隔通道聽演唱會感）、
+    `output/listen_coupled_neighbor_voices.wav`（隔壁講話的悶+走廊混合感）。
+    重生：`python scripts/gen_ir_coupled.py assets/scenes/<場景>.json`。

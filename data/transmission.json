@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "description": "T-21 傳輸損失表（F-17 複合場景用）：常見建築構造的六頻段傳輸損失 TL（dB）。值取自建築聲學公開參考表的典型值（見各 source），屬工程近似——實際 TL 受構造細節/施工品質/縫隙影響很大，confidence 標示不確定度。",
+  "band_center_freqs_hz": [125, 250, 500, 1000, 2000, 4000],
+  "confidence_levels": {
+    "medium": "典型值，實際構造可能 ±5dB",
+    "low": "變異大（縫隙/幾何依賴），僅供近似"
+  },
+  "paths": [
+    {
+      "id": "concrete_wall_20cm",
+      "name_zh": "20cm 混凝土牆",
+      "tl_db": [36, 42, 48, 55, 60, 63],
+      "confidence": "medium",
+      "source": "Egan《Architectural Acoustics》Table：8 in. 混凝土牆 TL 典型值（質量定律：TL 隨頻率上升 ~6dB/oct）"
+    },
+    {
+      "id": "brick_wall",
+      "name_zh": "磚牆（抹灰）",
+      "tl_db": [32, 36, 41, 48, 55, 58],
+      "confidence": "medium",
+      "source": "Egan《Architectural Acoustics》：4.5 in. 抹灰磚牆典型 TL"
+    },
+    {
+      "id": "gypsum_partition",
+      "name_zh": "石膏板輕隔間（雙面單層＋立柱）",
+      "tl_db": [15, 28, 38, 46, 44, 40],
+      "confidence": "medium",
+      "source": "Long《Architectural Acoustics》：13mm GWB 雙面輕隔間（STC~40）；低頻差、2-4kHz 有 coincidence 下陷"
+    },
+    {
+      "id": "glass_single",
+      "name_zh": "單層玻璃（6mm）",
+      "tl_db": [18, 21, 26, 31, 27, 33],
+      "confidence": "medium",
+      "source": "Long《Architectural Acoustics》：6mm 單層玻璃；2kHz 附近為 coincidence 下陷"
+    },
+    {
+      "id": "glass_double",
+      "name_zh": "雙層中空玻璃",
+      "tl_db": [21, 24, 30, 38, 42, 44],
+      "confidence": "medium",
+      "source": "Long《Architectural Acoustics》：IGU 典型值（低頻改善有限、中高頻明顯優於單層）"
+    },
+    {
+      "id": "door_solid_closed",
+      "name_zh": "實心木門（關閉）",
+      "tl_db": [14, 17, 21, 25, 27, 29],
+      "confidence": "low",
+      "source": "Egan《Architectural Acoustics》：solid-core 木門含一般門縫；縫隙讓實際值常低於門板本身"
+    },
+    {
+      "id": "door_hollow_closed",
+      "name_zh": "空心門（關閉）",
+      "tl_db": [9, 12, 15, 18, 20, 22],
+      "confidence": "low",
+      "source": "Egan《Architectural Acoustics》：hollow-core 木門典型值"
+    },
+    {
+      "id": "opening_open",
+      "name_zh": "敞開的門/通道口",
+      "tl_db": [0, 0, 0, 1, 2, 3],
+      "confidence": "low",
+      "source": "開口 TL≈0；高頻繞射損失隨頻率微增（幾何依賴，屬粗近似）"
+    }
+  ]
+}

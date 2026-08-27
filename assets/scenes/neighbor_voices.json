@@ -1,0 +1,29 @@
+{
+  "name": "neighbor_voices",
+  "description_zh": "隔壁房間的人在講話，在自己的臥室裡隱約聽到：聲音同時經 (1) 石膏板隔間牆（最直接、最悶）、(2) 兩邊的窗戶經戶外繞進來（雙層玻璃穿兩次、路徑最遠）、(3) 兩扇門與中間的走廊（帶走廊殘響）三條路徑混合到達。",
+  "source_room": { "preset": "generic_room" },
+  "listener_room": { "preset": "bedroom" },
+  "paths": [
+    {
+      "type": "gypsum_partition",
+      "gain_db": 0,
+      "extra_delay_ms": 0,
+      "note_zh": "共用的石膏板隔間牆（最短路徑，低頻為主）"
+    },
+    {
+      "type": "glass_double",
+      "tl_times": 2,
+      "gain_db": -8,
+      "extra_delay_ms": 25,
+      "note_zh": "窗-戶外-窗：雙層玻璃穿兩次（tl_times=2），戶外繞路 ~8m（+25ms）與擴散損失（-8dB）"
+    },
+    {
+      "type": "door_solid_closed",
+      "tl_times": 2,
+      "gain_db": -3,
+      "extra_delay_ms": 12,
+      "via_room": { "preset": "corridor" },
+      "note_zh": "門-走廊-門：兩扇實心門（tl_times=2）＋走廊殘響（via_room），繞路 ~4m"
+    }
+  ]
+}
