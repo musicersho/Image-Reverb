@@ -1177,6 +1177,10 @@
   - 給壞輸入（文字檔改名 .jpg）→ 清楚錯誤、exit ≠ 0
 - **Opus 驗證重點**：乾淨環境（新 shell、只靠 requirements.txt）end-to-end 重跑成功；
   JSON 與中間模組輸出一致；覆寫參數真的生效到 IR（覆寫前後 IR 應不同）
+- **🔮 Fable 補註（2026-08-27，Phase 1.5 規劃時）**：本卡執行時，CLI 要一併收進
+  Phase 1.5 的兩種新輸入：`--text "場景描述"`（T-20 的 `scene_text.py`）與
+  `--scene <場景.json>`（T-21 的 `coupled.py`）。三種輸入互斥（照片/文字/複合場景），
+  同時給要報錯。T-20/T-21 已各自附獨立腳本可先用，本卡只是把入口統一。
 - **交接筆記**：
 
 ### T-16 分析視覺化（材質疊圖 + 參數報告）
@@ -1217,4 +1221,88 @@
 - **自我檢查**：REPORT.md 四項標準都有結果（含未達標的誠實記錄）；使用者的盲聽與試聽回饋已記錄
 - **Opus 驗證重點**：誤差表完整涵蓋 8 場地 × 6 頻段；盲聽流程真的是盲的（檔名不洩露答案）；
   失敗案例的記錄足以讓 Fable 判斷下一步
+- **交接筆記**：
+
+---
+
+## Phase 1.5 — 場景描述輸入與複合場景（Fable 規劃 2026-08-27，SPEC F-16/F-17）
+
+> 使用者需求（2026-08-27）：(1) 不用照片、直接用文字描述場景產 IR；
+> (2) 複合場景——聲源與聽者在不同空間（巨蛋演唱會→通道走廊聽、隔壁講話聲經
+> 牆/窗/走廊混傳）。兩卡都掛在既有中間表示上，照片管線與 IR 引擎不動。
+> 依賴 T-14（🔵 待 Opus 驗證——若 T-14 被退回，本節兩卡需複測）。排在 T-15 之前。
+
+### T-20 文字場景描述 → IR（scene preset 庫 + 解析器）
+- **狀態**：⬜ 未開始
+- **前置**：T-14（引擎介面），T-13 ✅
+- **對應 SPEC**：F-16
+- **產出**：`data/scene_presets.json`（≥10 種場景 preset）、`src/image_reverb/scene_text.py`
+  （解析器）、`scripts/gen_ir_from_text.py`（文字→IR＋試聽檔）、`scripts/test_scene_text.py`
+  （迴歸測試）、試聽檔一組
+- **執行步驟**：
+  1. `data/scene_presets.json`：每個 preset 含 `id`、`keywords_zh`/`keywords_en`（比對用）、
+     `dims_m`（典型尺寸）、`surfaces`（六面材質 id，引用 materials.json，逐表面——約束 A）、
+     `confidence`（典型尺寸有變異，多數應為 medium）、`note`（近似說明，如磁磚以 marble 代）。
+     初版涵蓋：浴室、臥室、客廳、走廊、樓梯間、教室、辦公室、音樂廳、教堂、體育館、
+     巨蛋體育場、洞窟（≥10 種，全部只用 materials.json 現有 12 種材質）
+  2. `scene_text.py`：`parse_scene_text(text)` → `(RoomEstimate, SurfaceMaterials)`：
+     a. 關鍵字比對選 preset（最長命中優先）；**比不中 → 報錯並列出全部可用場景與格式範例，
+        禁止安靜 fallback**（Phase 0 三次實證的失敗型態）
+     b. 顯式尺寸抽取：`4x3x2.5`／`4×3×2.5` 之類 → 覆寫 preset 尺寸（記 notes）
+     c. 大小修飾詞：「大/寬敞」尺寸 ×1.3、「小」×0.75（記 notes，屬近似）
+     d. 材質關鍵字覆寫：地毯→floor=carpet、木地板→floor=wood_panel、磁磚/大理石→floor=marble、
+        窗簾/布幕→一面牆 curtain_fabric、吸音板→ceiling=acoustic_panel（每條都記 sources/notes）
+     e. **非建築空間明確拒絕**：車內/船艙/飛機 等關鍵字 → 報錯導向「照片＋手動覆寫」
+        （Phase 0 實證非建築空間不可靠，文字路徑更沒有資訊救它）
+     f. 輸出 `dims_source="text_description"`；confidence 取 preset 值（顯式尺寸可升 high）
+  3. `gen_ir_from_text.py "描述"` → compute_acoustics → synthesize_ir → export_ir
+     （wav+閉環 JSON）＋ convolve 試聽檔；印出實際採用的 preset、六面材質、全部假設值
+  4. 試聽檔：至少「浴室」「大教堂」兩組請使用者試聽（SPEC §7-4）
+- **自我檢查**：
+  - ≥10 個 preset，全部材質 id 都存在於 materials.json、六面逐表面（無單一全域材質）
+  - 「浴室」「4x3x2.5 的房間，地板鋪地毯」「大教堂」三個描述各產出合理 IR
+    （地毯房數字應接近 T-14 的地毯房；教堂 RT60 應明顯長於浴室）
+  - 亂打的描述（如「asdf」）→ 清楚報錯＋可用場景清單，exit ≠ 0
+  - 「車內」→ 明確拒絕訊息（不是安靜輸出一個房間）
+  - `python scripts/test_scene_text.py` 全過；使用者試聽並記錄回饋
+- **Opus 驗證重點**：紅旗：比不中關鍵字時安靜 fallback 到任一 preset；
+  紅旗：把六面 α 平均或全域套單一材質（約束 A）；preset 尺寸/材質數值合理性抽查 3 個；
+  顯式尺寸與材質覆寫真的生效到 IR（覆寫前後數字要變）
+- **交接筆記**：
+
+### T-21 複合場景引擎 v1（路徑串接：跨空間傳輸）
+- **狀態**：⬜ 未開始
+- **前置**：T-14（引擎）、T-20（room preset 引用）
+- **對應 SPEC**：F-17
+- **產出**：`data/transmission.json`（傳輸損失表）、`src/image_reverb/coupled.py`、
+  `assets/scenes/stadium_corridor.json` 與 `assets/scenes/neighbor_voices.json`（示範場景）、
+  `scripts/gen_ir_coupled.py`、`scripts/test_coupled.py`、試聽檔一組
+- **執行步驟**：
+  1. `data/transmission.json`：常見構造的六頻段傳輸損失 TL（dB），比照 materials.json 規格
+     （附 `source` 出處與 `confidence`）：20cm 混凝土牆、磚牆、石膏板輕隔間、單層玻璃、
+     雙層玻璃、實心木門(關)、空心門(關)、敞開的門/通道口（TL≈0，僅輕微高頻繞射損失）
+  2. 場景 JSON schema：`listener_room`／`source_room`（可寫 `{"preset": id}` 引用 T-20 的
+     preset，或 inline `dims`+`surfaces`）、`paths[]`（每條：`type`＝transmission.json 的 id、
+     `gain_db`、`extra_delay_ms`、可選 `via_room` 中繼空間如走廊）
+  3. `coupled.py` 合成：每條路徑＝聲源空間 IR ⊗（中繼空間 IR，可選）→ 六頻段濾波套 TL 衰減
+     → gain/delay；全部路徑加總後 ⊗ 聽者空間 IR，峰值正規化 -3dBFS。
+     各空間 IR 用 T-14 引擎生成、seed 逐空間遞增（決定性保留、避免同 noise 相關染色）。
+     輸出 JSON：`method: "path_cascade_v1"`＋近似聲明、每路徑參數、各空間 T30 摘要
+     （用 ir_metrics 獨立量測）、warnings 彙整
+  4. 示範場景 A `stadium_corridor`：巨蛋（preset）演唱會、聽者在通道走廊——
+     主路徑「敞開通道口」＋次路徑「混凝土牆」。示範場景 B `neighbor_voices`：
+     隔壁房間人聲→我的房間，**三路徑**：石膏板隔間牆（悶）、窗-戶外-窗（雙層玻璃×2、
+     延遲較長）、門-走廊-門（via_room 走廊、cascade 走廊殘響）
+  5. 試聽檔兩組（clap；有真實人聲時 neighbor_voices 優先用人聲）請使用者試聽（SPEC §7-4）
+- **自我檢查**：
+  - 純牆路徑 vs 純開口路徑的 IR 頻譜：牆路徑的高頻/低頻能量比顯著更低（牆悶、開口亮）
+  - `extra_delay_ms` 真的位移到達時間（量測 onset 差）
+  - 多路徑輸出 ≈ 各單路徑輸出之疊加（正規化前，線性系統自檢）
+  - 兩個示範場景跑完不 crash、輸出過 check_audio、JSON 含近似聲明與每路徑參數
+  - 固定 seed 重跑 bit-identical；`python scripts/test_coupled.py` 全過
+  - 使用者試聽兩組並記錄回饋（巨蛋案例應聽出「隔著通道的遠方演唱會」感）
+- **Opus 驗證重點**：TL 數值抽查 3 種構造是否符合建築聲學常識（混凝土>玻璃>開口；
+  質量定律：TL 隨頻率上升）；紅旗：TL 濾波實際沒生效（牆路徑與開口路徑輸出頻譜相同）；
+  紅旗：JSON 缺 `method`/近似聲明（把近似包裝成精確模擬）；
+  聽者空間 IR 是否真的對全部路徑生效（卷積順序）
 - **交接筆記**：
