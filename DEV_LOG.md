@@ -1,5 +1,22 @@
 # Dev Log
 
+## 2026-08-27 (22)
+
+- 🔮 **Fable 確認 T-14 開工，任務卡依上游三卡實際產出調整（純文件，未動程式）。**
+  三個定案：(1) 輸入介面＝T-13 的 `AcousticsResult` 單一物件（卡片原文的 `rt60_bands`
+  欄位不存在，實際是 sabine/eyring 兩組並列）；(2) **晚期目標值用 `rt60_bands_sabine`**
+  （進 `config.IR_RT60_BASIS` 可切換）——理由：專案全部迴歸錨點都是 Sabine 值，且地雷 #14
+  實證 α 高時實測 IR 比 Sabine 更長，Eyring 更短只會把落差拉更大；(3) 聲源/麥克風位置
+  沿用 `config.PREDELAY_*_POS_FRAC`，合成 IR 的直達音時間才與 T-13 的 predelay_ms 一致。
+- 地雷 #14 的正面處理寫死在步驟 4：閉環量測 T30 與目標並列輸出 JSON
+  （`rt60_bands_target`/`rt60_bands_measured`），對外殘響數字以量測值為準；並納入
+  T-13 Opus 建議 2（T30 超出 0.1–12s 區間要警示）與 T-12 Opus 附註 2（`SURFACE_NAMES`
+  加 assert）。新增 Opus 紅旗：不得為了閉環過關把量測窗調到只量晚期尾巴。
+- 產出清單明確拆成 `ir_synth.py`（合成）與 `ir_metrics.py`（獨立量測）兩個模組，
+  外加 `scripts/test_ir_synth.py` 閉環迴歸測試——量測與合成分離是卡上既有的 Opus 紅旗，
+  拆檔讓這條界線在檔案層級就看得見。
+- 下一步：執行 T-14（本視窗依使用者指示接續執行），完成後開 Opus 視窗驗證。
+
 ## 2026-08-27 (21)
 
 - ✅ **T-11 Opus 驗證通過。Phase 1 前三卡（T-11/T-12/T-13）全部過驗證，T-14 可開工。**

@@ -1050,27 +1050,52 @@
      「上游透傳、不重新命名」才是對的），且已在交接筆記主動揭露，不算偏離規格。
 
 ### T-14 IR 合成引擎 v1（image-source 早期 + shaped-noise 晚期）
-- **狀態**：⬜ 未開始
-- **前置**：T-13
+- **狀態**：⬜ 可開工（Fable 2026-08-27 依 T-11/T-12/T-13 實際產出調整完畢）
+- **前置**：T-13 ✅
 - **對應 SPEC**：F-05、§5 路線 A+B
-- **產出**：`src/image_reverb/ir_synth.py`、試聽檔一組
+- **產出**：`src/image_reverb/ir_synth.py`（合成）、`src/image_reverb/ir_metrics.py`
+  （**獨立**量測：頻段濾波＋Schroeder T30，與合成程式碼分離）、`scripts/test_ir_synth.py`
+  （閉環迴歸測試）、試聽檔一組
+- **Fable 開工確認（2026-08-27）——依上游實際產出的三個定案**：
+  1. **輸入介面**：吃 T-13 的 `AcousticsResult`（它已含 dims/dims_source/surfaces/
+     `rt60_bands_sabine`/`rt60_bands_eyring`/predelay_ms/confidence/warnings，一個物件就夠）。
+     逐表面材質從 `AcousticsResult.surfaces`（{面: 材質id}）重建，禁止另收單一 α 參數。
+  2. **晚期目標值用 `rt60_bands_sabine`**（T-13 輸出兩組，卡片原文的 `rt60_bands` 不存在）。
+     理由：(a) 專案全部迴歸錨點（0.348s/4.093s 等）都是 Sabine 值；(b) 地雷 #14 實證
+     α 高時**實測 IR 比 Sabine 更長**（0.748 vs 0.348），Eyring 在高 α 比 Sabine 更短，
+     只會把落差拉更大；(c) 低 α 時兩者差 ~1%，選哪個無差。進 `config.IR_RT60_BASIS`
+     （"sabine"，可切 "eyring"），不 hardcode。
+  3. **聲源/麥克風位置用 `config.PREDELAY_SOURCE_POS_FRAC`/`_MIC_POS_FRAC` 推算**——
+     與 T-13 算 predelay_ms 是同一組假設，合成 IR 的直達音時間才會與 JSON 裡的
+     predelay_ms 對得上（否則 T-15 整合時兩個數字互相矛盾）。
 - **執行步驟**：
   1. 早期反射（路線 A）：pyroomacoustics ShoeBox image-source，**用 T-12 的逐表面材質**
-     （不是單一 α），取前 ~80–100ms
+     （per-wall `pra.Material` dict，沿用 `gen_ir_manual.py:build_surface_material_dict()` 的做法；
+     不是單一 α），取前 ~80–100ms（進 config）。加一行 assert 確認 `SURFACE_NAMES` 與
+     `pra.ShoeBox` 實際牆名一致（T-12 Opus 附註 2：目前是 hardcode tuple，pra 升版會靜默失效）
   2. 晚期殘響（路線 B）：六頻段 shaped-noise——白噪音過八度頻段濾波器組（Butterworth），
-     每頻段按 T-13 的 `rt60_bands[band]` 做指數衰減，疊加後與早期反射在交接點做能量匹配的 crossfade
-  3. 輸出 48kHz/24bit mono WAV、峰值 -3dBFS；IR 長度 ≥ max(rt60_bands) × 1.2（避免截尾，T-03 的坑）
-  4. **閉環驗證**：對合成出的 IR 獨立量測各頻段 T30（Schroeder 積分，量測程式碼與合成程式碼分離），
-     與輸入的 `rt60_bands` 比對，各頻段誤差 < 20%（SPEC §4 非功能需求）
-  5. 產生試聽檔：clap＋（若 `assets/dry/` 有真實人聲/樂器則優先）對 small 房間（逐表面地毯版）
-     與 hall 兩組，`convolve.py --mix 0.6`，**請使用者試聽**，以 T-02 的「還算自然」為基準線求進步
+     每頻段按目標 `rt60_bands_sabine[band]` 做指數衰減（-60dB @ RT60），
+     疊加後與早期反射在交接點做能量匹配的 crossfade
+  3. 輸出 48kHz/24bit mono WAV、峰值 -3dBFS；IR 長度 ≥ max(目標頻段 RT60) × 1.2（避免截尾，T-03 的坑）
+  4. **閉環驗證＝地雷 #14 的正面處理**：對合成出的 IR 用 `ir_metrics.py` 獨立量測各頻段 T30
+     （Schroeder 積分；量測程式碼與合成程式碼分離），與輸入目標比對，各頻段誤差 < 20%
+     （SPEC §4 非功能需求）。**量測值與目標值一起輸出成 JSON**（`rt60_bands_target` /
+     `rt60_bands_measured` 並列）——對外宣稱的殘響時間以量測 T30 為準，呼應 T-13 的
+     `rt60_disclaimer`。任一頻段量測 T30 超出合理區間（0.1–12s，WORKFLOW §5）→ 輸出警示
+     （T-13 Opus 建議 2，不得安靜通過）
+  5. 產生試聽檔：clap＋（若 `assets/dry/` 有真實人聲/樂器則優先）對 small 房間（逐表面地毯版
+     floor=carpet＋其餘 gypsum_board，4×3×2.5m）與 hall（30×20×12m，硬面材質）兩組，
+     `convolve.py --mix 0.6`，**請使用者試聽**，以 T-02 的「還算自然」為基準線求進步
 - **自我檢查**：
   - 逐表面地毯房 IR 的量測 T30：125Hz 對目標誤差 < 20%，且無鐵筒子聽感
+    （低頻/高頻 T30 比應在個位數倍，不是 30–50 倍的病態傾斜）
   - hall 的 IR 與 T-01 純 image-source 版本試聽對照，不得明顯劣化
   - IR 尾端無突然截斷（最後 10% 樣本 RMS 顯著低於整體）
+  - 閉環 JSON 存在，`rt60_bands_target` / `rt60_bands_measured` 六頻段並列且誤差表完整
   - 使用者至少試聽一次並記錄回饋
 - **Opus 驗證重點**：晚期不是未 shaping 的白噪音直接貼上（頻譜應隨時間高頻先衰減）；
-  T30 量測程式與合成程式是獨立實作（紅旗：量測函式直接回傳輸入值）；crossfade 點無能量跳變
+  T30 量測程式與合成程式是獨立實作（紅旗：量測函式直接回傳輸入值）；crossfade 點無能量跳變；
+  紅旗：為了讓閉環誤差 < 20% 而把量測窗調到只量晚期尾巴（量測要對整條 IR 做）
 - **交接筆記**：
 
 ### T-15 CLI 整合（照片 → IR WAV + 分析報告 JSON）
