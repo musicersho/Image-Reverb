@@ -38,7 +38,7 @@
         "north": "gypsum_board"
       },
       "confidence": "medium",
-      "note": "與 T-01/T-14 的 small preset 同尺寸，地板預設木地板"
+      "note": "與 T-01/T-14 的 small preset 同尺寸，地板預設木地板。⚠️ 這是「空房間」（無家具），殘響偏長（mid ~1.3s）；要模擬有家具的房間請用 bedroom/living_room（家具吸音以 curtain_fabric 面近似）"
     },
     {
       "id": "bedroom",

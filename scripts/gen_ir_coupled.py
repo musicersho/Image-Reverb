@@ -75,12 +75,16 @@ def main() -> int:
             print(f"❌ 找不到乾聲檔 {DRY}，略過試聽檔")
             return 1
         wet = OUTPUT_DIR / f"listen_{out_name}.wav"
+        # ⚠️ 複合場景必須全濕（mix 1.0）：聽者與聲源在不同空間，聽到的每一分聲音
+        # 都穿過了牆/門/開口——混入乾聲等於讓聲音「未經阻隔直達耳朵」，物理上不存在。
+        # （2026-08-27 使用者實聽抓到的缺陷：mix 0.6 的 40% 乾聲讓穿牆聲「太亮、
+        # 沒有被阻隔的聽感」。同房間殘響的試聽檔才適用乾濕混合。）
         subprocess.run(
             [sys.executable, str(PROJECT_ROOT / "scripts" / "convolve.py"),
-             str(DRY), str(wav), str(wet), "--mix", "0.6"],
+             str(DRY), str(wav), str(wet), "--mix", "1.0"],
             check=True,
         )
-        print(f"🎧 試聽檔：{wet}")
+        print(f"🎧 試聽檔：{wet}（全濕 mix=1.0——穿牆聲不該混入任何乾聲）")
         print("   （乾聲目前只有合成拍手；隔壁人聲情境用真實說話聲會更有感，"
           "之後有真實乾聲放進 assets/dry/ 再重跑）")
     return 0
