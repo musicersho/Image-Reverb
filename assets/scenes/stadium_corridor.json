@@ -1,8 +1,19 @@
 {
   "name": "stadium_corridor",
-  "description_zh": "巨蛋體育場內開演唱會，聽者站在場館內部「封閉」的通道走廊：聲音只能穿過混凝土牆傳進來——悶、幾乎只剩低頻（2026-08-27 使用者實聽定調的目標聽感）。",
-  "history_note_zh": "第一版有 gain -6dB 的敞開通道口路徑，使用者實聽退回『太亮、沒有被阻隔的聽感』；第二版降到 -25dB 仍蓋過穿牆聲（混凝土 TL 在 125Hz 就有 -36dB，任何接近平坦的洩漏路徑都會贏）——結論：要『幾乎只剩低頻』就是封閉走廊、純穿牆。有通道口的版本另存場景檔即可。",
-  "source_room": { "preset": "stadium_dome" },
+  "description_zh": "巨蛋體育場內開「滿場」演唱會，聽者站在場館內部「封閉」的通道走廊：聲音只能穿過混凝土牆傳進來——悶、幾乎只剩低頻；場內因為坐滿觀眾（環繞看台＋地面人群都是強吸音體），殘響比空場短得多（2026-08-27 使用者兩輪實聽定調的目標聽感）。",
+  "history_note_zh": "v1 有 gain -6dB 的敞開通道口路徑，使用者實聽退回『太亮、沒有被阻隔的聽感』；v2 通道口降到 -25dB 仍蓋過穿牆聲（混凝土 TL 在 125Hz 就有 -36dB，任何接近平坦的洩漏路徑都會贏）→ 改封閉走廊純穿牆。v3：使用者實聽『尾巴拉太長——演唱會場內人很多會吸收回音』→ 聲源空間從空場 preset（四面裸混凝土，125Hz RT60 13.7s）改成滿場 inline 版（四面環繞看台觀眾席，160×130×45），RT60 降為 5.2→2.7s（低→高頻）。",
+  "source_room": {
+    "name_zh": "巨蛋（滿場演唱會）",
+    "dims_m": [160.0, 130.0, 45.0],
+    "surfaces": {
+      "floor": "audience_seating",
+      "ceiling": "generic_wall",
+      "west": "audience_seating",
+      "east": "audience_seating",
+      "south": "audience_seating",
+      "north": "audience_seating"
+    }
+  },
   "listener_room": { "preset": "corridor" },
   "paths": [
     {

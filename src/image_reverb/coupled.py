@@ -127,15 +127,21 @@ def apply_transmission_filter(
     band_freqs: list[int],
     fs: int,
     times: int = 1,
+    eq_db: list[float] | None = None,
 ) -> np.ndarray:
     """六頻段濾波套 TL 衰減（`times`=穿過幾次，如窗-戶外-窗是玻璃 ×2）。
 
+    `eq_db`：場景作者的**調音參數**（每頻段 dB，正=增益、負=衰減），疊加在 TL 之上。
+    這是聽感 voicing 不是物理推導——TL 表是實驗室值，實際牆的面積/輻射效率/縫隙
+    沒有建模，留這個誠實的旋鈕給場景作者對齊人耳（會完整寫進輸出 JSON，可追溯）。
     濾波器組沿用 T-14 引擎的（最低段低通/最高段高通，頻譜無空洞）。
     """
     sos_list = ir_synth.synthesis_filterbank_sos(band_freqs, fs)
+    if eq_db is None:
+        eq_db = [0.0] * len(band_freqs)
     out = np.zeros_like(signal)
-    for sos, tl in zip(sos_list, tl_db):
-        gain = 10.0 ** (-(tl * times) / 20.0)
+    for sos, tl, eq in zip(sos_list, tl_db, eq_db):
+        gain = 10.0 ** ((-(tl * times) + eq) / 20.0)
         out += gain * sosfilt(sos, signal)
     return out
 
@@ -210,6 +216,14 @@ def synthesize_coupled(
         delay_ms = float(p.get("extra_delay_ms", 0.0))
         if times < 1 or delay_ms < 0:
             raise ValueError(f"路徑 {i}（{p['type']}）的 tl_times/extra_delay_ms 不合法")
+        eq_db = p.get("eq_db")
+        if eq_db is not None:
+            if len(eq_db) != len(entry["tl_db"]):
+                raise ValueError(
+                    f"路徑 {i}（{p['type']}）的 eq_db 要有 {len(entry['tl_db'])} 個頻段值，"
+                    f"收到 {len(eq_db)} 個"
+                )
+            eq_db = [float(v) for v in eq_db]
 
         sig = src_ir
         via_name = None
@@ -217,7 +231,7 @@ def synthesize_coupled(
             via_ir, _, via_name = build_room_ir(p["via_room"], f"路徑{i}中繼空間", seed_base + 2 + i)
             sig = fftconvolve(sig, via_ir)
 
-        sig = apply_transmission_filter(sig, entry["tl_db"], band_freqs, fs, times=times)
+        sig = apply_transmission_filter(sig, entry["tl_db"], band_freqs, fs, times=times, eq_db=eq_db)
         sig = sig * 10.0 ** (gain_db / 20.0)
         n_delay = int(round(delay_ms / 1000.0 * fs))
         if n_delay:
@@ -230,6 +244,7 @@ def synthesize_coupled(
             "note_zh": p.get("note_zh", ""),
             "tl_db_per_band": entry["tl_db"],
             "tl_times": times,
+            "eq_db": eq_db,
             "gain_db": gain_db,
             "extra_delay_ms": delay_ms,
             "via_room": via_name,

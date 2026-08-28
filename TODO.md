@@ -39,12 +39,10 @@
 ## 等使用者（AI 推不動）
 
 - [x] 🎧 ~~試聽 T-14 的 3 個檔案~~ **✅ 已完成（2026-08-27）：「目前聽起來 OK」**
-- [ ] 🎧 **試聽 T-20/T-21 的 4 個檔案**（兩卡的必要通過條件；coupled 兩檔為
-      第一輪退回後的 **v2**——改全濕、封閉走廊純穿牆、家具房+家用小走廊）：
-      `afplay output/listen_text_bathroom.wav`（文字：浴室）、
-      `afplay output/listen_text_church.wav`（文字：大教堂）、
-      `afplay output/listen_coupled_stadium_corridor.wav`（v2：穿牆悶轟，幾乎只剩低頻）、
-      `afplay output/listen_coupled_neighbor_voices.wav`（v2：隔壁悶聲、殘響小）
+- [x] 🎧 ~~試聽 T-20 的 2 個檔案~~ **✅ 通過（2026-08-27 第二輪）：「沒有問題」**
+- [ ] 🎧 **第三輪試聽 T-21 的 2 個檔案（v3）**：
+      `afplay output/listen_coupled_stadium_corridor.wav`（v3：滿場巨蛋，尾巴 12.9→5.1s）、
+      `afplay output/listen_coupled_neighbor_voices.wav`（v3：低頻共振壓 ~7dB、中高頻更悶）
 - [ ] 🎤 （建議）提供一段**真實說話聲乾聲**放 `assets/dry/`——隔壁人聲情境用拍手
       示範不出「講話聲」的感覺，有真實乾聲後重跑 `gen_ir_coupled.py` 更有感
 - [ ] 📷 補上 `assets/photos/` 9 張照片的來源網址（T-04 自我檢查第 2 項，目前不符合）

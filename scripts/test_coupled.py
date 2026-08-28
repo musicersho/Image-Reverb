@@ -88,6 +88,22 @@ def main() -> int:
           ratio_open - ratio_wall >= 15.0,
           f"開口 {ratio_open:+.1f}dB vs 牆 {ratio_wall:+.1f}dB（差 {ratio_open - ratio_wall:.1f}dB）")
 
+    # ---------- 2b. eq_db 調音生效 ----------
+    print("【2b】eq_db 調音生效")
+    r_eq = synthesize_coupled(
+        tiny_scene([{"type": "gypsum_partition", "eq_db": [-12, 0, 0, 0, 0, 0]}]),
+        presets, materials, trans)
+    lf_drop = (band_energy_db(r_wall.ir, fs, 125) - band_energy_db(r_wall.ir, fs, 500)) - \
+              (band_energy_db(r_eq.ir, fs, 125) - band_energy_db(r_eq.ir, fs, 500))
+    check("eq_db 125Hz -12dB → 125/500 能量比下降 ~12dB（±3dB）",
+          abs(lf_drop - 12.0) <= 3.0, f"實測下降 {lf_drop:.1f}dB")
+    try:
+        synthesize_coupled(tiny_scene([{"type": "gypsum_partition", "eq_db": [0, 0]}]),
+                           presets, materials, trans)
+        check("eq_db 長度錯誤 → 報錯", False, "沒有報錯")
+    except ValueError:
+        check("eq_db 長度錯誤 → 報錯", True, "有報錯")
+
     # ---------- 3. 延遲生效 ----------
     print("【3】extra_delay_ms 生效")
     r_d0 = synthesize_coupled(tiny_scene([{"type": "opening_open", "extra_delay_ms": 0}]),

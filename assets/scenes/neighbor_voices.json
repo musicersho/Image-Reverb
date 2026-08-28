@@ -8,7 +8,8 @@
       "type": "gypsum_partition",
       "gain_db": 0,
       "extra_delay_ms": 0,
-      "note_zh": "共用的石膏板隔間牆（最短路徑，低頻為主）"
+      "eq_db": [-8, 0, -2, -6, -10, -14],
+      "note_zh": "共用的石膏板隔間牆（最短路徑）。eq_db 調音（v3，使用者第二輪實聽）：石膏板 TL 的低頻透射比中頻多 23dB，125Hz 頻帶太凸造成『低頻共振聲』→ 壓 -8dB；500Hz 以上遞增壓 2~14dB 讓音色『再悶一些』。能量中心落在 125-250Hz、往上滾降（悶悶人聲的頻域）"
     },
     {
       "type": "glass_double",
@@ -21,6 +22,7 @@
       "type": "door_solid_closed",
       "tl_times": 2,
       "gain_db": -10,
+      "eq_db": [-8, 0, -2, -6, -10, -14],
       "extra_delay_ms": 12,
       "via_room": {
         "name_zh": "家用小走廊",
