@@ -2,7 +2,8 @@
 
 SPEC §5 路線 A+B 混合：
 - 早期（路線 A）：pyroomacoustics ShoeBox image-source，**逐表面材質**（約束 A，
-  per-wall `pra.Material`，整條路徑不存在跨面平均 α），取直達音後 ~90ms。
+  per-wall `pra.Material`，整條路徑不存在跨面平均 α），取直達音後 ~90ms（T-22 起
+  改為尺度自適應下限，大房間會依幾何延伸——理由見 `simulate_early_ir()`）。
 - 晚期（路線 B）：白噪音過八度頻段濾波器組（Butterworth），每頻段按 T-13 的目標
   RT60 做指數衰減（-60dB @ RT60），逐頻段與早期反射做能量匹配後 raised-cosine 交接。
 
@@ -85,16 +86,48 @@ def _required_max_order(
     return min(order, config.IR_MAX_IMAGE_ORDER)
 
 
+def _first_order_reflection_arrival_s(
+    dims: list[float], source: list[float], mic: list[float], sound_speed: float
+) -> float:
+    """最短一階反射的到達時間（秒，從聲源發聲起算，與直達音同一時間基準）。
+
+    鏡像法：對六面（x/y/z 三軸的 0 與該軸房間邊長兩個邊界）各把聲源鏡射過去，
+    鏡像聲源到麥克風的距離就是該面一階反射的路徑長，取六者最短。
+
+    T-22 早期窗尺度自適應刻意用**絕對到達時間**（不是「比直達音晚多久」的差值）
+    去算早期窗長：大房間的反射本來就稀疏（平均自由徑隨房間尺度變長），只把窗頂
+    到「比直達音晚一點」還不夠——窗仍可能剛好落在兩簇離散反射之間的空隙
+    （160×130×45 實測：差值法窗落在 40–70ms，broadband RMS 只有 2–6e-6，
+    比 20–40ms 那簇反射的 1–2.4e-4 低了 40 倍以上，2k/4k 量測 T30 因此仍 −94%）。
+    用絕對到達時間會把窗往後推更多，同時讓 `_required_max_order()` 算出的階數
+    跟著變高，涵蓋更多累積的鏡像反射，能量匹配窗因此量到有代表性的位準
+    （尺度掃描 40–200m 全部收斂到 ≤22% 誤差，不再需要縮短這段推理）。
+    """
+    direct_s = math.dist(source, mic) / sound_speed
+    reflection_times_s = []
+    for axis, extent in enumerate(dims):
+        for boundary in (0.0, extent):
+            mirrored = list(source)
+            mirrored[axis] = 2.0 * boundary - source[axis]
+            reflection_times_s.append(math.dist(mirrored, mic) / sound_speed)
+    return min(reflection_times_s)
+
+
 def simulate_early_ir(
     acoustics: AcousticsResult,
     surfaces: SurfaceMaterials,
     materials_data: dict[str, Any],
-) -> tuple[np.ndarray, float]:
+) -> tuple[np.ndarray, float, float]:
     """跑 image-source（不開 ray tracing——晚期由 shaped-noise 負責）。
 
-    回傳 (原始 RIR, 直達音起點秒數)。直達音起點用幾何解析算
+    回傳 (原始 RIR, 直達音起點秒數, 本次採用的早期窗長 ms)。直達音起點用幾何解析算
     （直達距離/音速 + pra 小數延遲濾波器的固定偏移），不用波形門檻偵測——
     實測 RIR 開頭有 air absorption 濾波造成的慢速漂移，門檻偵測會抓錯。
+
+    早期窗長（T-22）：`max(IR_EARLY_MIN_MS, 最短一階反射到達時間 + IR_ENERGY_MATCH_MS)`
+    ——確保能量匹配窗（交接前 IR_ENERGY_MATCH_MS）內至少涵蓋第一簇反射，不論房間多大
+    （用絕對到達時間而非「比直達音晚多久」的理由見 `_first_order_reflection_arrival_s`
+    docstring）。小/中房間（到達時間 + match 窗 < 90ms）走 max 的左支，數值與行為不變。
     """
     dims = [acoustics.length_m, acoustics.width_m, acoustics.height_m]
     source, mic = _source_mic_positions(*dims)
@@ -102,10 +135,16 @@ def simulate_early_ir(
     physics = pra.Physics(
         temperature=config.AIR_TEMPERATURE_C, humidity=config.AIR_HUMIDITY_PCT
     )
-    direct_s = math.dist(source, mic) / physics.get_sound_speed()
-    max_order = _required_max_order(
-        dims, direct_s + config.IR_EARLY_MS / 1000.0, physics.get_sound_speed()
+    sound_speed = physics.get_sound_speed()
+    direct_s = math.dist(source, mic) / sound_speed
+
+    reflection_arrival_s = _first_order_reflection_arrival_s(dims, source, mic, sound_speed)
+    early_ms = max(
+        config.IR_EARLY_MIN_MS,
+        reflection_arrival_s * 1000.0 + config.IR_ENERGY_MATCH_MS,
     )
+
+    max_order = _required_max_order(dims, direct_s + early_ms / 1000.0, sound_speed)
 
     room = pra.ShoeBox(
         dims,
@@ -133,7 +172,7 @@ def simulate_early_ir(
     # pra 的 RIR 對齊：直達音落在「幾何傳播時間 + 小數延遲濾波器半長」處
     # （已實測驗證：4×3×2.5 房間幾何值 315.2 樣本 + 40 = 355，與波形一致）
     onset_s = direct_s + (pra.constants.get("frac_delay_length") // 2) / config.IR_SAMPLE_RATE
-    return np.asarray(room.rir[0][0], dtype=np.float64), onset_s
+    return np.asarray(room.rir[0][0], dtype=np.float64), onset_s, early_ms
 
 
 # ------------------------------------------------------------
@@ -232,12 +271,12 @@ def synthesize_ir(
     surfaces.validate(materials_data)
 
     # --- 路線 A：早期反射 ---
-    early_full, onset_s = simulate_early_ir(acoustics, surfaces, materials_data)
+    early_full, onset_s, early_ms = simulate_early_ir(acoustics, surfaces, materials_data)
     if float(np.max(np.abs(early_full))) <= 0.0:
         raise ValueError("image-source 模擬輸出全零，早期反射合成失敗")
     onset_idx = int(round(onset_s * fs))
 
-    n_early_end = onset_idx + int(round(fs * config.IR_EARLY_MS / 1000.0))
+    n_early_end = onset_idx + int(round(fs * early_ms / 1000.0))
     n_xf = int(round(fs * config.IR_CROSSFADE_MS / 1000.0))
     n_match = int(round(fs * config.IR_ENERGY_MATCH_MS / 1000.0))
     n_fade_start = n_early_end - n_xf
@@ -249,6 +288,20 @@ def synthesize_ir(
     early = np.zeros(n_total)
     n_copy = min(len(early_full), n_early_end)
     early[:n_copy] = early_full[:n_copy]
+
+    # --- T-22 縱深防禦：能量匹配窗相對直達音峰值的位準，就算自適應公式仍失效也不再靜默 ---
+    direct_peak = float(np.max(np.abs(early_full)))
+    match_rms_broadband = _rms(early[match_window])
+    if direct_peak > 0.0:
+        if match_rms_broadband <= 0.0:
+            match_level_db = float("-inf")
+        else:
+            match_level_db = 20.0 * math.log10(match_rms_broadband / direct_peak)
+        if match_level_db < config.IR_MATCH_WINDOW_RMS_FLOOR_DB:
+            warnings.append(
+                f"能量匹配窗內幾乎無反射能量（相對直達音峰值 {match_level_db:.1f} dB，"
+                f"門檻 {config.IR_MATCH_WINDOW_RMS_FLOOR_DB} dB），晚期殘響位準不可信"
+            )
 
     # --- 路線 B：六頻段 shaped-noise ---
     rng = np.random.default_rng(seed)
@@ -296,7 +349,7 @@ def synthesize_ir(
         band_center_freqs_hz=band_freqs,
         rt60_bands_target=rt60_target,
         rt60_basis=basis,
-        early_ms=config.IR_EARLY_MS,
+        early_ms=early_ms,
         crossfade_ms=config.IR_CROSSFADE_MS,
         noise_seed=seed,
         onset_s=onset_s,
