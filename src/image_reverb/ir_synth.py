@@ -125,9 +125,12 @@ def simulate_early_ir(
     實測 RIR 開頭有 air absorption 濾波造成的慢速漂移，門檻偵測會抓錯。
 
     早期窗長（T-22）：`max(IR_EARLY_MIN_MS, 最短一階反射到達時間 + IR_ENERGY_MATCH_MS)`
-    ——確保能量匹配窗（交接前 IR_ENERGY_MATCH_MS）內至少涵蓋第一簇反射，不論房間多大
-    （用絕對到達時間而非「比直達音晚多久」的理由見 `_first_order_reflection_arrival_s`
-    docstring）。小/中房間（到達時間 + match 窗 < 90ms）走 max 的左支，數值與行為不變。
+    ——「到達時間」是**絕對值**（從聲源發聲起算，不扣掉直達音傳播時間）。大房間因此
+    把交接點推得很後面（巨蛋 160×130×45 → 320.6ms），能量匹配窗量到的是**累積起來的
+    反射群**，不是「第一簇反射」（第一簇其實在直達音後僅 24.6ms 就到了）；窗後推的同時
+    `_required_max_order()` 算出的階數也跟著變高、涵蓋更多鏡像反射，匹配窗才量得到有
+    代表性的位準——完整機制與實測數字見 `_first_order_reflection_arrival_s()` docstring。
+    小/中房間（到達時間 + match 窗 < 90ms）走 max 的左支，與 T-14 交付版 bit-identical。
     """
     dims = [acoustics.length_m, acoustics.width_m, acoustics.height_m]
     source, mic = _source_mic_positions(*dims)

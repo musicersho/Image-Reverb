@@ -59,6 +59,14 @@ def main() -> int:
     for room in result.rooms_summary:
         print(f"  [{room['role']}] {room['name']}：{room['dims_m'][0]}×{room['dims_m'][1]}×{room['dims_m'][2]} m，"
               f"T30 量測 {room['t30_measured_s']} s")
+        # T-21 修正輪：逐空間閉環比對結果一定要印出來（原本只在 JSON 並列數字、
+        # 從不比對，巨蛋 2k/4k −94% 因此安靜地過關）。誤差是量測 vs 目標，誠實列出。
+        cl = room["closed_loop"]
+        worst = max(cl["bands"], key=lambda b: abs(b["error_pct"]))
+        flag = "✅ 全部在 ±20% 內" if cl["all_within_tolerance"] else "⚠️ 有頻段超差"
+        print(f"      閉環比對 {flag}（最大誤差 {worst['freq_hz']}Hz "
+              f"{worst['error_pct']:+.1f}%：目標 {worst['rt60_target_s']}s "
+              f"vs 量測 {worst['t30_measured_s']}s）")
     for p in result.paths_summary:
         extra = f"，經 {p['via_room']}" if p["via_room"] else ""
         print(f"  路徑{p['index']}：{p['name_zh']} ×{p['tl_times']}，gain {p['gain_db']}dB，"

@@ -1090,7 +1090,7 @@
   | 160×130×45 | **−94%** / −93% | −17.2% / −17.5% | 320.6 |
   | 200×160×55（=`stadium_dome` preset） | 未測（本卡未涵蓋） | −16.1% / −18.4% | 390.8 |
 
-  全部尺寸誤差收斂到 ≤25% 內，`export_ir()` 並新增縱深防禦（`IR_MATCH_WINDOW_RMS_FLOOR_DB`
+  全部尺寸誤差收斂到 ≤25% 內，`synthesize_ir()` 並新增縱深防禦（`IR_MATCH_WINDOW_RMS_FLOOR_DB`
   門檻，匹配窗 RMS 相對直達音峰值過低會輸出明確警示），就算未來再出現沒想到的
   幾何懸崖也不會再靜默。4×3×2.5 與 30×20×12 兩條交付 IR 經 MD5 比對確認零回歸。
   完整推導與測試見 TASKS.md T-22 卡與 `scripts/test_ir_synth.py` 【6】【7】【8】。
@@ -1372,9 +1372,9 @@
     `python scripts/gen_ir_from_text.py "浴室"` / `"大教堂"`。
 
 ### T-21 複合場景引擎 v1（路徑串接：跨空間傳輸）
-- **狀態**：🟠 退回（Opus 驗證，2026-08-28）— 迴歸測試 14 項全過、使用者三輪試聽 ✅，
-  但**交付的巨蛋示範場景含一個未被任何機制攔下的 −94% 靜默錯誤**（詳下）。
-  修正範圍小（約 10 行＋一段文件更正＋巨蛋場景重聽），修完即可複驗。
+- **狀態**：🟡 進行中——修正輪程式與文件已完成（2026-08-28），
+  **卡在「請使用者重聽 v4 兩檔」這一步**（修正清單第 4 項／修正輪步驟 5）。
+  使用者確認聽感後改 🔵 待驗證交 Opus 複驗。修正紀錄見下方「🔧 修正輪執行紀錄」。
 - **❌ Opus 退回理由（2026-08-28）**：
   1. **`stadium_corridor` 的聲源空間 IR 高頻完全沒有晚期殘響，且沒有任何警示**。
      交付的 `output/ir_synth/coupled_stadium_corridor.json` 裡並列著
@@ -1458,6 +1458,61 @@
      殘響缺失的 IR 給的，不能沿用）。聽感基準：stadium 仍應「悶、幾乎只剩低頻」
      （TL 濾波不變），但巨蛋高頻晚期殘響回來後尾巴質感會變；尾長不應退回 12.9s 級。
   6. 重聽通過後狀態改 🔵 待驗證，Opus 複驗（順序：先 T-22 後本卡）。
+- **🔧 修正輪執行紀錄（2026-08-28，前置 T-22 ✅ 已通過）**：
+  - **修正清單第 1 項（閉環比對警示）已完成**，但**實作位置與卡片字面不同，理由如下**：
+    卡片寫「`export_coupled()` 對 `rooms_summary` 每個空間跑比對（直接複用
+    `closed_loop_report()`）」——實際上 `export_coupled()` 手上只有**加總後的複合 IR**
+    與 `rooms_summary` 裡已四捨五入的摘要數字，拿不到任何**單一空間自己的 IR**，
+    無法直接複用 `closed_loop_report()`（它的第一個參數就是要量測的 IR）。
+    所以比對放在 `synthesize_coupled()` 的 `build_room_ir()` 裡——那是唯一同時握有
+    空間 IR 與目標 RT60 的地方；完整報告存進 `rooms_summary[i]["closed_loop"]`，
+    超差訊息加上 `[空間角色／名稱]` 前綴後掛進 `CoupledResult.warnings`。
+    **達成的保證比卡片字面更強**：export 的 JSON 與 CLI 兩邊都會出現（卡片要求），
+    而且不經 export、直接呼叫函式庫的下游（T-15/T-17）也不會再安靜。
+    容差 `CLOSED_LOOP_TOLERANCE = 0.20`，與 T-14 `export_ir()` 同一個值。
+  - **已知混頻偏差確實照樣出現在警示裡（誠實回報，不是修掉）**——重生後實測：
+    `neighbor_voices` 聲源臥室 125Hz **+27.5%**、聽者臥室 125Hz **+34.8%**、
+    家用小走廊 125Hz **+114.4%**／250Hz **+51.7%**；`stadium_corridor` 的聽者走廊
+    125Hz **+158.6%**／250Hz **+37.0%**（這條在 v3 也存在、也一樣是靜默的，
+    修正後才浮出來）。這些是 T-14 已定位並由 Opus 獨立證實物理上不可達的量測混頻
+    偏差（陡峭頻段階梯），**判準一律維持 ±20%，沒有為了讓它們消失而放寬**。
+  - **修正清單第 3 項（更正「尺寸無關」斷言）已完成**，見上方交接筆記「已知限制」欄
+    的刪節線與更正段。
+  - **v4 重生結果（修正輪步驟 3）——MD5 差異來源完全可解釋**：
+    | 檔案 | v3 MD5 | v4 MD5 | 解釋 |
+    |---|---|---|---|
+    | `coupled_neighbor_voices.wav` | `9a94ffdf…` | `9a94ffdf…` **相同** | 三個空間（臥室×2、4m 小走廊）都在安全尺度、走 T-22 `max()` 左支，引擎輸出 bit-identical；只有警示欄變化 |
+    | `listen_coupled_neighbor_voices.wav` | `0c438ad1…` | `0c438ad1…` **相同** | 同上 |
+    | `coupled_stadium_corridor.wav` | `51082fab…` | `a1c21bcc…` **不同** | 聲源空間是 160×130×45 的巨蛋，正是 T-22 修好的那條 IR——**這個差異就是本次修正的目的** |
+    | `listen_coupled_stadium_corridor.wav` | `e7bbb759…` | `05d91b21…` **不同** | 同上 |
+  - **巨蛋聲源空間的 −94% 已消失**：`coupled_stadium_corridor.json` 的
+    `rooms[0]`（聲源空間）2kHz 量測由 **0.173s → 2.575s**（目標 2.966s，誤差 −13.2%）、
+    4kHz 由 **0.184s → 2.224s**（目標 2.679s，誤差 −17.0%），
+    `closed_loop.all_within_tolerance: true`（六頻段全部在 ±20% 內）。
+  - **聽感基準量測（給使用者重聽時對照，修正輪步驟 5 的判準）**：
+    - `stadium_corridor` **仍然很悶**（TL 濾波沒動）——扣掉白噪 +3dB/oct 頻寬基準後
+      相對 125Hz 的感知傾斜：500Hz −9.7 / 1k −17.3 / 2k −24.9 / **4k −27.6 dB**
+      （v3 是 4k −32.6dB；亮了約 5dB，因為巨蛋的高頻晚期殘響回來了，這是預期中的變化）。
+    - **尾巴沒有退回 12.9s 級**：複合 IR 的 125Hz T30 **5.05s**（v3 5.07s，幾乎不變）；
+      變化集中在高頻——2kHz 2.045→**2.657s**、4kHz 1.325→**2.252s**（晚期殘響回來了）。
+      預期聽感差異：尾巴的「質感」變得比較完整、不再只剩低頻嗡嗡，但總長度沒變長。
+    - `neighbor_voices` 聲音**完全沒變**（MD5 相同），量測傾斜 500 −9.1 / 1k −15.6 /
+      2k −24.3 / 4k −25.9 dB 與 v3 紀錄逐項相符——重聽它是為了確認「沒被改壞」。
+  - **測試（修正輪步驟 4）**：`scripts/test_coupled.py` 既有 **14 項維持全過、判準未放寬**；
+    新增【5b】**3 項**（卡片要求至少 1 項）——輸出 JSON 的 warnings 含 >20% 頻段警示、
+    每個空間（含 via_room）都有 `closed_loop` 報告、警示有標注是哪個空間出問題。
+    `scripts/test_ir_synth.py` 23 項亦維持全過（未動 T-22 的判準）。
+  - **順手完成 T-22 驗證留下的 5 條非阻斷文件建議**（TODO.md 指定併入本輪）：
+    `simulate_early_ir()` docstring 說法與 `_first_order_reflection_arrival_s()` 統一、
+    T-14 卡 `export_ir()` 誤植改為 `synthesize_ir()`、測項計數更正為 10+13=23、
+    防禦門檻 3dB 薄餘裕寫進 `config.py` 註解列為已知限制、合成耗時已由驗證紀錄補上。
+  - 改動檔案：`src/image_reverb/coupled.py`、`scripts/gen_ir_coupled.py`、
+    `scripts/test_coupled.py`（＋上述文件修正動到 `src/image_reverb/ir_synth.py` 與
+    `config.py` 的**註解/docstring**，無任何數值或邏輯變動——`test_ir_synth.py` 的
+    零回歸 MD5 判準仍全過即為證明）。未動 SPEC/ROADMAP/WORKFLOW/`ir_metrics.py`。
+  - **下一步（卡在這裡）**：請使用者重聽
+    `output/listen_coupled_stadium_corridor.wav` 與
+    `output/listen_coupled_neighbor_voices.wav`，確認後狀態改 🔵 待驗證、交 Opus 複驗。
 - **Opus 非阻斷觀察**：`e1cfa8f` 動到 T-20 的 `data/scene_presets.json`（只改 note 文字、
   無數值變動，內容也確實有幫助），但跨任務改檔案的慣例上該記一筆。
 - **前置**：T-14（引擎）、T-20（room preset 引用）
@@ -1510,8 +1565,13 @@
     `neighbor_voices` 三路徑（隔間牆/雙層玻璃×2/門-走廊-門），合成 IR 6.3s。
   - **已知限制（記給下游與 T-17）**：路徑間相對音量（gain_db）是場景作者設定值，
     非物理推導（要物理推導需要傳輸面積與收發位置，v1 沒有）；乾聲只有合成拍手，
-    隔壁人聲情境等有真實說話聲乾聲再重聽；巨蛋 200m 尺度遠超 T-14 引擎驗證過的範圍
-    （引擎機制是尺寸無關的公式與濾波，但聽感未經對照驗證）。
+    隔壁人聲情境等有真實說話聲乾聲再重聽；巨蛋 200m 尺度遠超 T-14 引擎驗證過的範圍。
+    ~~（引擎機制是尺寸無關的公式與濾波，但聽感未經對照驗證）~~
+    **【2026-08-28 修正輪更正——這句與實測相反，見退回理由第 4 點】**：引擎機制
+    **是尺寸相依的**——早期窗/能量匹配窗原為固定 90ms/30ms，在 80–120m 之間跨過
+    臨界尺度就失效（120×100×35 −75%、160×130×45 −94%，全程無警示）。已由 **T-22**
+    改為依幾何動態計算的尺度自適應窗（驗證尺度至 200m 級），並加上能量匹配窗
+    RMS 縱深防禦警示。聽感仍未經對照驗證（這半句成立）。
   - 試聽檔：`output/listen_coupled_stadium_corridor.wav`、
     `output/listen_coupled_neighbor_voices.wav`（**v2**，第一輪退回後重生）。
     重生：`python scripts/gen_ir_coupled.py assets/scenes/<場景>.json`。
@@ -1616,8 +1676,11 @@
     `IR_MATCH_WINDOW_RMS_FLOOR_DB=-60.0`）、`ir_synth.py`（新增
     `_first_order_reflection_arrival_s()`；`simulate_early_ir()` 改回傳
     `(rir, onset_s, early_ms)` 三元組；`synthesize_ir()` 吃動態 `early_ms`
-    ＋新增縱深防禦警示）、`scripts/test_ir_synth.py`（新增【6】【7】【8】共 11 項，
-    既有 11 項不動）。未新增檔案、未動 SPEC/ROADMAP/WORKFLOW/`ir_metrics.py`。
+    ＋新增縱深防禦警示）、`scripts/test_ir_synth.py`（新增【6】【7】【8】，
+    既有項目不動）。未新增檔案、未動 SPEC/ROADMAP/WORKFLOW/`ir_metrics.py`。
+    （**測項計數更正，2026-08-28 T-21 修正輪**：既有實為 **10 項**、本卡新增
+    **13 項**＝【6】2＋【7】10＋【8】1，總計 **23 項**。原寫「既有 11 項／新增 11 項」
+    是把收尾那行 `✅ 全部通過` 算進去的舊誤植，判準本身一項未增未減。）
   - **關鍵坑（先做錯過一次）**：一開始用「反射比直達音晚多久」的**差值**去算
     早期窗（`max(90, 差值+30)`），160×130×45 的差值只有 24.6ms、遠小於 90ms 下限，
     窗完全沒變、−94% 依舊存在。後來對照原始 RIR 波形發現：問題不是「窗開始得

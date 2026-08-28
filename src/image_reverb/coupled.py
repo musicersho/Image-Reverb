@@ -36,6 +36,13 @@ from .scene_text import load_scene_presets
 
 TRANSMISSION_PATH = config.PROJECT_ROOT / "data" / "transmission.json"
 
+# 逐空間閉環比對的容差，與 T-14 `ir_synth.export_ir()` 用的同一個值（±20%）。
+# T-21 修正輪（2026-08-28）：`export_coupled()` 原本只把 target 與 measured 並列寫進
+# `rooms`、從不比對，導致巨蛋聲源空間 2k/4k −94% 的錯誤安靜地寫進 JSON（見 TASKS.md
+# T-21 卡「❌ Opus 退回理由」第 1、3 點）。現在每個空間（含 via_room 中繼空間）都跑
+# 一次 `ir_metrics.closed_loop_report()`，超差頻段一律進 warnings。
+CLOSED_LOOP_TOLERANCE = 0.20
+
 METHOD_ID = "path_cascade_v1"
 METHOD_DISCLAIMER = (
     "路徑串接近似：各路徑＝聲源空間IR ⊗ 傳輸濾波（六頻段TL）⊗ 中繼空間IR(可選)，"
@@ -190,14 +197,34 @@ def synthesize_coupled(
         ac = compute_acoustics(est, surf, materials_data)
         result = ir_synth.synthesize_ir(ac, materials_data, seed=seed)
         warnings.extend(result.warnings)
-        measured = ir_metrics.band_t30(result.ir, fs, ac.band_center_freqs_hz)
+
+        # 逐空間閉環比對（T-21 修正輪）：複用 T-14 `export_ir()` 用的同一份
+        # `ir_metrics.closed_loop_report()`，量測 T30 vs 目標 RT60 超過 ±20% 就發警示。
+        # 比對放在這裡而不是 `export_coupled()`，因為只有這裡拿得到**該空間自己的 IR**
+        # ——`export_coupled()` 手上只有加總後的複合 IR 與已四捨五入的摘要數字，
+        # 無法「直接複用 closed_loop_report()」。警示掛進 `CoupledResult.warnings`，
+        # 因此 export 的 JSON 與 CLI 兩邊都會出現，且不經 export 直接用函式庫的
+        # 呼叫端也不會再安靜（TASKS.md T-21 卡修正輪步驟 1）。
+        report = ir_metrics.closed_loop_report(
+            result.ir,
+            fs,
+            list(ac.band_center_freqs_hz),
+            list(result.rt60_bands_target),
+            tolerance=CLOSED_LOOP_TOLERANCE,
+            plausible_min_s=config.RT60_PLAUSIBLE_MIN_S,
+            plausible_max_s=config.RT60_PLAUSIBLE_MAX_S,
+        )
+        warnings.extend(f"[{label}／{name}] {w}" for w in report["warnings"])
         rooms_summary.append({
             "role": label,
             "name": name,
             "dims_m": [est.length_m, est.width_m, est.height_m],
             "surfaces": surf.as_dict(),
             "rt60_bands_target_sabine": [round(v, 3) for v in ac.rt60_bands_sabine],
-            "t30_measured_s": [round(float(v), 3) for v in measured],
+            # 直接取閉環報告裡的值（不再四捨五入第二次）：摘要欄與
+            # closed_loop.bands 的量測數字保證一致，不會出現兩處差 1ms 的鬼故事
+            "t30_measured_s": [b["t30_measured_s"] for b in report["bands"]],
+            "closed_loop": report,
             "noise_seed": seed,
         })
         return result.ir, ac, name
@@ -277,7 +304,14 @@ def synthesize_coupled(
 
 
 def export_coupled(result: CoupledResult, out_stem: str | Path) -> tuple[Path, Path]:
-    """輸出 `<stem>.wav` 與 `<stem>.json`（method 標記＋近似聲明＋全部參數可追溯）。"""
+    """輸出 `<stem>.wav` 與 `<stem>.json`（method 標記＋近似聲明＋全部參數可追溯）。
+
+    JSON 的 `rooms[].closed_loop` 是**每個空間**（含 via_room 中繼空間）的閉環比對
+    報告（target vs measured，容差 ±20%，由 `synthesize_coupled()` 用
+    `ir_metrics.closed_loop_report()` 產生）；超差頻段的訊息一併彙進頂層 `warnings`。
+    複合 IR 本身沒有可對照的 Sabine 目標（串接後的殘響不是任一單一空間的公式值），
+    所以對它只做合理區間檢查，不做 target 比對——這是刻意的，不是漏掉。
+    """
     out_stem = Path(out_stem)
     out_stem.parent.mkdir(parents=True, exist_ok=True)
     wav_path = out_stem.with_suffix(".wav")
@@ -302,6 +336,10 @@ def export_coupled(result: CoupledResult, out_stem: str | Path) -> tuple[Path, P
         "length_s": round(len(result.ir) / result.sample_rate, 3),
         "band_center_freqs_hz": result.band_center_freqs_hz,
         "t30_measured_s": [round(float(v), 3) for v in measured],
+        "closed_loop_note": (
+            "每個空間的 target vs measured 比對在 rooms[].closed_loop（容差 ±20%，"
+            "超差進 warnings）；複合 IR 本身無 Sabine 目標可對照，只做合理區間檢查。"
+        ),
         "rooms": result.rooms_summary,
         "paths": result.paths_summary,
         "warnings": list(dict.fromkeys(list(result.warnings) + plaus_warnings)),

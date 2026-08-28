@@ -5,7 +5,9 @@
 任何 clone 可重跑；全部通過 exit 0，任一失敗 exit 1）。
 """
 
+import json
 import sys
+import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -15,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.image_reverb import ir_metrics  # noqa: E402
 from src.image_reverb.coupled import (  # noqa: E402
+    export_coupled,
     get_transmission,
     load_scene_file,
     load_transmission,
@@ -152,6 +155,31 @@ def main() -> int:
                   f"{len(scene['paths'])} 條路徑（完整合成在 gen_ir_coupled.py）")
         except (ValueError, KeyError) as e:
             check(f"示範場景 {fname} schema 有效", False, str(e))
+
+    # ---------- 5b. 閉環比對警示真的接上了（T-21 修正輪）----------
+    # 退回理由第 3 點：`export_coupled()` 原本只把 target/measured 並列寫進 rooms、
+    # 從不比對，巨蛋聲源空間 2k/4k −94% 因此安靜地過關。這裡拿 neighbor_voices
+    # 當對象——它的臥室 125Hz 與家用小走廊低頻有**已知的量測混頻偏差**（>20%），
+    # 那些偏差本來就該出現在警示裡（誠實回報，不是修掉），正好用來驗機制通不通。
+    print("【5b】export_coupled() 閉環比對警示（T-21 修正輪）")
+    scene_nv = load_scene_file(PROJECT_ROOT / "assets" / "scenes" / "neighbor_voices.json")
+    r_nv = synthesize_coupled(scene_nv, presets, materials, trans)
+    with tempfile.TemporaryDirectory() as tmp:
+        _, js = export_coupled(r_nv, Path(tmp) / "t21_warn_check")
+        payload = json.loads(js.read_text(encoding="utf-8"))
+
+    over_tol = [w for w in payload["warnings"] if "超出 ±20%" in w]
+    check("輸出 JSON 的 warnings 含 >20% 頻段警示（已知混頻偏差不再靜默）",
+          len(over_tol) > 0,
+          f"{len(over_tol)} 條，例：{over_tol[0] if over_tol else '（無）'}")
+
+    rooms = payload["rooms"]
+    check("每個空間（含 via_room 中繼空間）都有 closed_loop 報告",
+          len(rooms) == 3 and all("closed_loop" in r for r in rooms),
+          f"{len(rooms)} 個空間：{[r['role'] for r in rooms]}")
+    check("警示標注是哪個空間出問題（不是一坨無主訊息）",
+          all(w.startswith("[") for w in over_tol),
+          over_tol[0].split("]")[0] + "]" if over_tol else "（無）")
 
     # ---------- 6. 錯誤處理 ----------
     print("【6】錯誤處理")
