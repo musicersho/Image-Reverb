@@ -1263,9 +1263,36 @@
 > 依賴 T-14（🔵 待 Opus 驗證——若 T-14 被退回，本節兩卡需複測）。排在 T-15 之前。
 
 ### T-20 文字場景描述 → IR（scene preset 庫 + 解析器）
-- **狀態**：🔵 待驗證（Fable 執行，2026-08-27）— 迴歸測試 13 項全過；
-  **使用者試聽 ✅（2026-08-27 第二輪）：「listen_text_bathroom 和 listen_text_church 沒有問題」**
-  ——步驟 4 的必要條件達成，只剩 Opus 驗證
+- **狀態**：✅ 通過（Opus 驗證，2026-08-28）— 迴歸測試 13 項全過（Opus 乾淨重跑）；
+  使用者試聽 ✅（2026-08-27 第二輪）：「listen_text_bathroom 和 listen_text_church 沒有問題」
+- **Opus 驗證紀錄（2026-08-28）**：
+  1. 乾淨重跑 `scripts/test_scene_text.py` 13 項全過（另從專案外的 cwd 跑也過，路徑處理正確）。
+     兩個試聽檔重生後 **MD5 與重跑前完全相同**、非靜音（RMS 0.033 / 0.031）。
+  2. **紅旗「安靜 fallback」→ 不成立**：Opus 另試 `asdf`／`4x3x2.5`（只有尺寸沒有場景）／
+     `地板鋪地毯`（只有材質）／`停車場`／`太空艙` 五種比不中的輸入，**全部報錯並列出場景清單**，
+     CLI exit code = 2。「車內」走的是明確拒絕訊息。
+  3. **紅旗「六面 α 平均／全域單一材質」→ 不成立**：13 個 preset 逐面材質皆來自
+     materials.json（commit 未動 materials.json），CLI 逐面印出材質與來源；
+     樓梯間／洞窟六面同材質是物理實況（混凝土豎井、岩洞），非約束 A 違例。
+  4. **覆寫真的傳到 IR（合成後獨立量測 T30 驗證）**：「一般房間」2kHz 1.07s →
+     加「地毯」後 0.48s；「很大的一般房間」尺寸 4×3×2.5 → 5.2×3.9×3.25、IR 2.06→2.62s；
+     顯式尺寸 `8x6x4` 生效且 confidence 升 high。
+  5. **preset 物理合理性 Opus 全掃 13 個**（非只抽 3 個）：浴室 0.46s、教室 0.49s、
+     辦公室 0.41s、客廳 0.64s、音樂廳 1.53s、教堂 8.06s、體育館 7.68s、洞窟 7.36s
+     ——全部落在該類空間的文獻常識區間。巨蛋 125Hz 目標 13.68s 超出 0.1–12s，
+     **由 T-14 引擎如實發出合理區間警示**＋preset 低信心警示，沒有安靜通過。
+  6. 輸出規格與誠實度：`text_bathroom` / `text_church` 皆 48kHz / PCM_24 / mono，
+     閉環 JSON 並列 target/measured，250Hz +21.8%、4kHz +21.1% 兩條超標警示照實輸出。
+     commit 只動自己的 5 個檔案，未動 T-14 程式、SPEC/ROADMAP/WORKFLOW。
+- **Opus 非阻斷建議（留給 T-15，不影響本卡通過）**：
+  1. **英文關鍵字用子字串比對會誤殺**：`cabin`（不支援清單）命中 `cabinet`——
+     「a room with wooden cabinets」被誤判為非建築空間。失效方向安全（報錯而非安靜給錯結果），
+     但英文關鍵字應改用詞邊界比對。
+  2. 「很大的 4x3x2.5 房間」的 notes 會同時留下「放大 ×1.3」與「顯式尺寸」兩條，
+     但實際只有後者生效——前者是已被覆蓋的過期紀錄，易誤導，建議覆寫時移除。
+  3. CLI 的錯誤訊息印在 stdout 而非 stderr（exit code 正確），T-15 整合時可一併調整。
+  4. 測試裡「樓梯間／洞窟」的約束 A 豁免是 hardcode 在 `test_scene_text.py` 的 id tuple，
+     建議改成 preset JSON 的欄位（如 `uniform_surfaces_ok` ＋理由），讓豁免理由跟資料走。
 - **前置**：T-14（引擎介面），T-13 ✅
 - **對應 SPEC**：F-16
 - **產出**：`data/scene_presets.json`（≥10 種場景 preset）、`src/image_reverb/scene_text.py`
