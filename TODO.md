@@ -38,7 +38,22 @@
       退出碼修正。Opus 乾淨環境重跑＋**自建獨立量測實作交叉複驗**（掃 0.3–5.0s 五組，
       誤差 −2.3%～+1.7%）＋裁決 B 混頻機制獨立重現（逐頻段 125Hz +105%）＋
       六條交付 IR MD5 自己重生比對零回歸。附 4 項非阻斷觀察給 T-17。
-- [ ] **← 現在該做的：T-17 MVP 驗收**（SPEC §7 四項標準，低頻聯合帶量測工具已就緒）
+- [x] **T-17 MVP 驗收 🔵 Opus 已執行（2026-08-30）** — §7-2 完成且**明確未達標**
+      （自動幾何組 22%／0-8 場地、手動組 20%／0-5）。**病因已隔離：在材質辨識，
+      不在幾何也不在合成引擎**（壁球場同一引擎只換材質即從 −50% 翻成 +13%）。
+      新發現三個缺陷（`is_equirect()` 把 2:1 透視照誤判成環景＝地雷 #16、
+      `--override-dims` 一律給 `high`＝地雷 #17、戶外無拒絕出口）。
+      報告：`output/mvp_acceptance/REPORT.md`
+- [ ] **← 現在該做的（使用者本人）：§7-1 盲聽 ＋ §7-3 載入 plugin ＋ §7-4 試聽**
+      - 聽 `output/mvp_acceptance/blind_test/sample_1~5.wav` → 填 `blind_test/作答表.md`
+        （**作答完前不要打開 `blind_test_ANSWERS.json`**）
+      - 把 `blind_test/sample_3_IR.wav` 載入 Logic Space Designer 或任一 convolution reverb
+      - 聽 `output/mvp_acceptance/listening/` 九個檔，**特別比較壁球場的
+        `racquetball_court_4__wet.wav` vs `DIAG_racquetball_...__wet.wav`**
+      - 📷 補齊 9 張照片來源網址（`assets/SOURCES.md` §2）——裁決 E 的結案前置
+- [ ] **接著（Fable）**：§7-2 未達標要不要加修正輪。
+      **T-17 數據建議打材質、不要打幾何**（手動組 20% 沒有比自動組 22% 好，
+      不支持優先換 Metric-Indoor-Large）
 
 ## ✅ T-11 路線決策結果（2026-08-25，Fable）
 
