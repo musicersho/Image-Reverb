@@ -1,5 +1,33 @@
 # Dev Log
 
+## 2026-08-30 (37)
+
+- 🔵 **T-15 CLI 整合完成（Sonnet 自檢通過，待 Opus 驗證）**：`python -m src.image_reverb`
+  改成三種輸入（`<photo>`／`--text`／`--scene`）互斥的統一入口，輸出到
+  `output/<name>/`：`ir_mono.wav`＋`ir_stereo.wav`（簡單 decorrelation；複合場景
+  v1 只出 mono）＋`analysis.json`（統一 schema，warnings/notes 已分流）＋
+  `wet_preview.wav`。新增 `src/image_reverb/pipeline.py` 當路由層，**三條管線的
+  核心邏輯（T-10~T-14、`scene_text.py`、`coupled.py`）完全沒重寫**，只是呼叫既有
+  函式後統一輸出格式。
+- **MD5 零回歸逐一實測通過**：T-14 兩條（`test_ir_synth.py`【6】）、T-20 兩條
+  （`text_bathroom`/`text_church`）、T-21 兩條（`neighbor_voices`/
+  `stadium_corridor`）全部逐位元不變；新 CLI 與既有獨立腳本同輸入也逐位元相同
+  → 依卡片判準本卡免試聽關卡。
+- 併收三項技術債：#1（`gen_ir_manual.py` 重複的 per-wall 材質建構函式收斂進
+  `ir_synth.build_pra_materials()`）、#2（warnings/notes 分流，`neighbor_voices`
+  實測「preset 'bedroom'」進 notes、+114.4% 誤差留 warnings）、#5（T-13 入口零/
+  負尺寸硬擋、`geometry.apply_scope_confidence()` 補上「不認得的 dims_source
+  預設降 low」而不是預設放行）。另落地 T-20 Opus 三條非阻斷建議（cabin/cabinet
+  詞邊界比對、顯式尺寸覆寫移除失效 note、錯誤訊息改印 stderr）。
+- 9 張測試照片全數跑通不 crash（車內/CGI 洞窟正確降 `confidence: low` 並帶
+  可操作警示）；`--override-dims`/新增的 `--override-material` 都驗證生效。
+- ⚠️ **過程中發現、非本卡引入**：`gen_ir_manual.py --materials` 這條路徑因為用了
+  pyroomacoustics 的 ray tracing（內部亂數沒固定種子），本來就不是 run-to-run
+  bit-identical，與本卡收斂材質建構函式無關（純數值上驗證過等價）。
+- ⚠️ **移除了 `--geometry`/`--materials-detect` 舊除錯旗標**（bare `<photo>` 現在
+  直接跑完整管線）——HANDOFF.md §5 指令速查那行已過期，待下個 Fable 視窗更新。
+- 下一步：Opus 驗證 T-15；通過後依序 T-16 → T-18（可提前插）→ T-17。
+
 ## 2026-08-30 (36)
 
 - 🔮 **Fable 規劃視窗：HANDOFF 第 0 節 A~F 六項全數裁決完畢，Phase 1 尾段卡片改版。**

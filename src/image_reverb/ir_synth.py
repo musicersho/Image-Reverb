@@ -44,14 +44,20 @@ from . import ir_metrics
 
 
 def build_pra_materials(
-    surfaces: SurfaceMaterials, materials_data: dict[str, Any]
+    surfaces: SurfaceMaterials,
+    materials_data: dict[str, Any],
+    scattering: float | None = None,
 ) -> dict[str, pra.Material]:
     """把 SurfaceMaterials 轉成 ShoeBox 的 per-wall dict，六面各自帶六頻段係數。
 
-    與 `scripts/gen_ir_manual.py:build_surface_material_dict()` 邏輯相同（T-13 Opus
-    建議 3 已記錄這類重複的分歧風險；等 T-15 整合時再收斂成單一實作）。
+    T-15 收斂（技術債 #1）：這是唯一實作，`scripts/gen_ir_manual.py` 原本有一份重複的
+    `build_surface_material_dict()`，已改成呼叫這裡。`scattering` 預設用
+    `config.IR_SCATTERING`，呼叫端可傳自己的值（gen_ir_manual.py 的 preset 各自帶
+    scattering 欄位，數值上與 config.IR_SCATTERING 相同，但介面上不強制一致）。
     整條路徑不存在任何跨面平均（約束 A 的 Opus 紅旗）。
     """
+    if scattering is None:
+        scattering = config.IR_SCATTERING
     band_freqs, alpha_table = surfaces.alpha_table(materials_data)
     materials = {}
     for name in SURFACE_NAMES:
@@ -61,7 +67,7 @@ def build_pra_materials(
                 "coeffs": alpha_table[name],
                 "center_freqs": list(band_freqs),
             },
-            scattering=config.IR_SCATTERING,
+            scattering=scattering,
         )
     return materials
 
@@ -359,6 +365,32 @@ def synthesize_ir(
         acoustics=acoustics,
         warnings=warnings,
     )
+
+
+def synthesize_stereo(
+    acoustics: AcousticsResult,
+    materials_data: dict[str, Any] | None = None,
+    base_seed: int | None = None,
+) -> tuple[np.ndarray, np.ndarray, int]:
+    """T-15：簡單 decorrelation stereo——早期反射共用（決定性、不吃 seed），
+    晚期 shaped-noise 左右各自跑一個不同的 noise seed。
+
+    做法：直接呼叫兩次 `synthesize_ir()`（不改動它本身）。`simulate_early_ir()`
+    完全由幾何/材質決定、不吃 `seed`，所以兩次呼叫的早期反射逐點相同；只有濾波
+    白噪音的 `rng = np.random.default_rng(seed)` 不同，晚期殘響因此左右不相關。
+    兩聲道各自獨立正規化到同一目標峰值（`config.IR_TARGET_PEAK_DBFS`）：由於早期
+    直達音峰值在一般房間都 ≥ 晚期殘響峰值，且早期两聲道逐點相同，兩聲道的正規化
+    係數在絕大多數情況下會相等，不會出現聲道間音量落差。
+
+    回傳 (左聲道, 右聲道, 右聲道實際採用的 seed)。左聲道與 `synthesize_ir(..., seed=base_seed)`
+    的結果 bit-identical（同一組呼叫參數）。
+    """
+    if base_seed is None:
+        base_seed = config.IR_NOISE_SEED
+    left = synthesize_ir(acoustics, materials_data, seed=base_seed)
+    right_seed = base_seed + 1
+    right = synthesize_ir(acoustics, materials_data, seed=right_seed)
+    return left.ir, right.ir, right_seed
 
 
 def export_ir(result: IRSynthesisResult, out_stem: str | Path) -> tuple[Path, Path]:

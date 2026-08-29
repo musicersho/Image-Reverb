@@ -243,6 +243,22 @@ def apply_scope_confidence(estimate: RoomEstimate) -> RoomEstimate:
             "height_m": estimate.height_m,
         }
         over = {k: v for k, v in dims.items() if v > max_m}
+    elif estimate.dims_source == "manual":
+        # 使用者親自指定的尺寸，不是模型推論值，量程規則不適用（維持既有行為：
+        # estimate_room() 目前一律經由 manual_estimate() 提早 return，根本不會呼叫
+        # 到這裡；這個分支只是把「manual 不做量程檢查」寫清楚，供未來呼叫端參考）。
+        pass
+    else:
+        # T-15 技術債收斂（步驟 5）：以前這裡沒有 else，任何本函式不認得的
+        # dims_source（例如未來新增的輸入管線）會直接被「預設放行」——
+        # 量程規則完全不檢查，confidence 不會被下修，屬於地雷 #15 同型的
+        # 靜默失敗溫床。改成「不認得就保守降 low ＋警示」，不再預設放行。
+        estimate.confidence = "low"
+        estimate.notes.append(
+            f"dims_source='{estimate.dims_source}' 不在量程規則認得的類型"
+            f"（equirect_multiview/metric_depth/manual）範圍內，無法判斷是否超出"
+            f"已驗證量程，保守降為 confidence: low。"
+        )
 
     if over:
         estimate.confidence = "low"

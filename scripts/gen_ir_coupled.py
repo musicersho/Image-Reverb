@@ -50,7 +50,7 @@ def main() -> int:
         scene = load_scene_file(args.scene)
         result = synthesize_coupled(scene)
     except (ValueError, FileNotFoundError, KeyError) as e:
-        print(f"❌ 錯誤：{e}")
+        print(f"❌ 錯誤：{e}", file=sys.stderr)
         return 2
 
     print(f"=== 複合場景：{result.scene_name}（method: path_cascade_v1，工程近似） ===")
@@ -80,7 +80,7 @@ def main() -> int:
 
     if not args.no_listen:
         if not DRY.exists():
-            print(f"❌ 找不到乾聲檔 {DRY}，略過試聽檔")
+            print(f"❌ 找不到乾聲檔 {DRY}，略過試聽檔", file=sys.stderr)
             return 1
         wet = OUTPUT_DIR / f"listen_{out_name}.wav"
         # ⚠️ 複合場景必須全濕（mix 1.0）：聽者與聲源在不同空間，聽到的每一分聲音

@@ -1211,7 +1211,7 @@
        當比對基準的測試都不能用單次隨機結果當硬判準。
 
 ### T-15 CLI 整合（照片／文字／複合場景 → IR WAV + 分析報告 JSON）
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-08-30）
 - **前置**：T-14 ✅、T-20 ✅、T-21 ✅、T-22 ✅
 - **對應 SPEC**：F-01、F-06、F-07、F-09、F-16、F-17
 - **🔮 Fable 卡片改版（2026-08-30）**：原卡寫於 2026-08-16，當時只有照片一種輸入；
@@ -1286,6 +1286,137 @@
   紅旗：warnings/notes 分流把真警示分錯欄＝變相靜默（超差警示必須留在 warnings，
   這是地雷 #15 的直系後代）；紅旗：互斥檢查只驗 happy path（兩兩組合都要實測）
 - **交接筆記**：
+  - **新增檔案**：`src/image_reverb/pipeline.py`（三條管線的路由與統一輸出，約 400 行）。
+    **改動檔案**：`src/image_reverb/cli.py`（整個重寫，改成三種輸入互斥的路由層）、
+    `ir_synth.py`（`build_pra_materials()` 加可選 `scattering` 參數；新增
+    `synthesize_stereo()`）、`geometry.py`（`apply_scope_confidence()` 補 else 分支）、
+    `acoustics.py`（`compute_acoustics()` 入口加零/負尺寸硬檢查）、`materials.py`
+    （新增 `apply_overrides()` 給 `--override-material`）、`scene_text.py`（英文
+    非建築關鍵字改詞邊界比對、顯式尺寸覆寫移除失效的放大/縮小 note）、
+    `scripts/gen_ir_manual.py`（移除重複的 `build_surface_material_dict()`，改呼叫
+    `ir_synth.build_pra_materials()`）、`scripts/gen_ir_from_text.py`／
+    `gen_ir_coupled.py`（錯誤訊息改印 stderr）、`scripts/test_scene_text.py`
+    （新增 cabin/cabinet 詞邊界迴歸項）。**沒有動 SPEC/ROADMAP/WORKFLOW，
+    沒有動 T-16/T-17/T-18 的檔案。**
+  - **架構決策：三條管線的核心邏輯完全沒重寫**——`pipeline.py` 只呼叫既有函式
+    （`estimate_room`/`compute_acoustics`/`ir_synth.synthesize_ir`/
+    `scene_text.parse_scene_text`/`coupled.synthesize_coupled`/`coupled.export_coupled`
+    等），拿到結果後才組成統一的 `analysis.json`。這是 MD5 零回歸判準能成立的原因：
+    本卡自己不寫任何影響音訊數值的程式碼。
+  - **統一入口設計**：`python -m src.image_reverb` 現在是 `<photo>`｜`--text`｜
+    `--scene` 三選一（`cli.py` 手動檢查數量，不是 argparse 的
+    `mutually_exclusive_group`，因為 photo 是 positional 混不進那個 API）。
+    **移除了舊的 `--geometry`／`--materials-detect` 除錯旗標**——bare `<photo>`
+    現在直接跑完整管線（T-10→T-11→T-12→T-13→T-14），不再只是印中間結果就停。
+    這是刻意的行為改變：那兩個旗標是 T-11/T-12 開發期的鷹架，T-15 之後幾何/材質
+    是照片管線的必經步驟，不再需要旗標開關。**⚠️ HANDOFF.md §5「指令速查」表
+    還列著 `python -m src.image_reverb <photo> --geometry --materials-detect`
+    這行已經過期（該旗標已不存在），下次 Fable 視窗請順手更新**（Sonnet 職責內
+    不能動 HANDOFF）。搜過 `scripts/`／`TASKS.md`／`HANDOFF.md`，除了這行文件沒有
+    任何程式呼叫這兩個旗標，移除是安全的。
+  - **warnings/notes 分流（技術債 #2）的實作方式**：沒有動
+    `geometry.RoomEstimate.notes`／`AcousticsResult.warnings`／`CoupledResult.warnings`
+    的內部組成（那樣風險太高，牽動 T-11/T-13/T-14/T-21 多處）。改成在 `pipeline.py`
+    用一份「已知純解析紀錄樣式」白名單（`_NOTE_MARKERS`，例如 `"preset '"`、
+    `"顯式尺寸："`、`"水平 FOV："`）對既有模組已經輸出的扁平 warnings 清單做分流：
+    命中白名單→ notes，其餘（含所有 `confidence: low` 理由、閉環誤差超差、CLIP
+    fallback、能量匹配窗警示）**預設留在 warnings**——不確定時偏向警示，不安靜
+    藏起來，呼應地雷 #15。用 `neighbor_voices` 實測驗證：「聲源空間：preset
+    'bedroom'（臥室）」進了 notes，「[路徑2中繼空間／家用小走廊] 125 Hz 量測 T30
+    ... 誤差 +114.4%」留在 warnings（見下方驗證紀錄）。
+  - **stereo 的做法（`ir_synth.synthesize_stereo()`，新函式，不改動
+    `synthesize_ir()`）**：早期反射（`simulate_early_ir()`）完全由幾何/材質決定、
+    不吃亂數種子，所以呼叫兩次 `synthesize_ir()`（種子 N 與 N+1）自動得到「早期
+    逐點相同、晚期不同 noise」的簡單 decorrelation，不必另外拆解早期/晚期再手動
+    合併。實測驗證：`ir_stereo.wav` 左聲道與 `ir_mono.wav` **逐點 bit-identical**
+    （`np.array_equal` 為 True，見下方指令紀錄），右聲道不同。複合場景（`--scene`）
+    v1 依卡片要求**只出 mono**，`analysis.json` 與 CLI 都印「stereo 留待後續」。
+  - **`--override-material`（技術債＋F-09）**：新函式 `materials.apply_overrides()`，
+    可重複給旗標（`--override-material floor=carpet --override-material walls=marble`），
+    覆寫來源標記 `manual_override`；材質 id 早驗證（`get_material()` 檔案存在性/
+    id 有效性先過一輪，不會半套用半失敗）。
+  - **技術債 #1（材質 dict 重複實作）收斂**：`ir_synth.build_pra_materials()` 加了
+    可選 `scattering` 參數（預設仍是 `config.IR_SCATTERING`），`gen_ir_manual.py`
+    刪掉自己那份 `build_surface_material_dict()`，改呼叫這裡。**注意（過程中的
+    發現，非本卡引入的問題）**：`gen_ir_manual.py --materials` 這條路徑用了
+    pyroomacoustics 的 ray tracing，而 ray tracing 內部亂數沒有固定種子——同一份
+    程式碼跑兩次本來就不是 bit-identical（實測連續兩次跑 `small --materials
+    floor=carpet,walls=gypsum_board` 得到不同 MD5，見下方紀錄）。這與本次改動
+    無關（`scattering` 數值上與改動前完全相同，0.1），只是這條路徑原本就沒有
+    決定性保證，記錄下來供之後留意——若日後要把它納入 MD5 回歸判準，需要先補
+    固定種子。
+  - **技術債 #5（零/負尺寸、量程規則預設放行）收斂**：`acoustics.compute_acoustics()`
+    入口新增 `length_m/width_m/height_m <= 0` 硬檢查（防「兩個負值相乘成正面積、
+    體積變負值卻算出看似合理正 RT60」這種上游檢查漏接的情況；三條管線各自入口
+    本來就有自己的零/負尺寸檢查，這裡是不管呼叫端是誰都擋得住的最後防線）。
+    `geometry.apply_scope_confidence()` 補了 `else` 分支：以前只認得
+    `equirect_multiview`／`metric_depth` 兩種 `dims_source`，其他一律不檢查、
+    不降 confidence（預設放行）；現在改成「不認得就保守降 low ＋警示」。
+    ⚠️ 據實記錄：這個函式目前只被 `geometry.estimate_room()`（純照片管線）呼叫，
+    且 `estimate_room()` 對 `manual` 覆寫會提早 return（根本不會進到這個函式），
+    所以新的 else 分支在目前的呼叫關係下**還沒有實際輸入能觸發它**——這是純防禦
+    性修正（未來若有新管線直接呼叫這個函式才會用到），如實記錄不誇大效果。
+  - **T-20 Opus 三條非阻斷建議落地（步驟 7）**：① `scene_text._check_unsupported()`
+    英文關鍵字改 `\b...\b` 詞邊界比對（中文關鍵字維持子字串比對，中文沒有空白
+    分詞）——"cabinet"（衣櫃）不再誤中 "cabin"，新增迴歸測試於
+    `test_scene_text.py`（"臥室裡有一個大 cabinet" 正確解析成臥室、
+    "cabin of a small plane" 仍正確拒絕）。② `parse_scene_text()` 顯式尺寸覆寫
+    preset 時，若前面已經因為放大/縮小修飾詞加了 note，現在會刪掉那則 note
+    （否則會誤導使用者以為最終尺寸有被放大/縮小，但其實被顯式尺寸完全蓋掉了）；
+    實測 `"很大的4x3x2.5房間"` 只剩「顯式尺寸：...」一則 note，「大小修飾詞」
+    那則已被移除。③ `gen_ir_from_text.py`／`gen_ir_coupled.py` 的錯誤訊息與
+    「找不到乾聲檔」訊息改印 `stderr`（原本印 stdout）。
+  - **MD5 零回歸驗證（逐一實測，非空話）**：
+    - T-14 兩條：`test_ir_synth.py`【6】仍全過（`small_surf_carpet`／`hall` 兩條
+      MD5 與 T-14 交付版相同）——本卡沒有動 `ir_synth.py` 的合成邏輯本身。
+    - T-20 兩條：`gen_ir_from_text.py "浴室"`／`"大教堂"` 改動前後 MD5 分別是
+      `2adbaa75eb698772a8c9aa693179ec47`／`2dd19b6e6d351d713887636fe45cd67e`，
+      **改動前後不變**；且新 CLI `--text "浴室"`／`"大教堂"` 產出的
+      `output/text_bathroom/ir_mono.wav`／`output/text_church/ir_mono.wav`
+      與這兩個 MD5 **逐位元相同**。
+    - T-21 兩條：`gen_ir_coupled.py assets/scenes/neighbor_voices.json`／
+      `stadium_corridor.json` 改動前後 MD5 分別是
+      `9a94ffdf5d8295aee7889729c39c9cd8`／`a1c21bcc3fd9aa3480df203a89c8cd05`，
+      **改動前後不變**；新 CLI `--scene` 兩個場景的 `ir_mono.wav` 與這兩個 MD5
+      **逐位元相同**（複合場景 v1 只出 mono，未產生 stereo，符合卡片設計）。
+    - 結論：**MD5 全部不變 → 依卡片判準本卡免試聽關卡**（本卡沒有改變任何既有
+      聲音，photo 管線雖是新產生的 IR 但沒有既有基準可比對，數值上重跑一致，
+      非本卡試聽範圍）。
+  - **自我檢查逐項驗證紀錄**：
+    1. 三種輸入各跑一次成功——`bathroom_tiled.png`／`--text "浴室"`／
+       `--scene neighbor_voices.json`，三份 `analysis.json` 的 `dims_source`
+       分別是 `metric_depth`／`text_description`／每個房間各自 `scene_json`。
+    2. 兩兩組合（photo+text、photo+scene、text+scene）與零輸入都印清楚中文錯誤
+       並 `exit 2`（見下方指令輸出）。
+    3. 9 張測試照片（`assets/photos/*.png`）全部 `exit 0`，含車內（`out_of_domain`
+       → `confidence: low`）與兩張 CGI 洞窟（floor CLIP fallback／地板可見度
+       0%＋人群 53% → `confidence: low`），都有輸出與警示，沒有 crash。
+    4. 全部輸出 WAV（27 個：9 照片 ×3 + 2 文字 ×3 + 2 場景 ×2）跑過
+       `check_audio.py`：48000 Hz、RMS 全非靜音、峰值全部是 `0.707946`
+       （-3dBFS，`ir_mono`/`ir_stereo`）或 `0.891251`（-1dBFS，`wet_preview`），
+       無一超過 0dBFS（無爆音）。
+    5. `analysis.json` 數值與直接呼叫模組比對：文字（浴室）與照片
+       （`bathroom_tiled.png`）兩例的 `dims_m`／`surfaces`／
+       `rt60_bands_target_sabine` 逐值相同。
+    6. warnings/notes 分流：`neighbor_voices` 的 `notes` 含「聲源空間：preset
+       'bedroom'（臥室）」等 3 條解析紀錄，`warnings` 含 4 條超差訊息（含
+       +114.4% 那條），無交叉污染。
+    7. 壞輸入：不存在的照片、資料夾當照片、偽裝成 .png 的非圖片檔、壞 JSON
+       場景檔、無法辨識的文字描述，全部清楚錯誤＋`exit 2`；
+       `--override-dims 0x3x2.5` 在解析階段就硬擋（`exit 2`，早於任何模型呼叫）。
+    8. `--override-material floor=carpet --override-material walls=marble` 套用
+       正確（`analysis.json` 的 `surfaces`／`surfaces_sources` 如實反映），給不
+       存在的材質 id 清楚報錯 `exit 2`。
+    9. `python scripts/test_ir_synth.py`／`test_scene_text.py`（含新增的
+       cabin/cabinet 迴歸項）／`test_coupled.py`／`test_acoustics.py`／
+       `test_preprocess.py` 全過（`exit 0`）。
+    10. 單張照片總耗時約 15–18 秒（含 metric depth／ADE20K／CLIP 三個模型推論），
+        遠低於 SPEC §4 的 60 秒目標；`analysis.json` 仍記錄 `elapsed_s` 供追蹤。
+  - **範圍確認**：沒有動 T-16/T-17/T-18 尚未開工的任何檔案；沒有動
+    `data/materials.json`／`data/scene_presets.json`／`data/transmission.json`
+    的內容；`ir_synth.py`／`coupled.py`／`scene_text.py` 的既有函式簽章與行為
+    （除了本節列出的三個 T-20 非阻斷建議與新增的 `synthesize_stereo()`）未變動。
+  - **下一步**：Opus 驗證本卡；通過後依序 T-16 → T-18（可提前插）→ T-17。
 
 ### T-16 分析視覺化（材質疊圖 + 參數報告）
 - **狀態**：⬜ 未開始

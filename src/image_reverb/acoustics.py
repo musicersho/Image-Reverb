@@ -179,6 +179,17 @@ def compute_acoustics(
     materials_data: dict[str, Any] | None = None,
 ) -> AcousticsResult:
     """主入口：吃 T-11 的 `RoomEstimate` ＋ T-12 的 `SurfaceMaterials` → 聲學參數。"""
+    # T-15 技術債收斂（步驟 5）：零/負尺寸在這裡硬擋，不管呼叫端是哪條管線。
+    # 三條輸入管線各自的入口本來就有自己的零/負尺寸檢查（--override-dims 的
+    # parse_override_dims()、scene_text 的顯式尺寸正則、coupled 的 resolve_room()），
+    # 但那些檢查不保護「直接建構 RoomEstimate 再呼叫 compute_acoustics()」的用法
+    # （例如兩個負值相乘成正面積、體積變負值卻算出看似合理的正 RT60）——這是
+    # T-13 自己的入口該擋的，不能只靠上游管線各自為政。
+    if estimate.length_m <= 0 or estimate.width_m <= 0 or estimate.height_m <= 0:
+        raise ValueError(
+            f"房間尺寸必須全部大於 0（收到 {estimate.length_m}×{estimate.width_m}×"
+            f"{estimate.height_m} m），無法計算聲學參數"
+        )
     if materials_data is None:
         materials_data = load_materials()
     surfaces.validate(materials_data)

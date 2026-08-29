@@ -207,6 +207,37 @@ def parse_surface_spec(spec: str, data: dict[str, Any] | None = None) -> Surface
     return surfaces
 
 
+def apply_overrides(
+    surfaces: SurfaceMaterials, specs: list[str], data: dict[str, Any] | None = None
+) -> SurfaceMaterials:
+    """T-15：`--override-material floor=carpet`（可重複給多次）套用到既有的
+    `SurfaceMaterials`（例如 T-12 自動偵測出來的結果）。
+
+    與 `parse_surface_spec()`（單一逗號分隔字串、從空白 SurfaceMaterials 建起）不同，
+    這裡吃的是**多次出現的旗標**、且是在既有材質上**覆寫**，來源標為
+    `"manual_override"`（F-09 手動覆寫，如實透傳到下游 JSON，不假裝是量到的）。
+    每個 spec 支援 `walls=xxx`（四面牆批次）或單面 `面=材質id`。
+    """
+    if data is None:
+        data = load_materials()
+    for spec in specs:
+        spec = spec.strip()
+        if "=" not in spec:
+            raise ValueError(
+                f"--override-material 的 '{spec}' 格式不對，要寫成 面=材質id"
+                f"（可用的面：{', '.join(SURFACE_NAMES)}, walls）"
+            )
+        key, value = (part.strip() for part in spec.split("=", 1))
+        if not value:
+            raise ValueError(f"--override-material 的 '{spec}' 沒有給材質 id")
+        get_material(value, data)  # 早驗證，避免一半覆寫成功一半失敗
+        if key == "walls":
+            surfaces.set_walls(value, source="manual_override")
+        else:
+            surfaces.set_surface(key, value, source="manual_override")
+    return surfaces
+
+
 def uniform_surfaces(material_id: str, data: dict[str, Any] | None = None) -> SurfaceMaterials:
     """六面同材質（= 舊 `--material` 的行為）。
 

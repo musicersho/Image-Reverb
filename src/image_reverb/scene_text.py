@@ -92,12 +92,20 @@ def available_scenes_text(data: dict[str, Any] | None = None) -> str:
 
 
 def _check_unsupported(text: str, data: dict[str, Any]) -> None:
-    """非建築空間明確拒絕（Phase 0 實證不可靠，文字路徑更沒有資訊救它）。"""
-    hits = [
+    """非建築空間明確拒絕（Phase 0 實證不可靠，文字路徑更沒有資訊救它）。
+
+    T-15（T-20 Opus 非阻斷建議落地，步驟 7）：英文關鍵字改用詞邊界比對
+    （`\\b...\\b`），不再是裸子字串比對——原本 "cabin" 會誤中 "cabinet"
+    （衣櫃）這種完全無關的詞，把臥室描述誤判成非建築空間。中文關鍵字維持
+    子字串比對（中文沒有空白分詞，詞邊界對中文不適用）。
+    """
+    zh_hits = [kw for kw in data.get("unsupported_keywords_zh", []) if kw in text]
+    en_hits = [
         kw
-        for kw in data.get("unsupported_keywords_zh", []) + data.get("unsupported_keywords_en", [])
-        if kw.lower() in text.lower()
+        for kw in data.get("unsupported_keywords_en", [])
+        if re.search(rf"\b{re.escape(kw)}\b", text, re.IGNORECASE)
     ]
+    hits = zh_hits + en_hits
     if hits:
         raise ValueError(
             f"描述包含「{hits[0]}」——非建築空間不在文字場景的支援範圍。\n"
@@ -163,6 +171,7 @@ def parse_scene_text(
     dims = [float(v) for v in preset["dims_m"]]
     confidence = preset["confidence"]
 
+    size_modifier_note_idx: int | None = None
     for words, factor, label in (
         (_ENLARGE_WORDS, _ENLARGE_FACTOR, "放大"),
         (_SHRINK_WORDS, _SHRINK_FACTOR, "縮小"),
@@ -171,6 +180,7 @@ def parse_scene_text(
         if hit:
             dims = [d * factor for d in dims]
             notes.append(f"大小修飾詞「{hit.strip()}」：尺寸{label} ×{factor}（近似規則）")
+            size_modifier_note_idx = len(notes) - 1
             break
 
     m = _DIMS_PATTERN.search(text)
@@ -179,6 +189,11 @@ def parse_scene_text(
         if any(d <= 0 for d in dims):
             raise ValueError(f"顯式尺寸 {m.group(0)} 含零或負值，無法建立房間。")
         confidence = "high"
+        # T-15（T-20 Opus 非阻斷建議落地，步驟 7）：顯式尺寸完全覆寫 preset 典型值，
+        # 大小修飾詞（放大/縮小 preset 典型值）的效果已被蓋掉——那則 note 若留著
+        # 會誤導使用者以為最終尺寸有經過放大/縮小，移除它而不是留一條不實的紀錄。
+        if size_modifier_note_idx is not None:
+            del notes[size_modifier_note_idx]
         notes.append(f"顯式尺寸：{dims[0]}×{dims[1]}×{dims[2]} m（覆寫 preset 典型值，confidence 升 high）")
 
     # --- 材質：preset 六面 → 材質關鍵字覆寫 ---

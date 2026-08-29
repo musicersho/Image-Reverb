@@ -112,6 +112,26 @@ def main() -> int:
     except ValueError as e:
         check("「車內」→ 明確拒絕並導向照片＋手動覆寫", "非建築空間" in str(e), "訊息含拒絕原因")
 
+    # T-15（T-20 Opus 非阻斷建議落地，步驟 7）：英文關鍵字改詞邊界比對，
+    # "cabin" 不得再誤中 "cabinet"（衣櫃）——臥室描述不該被誤判成非建築空間。
+    try:
+        cabinet_room = parse_scene_text(
+            "臥室裡有一個大 cabinet（衣櫃）", presets, materials
+        )
+        check(
+            "「cabinet」不誤中「cabin」→ 正常解析成臥室",
+            cabinet_room.preset_id == "bedroom",
+            f"preset={cabinet_room.preset_id}",
+        )
+    except ValueError as e:
+        check("「cabinet」不誤中「cabin」→ 正常解析成臥室", False, f"被誤判拒絕：{e}")
+
+    try:
+        parse_scene_text("sitting in the cabin of a small plane", presets, materials)
+        check("「cabin」（機艙）仍正確拒絕", False, "沒有報錯（詞邊界比對失效！）")
+    except ValueError as e:
+        check("「cabin」（機艙）仍正確拒絕", "非建築空間" in str(e), "訊息含拒絕原因")
+
     try:
         parse_scene_text("", presets, materials)
         check("空字串 → 報錯", False, "沒有報錯")

@@ -40,6 +40,8 @@ from src.image_reverb.materials import (  # noqa: E402
     parse_surface_spec,
 )
 from src.image_reverb.materials import load_materials as load_surface_materials_data  # noqa: E402
+# T-15（技術債 #1 收斂）：per-wall pra.Material dict 只有一份實作，在 ir_synth.py。
+from src.image_reverb.ir_synth import build_pra_materials  # noqa: E402
 
 # ============================================================
 # 參數區塊 — 想調整 IR 就改這裡
@@ -140,26 +142,6 @@ def sabine_rt60_per_surface(dimensions, alpha_by_surface):
     if total_absorption <= 0.0:
         raise ValueError("總吸音量為 0（六面 α 全為 0），RT60 無限大，無法計算")
     return 0.161 * volume / total_absorption
-
-
-def build_surface_material_dict(surfaces, data, scattering):
-    """把 SurfaceMaterials 轉成 pyroomacoustics ShoeBox 要的 per-wall dict。
-
-    回傳 {面名稱: pra.Material}，六個面**各自**帶自己的六頻段係數，
-    整條路徑上不存在任何跨面平均（那是約束 A 禁止的）。
-    """
-    band_freqs, alpha_table = surfaces.alpha_table(data)
-    materials = {}
-    for name in SURFACE_NAMES:
-        materials[name] = pra.Material(
-            energy_absorption={
-                "description": f"{name}: {getattr(surfaces, name)}",
-                "coeffs": alpha_table[name],
-                "center_freqs": list(band_freqs),
-            },
-            scattering=scattering,
-        )
-    return materials, band_freqs, alpha_table
 
 
 def build_material(preset, material_entry=None, band_freqs=None):
@@ -384,7 +366,8 @@ def main():
 
     if surfaces is not None:
         # per-wall dict：六個面各自一個 pra.Material（ShoeBox 原生支援）
-        material, _, _ = build_surface_material_dict(surfaces, data, preset["scattering"])
+        # T-15：改呼叫 ir_synth.build_pra_materials()（技術債 #1，唯一實作）
+        material = build_pra_materials(surfaces, data, scattering=preset["scattering"])
     else:
         material = build_material(preset, material_entry, band_freqs)
     room = build_room(preset, material, time_thres)

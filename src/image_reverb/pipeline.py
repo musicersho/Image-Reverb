@@ -1,0 +1,427 @@
+"""T-15：CLI 整合 —— 照片／文字／複合場景三條管線的統一入口。
+
+**本模組只是匯流點，不是重寫**（HANDOFF §0 A 已裁決）：三條管線各自的核心邏輯
+（T-10~T-14 的照片路徑、T-20 的 `scene_text.py`、T-21 的 `coupled.py`）完全不動，
+本模組只負責：(1) 依輸入類型呼叫對應管線、(2) 把各自的合成結果匯整成統一的
+`analysis.json` schema、(3) 產生 mono/stereo WAV 與卷積試聽檔。
+
+呼叫既有模組的方式與各自的獨立腳本（`gen_ir_from_text.py`／`gen_ir_coupled.py`）
+逐字一致（相同函式、相同預設參數），這是 MD5 零回歸判準能成立的原因——本模組
+自己不做任何影響音訊數值的運算。
+"""
+
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+import time
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+import soundfile as sf
+from PIL import UnidentifiedImageError
+
+from . import config, coupled, ir_synth, scene_text
+from .acoustics import compute_acoustics
+from .geometry import estimate_room, parse_override_dims
+from .materials import apply_overrides, load_materials
+
+PROJECT_ROOT = config.PROJECT_ROOT
+OUTPUT_ROOT = PROJECT_ROOT / "output"
+DRY_DEFAULT = PROJECT_ROOT / "assets" / "dry" / "clap_synth.wav"
+CONVOLVE_SCRIPT = PROJECT_ROOT / "scripts" / "convolve.py"
+
+TIME_BUDGET_S = 60.0  # SPEC §4：目標總耗時，超過不擋驗收，只記錄
+
+# ------------------------------------------------------------
+# warnings/notes 分流（技術債 #2，T-15 步驟 3）
+#
+# 現況：`AcousticsResult.warnings` = `RoomEstimate.notes` + `SurfaceMaterials.warnings`
+# 兩者攪在一起寫進 `ir_synth.export_ir()`／`coupled.export_coupled()` 的 JSON（見各自
+# 模組 docstring）。逐一改寫這幾個模組的內部資料結構風險太高（牽動 T-11/T-13/T-14/
+# T-21 多處呼叫端），所以在這裡用「已知的純解析紀錄樣式」白名單分流：命中白名單
+# 的是純粹的「解析器做了什麼」記錄（preset 選擇、顯式尺寸覆寫、材質關鍵字…），
+# 其餘一律留在 warnings——不確定時偏向警示，不安靜藏起來（地雷 #15 的分流原則）。
+# 白名單字串逐一對應到 geometry.py／scene_text.py／coupled.py 現有的固定文案，
+# 若那些模組的文案改了，這裡的白名單要跟著更新。
+# ------------------------------------------------------------
+_NOTE_MARKERS = (
+    "preset '",  # scene_text「文字場景：採用 preset 'x'」／coupled「聲源空間：preset 'x'」
+    "場景 JSON 內嵌尺寸/材質",  # coupled inline 空間定義
+    "preset 近似說明：",
+    "大小修飾詞「",
+    "顯式尺寸：",
+    "材質關鍵字：",
+    "水平 FOV：",
+    "進深只涵蓋相機看得到的範圍",
+    "尺寸由使用者手動指定",
+    "尺度校驗通過：",
+    "環景沒有「視野外」問題",
+    "沒有足夠大的門，跳過尺度校驗",
+)
+
+
+def _split_notes_and_warnings(raw: list[str]) -> tuple[list[str], list[str]]:
+    notes: list[str] = []
+    warnings: list[str] = []
+    for item in raw:
+        (notes if any(marker in item for marker in _NOTE_MARKERS) else warnings).append(item)
+    return notes, warnings
+
+
+def _elapsed_payload(t0: float) -> dict[str, Any]:
+    elapsed = time.time() - t0
+    payload: dict[str, Any] = {"elapsed_s": round(elapsed, 2), "time_budget_s": TIME_BUDGET_S}
+    if elapsed > TIME_BUDGET_S:
+        payload["elapsed_note"] = (
+            f"總耗時 {elapsed:.1f}s 超過 SPEC §4 目標 {TIME_BUDGET_S:.0f}s"
+            f"（不擋驗收，僅記錄）"
+        )
+    return payload
+
+
+def _make_out_dir(name: str) -> Path:
+    out_dir = OUTPUT_ROOT / name
+    out_dir.mkdir(parents=True, exist_ok=True)
+    return out_dir
+
+
+def _write_stereo(out_dir: Path, left: np.ndarray, right: np.ndarray) -> Path:
+    path = out_dir / "ir_stereo.wav"
+    stereo = np.stack([left, right], axis=-1)
+    sf.write(path, stereo, config.IR_SAMPLE_RATE, subtype="PCM_24")
+    return path
+
+
+def _run_wet_preview(dry: Path, ir_wav: Path, out_dir: Path, mix: float) -> Path | None:
+    """跑 `scripts/convolve.py` 產生試聽檔（沿用既有腳本，不重寫卷積邏輯）。"""
+    wet_path = out_dir / "wet_preview.wav"
+    if not dry.exists():
+        print(f"⚠️ 找不到乾聲檔 {dry}，略過試聽檔", file=sys.stderr)
+        return None
+    subprocess.run(
+        [
+            sys.executable,
+            str(CONVOLVE_SCRIPT),
+            str(dry),
+            str(ir_wav),
+            str(wet_path),
+            "--mix",
+            str(mix),
+        ],
+        check=True,
+        stdout=subprocess.DEVNULL,
+    )
+    return wet_path
+
+
+# ------------------------------------------------------------
+# 三種輸入互斥檢查
+# ------------------------------------------------------------
+
+
+def check_mutual_exclusion(photo: str | None, text: str | None, scene: str | None) -> str | None:
+    """回傳互斥檢查的錯誤訊息；沒有錯誤回傳 None。"""
+    given = [name for name, val in (("photo", photo), ("--text", text), ("--scene", scene)) if val]
+    if len(given) >= 2:
+        return f"三種輸入互斥（<photo>／--text／--scene 一次只能給一種），收到：{'、'.join(given)}"
+    if len(given) == 0:
+        return "要指定一種輸入：<photo>｜--text \"場景描述\"｜--scene <場景.json>"
+    return None
+
+
+# ------------------------------------------------------------
+# 照片管線：T-10 前處理 → T-11 幾何 → T-12 材質 → T-13 參數 → T-14 IR
+# ------------------------------------------------------------
+
+
+def run_photo(
+    photo: str,
+    override_dims: str | None = None,
+    override_materials: list[str] | None = None,
+) -> int:
+    from .preprocess import preprocess_image
+    from .surfaces import surfaces_from_preprocess, _load_segmenter, segment_roles
+
+    t0 = time.time()
+    photo_path = Path(photo)
+    if photo_path.is_dir():
+        print(f"錯誤：{photo_path} 是資料夾，請指定單一圖片檔", file=sys.stderr)
+        return 2
+    if not photo_path.is_file():
+        print(f"錯誤：找不到檔案 {photo_path}", file=sys.stderr)
+        return 2
+
+    override = None
+    if override_dims is not None:
+        try:
+            override = parse_override_dims(override_dims)
+        except ValueError as e:
+            print(f"錯誤：{e}", file=sys.stderr)
+            return 2
+
+    try:
+        summary = preprocess_image(photo_path)
+    except UnidentifiedImageError:
+        print(f"錯誤：無法辨識為圖片檔 {photo_path}", file=sys.stderr)
+        return 2
+
+    print(f"=== 照片：{photo_path} ===")
+    print(f"環景判定：{'是' if summary['is_equirect'] else '否'}")
+
+    try:
+        materials_data = load_materials()
+
+        print("--- T-12 逐表面材質辨識 ---")
+        surf, detail = surfaces_from_preprocess(summary)
+        scene_cues: dict[str, float] = {}
+        if not summary["is_equirect"]:
+            from PIL import Image
+
+            img = Image.open(summary["cropped"]).convert("RGB")
+            _, ratios = segment_roles(img, *_load_segmenter())
+            ood = [
+                v
+                for v in detail["views"].get("single", {}).values()
+                if v.get("method") == "out_of_domain"
+            ]
+            scene_cues = {
+                "floor_pixel_ratio": ratios.get(3, 0.0) + ratios.get(28, 0.0),
+                "person_pixel_ratio": ratios.get(12, 0.0),
+                "out_of_domain": bool(ood),
+                "out_of_domain_label": (
+                    ood[0]["top3"][0][0].lstrip("_") if ood and ood[0].get("top3") else ""
+                ),
+            }
+        for name, mid in surf.as_dict().items():
+            print(f"  {name:<8} → {mid:<16}（來源：{surf.sources.get(name, '-')}）")
+
+        override_specs_used: list[str] = []
+        if override_materials:
+            apply_overrides(surf, override_materials, materials_data)
+            override_specs_used = list(override_materials)
+            print(f"  已套用 --override-material：{', '.join(override_specs_used)}")
+
+        print("--- T-11 幾何估計 ---")
+        if override is not None:
+            print("（--override-dims 已指定，跳過深度模型）")
+        est = estimate_room(summary, override_dims=override, scene_cues=scene_cues or None)
+        print(
+            f"  房間尺寸：{est.length_m:.2f}×{est.width_m:.2f}×{est.height_m:.2f} m"
+            f"（confidence={est.confidence}, dims_source={est.dims_source}）"
+        )
+
+        print("--- T-13 聲學參數 ---")
+        ac = compute_acoustics(est, surf, materials_data)
+        print(f"  Sabine 目標 RT60：{[round(v, 2) for v in ac.rt60_bands_sabine]} s")
+
+        print("--- T-14 IR 合成 ---")
+        mono = ir_synth.synthesize_ir(ac, materials_data)
+        left, right, seed_right = ir_synth.synthesize_stereo(ac, materials_data)
+    except (ValueError, KeyError, FileNotFoundError) as e:
+        print(f"錯誤：{e}", file=sys.stderr)
+        return 2
+
+    out_dir = _make_out_dir(photo_path.stem)
+    mono_wav, mono_json = ir_synth.export_ir(mono, out_dir / "ir_mono")
+    stereo_wav = _write_stereo(out_dir, left, right)
+    wet_wav = _run_wet_preview(DRY_DEFAULT, mono_wav, out_dir, mix=0.6)
+
+    mono_payload = json.loads(mono_json.read_text(encoding="utf-8"))
+    notes, warnings = _split_notes_and_warnings(mono_payload["warnings"])
+
+    analysis: dict[str, Any] = {
+        "input_type": "photo",
+        "input": str(photo_path),
+        "output_dir": str(out_dir),
+        "dims_source": est.dims_source,
+        "confidence": est.confidence,
+        "dims_m": {"length": est.length_m, "width": est.width_m, "height": est.height_m},
+        "volume_m3": round(est.volume_m3, 2),
+        "surfaces": surf.as_dict(),
+        "surfaces_sources": surf.sources,
+        "override_dims_used": override is not None,
+        "override_materials_used": override_specs_used,
+        "band_center_freqs_hz": ac.band_center_freqs_hz,
+        "rt60_bands_target_sabine": [round(v, 4) for v in ac.rt60_bands_sabine],
+        "closed_loop": mono_payload["closed_loop"],
+        "ir_mono": {"path": str(mono_wav)},
+        "ir_stereo": {
+            "path": str(stereo_wav),
+            "note": "簡單 decorrelation：早期反射共用（決定性相同），晚期噪音左右各自不同 seed",
+            "seed_left": mono.noise_seed,
+            "seed_right": seed_right,
+        },
+        "wet_preview": {"path": str(wet_wav) if wet_wav else None, "mix": 0.6},
+        "notes": notes,
+        "warnings": warnings,
+        **_elapsed_payload(t0),
+    }
+    (out_dir / "analysis.json").write_text(
+        json.dumps(analysis, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+    print(f"已輸出：{mono_wav.name}、{stereo_wav.name}、analysis.json → {out_dir}")
+    if wet_wav:
+        print(f"🎧 試聽檔：{wet_wav}（mix=0.6；數字合理 ≠ 聽起來對，請實聽）")
+    for w in warnings:
+        print(f"  ⚠️ {w}")
+    return 0
+
+
+# ------------------------------------------------------------
+# 文字管線：scene_text.parse_scene_text() → T-13 → T-14
+# ------------------------------------------------------------
+
+
+def run_text(text: str) -> int:
+    t0 = time.time()
+    try:
+        presets = scene_text.load_scene_presets()
+        materials_data = load_materials()
+        parsed = scene_text.parse_scene_text(text, presets, materials_data)
+    except (ValueError, FileNotFoundError) as e:
+        print(f"錯誤：{e}", file=sys.stderr)
+        return 2
+
+    est, surf = parsed.estimate, parsed.surfaces
+    print(f"=== 文字場景：{parsed.preset_name_zh}（preset: {parsed.preset_id}） ===")
+    print(
+        f"尺寸：{est.length_m}×{est.width_m}×{est.height_m} m"
+        f"（dims_source={est.dims_source}, confidence={est.confidence}）"
+    )
+
+    try:
+        ac = compute_acoustics(est, surf, materials_data)
+        mono = ir_synth.synthesize_ir(ac, materials_data)
+        left, right, seed_right = ir_synth.synthesize_stereo(ac, materials_data)
+    except (ValueError, KeyError) as e:
+        print(f"錯誤：{e}", file=sys.stderr)
+        return 2
+
+    out_dir = _make_out_dir(f"text_{parsed.preset_id}")
+    mono_wav, mono_json = ir_synth.export_ir(mono, out_dir / "ir_mono")
+    stereo_wav = _write_stereo(out_dir, left, right)
+    wet_wav = _run_wet_preview(DRY_DEFAULT, mono_wav, out_dir, mix=0.6)
+
+    mono_payload = json.loads(mono_json.read_text(encoding="utf-8"))
+    notes, warnings = _split_notes_and_warnings(mono_payload["warnings"])
+    notes = list(dict.fromkeys(parsed.parse_notes + notes))
+
+    analysis: dict[str, Any] = {
+        "input_type": "text",
+        "input": text,
+        "output_dir": str(out_dir),
+        "preset_id": parsed.preset_id,
+        "preset_name_zh": parsed.preset_name_zh,
+        "dims_source": est.dims_source,
+        "confidence": est.confidence,
+        "dims_m": {"length": est.length_m, "width": est.width_m, "height": est.height_m},
+        "volume_m3": round(est.volume_m3, 2),
+        "surfaces": surf.as_dict(),
+        "band_center_freqs_hz": ac.band_center_freqs_hz,
+        "rt60_bands_target_sabine": [round(v, 4) for v in ac.rt60_bands_sabine],
+        "closed_loop": mono_payload["closed_loop"],
+        "ir_mono": {"path": str(mono_wav)},
+        "ir_stereo": {
+            "path": str(stereo_wav),
+            "note": "簡單 decorrelation：早期反射共用（決定性相同），晚期噪音左右各自不同 seed",
+            "seed_left": mono.noise_seed,
+            "seed_right": seed_right,
+        },
+        "wet_preview": {"path": str(wet_wav) if wet_wav else None, "mix": 0.6},
+        "notes": notes,
+        "warnings": warnings,
+        **_elapsed_payload(t0),
+    }
+    (out_dir / "analysis.json").write_text(
+        json.dumps(analysis, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+    print(f"已輸出：{mono_wav.name}、{stereo_wav.name}、analysis.json → {out_dir}")
+    if wet_wav:
+        print(f"🎧 試聽檔：{wet_wav}（mix=0.6；數字合理 ≠ 聽起來對，請實聽）")
+    for w in warnings:
+        print(f"  ⚠️ {w}")
+    return 0
+
+
+# ------------------------------------------------------------
+# 複合場景管線：coupled.synthesize_coupled() → coupled.export_coupled()
+# ------------------------------------------------------------
+
+
+def run_scene(scene_path: str) -> int:
+    t0 = time.time()
+    try:
+        scene = coupled.load_scene_file(scene_path)
+        result = coupled.synthesize_coupled(scene)
+    except (ValueError, FileNotFoundError, KeyError) as e:
+        print(f"錯誤：{e}", file=sys.stderr)
+        return 2
+
+    print(f"=== 複合場景：{result.scene_name}（method: {coupled.METHOD_ID}，工程近似） ===")
+    for room in result.rooms_summary:
+        print(
+            f"  [{room['role']}] {room['name']}：{room['dims_m'][0]}×{room['dims_m'][1]}×"
+            f"{room['dims_m'][2]} m，T30 量測 {room['t30_measured_s']} s"
+        )
+
+    out_dir = _make_out_dir(result.scene_name)
+    mono_wav, scene_json = coupled.export_coupled(result, out_dir / "ir_mono")
+    # 複合場景一律全濕（mix 1.0）：聽者與聲源在不同空間，物理上不存在乾聲直達
+    wet_wav = _run_wet_preview(DRY_DEFAULT, mono_wav, out_dir, mix=1.0)
+
+    scene_payload = json.loads(scene_json.read_text(encoding="utf-8"))
+    notes, warnings = _split_notes_and_warnings(scene_payload["warnings"])
+    notes.append(coupled.METHOD_DISCLAIMER)
+    if scene.get("description_zh"):
+        notes.append(f"場景描述：{scene['description_zh']}")
+
+    rooms_out = []
+    for room in result.rooms_summary:
+        rooms_out.append(
+            {
+                "role": room["role"],
+                "name": room["name"],
+                "dims_source": "scene_json",
+                "dims_m": room["dims_m"],
+                "surfaces": room["surfaces"],
+                "rt60_bands_target_sabine": room["rt60_bands_target_sabine"],
+                "t30_measured_s": room["t30_measured_s"],
+                "closed_loop": room["closed_loop"],
+            }
+        )
+
+    analysis: dict[str, Any] = {
+        "input_type": "scene",
+        "input": str(scene_path),
+        "output_dir": str(out_dir),
+        "scene_name": result.scene_name,
+        "method": coupled.METHOD_ID,
+        "method_disclaimer": coupled.METHOD_DISCLAIMER,
+        "rooms": rooms_out,
+        "paths": result.paths_summary,
+        "band_center_freqs_hz": result.band_center_freqs_hz,
+        "ir_mono": {"path": str(mono_wav)},
+        "ir_stereo": {
+            "generated": False,
+            "note": "複合場景 v1 只出 mono，stereo 留待後續（不安靜省略）",
+        },
+        "wet_preview": {"path": str(wet_wav) if wet_wav else None, "mix": 1.0},
+        "notes": notes,
+        "warnings": warnings,
+        **_elapsed_payload(t0),
+    }
+    (out_dir / "analysis.json").write_text(
+        json.dumps(analysis, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+    print(f"已輸出：{mono_wav.name}（mono，stereo 留待後續）、analysis.json → {out_dir}")
+    if wet_wav:
+        print(f"🎧 試聽檔：{wet_wav}（全濕 mix=1.0）")
+    for w in warnings:
+        print(f"  ⚠️ {w}")
+    return 0

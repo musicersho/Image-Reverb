@@ -52,7 +52,7 @@ def main() -> int:
         materials = load_materials()
         parsed = parse_scene_text(args.text, presets, materials)
     except (ValueError, FileNotFoundError) as e:
-        print(f"❌ 錯誤：{e}")
+        print(f"❌ 錯誤：{e}", file=sys.stderr)
         return 2
 
     est, surf = parsed.estimate, parsed.surfaces
@@ -79,7 +79,7 @@ def main() -> int:
 
     if not args.no_listen:
         if not DRY.exists():
-            print(f"❌ 找不到乾聲檔 {DRY}，略過試聽檔")
+            print(f"❌ 找不到乾聲檔 {DRY}，略過試聽檔", file=sys.stderr)
             return 1
         wet = OUTPUT_DIR / f"listen_{out_name}.wav"
         subprocess.run(
