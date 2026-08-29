@@ -1211,7 +1211,7 @@
        當比對基準的測試都不能用單次隨機結果當硬判準。
 
 ### T-15 CLI 整合（照片／文字／複合場景 → IR WAV + 分析報告 JSON）
-- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-08-30）
+- **狀態**：✅ 通過（Opus 驗證 2026-08-30；乾淨環境三種輸入 end-to-end 重跑、MD5 六條零回歸全數複驗通過）
 - **前置**：T-14 ✅、T-20 ✅、T-21 ✅、T-22 ✅
 - **對應 SPEC**：F-01、F-06、F-07、F-09、F-16、F-17
 - **🔮 Fable 卡片改版（2026-08-30）**：原卡寫於 2026-08-16，當時只有照片一種輸入；
@@ -1416,6 +1416,60 @@
     `data/materials.json`／`data/scene_presets.json`／`data/transmission.json`
     的內容；`ir_synth.py`／`coupled.py`／`scene_text.py` 的既有函式簽章與行為
     （除了本節列出的三個 T-20 非阻斷建議與新增的 `synthesize_stereo()`）未變動。
+  - **Opus 驗證紀錄（2026-08-30，✅ 通過）**：在乾淨 shell（新開 bash＋`source .venv/bin/activate`）
+    重跑，逐項複驗結果如下。
+    - **互斥檢查**：photo+--text／photo+--scene／--text+--scene／三種全給／一種都不給，
+      五種組合全部印清楚中文錯誤＋usage 到 stderr、`exit 2`。不是只驗 happy path。
+    - **MD5 零回歸（六條全中）**：先把 `output/` 的既有產物移到暫存區當基準再全部重跑——
+      T-14 兩條（`test_ir_synth.py`【6】`small_surf_carpet` `f3a763be…`／`hall` `f24353b5…`
+      仍全過）、T-20 兩條（`2adbaa75…`／`2dd19b6e…`）、T-21 兩條（`9a94ffdf…`／`a1c21bcc…`），
+      且新 CLI 對同一輸入的 `ir_mono.wav` 與獨立腳本產物**逐位元相同**。引擎數值路徑確實沒被動到。
+    - **照片管線可重現**：`bathroom_tiled.png` 乾淨重跑的 `ir_mono.wav` MD5 與 Sonnet 交付版
+      `f667b415…` 相同，`analysis.json` 的 dims/confidence/surfaces/RT60 逐值相同（非只在對話裡宣稱）。
+    - **9 張照片＋JPG**：全部 `exit 0`；`car_interior_suv` → `vehicle_interior` 域外警示＋
+      confidence low，`cgi_cavern_crowd_sophy` → 地板 0%＋人群 53% 雙警示＋low，都有輸出不 crash。
+      額外測 JPG 輸入（F-01 要求 JPG/PNG/HEIC）也正常。耗時 15–19s，遠低於 SPEC §4 的 60s。
+    - **音訊健全**：13 個輸出資料夾共 37 個 WAV 全過 `check_audio.py`——48000 Hz、
+      `PCM_24`（`sf.info` 確認 24bit，符合 F-06）、RMS 0.0055–0.064 全非靜音、
+      峰值一律 0.707946／0.891251 無爆音。
+    - **stereo 實測**：`ir_stereo.wav` 左聲道與 `ir_mono.wav` `np.array_equal` 為 True、
+      右聲道不同；左右峰值相同（無聲道間音量落差）；L/R 相關係數 text_church 0.17、
+      text_bathroom 0.91（小空間早期反射佔比高，符合「早期共用、晚期去相關」的設計）。
+    - **warnings/notes 分流（地雷 #15 直系檢查）**：除了 `neighbor_voices` 的
+      `+114.4%` 留在 warnings、`preset 'bedroom'` 進 notes 之外，另外把 `geometry.py`／
+      `scene_text.py` 所有**會下修 confidence** 的訊息逐條對照白名單 `_NOTE_MARKERS`：
+      無一命中白名單，全部留在 warnings（含洞窟 preset 低信心、clamp 比例過高、
+      地板可見度、人群佔比、CLIP 域外、超量程）。實跑 5 種文字描述交叉驗證，沒有真警示被分錯欄。
+    - **覆寫真的生效到 IR**：同一張照片三種跑法得到三個不同 MD5——無覆寫 `f667b415…`／
+      `--override-dims 4x3x2.5` `0e2c77f1…`／再加 `--override-material floor=carpet walls=marble`
+      `2d5da49b…`；`analysis.json` 的 `surfaces_sources` 如實標 `manual_override`，
+      `dims_source` 轉 `manual`、confidence 升 high。
+    - **錯誤處理**：不存在的照片、資料夾當照片、偽裝 .png 的文字檔、壞 JSON、找不到場景檔、
+      亂打的文字、`--override-dims 0x3x2.5`、不存在的材質 id、`floorcarpet` 格式錯誤、
+      未知表面名稱、`--override-material` 配 `--text`——十一種全部清楚中文錯誤到 stderr＋`exit 2`。
+    - **測試全過**：`test_ir_synth.py`（含【6】T-22 零回歸）／`test_scene_text.py`
+      （含新增的 cabin/cabinet 詞邊界迴歸項）／`test_coupled.py`／`test_acoustics.py`／
+      `test_preprocess.py` 全部 `exit 0`。
+    - **範圍確認**：`git show --stat` 只動 DEV_LOG／TASKS／TODO／`scripts/`／`src/image_reverb/`，
+      沒碰 SPEC/ROADMAP/WORKFLOW，沒碰 T-16/T-17/T-18 的檔案，`data/*.json` 未變。
+  - **Opus 非阻斷建議（4 項，不影響本卡通過，留給 T-16/T-17）**：
+    1. **覆寫後的過期材質警示**：`--override-material floor=carpet` 之後，
+       「floor：CLIP top-1 機率 0.35 低於門檻 0.4，改用 fallback 'gypsum_board'」這條警示
+       仍留在 `analysis.json`，但該面已被覆寫成 carpet／`manual_override`——與
+       T-20 建議②（顯式尺寸覆寫後移除失效的放大 note）同型的問題，本卡只修了 scene_text 那半。
+       方向偏保守（多警示而非少警示，不構成靜默風險），但 T-16 視覺化會照著標紅，建議一併收斂。
+    2. **輸出目錄會被同名覆寫**：`output/<photo stem>/` 只看檔名，
+       同一張照片跑「無覆寫」與「有覆寫」會安靜蓋掉前一次結果（實測確認）。
+       T-16 若要做前後對照圖，需要區分目錄或加時間戳。
+    3. **`analysis.json` schema 尚未真正統一**：`surfaces_sources`／`override_dims_used`／
+       `override_materials_used` 只有照片路徑有，文字路徑沒有 `surfaces_sources`，
+       複合場景則是 per-room 結構。卡片只要求 `dims_source` 三路都在（已滿足），
+       但 T-16 讀 JSON 做視覺化前建議先把欄位補齊或明文定義三種 schema 變體。
+    4. **`_run_wet_preview()` 用 `check=True` 但沒接 `CalledProcessError`**：
+       `convolve.py` 若失敗會在 IR 已寫出後拋 traceback（而非清楚中文錯誤＋exit code）。
+       目前不可達（convolve.py 穩定），屬防禦性缺口。
+    - 另據實更正交接筆記的一處小誤差：兩張 CGI 洞窟只有 `cgi_cavern_crowd_sophy`
+      是 `confidence: low`，`cgi_cave_lab_sophy` 實測是 `medium`（只有 floor CLIP fallback 警示）。
   - **下一步**：Opus 驗證本卡；通過後依序 T-16 → T-18（可提前插）→ T-17。
 
 ### T-16 分析視覺化（材質疊圖 + 參數報告）

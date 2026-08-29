@@ -1,5 +1,29 @@
 # Dev Log
 
+## 2026-08-30 (38)
+
+- ✅ **T-15 Opus 驗證通過**（乾淨 shell 重跑，不是讀 Sonnet 的宣稱）。三面紅旗逐一查過：
+  (1) 沒有為了統一 schema 動到引擎數值路徑——**MD5 六條零回歸全中**（T-14 ×2、
+  T-20 ×2、T-21 ×2），且新 CLI 對同一輸入與獨立腳本產物**逐位元相同**（4/4）；
+  驗證方式是先把 `output/` 既有產物整批移到暫存區當基準再全部重跑，避免拿舊檔對舊檔。
+  (2) warnings/notes 分流沒有把真警示分錯欄——把 `geometry.py`/`scene_text.py`
+  **所有會下修 confidence 的訊息**逐條對照白名單 `_NOTE_MARKERS`，無一命中，全部留在
+  `warnings`（洞窟低信心 preset、clamp 比例、地板可見度、人群佔比、CLIP 域外、超量程）。
+  (3) 互斥檢查不是只驗 happy path——兩兩組合、三種全給、一種都不給共 5 種全實測。
+- 其他實測：9 張照片＋額外 JPG 全 `exit 0`（耗時 15–19s）；37 個輸出 WAV 全過
+  `check_audio.py`（48kHz／`PCM_24`／非靜音／無爆音）；`ir_stereo` 左聲道與 `ir_mono`
+  `np.array_equal` 為 True、右聲道不同、左右峰值相同；覆寫真的生效到 IR（同一張照片
+  無覆寫／`--override-dims`／再加 `--override-material` 三個不同 MD5）；11 種壞輸入
+  全部清楚中文錯誤到 stderr＋`exit 2`；5 支測試腳本全過。
+- **Opus 非阻斷建議 4 項（留給 T-16/T-17，已寫進 T-15 卡）**：① `--override-material`
+  之後舊的 CLIP fallback 警示沒被移除（與 T-20 建議②同型，本卡只修了 scene_text 那半）；
+  ② `output/<檔名>/` 同名會安靜覆寫，前後對照需區分目錄；③ `analysis.json` schema
+  尚未真正統一（`surfaces_sources`/`override_*` 只有照片路徑有），T-16 讀 JSON 前宜補齊；
+  ④ `_run_wet_preview()` 用 `check=True` 但沒接 `CalledProcessError`（目前不可達）。
+- 據實更正交接筆記一處：兩張 CGI 洞窟只有 `cgi_cavern_crowd_sophy` 是 `confidence: low`，
+  `cgi_cave_lab_sophy` 實測是 `medium`。
+- 下一步：T-16 → T-18（可提前插）→ T-17。
+
 ## 2026-08-30 (37)
 
 - 🔵 **T-15 CLI 整合完成（Sonnet 自檢通過，待 Opus 驗證）**：`python -m src.image_reverb`
