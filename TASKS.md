@@ -1473,7 +1473,7 @@
   - **下一步**：Opus 驗證本卡；通過後依序 T-16 → T-18（可提前插）→ T-17。
 
 ### T-16 分析視覺化（材質疊圖 + 參數報告）
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-08-30）
 - **前置**：T-15
 - **對應 SPEC**：F-08
 - **🔮 Fable 卡片更新（2026-08-30）**：T-15 改為三種輸入後，本卡的視覺化也要涵蓋
@@ -1500,7 +1500,69 @@
   - RT60 長條圖的數值與 JSON 對應欄位一致（逐值比對，不是目測）
 - **Opus 驗證重點**：視覺化的數字直接取自 JSON，不是另外重算（紅旗：兩邊數字不一致）；
   紅旗：target/measured 並排呈現但把超差警示藏掉（地雷 #15）
-- **交接筆記**：
+- **交接筆記（2026-08-30，Sonnet）**：
+  - **產出**：新增 `src/image_reverb/visualize.py`（`render_analysis_png()` 統一入口，
+    依 `analysis['input_type']` 分派到 `_render_photo`/`_render_text`/`_render_scene`）；
+    `pipeline.py` 三個 `run_*()` 各加一個 `no_viz: bool = False` 參數，寫完
+    `analysis.json` 後呼叫 `_maybe_visualize()`；`cli.py` 加 `--no-viz` 旗標並透傳。
+    **沒有動 T-10~T-14／T-20／T-21／T-15 既有數值路徑一行**（`git diff` 只有
+    `cli.py`/`pipeline.py` 的路由層與新檔 `visualize.py`）。
+  - **PNG 上的每個數字都是直接從 `analysis.json`（或同目錄 `ir_mono.json` 的
+    `predelay_ms_from_acoustics`，同樣是已算好、只讀不重算）讀出來畫的**，
+    RT60 長條圖吃 `closed_loop.bands[]`（target/measured/within_tolerance 都在同一筆，
+    不會有「兩邊數字對不上」的空間）；warnings 紅字區塊只顯示 `analysis['warnings']`，
+    `notes` 不標紅（沿用 T-15 的分流結果，本卡沒有重新判斷過一次）。
+  - **像素圖（分割疊色圖／深度圖）是唯一「重跑模型」的地方**：`analysis.json`
+    沒有存 labelmap／深度陣列，這兩張圖必須重新跑一次 T-11 的深度模型與 T-12 的
+    ADE20K 分割模型才拿得到像素資料。做法與 `pipeline.py` 既有的 `scene_cues`
+    重跑 `segment_roles()` 是同一種模式（非新技術債）。**重跑結果只拿來上色/畫疊圖
+    框位置，疊圖上的材質名／α@1kHz 文字標籤仍然是查 `analysis['surfaces']`
+    對應到 `data/materials.json`，不是從這次重跑的分割結果反推**——這點在
+    `visualize.py` 模組 docstring 有寫清楚，Opus 驗證時可重點查這裡有沒有偷混。
+    代價：照片管線的 `elapsed_s` 因此大約變兩倍（多一次深度＋一次分割推論），
+    9 張照片 + 環景測試實測沒有超過 1 分鐘/張，SPEC §4 的 60s 只是記錄不擋驗收。
+  - **等寬字型 CJK 坑（已修）**：`family="monospace"` 預設吃 DejaVu Sans Mono，
+    沒有中文字形，六面材質表/路徑列表的中文會變空白方框（有 UserWarning 可查）。
+    修法：`plt.rcParams["font.monospace"]` 也塞入 PingFang HK/Heiti TC 等中文字型。
+    `⚠️`/`✅` emoji 一樣會因為字型沒有 emoji glyph 印出方框，改用純文字
+    `[!]`/`[OK]` 前綴，不影響資訊量。**這兩個字型設定依賴 macOS 內建字型
+    （PingFang HK/Heiti TC/STHeiti），换到其他作業系統中文可能變回方框，
+    但不會讓程式壞掉**（matplotlib 對缺字形只印警告、照樣輸出圖檔）。
+  - **自我檢查逐項結果**：
+    - 9 張照片（`assets/photos/*.png`）+ `--text "浴室"` + `--text "教堂"` +
+      `--scene assets/scenes/neighbor_voices.json` + `--scene .../stadium_corridor.json`
+      共 13 次全部 `exit 0`，`analysis.png` 全部產出；另外用非測試集的環景照
+      `assets/reference_irs/steinman_hall/SteinmanHall.jpg` 額外驗證環景分支
+      （「環景已展開為 6 視角，此處顯示主視角」字樣確實出現，wall 標籤正確對到
+      `north` 面而非固定 `west`）。
+    - `car_interior_suv.png` 的 PNG 上看得到 `vehicle_interior` 域外警示紅字；
+      `neighbor_voices` 那張三個房間子圖都看得到，聽者/聲源臥室 125Hz、
+      家用小走廊 125/250Hz 都標紅且底部 warnings 區塊逐條列出，與 JSON 一致。
+    - RT60 逐值比對（程式比對，不是目測）：photo/text 的 `closed_loop.bands[].
+      rt60_target_s` 與頂層 `rt60_bands_target_sabine` 全部 11 個輸出誤差 <1e-6
+      （四捨五入位數相同）；scene 的兩個場景、5 個房間 `closed_loop.bands[]`
+      vs `rooms[].rt60_bands_target_sabine`/`t30_measured_s` 誤差全部 <0.001
+      （純粹是 `coupled.py` 既有的三位/四位小數四捨五入差異，`visualize.py`
+      實際繪圖用的是精度較高的 `closed_loop.bands[]`，不是這個既有的小數差異
+      本身有問題——附帶一提這算是 `coupled.py` 既有 schema 的認知落差，
+      不是本卡引入，也不影響任何驗收判準，供 T-17 或未來收斂 schema 時參考）。
+    - MD5 零回歸：`stairwell_tiled` 同輸入分別跑「預設（含視覺化）」與
+      `--no-viz`，`ir_mono.wav` MD5 逐位元相同（`7953acc1f8c5b27809c806a21f331e27`）
+      ——證實視覺化是純讀取，不影響任何音訊輸出。`test_ir_synth.py`
+      （23 項含 T-22 兩條交付 IR MD5）、`test_scene_text.py`、`test_coupled.py`、
+      `test_preprocess.py` 全過，未受本卡影響。
+    - `--no-viz` 在乾淨目錄下確認完全不產生 `analysis.png`（另外發現一個**既有、
+      非本卡引入**的行為：`output/<name>/` 同名覆寫不會清掉上次殘留的檔案，
+      所以先跑一次預設模式、再對同一個目錄跑 `--no-viz`，舊的 `analysis.png`
+      會留在原地——這正是 T-15 Opus 非阻斷建議②「同名安靜覆寫」的同一個坑，
+      不是 `--no-viz` 沒生效，只是沒人清資料夾）。
+    - CLI 互斥檢查、`--override-dims`/`--override-material` 搭配 `--no-viz`
+      皆重測過，行為與 T-15 一致（本卡沒有動互斥邏輯）。
+  - **範圍確認**：沒有動 SPEC/ROADMAP/WORKFLOW；沒有動 T-17/T-18 的檔案；
+    `git status --short` 只有 `cli.py`/`pipeline.py`（modified）與
+    `visualize.py`（新檔）三個檔案。`requirements.txt` 的 `matplotlib==3.9.4`
+    早已存在，未新增依賴。
+  - **下一步**：Opus 驗證本卡；通過後依序 T-18（可提前插）→ T-17。
 
 ### T-18 驗收前置：低頻聯合帶量測工具＋退出碼技術債（T-17 前必做）
 - **狀態**：⬜ 未開始

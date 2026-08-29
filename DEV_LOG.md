@@ -1,5 +1,32 @@
 # Dev Log
 
+## 2026-08-30 (39)
+
+- 🔵 **T-16 分析視覺化完成（Sonnet 自檢通過，待 Opus 驗證）**：新增
+  `src/image_reverb/visualize.py`，三種輸入各自的拼版 `analysis.png`（照片：
+  原圖／表面分割疊色圖／深度圖／六頻段 RT60／尺寸體積 pre-delay confidence
+  文字欄／警示紅字；文字：preset＋全部假設值／六面材質表／RT60／警示；
+  複合場景：逐空間 RT60 摘要／路徑列表／警示），預設產生、`--no-viz` 可關。
+  `pipeline.py`/`cli.py` 只加路由層（三個 `run_*()` 各加 `no_viz` 參數＋
+  `_maybe_visualize()`），**沒有動任何既有數值路徑一行**。
+- **PNG 上的數字全部直接讀 `analysis.json`（RT60 用 `closed_loop.bands[]`，
+  target/measured/within_tolerance 同一筆，不會兩邊對不上）**，唯一重跑模型
+  的地方是分割疊色圖／深度圖的像素資料（`analysis.json` 不存 labelmap／深度
+  陣列，做法與既有 `scene_cues` 重跑 `segment_roles()` 同模式）；材質文字標籤
+  仍是查 `analysis['surfaces']`，不是從這次重跑的分割結果反推。
+- **自我檢查全過**：9 張照片＋2 個文字場景＋2 個複合場景共 13 次全 `exit 0`
+  且都產出 `analysis.png`；另外用非測試集環景照（SteinmanHall）驗證環景分支
+  （主視角＋「已展開 6 視角」字樣、wall 標籤正確對到 `north` 面）。RT60 數值
+  逐值比對（程式比對非目測）：photo/text 11 個輸出誤差 <1e-6，scene 5 個房間
+  誤差 <0.001（純屬 `coupled.py` 既有三位/四位小數四捨五入差異，非本卡引入）。
+  MD5 零回歸：`stairwell_tiled` 同輸入 with/without `--no-viz` 的 `ir_mono.wav`
+  逐位元相同；`test_ir_synth.py`（23 項）/`test_scene_text.py`/`test_coupled.py`/
+  `test_preprocess.py` 全過。`git status --short` 只有 3 個檔案變動。
+- 過程中確認一個**既有、非本卡引入**的行為：`output/<name>/` 同名覆寫不會清掉
+  上次殘留檔案（T-15 Opus 非阻斷建議②同一個坑），先跑預設模式再對同目錄跑
+  `--no-viz` 會看到舊的 `analysis.png` 還在——不是 `--no-viz` 沒生效。
+- 下一步：Opus 驗證 T-16；通過後依序 T-18（可提前插）→ T-17。
+
 ## 2026-08-30 (38)
 
 - ✅ **T-15 Opus 驗證通過**（乾淨 shell 重跑，不是讀 Sonnet 的宣稱）。三面紅旗逐一查過：

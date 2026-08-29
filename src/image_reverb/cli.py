@@ -10,7 +10,8 @@
     python -m src.image_reverb <photo> --override-material floor=carpet --override-material walls=gypsum_board
 
 輸出到 `output/<name>/`：`ir_mono.wav`、`ir_stereo.wav`（複合場景 v1 只出 mono）、
-`analysis.json`（統一 schema）、`wet_preview.wav`（照片/文字 mix=0.6，複合場景 mix=1.0）。
+`analysis.json`（統一 schema）、`wet_preview.wav`（照片/文字 mix=0.6，複合場景 mix=1.0）、
+`analysis.png`（T-16 視覺化拼版，預設產生，`--no-viz` 可關）。
 
 三條管線各自的核心邏輯（T-10~T-14、T-20 `scene_text.py`、T-21 `coupled.py`）完全不動，
 本檔與 `pipeline.py` 只負責路由與統一輸出格式，詳見 `pipeline.py` 模組說明。
@@ -51,6 +52,11 @@ def main(argv: list[str] | None = None) -> int:
         help="（僅照片輸入）覆寫單一面的材質，可重複給多次，例如 "
         "--override-material floor=carpet --override-material walls=gypsum_board（F-09）",
     )
+    parser.add_argument(
+        "--no-viz",
+        action="store_true",
+        help="不產生 analysis.png（T-16；預設會產生）",
+    )
     args = parser.parse_args(argv)
 
     error = pipeline.check_mutual_exclusion(args.photo, args.text, args.scene)
@@ -65,10 +71,12 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     if args.photo is not None:
-        return pipeline.run_photo(args.photo, args.override_dims, args.override_material)
+        return pipeline.run_photo(
+            args.photo, args.override_dims, args.override_material, no_viz=args.no_viz
+        )
     if args.text is not None:
-        return pipeline.run_text(args.text)
-    return pipeline.run_scene(args.scene)
+        return pipeline.run_text(args.text, no_viz=args.no_viz)
+    return pipeline.run_scene(args.scene, no_viz=args.no_viz)
 
 
 if __name__ == "__main__":

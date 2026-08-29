@@ -23,7 +23,7 @@ import numpy as np
 import soundfile as sf
 from PIL import UnidentifiedImageError
 
-from . import config, coupled, ir_synth, scene_text
+from . import config, coupled, ir_synth, scene_text, visualize
 from .acoustics import compute_acoustics
 from .geometry import estimate_room, parse_override_dims
 from .materials import apply_overrides, load_materials
@@ -88,6 +88,14 @@ def _make_out_dir(name: str) -> Path:
     return out_dir
 
 
+def _maybe_visualize(analysis: dict[str, Any], out_dir: Path, no_viz: bool) -> None:
+    """T-16：預設產生 `analysis.png`，`--no-viz` 可關。只讀 analysis 畫圖，不改它。"""
+    if no_viz:
+        return
+    png_path = visualize.render_analysis_png(analysis, out_dir)
+    print(f"🖼️  視覺化：{png_path.name}")
+
+
 def _write_stereo(out_dir: Path, left: np.ndarray, right: np.ndarray) -> Path:
     path = out_dir / "ir_stereo.wav"
     stereo = np.stack([left, right], axis=-1)
@@ -141,6 +149,7 @@ def run_photo(
     photo: str,
     override_dims: str | None = None,
     override_materials: list[str] | None = None,
+    no_viz: bool = False,
 ) -> int:
     from .preprocess import preprocess_image
     from .surfaces import surfaces_from_preprocess, _load_segmenter, segment_roles
@@ -262,6 +271,7 @@ def run_photo(
     (out_dir / "analysis.json").write_text(
         json.dumps(analysis, ensure_ascii=False, indent=2), encoding="utf-8"
     )
+    _maybe_visualize(analysis, out_dir, no_viz)
 
     print(f"已輸出：{mono_wav.name}、{stereo_wav.name}、analysis.json → {out_dir}")
     if wet_wav:
@@ -276,7 +286,7 @@ def run_photo(
 # ------------------------------------------------------------
 
 
-def run_text(text: str) -> int:
+def run_text(text: str, no_viz: bool = False) -> int:
     t0 = time.time()
     try:
         presets = scene_text.load_scene_presets()
@@ -339,6 +349,7 @@ def run_text(text: str) -> int:
     (out_dir / "analysis.json").write_text(
         json.dumps(analysis, ensure_ascii=False, indent=2), encoding="utf-8"
     )
+    _maybe_visualize(analysis, out_dir, no_viz)
 
     print(f"已輸出：{mono_wav.name}、{stereo_wav.name}、analysis.json → {out_dir}")
     if wet_wav:
@@ -353,7 +364,7 @@ def run_text(text: str) -> int:
 # ------------------------------------------------------------
 
 
-def run_scene(scene_path: str) -> int:
+def run_scene(scene_path: str, no_viz: bool = False) -> int:
     t0 = time.time()
     try:
         scene = coupled.load_scene_file(scene_path)
@@ -418,6 +429,7 @@ def run_scene(scene_path: str) -> int:
     (out_dir / "analysis.json").write_text(
         json.dumps(analysis, ensure_ascii=False, indent=2), encoding="utf-8"
     )
+    _maybe_visualize(analysis, out_dir, no_viz)
 
     print(f"已輸出：{mono_wav.name}（mono，stereo 留待後續）、analysis.json → {out_dir}")
     if wet_wav:
