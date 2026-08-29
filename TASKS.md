@@ -1473,7 +1473,7 @@
   - **下一步**：Opus 驗證本卡；通過後依序 T-16 → T-18（可提前插）→ T-17。
 
 ### T-16 分析視覺化（材質疊圖 + 參數報告）
-- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-08-30）
+- **狀態**：✅ 通過（Opus 驗證，2026-08-30）
 - **前置**：T-15
 - **對應 SPEC**：F-08
 - **🔮 Fable 卡片更新（2026-08-30）**：T-15 改為三種輸入後，本卡的視覺化也要涵蓋
@@ -1563,6 +1563,40 @@
     `visualize.py`（新檔）三個檔案。`requirements.txt` 的 `matplotlib==3.9.4`
     早已存在，未新增依賴。
   - **下一步**：Opus 驗證本卡；通過後依序 T-18（可提前插）→ T-17。
+- **Opus 驗證紀錄（2026-08-30）**：✅ 通過。乾淨環境重跑（先 `rm -rf` 掉輸出目錄再跑），
+  9 張照片 + 環景 SteinmanHall + 2 文字 + 2 場景共 14 次全部 `exit 0`、`analysis.png` 全產出；
+  音訊非靜音（RMS 0.0058 / 0.0141 / 0.0490）；四支既有測試腳本全過。
+  - **逐值比對用程式驗，不是目測**：攔截 matplotlib figure，把每根 bar 的 `get_height()`
+    與每個 Text artist 抓出來對 `analysis.json`。photo/text/scene 五個輸出共 96 根 bar，
+    高度與 JSON `closed_loop.bands[].rt60_target_s`/`t30_measured_s` **最大誤差 0**（非近似，是完全相等）；
+    bar 上的數字標籤全部等於 JSON 四捨五入 2 位；JSON `warnings` 逐條原文出現在 PNG。
+  - **地雷 #15 專項**：超差頻段的 measured bar 標紅根數 == JSON `within_tolerance=False` 個數，
+    五個輸出全數相符（1/1、4/4、1/1、2/2、1/1），沒有「並排呈現但把超差藏掉」。
+    `notes` 未混進 warnings 紅字區塊（程式檢出，非目測）。
+  - **「無假實作」決定性測試**：`bathroom_tiled` 加 `--override-material floor=carpet
+    --override-material walls=wood_panel`，CLIP 重跑結果是 `generic_wall`/`gypsum_board`，
+    PNG 上卻正確顯示覆寫後的「地毯 α=0.37」「木板 α=0.09」——證實文字標籤走的是
+    `analysis['surfaces']`，不是那次重跑的分割結果。環景 `SteinmanHall` 的 wall 標籤
+    顯示 `north` 的 gypsum_board（不是 `west` 的 curtain_fabric），視角對應正確。
+  - **MD5 零回歸獨立複驗**：`stairwell_tiled` 預設 vs `--no-viz`，`ir_mono.wav`
+    `7953acc1f8c5b27809c806a21f331e27`、`ir_stereo.wav` `ac058b49693ab1ddd64cd8a05a84694d`
+    兩者皆逐位元相同。`--no-viz` 在乾淨目錄下確認不產生 `analysis.png`。
+  - **範圍**：`git diff 4ca2ed5..70c709c` 對 SPEC/ROADMAP/WORKFLOW/`data/`/`assets/`
+    與 T-10~T-14、T-20、T-21 的 8 個模組**全部為空**，只動 `cli.py`/`pipeline.py` 路由層
+    ＋新檔 `visualize.py`。錯誤處理：不存在的檔案、非圖片皆為清楚中文訊息，無 traceback。
+  - **Opus 非阻斷建議（4 項，不影響本卡通過，留給 T-17 或未來收斂）**：
+    ① `visualize.py:_photo_pixel_panels()` 對非環景照 hardcode `wall_face = "west"`。
+       實測 `--override-material east=marble` 時，PNG 的 wall 標籤仍顯示 west 的
+       gypsum_board，被覆寫的 east 在圖上完全看不到。這不是「數字錯」（west 確實是
+       gypsum_board），是「單面覆寫時資訊不完整」。建議：四面材質不一致時，
+       在疊圖旁補一行四面小表，或標註「顯示 west 面代表值」。
+    ② `pipeline.py:_maybe_visualize()` 沒有 try/except。視覺化在 `analysis.json` 寫完之後
+       才跑，萬一畫圖失敗（缺字型以外的原因），音訊已經產出卻會吃到 traceback、
+       且看不到最後的「已輸出」摘要。建議包 try/except 後印警告續跑。
+    ③ RT60 長條圖在 target/measured 並排時，標題仍是「六頻段 RT60（Sabine 目標）」，
+       與圖上同時有 measured 不完全相稱（legend 有標示，不致誤讀）。
+    ④ 文字輸入的拼版是固定 2×2 grid，兩個文字欄很短導致中段大片留白；
+       另外「六面材質表」標題與內文首行重複。純版面問題。
 
 ### T-18 驗收前置：低頻聯合帶量測工具＋退出碼技術債（T-17 前必做）
 - **狀態**：⬜ 未開始

@@ -1,5 +1,37 @@
 # Dev Log
 
+## 2026-08-30 (40)
+
+- ✅ **T-16 Opus 驗證通過**（乾淨環境重跑，先 `rm -rf` 掉輸出目錄再跑，不是沿用
+  Sonnet 留下的檔案）。9 張照片＋環景 SteinmanHall＋2 文字＋2 場景共 14 次全 `exit 0`、
+  `analysis.png` 全產出；音訊非靜音（RMS 0.0058/0.0141/0.0490）；4 支測試腳本全過；
+  不存在的檔案／非圖片皆為清楚中文訊息、無 traceback。
+- **「數字取自 JSON」用程式驗，不是目測**：攔截 matplotlib figure，把每根 bar 的
+  `get_height()` 與每個 Text artist 抓出來對 `analysis.json`。五個輸出共 **96 根 bar，
+  高度與 JSON `closed_loop.bands[]` 的 target/measured 最大誤差 0**（完全相等，非近似）；
+  bar 數字標籤全部等於 JSON 四捨五入 2 位；`warnings` 逐條原文出現在 PNG。
+  Sonnet 自檢宣稱的「<1e-6／<0.001 誤差」實測其實是 0——它比對的是頂層
+  `rt60_bands_target_sabine`，而繪圖實際吃的是 `closed_loop.bands[]`，後者無捨入落差。
+- **地雷 #15 專項**：超差頻段標紅的 measured bar 根數 == JSON `within_tolerance=False`
+  個數，五個輸出全數相符（1/1、4/4、1/1、2/2、1/1），沒有「並排呈現卻藏掉超差」；
+  `notes` 未混進紅字區塊（程式檢出）。
+- **「無假實作」決定性測試**：`bathroom_tiled` 加 `--override-material floor=carpet
+  --override-material walls=wood_panel`，CLIP 重跑結果是 `generic_wall`/`gypsum_board`，
+  PNG 卻正確顯示覆寫後的「地毯 α=0.37」「木板 α=0.09」——證實文字標籤走
+  `analysis['surfaces']`，不是那次為了畫圖重跑的分割結果。環景 SteinmanHall 的 wall
+  標籤顯示 `north` 的 gypsum_board（非 `west` 的 curtain_fabric），視角對應正確。
+- **MD5 零回歸獨立複驗**：`stairwell_tiled` 預設 vs `--no-viz`，`ir_mono.wav`
+  `7953acc1…`、`ir_stereo.wav` `ac058b49…` **兩條**皆逐位元相同（Sonnet 只驗了 mono）。
+  範圍：`git diff 4ca2ed5..70c709c` 對 SPEC/ROADMAP/WORKFLOW/`data/`/`assets/`
+  與 T-10~T-14、T-20、T-21 的 8 個模組全部為空。
+- **附 4 項非阻斷建議**給 T-17／未來收斂：① `_photo_pixel_panels()` 的
+  `wall_face = "west"` hardcode——實測 `--override-material east=marble` 時 PNG 仍顯示
+  west 的材質，被覆寫的面圖上看不到（非數字錯，是單面覆寫時資訊不完整）；
+  ② `_maybe_visualize()` 沒 try/except，畫圖若失敗會在音訊已產出後吐 traceback；
+  ③ RT60 圖標題在並排 measured 時仍寫「（Sabine 目標）」；④ 文字拼版大片留白＋
+  「六面材質表」標題與內文首行重複。
+- 下一步：T-18（驗收前置，可提前插）→ T-17。
+
 ## 2026-08-30 (39)
 
 - 🔵 **T-16 分析視覺化完成（Sonnet 自檢通過，待 Opus 驗證）**：新增
