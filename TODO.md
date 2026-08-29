@@ -32,11 +32,13 @@
       過關（標紅根數 == `within_tolerance=False` 個數，五個輸出全中）；材質覆寫
       實測證實標籤走 `analysis['surfaces']` 非模型重跑結果（無假實作）；
       MD5 零回歸 mono＋stereo 兩條逐位元相同。附 4 項非阻斷建議給 T-17。
-- [x] **T-18 驗收前置 🔵 Sonnet 自檢通過，待 Opus 驗證（2026-08-30）** — 新增
-      `t30_low_combined()`（88.4–353.6Hz 低頻聯合帶 T30，純新增、既有函式零改動）；
-      新增 `test_t30_low_combined.py`（解析構造已知 RT60 校驗 ≤10% 誤差）；
-      `check_audio.py`／`test_segmentation.py` 退出碼修正；六條交付 IR MD5 逐一
-      重跑複驗零回歸。**← 現在該做的：Opus 驗證 T-18，通過後進 T-17**
+- [x] **T-18 驗收前置 ✅ Opus 驗證通過（2026-08-30）** — 新增 `t30_low_combined()`
+      （88.4–353.6Hz 低頻聯合帶 T30，純新增、既有函式 diff 刪除行數 0）；
+      `test_t30_low_combined.py` 解析構造校驗；`check_audio.py`／`test_segmentation.py`
+      退出碼修正。Opus 乾淨環境重跑＋**自建獨立量測實作交叉複驗**（掃 0.3–5.0s 五組，
+      誤差 −2.3%～+1.7%）＋裁決 B 混頻機制獨立重現（逐頻段 125Hz +105%）＋
+      六條交付 IR MD5 自己重生比對零回歸。附 4 項非阻斷觀察給 T-17。
+- [ ] **← 現在該做的：T-17 MVP 驗收**（SPEC §7 四項標準，低頻聯合帶量測工具已就緒）
 
 ## ✅ T-11 路線決策結果（2026-08-25，Fable）
 
