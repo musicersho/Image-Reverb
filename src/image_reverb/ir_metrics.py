@@ -125,3 +125,42 @@ def closed_loop_report(
         "bands": bands,
         "warnings": warnings,
     }
+
+
+# --- T-18：低頻聯合帶 T30（88.4–353.6Hz = 125Hz 帶下緣至 250Hz 帶上緣）---
+#
+# 125Hz／250Hz 兩個八度帶共享 177Hz 邊緣，鄰帶能量耦合會主導量測尾段，逐頻段
+# T30 因此不是可信量測（三次實測證據見 TASKS.md T-17 卡 §7-2 裁決 B）。聯合帶把
+# 共享邊緣內部化到帶內，取代逐頻段 125/250Hz 作為 §7-2 低頻驗收判準。
+#
+# 頻段邊界與既有 `_bandpass_sos()` 同一套 √2 八度寬公式（center/√2 → center×√2），
+# 只是取 125Hz 帶下緣到 250Hz 帶上緣，不是單一中心頻率的一個八度。
+
+_LOW_COMBINED_LOW_CENTER_HZ = 125.0
+_LOW_COMBINED_HIGH_CENTER_HZ = 250.0
+
+
+def _low_combined_bandpass_sos(fs: int, order: int = 3) -> np.ndarray:
+    """88.4–353.6Hz 聯合帶通（125Hz 帶下緣至 250Hz 帶上緣）。"""
+    lo = _LOW_COMBINED_LOW_CENTER_HZ / math.sqrt(2.0)
+    hi = _LOW_COMBINED_HIGH_CENTER_HZ * math.sqrt(2.0)
+    nyq = fs / 2.0
+    if hi >= nyq:
+        hi = nyq * 0.98
+    return butter(order, [lo / nyq, hi / nyq], btype="bandpass", output="sos")
+
+
+def t30_low_combined(ir: np.ndarray, fs: int) -> float:
+    """低頻聯合帶 T30（秒），88.4–353.6Hz。
+
+    與逐頻段 `band_t30()` 同一套量測流程（零相位 Butterworth 帶通 → Schroeder
+    反向積分 → -5→-35dB 線性迴歸外推），差別只在頻段邊界。見本檔案前段
+    「T-18」註解與 TASKS.md T-18 卡。
+    """
+    ir = np.asarray(ir, dtype=np.float64)
+    if ir.ndim != 1:
+        raise ValueError(f"只支援 mono IR（收到 shape={ir.shape}）")
+    sos = _low_combined_bandpass_sos(fs)
+    band_signal = sosfiltfilt(sos, ir)
+    curve = schroeder_curve_db(band_signal)
+    return t30_from_curve(curve, fs)

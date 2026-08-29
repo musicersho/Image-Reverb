@@ -1,5 +1,23 @@
 # Dev Log
 
+## 2026-08-30 (41)
+
+- 🔵 **T-18 驗收前置完成（Sonnet 自檢通過，待 Opus 驗證）**：`ir_metrics.py`
+  純新增 `t30_low_combined()`（88.4–353.6Hz 低頻聯合帶 T30，取代 T-17 §7-2
+  已裁決要換掉的低頻八度帶逐頻段量測），既有函式 `git diff` 零改動。
+  新增獨立測試 `scripts/test_t30_low_combined.py`：解析構造已知 RT60（0.5s/2.5s，
+  非循環論證）誤差 -4.1%/+2.9%（判準 ≤10%）；地毯房參考量測 0.9823s，落在
+  合理區間內且接近 125Hz/250Hz 錨點。
+- **退出碼技術債收斂（地雷 #10）**：`check_audio.py` 無參數 exit 0→2；
+  `test_segmentation.py` 全部圖片失敗 exit 0→1（與 `test_depth.py` 一致），
+  兩者皆實測驗證（自建假圖片檔觸發失敗路徑），非改完沒測。
+- **六條交付 IR MD5 零回歸逐一重跑複驗**（非只信任「本卡沒動合成路徑」的推論）：
+  T-14 兩條（`test_ir_synth.py`【6】）、T-20 兩條（`gen_ir_from_text.py`
+  「浴室」／「大教堂」）、T-21 兩條（`gen_ir_coupled.py` neighbor_voices／
+  stadium_corridor）**六條全數與 TASKS.md 記錄的 MD5 逐位元相同**。
+  `test_ir_synth.py`／`test_scene_text.py`／`test_coupled.py` 三套件全過。
+- 下一步：Opus 驗證 T-18；通過後進 T-17（低頻判準已由本卡工具落實 T-17 卡裁決 B）。
+
 ## 2026-08-30 (40)
 
 - ✅ **T-16 Opus 驗證通過**（乾淨環境重跑，先 `rm -rf` 掉輸出目錄再跑，不是沿用

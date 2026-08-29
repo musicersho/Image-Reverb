@@ -235,6 +235,9 @@ def main():
             f, ensure_ascii=False, indent=2,
         )
     print("\n[完成] 統計寫入 %s（%d 張圖）" % (stats_path, len(all_stats)))
+    if not all_stats:
+        print("[錯誤] 所有圖片皆處理失敗，沒有任何一張成功。", file=sys.stderr)
+        return 1
     return 0
 
 

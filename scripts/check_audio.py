@@ -41,7 +41,7 @@ def check_audio(path):
 def main():
     if len(sys.argv) != 2:
         print("用法：python scripts/check_audio.py <音訊檔路徑>")
-        sys.exit(0)
+        sys.exit(2)
 
     check_audio(sys.argv[1])
 

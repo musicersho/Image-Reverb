@@ -1599,7 +1599,7 @@
        另外「六面材質表」標題與內文首行重複。純版面問題。
 
 ### T-18 驗收前置：低頻聯合帶量測工具＋退出碼技術債（T-17 前必做）
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-08-30）
 - **前置**：T-14 ✅（**不依賴 T-15/T-16，可並行**，但必須在 T-17 開工前通過驗證）
 - **對應 SPEC**：§7-2（T-17 依 Fable 裁決 2026-08-30 需要聯合帶量測，見 T-17 卡）；
   地雷 #10（退出碼）
@@ -1636,7 +1636,41 @@
 - **附註（Fable 裁決 2026-08-30）**：技術債 #3（`IR_MATCH_WINDOW_RMS_FLOOR_DB` 餘裕
   僅 ~3dB）**維持文件化已知限制、不動碼**——沒有失效案例支撐的門檻調整是投機，
   T-17 若在真實場地觸發誤報/漏報再回頭處理
-- **交接筆記**：
+- **交接筆記**（2026-08-30，Sonnet）：
+  - **`ir_metrics.py` 新增 `t30_low_combined(ir, fs)`**（純新增，檔尾附一個私有
+    `_low_combined_bandpass_sos()`）：88.4–353.6Hz（= 125Hz 帶下緣至 250Hz 帶上緣，
+    與既有 `_bandpass_sos()` 同一套 `center/√2 → center×√2` 公式，只是取聯合區間），
+    走同一套零相位 Butterworth → Schroeder 反向積分 → -5→-35dB 線性迴歸外推流程
+    （直接呼叫既有 `schroeder_curve_db()`／`t30_from_curve()`，未複製邏輯）。
+    `git diff -U0` 對既有函式行數確認為 0（只有檔尾新增區塊，見下方自我檢查）。
+  - **新增 `scripts/test_t30_low_combined.py`**（獨立測試腳本，不動 `test_ir_synth.py`）：
+    【1】合成構造校驗——白噪聲先帶通到 88.4–353.6Hz 再乘上**解析定義**的指數衰減包絡
+    `10^(-3t/T60)`（不是拿 `t30_low_combined` 自己的量測值當真值），0.5s／2.5s 兩組
+    量測誤差分別 **-4.1%／+2.9%**（判準 ≤10%）。【2】地毯房參考量測（4×3×2.5m，
+    floor=carpet／walls=gypsum_board，與 `test_ir_synth.py`【2】【6】同一組構造參數）：
+    聯合帶量測 **0.9823s**，落在合理區間 0.1–12s 內，且落在 125Hz 物理模擬錨點
+    0.748s 與 250Hz Sabine 目標 0.885s 附近（純記錄，非硬性判準，卡片本身如此定義）。
+  - **`check_audio.py` 不帶參數 exit 0 → exit 2**（用法說明文字不變）；
+    **`test_segmentation.py` 全部圖片失敗 exit 0 → exit 1**（實測：兩個非圖片內容
+    但副檔名合法的假檔案，觸發 `Image.open` 例外後 `all_stats` 為空 → exit 1，
+    與 `test_depth.py` 既有行為一致）。空資料夾/找不到路徑的既有 exit 2 分支未動。
+  - **迴歸自我檢查（全部乾淨環境重跑）**：
+    - `python scripts/test_ir_synth.py` → 23 項全過（含【6】T-14 兩條交付 IR MD5
+      `f3a763be…`／`f24353b5…` 不變）
+    - `python scripts/test_scene_text.py`、`python scripts/test_coupled.py` → 全過
+    - T-20 兩條（`gen_ir_from_text.py "浴室"`／`"大教堂"`）與 T-21 兩條
+      （`gen_ir_coupled.py neighbor_voices.json`／`stadium_corridor.json`）
+      **逐一重生比對，四條 MD5 與 TASKS.md 記錄值（`2adbaa75…`／`2dd19b6e…`／
+      `9a94ffdf…`／`a1c21bcc…`）逐位元相同**——本卡未觸碰任何合成路徑，六條交付
+      IR（T-14×2＋T-20×2＋T-21×2）MD5 全部零回歸，實測非空話
+    - `python scripts/check_audio.py; echo $?` → `2`；`test_segmentation.py` 全失敗
+      情境（自建兩個假圖片檔）→ `echo $?` → `1`
+  - **未動的範圍確認**：`git diff` 只有 `ir_metrics.py`（純新增）、`check_audio.py`
+    （一行 exit code）、`test_segmentation.py`（三行新增）三個檔案，加一個新檔
+    `test_t30_low_combined.py`；未動 SPEC/ROADMAP/WORKFLOW，未動 T-15/T-16/T-17
+    任何檔案，`data/*.json` 未變。
+  - **下一步**：Opus 驗證本卡；通過後進 T-17（低頻判準已依本卡工具事前裁決，
+    見 T-17 卡裁決 B）。
 
 ### T-17 MVP 驗收（SPEC §7 四項標準，Opus 主導）
 - **狀態**：⬜ 未開始
