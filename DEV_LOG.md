@@ -1,5 +1,25 @@
 # Dev Log
 
+## 2026-08-30 (58)
+
+- 🔮 **Fable 裁決 T-27-A（室內陳設吸音表示）**：採「逐頻段等效吸音面積」——
+  `A_extra[band] = Σ ratio_c × S_total × α_c[band]` 直接加進 `compute_acoustics()`
+  的 Sabine／Eyring 吸音項，經 `rt60_bands_sabine` 流進 IR 晚期尾巴；
+  **不採 occupancy 係數**：單一寬頻旋鈕表達不了窗簾 125Hz α=0.07 vs 1kHz 0.75
+  的頻率結構（重犯地雷 #8「平均 α」），且沒有現成物理插入點，每個作用位置都是
+  自創規則。資料源＝ADE20K 陳設類別全圖像素佔比（零新模型）；類別 id 與六角色 id
+  不相交（T-24 結構性輸入）、rug 排除（已在 floor ids）、玻璃鏡面排除（反射面）。
+  全文在 TASKS.md T-27 卡。
+- **開 Phase 1.7 材質修正輪四張卡（TASKS.md 檔尾）**：T-31（`furnishings.json`＋
+  偵測模組，α 起始值由裁決指定、id 須經 id2label 測試驗證）→ T-32（聲學整合＋
+  `--no-furnishings` 旗標，furnishings=None 時輸出逐位元相同）→ T-33（13 張基準率
+  複測量測卡，含臥室/浴室分離表——補上裁決 T-28-A 不可能性證明缺的區辨訊號，
+  報告交 Fable 複評 gate 規則）→ T-34（gate 訊息規則 2 死路出口＋兩處測試覆蓋，
+  收 Opus T-30 兩則後續建議）。共同鐵則沿用 1.6 五條並加第 6 條：gate 判定規則
+  零改動、陳設資料不得餵進任何信心軸、scene_cues 段不許動。
+- HANDOFF／TODO 同步更新。純文件，未動任何程式碼。
+- 下一步：使用者開 Sonnet 視窗貼 WORKFLOW §2.1 Prompt 執行 T-31。
+
 ## 2026-08-30 (57)
 
 - ✅ **T-30 Opus 驗證通過**。所有指令由驗證者親自重跑，未採信 Sonnet 宣稱：

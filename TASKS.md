@@ -3517,7 +3517,9 @@
   - **結論：✅ 通過**。Phase 1.6 修正輪（T-23→T-24→T-25→T-26）四張卡全部結案。
 
 ### T-27（🔮 Fable 裁決用，Sonnet 不要做）室內陳設的吸音表示
-- **狀態**：⬜ 未開始（**需要 Fable 做 SPEC 層決策，不是 bug 修正**）
+- **狀態**：🔮 **已裁決（Fable，2026-08-30，裁決 T-27-A）**——採「逐頻段等效吸音面積」，
+  不採 occupancy 係數；執行卡 T-31（資料表＋偵測）→ T-32（聲學整合）→ T-33（基準率複測），
+  卡片在 Phase 1.7 節（本檔尾）
 - **背景**：T-17 §7-1 的臥室被做成 3.56 秒殘響、盲聽被聽成教堂。但四面牆的 CLIP 判定
   是 `generic_wall` 且 `source: clip`——**視覺上判得沒錯**，一面臥室牆確實是
   「plain smooth plastered wall」。錯在**床、棉被、窗簾、地毯（1kHz α 0.37–0.72）
@@ -3543,6 +3545,59 @@
 - **關聯證據**：REPORT §1.2 sample_4——臥室四面牆的 CLIP 判定是 `generic_wall`
   且 `source: clip`，**視覺上判得沒錯**，錯在床／棉被／窗簾／地毯無處可放，
   結果做出 3.56 秒殘響、盲聽被聽成教堂。這是本卡要解的核心問題。
+
+- **🔮 Fable 裁決 T-27-A（2026-08-30）——採「逐頻段等效吸音面積」（Sabine A 的加項），
+  不採 occupancy 係數**：
+  - **裁決一（表示法）**：室內陳設（床／沙發／窗簾／人群等）表示為**逐頻段的等效
+    吸音面積 A_extra[band]（單位 m² Sabine）**，直接加進 `compute_acoustics()`
+    逐頻段的 `total_absorption`（Sabine 分母的 Σ Sᵢαᵢ 與 Eyring 的 ā 分子**同時**加）。
+    理由四條：
+    1. **約束 B 是硬需求**：陳設吸音強烈依頻率——窗簾的教科書值 125Hz α=0.07、
+       1kHz α=0.75，差 10 倍。occupancy 係數是單一寬頻旋鈕，結構上表達不了這件事
+       ——等於把地雷 #8「平均 α」的錯誤換個名字再犯一次。
+    2. **插入點與量綱都是現成的**：`acoustics.py:209` 的 `total_absorption` 本來就是
+       逐頻段的 m² Sabine；文獻（Beranek 觀眾席吸音研究、Egan 附錄表）對觀眾／家具
+       正是用「等效吸音面積加項」處理。加在這裡會經 `rt60_bands_sabine` →
+       `ir_synth._select_rt60_target()`（`config.IR_RT60_BASIS="sabine"`）流進晚期
+       尾巴目標，**自動影響實際聽感**，不需要動合成引擎。occupancy 係數則要自己
+       發明作用位置（乘 RT60？乘 α？），每個選擇都是無實證的自創規則——正是
+       「安靜地輸出看似合理的錯誤結果」的溫床。
+    3. **專案先例已指路**：`materials.json` 的 `audience_seating`（source 欄）早已
+       誠實記載「把三維的人與座椅折算成平面 α 本身就帶系統誤差」。等效吸音面積
+       正是文獻對這個誤差的標準修正方向，不是新發明。
+    4. **資料可得性**：逐頻段等效值有可引用的出處（比照 materials.json 的 source
+       慣例）；任意陳設組合的 occupancy 係數只能捏造。
+  - **裁決二（資料來源）**：用 ADE20K 分割的**陳設類別全圖像素佔比**
+    （`analyse_image()` 已回傳 `class_ratios`，零新模型、零額外推論成本）。
+    三個結構性約束：
+    (a) 陳設類別 id 集合必須與六角色 id（`ADE_FLOOR_IDS`／`ADE_CEILING_IDS`／
+    `ADE_WALL_IDS`）**不相交**，以測試固定——這正是本卡上方「T-24 交過來的
+    結構性理由」；rug(28) 因已在 `ADE_FLOOR_IDS` 裡而**排除**（避免重複計吸音）。
+    (b) 全圖比例在這裡是**語義正確**的用法（陳設是獨立區域，不是某個面的子區域）
+    ——與地雷 #19 的錯誤（拿全圖比例替**單一角色**計分）不同型，不要「順手修正」。
+    (c) windowpane／mirror／glass（反射面，不是吸音體）、grass（室外線索，
+    幾何 scene-cue 的事）**不列入**。
+  - **裁決三（換算式，MVP）**：`A_extra_c[band] = ratio_c × S_total × α_c[band]`
+    （S_total＝六面總面積）。總佔比帶 cap（Σratio>0.5 → 等比壓回＋warning）與
+    逐類別下限（<0.005 忽略）。系統誤差誠實文件化：透視照看不到視野外的陳設
+    （低估）、近物像素佔比偏大（高估）、環景取六視角平均——**不假裝精確**，
+    比照 `rt60_disclaimer` 的處理方式。已否決的替代方案：逐物件計數
+    （每人 0.5 m² Sabine 之類）——需要實例分割與距離資訊，超出 MVP。
+  - **裁決四（紅線，與裁決 T-28-A 銜接）**：本輪 gate 判定規則**零改動**；
+    陳設資料**不得**餵進任何信心軸（它是未來 gate 規則複評的決策輸入，不是本輪的
+    信心訊號）；六條交付 IR MD5 不變（文字／複合管線不啟用陳設，
+    `AcousticsResult.as_dict()` 在無陳設時輸出逐位元相同）；`ir_metrics.py` 不動。
+  - **裁決五（輪次結構）**：Phase 1.7 材質修正輪＝T-31（資料表＋偵測）→
+    T-32（聲學整合＋照片管線）→ T-33（13 張基準率複測，量測卡）→ T-34（gate 訊息
+    規則 2 死路出口＋測試補洞，Opus T-30 兩則後續建議）。T-33 報告交 Fable 依
+    裁決 T-28-A 裁決三複評 gate 規則——臥室 vs 浴室的陳設量差異正是當初
+    「不可能性證明」裡缺的那個區辨訊號，本輪把它做出來。
+  - **預期效果方向（供 T-33 對照，不是驗收門檻）**：臥室（床＋窗簾）A_extra 應達
+    數 m²，遠大於它現在的總吸音（RT60 3.56s 反推 A≈1.4 m²）→ 殘響大幅縮短；
+    浴室／壁球場（無陳設）幾乎不變（防濫殺對照）；人群主導的場地（體育館／健身房／
+    餐廳）縮短——與 §7-4 使用者聽感「殘響普遍過長」及 T-21 巨蛋觀眾吸音教訓同方向。
+    **本輪明確不治的病**：CLIP 在候選集內判錯（地雷 #18 壁球場 curtain_fabric）
+    ——不同病因，T-33 要把殘餘誤差歸因量化，當作要不要開 CLIP 準確度輪的決策輸入。
 
 ### T-28（🔮 Fable 裁決用，Sonnet 不要做）gate 擋掉 13/13 全部照片 —— 規格的基準率沒被量過
 - **狀態**：🔮 **已裁決（Fable，2026-08-30，裁決 T-28-A）**——gate 規則不動、
@@ -3765,3 +3820,200 @@
     `--override-dims` 這條分支**沒有任何測試覆蓋**——案例【A】帶 `--override-dims`，
     走 `manual_estimate()` → confidence=`high`；案例【D】是 `medium`。驗證者已用探針
     手動確認該分支行為正確，但建議補一個 geometry=low 的正向案例，避免日後改到不知情。
+
+---
+
+## Phase 1.7 — 材質修正輪（Fable 規劃 2026-08-30；依裁決 T-27-A／T-28-A）
+
+**執行順序固定：T-31 → T-32 → T-33 → T-34**。T-32 依賴 T-31 的模組；T-33 是量測卡，
+必須在程式定稿後跑；T-34 與 T-32 都動 `pipeline.py`，排最後避免衝突（T-34 與 T-33
+之間無依賴，但照順序做最不容易出錯）。
+
+**本輪共同鐵則（每張卡的自我檢查都要跑）**：
+1. 測試套件**全部 exit 0**：`test_ir_synth`／`test_output_gate`／`test_confidence_axes`／
+   `test_material_fallback`／`test_surface_trusted_scope`／`test_t30_low_combined`／
+   `test_scene_text`／`test_coupled`／`test_acoustics`（九套；T-31 起加
+   `test_furnishings`，共十套）
+2. **六條交付 IR 的 MD5 一條都不許變**：T-14 兩條由 `test_ir_synth.py`【6】硬編碼比對；
+   T-20 兩條 `2adbaa75eb698772a8c9aa693179ec47`／`2dd19b6e6d351d713887636fe45cd67e`
+   （`python scripts/gen_ir_from_text.py "浴室" -o chk_a --no-listen` 等）；
+   T-21 兩條 `9a94ffdf5d8295aee7889729c39c9cd8`／`a1c21bcc3fd9aa3480df203a89c8cd05`
+3. **`src/image_reverb/ir_metrics.py` 一行都不許動**（`git diff` 必須為空）
+4. **不許動** `SPEC.md`／`ROADMAP.md`／`WORKFLOW.md`／`output/mvp_acceptance/`
+5. 新增的測試**必須對舊程式碼實測會失敗**（自我檢查附「在舊碼上跑會 fail」的實測輸出）
+6. **gate 判定規則零改動（裁決 T-28-A）**：`compute_materials_confidence()` 與
+   `run_photo()` 的 gate 觸發／放行條件一行不動；陳設資料不得餵進任何信心軸。
+   `run_photo()` 裡 scene_cues 那段（現行 `pipeline.py:202-220`）也不許動——
+   它影響 geometry confidence，動了就等於動 gate。
+
+### T-31 陳設等效吸音：資料表＋偵測模組（裁決 T-27-A 執行卡 1/3）
+- **狀態**：⬜ 未開始
+- **前置**：T-30 ✅、裁決 T-27-A（見 T-27 卡）
+- **目標**：把「照片裡有哪些陳設、佔多少像素」變成可供聲學計算使用的結構化資料。
+  本卡**只做偵測與資料**，不動聲學計算、不動 pipeline 輸出（那是 T-32）。
+- **產出**：`data/furnishings.json`、`src/image_reverb/furnishings.py`、
+  `scripts/test_furnishings.py`；`surfaces.py` 僅加一處資料轉存（見步驟 2）。
+- **執行步驟**：
+  1. `data/furnishings.json`：`band_center_freqs_hz` 與 materials.json 完全相同
+     （[125, 250, 500, 1000, 2000, 4000]）。九個類別，每項欄位：`ade_id`、`ade_name`、
+     `name_zh`、`alpha`（六頻段）、`confidence`、`source`。**α 起始值由裁決 T-27-A
+     指定如下**（Sonnet 逐字轉錄；`source` 欄要如實寫來歷——curtain／seat 兩行是
+     建築聲學教科書經典列，其餘為 Fable 依同類文獻定的代表值，一律照實寫明
+     「規劃者代表值」，不得假造精確出處）：
+     | 類別 | ade_id | α（125/250/500/1k/2k/4k） | confidence |
+     |---|---|---|---|
+     | person | 12 | 0.25/0.35/0.45/0.55/0.60/0.60 | low |
+     | bed | 7 | 0.30/0.50/0.65/0.75/0.80/0.80 | low |
+     | sofa | 23 | 0.35/0.50/0.60/0.70/0.70/0.65 | low |
+     | armchair | 30 | 0.35/0.50/0.60/0.70/0.70/0.65 | low |
+     | seat | 31 | 0.19/0.37/0.56/0.67/0.61/0.59 | medium |
+     | chair | 19 | 0.05/0.10/0.15/0.20/0.25/0.25 | low |
+     | curtain | 18 | 0.07/0.31/0.49/0.75/0.70/0.60 | medium |
+     | cushion | 39 | 0.30/0.50/0.65/0.75/0.80/0.80 | low |
+     | pillow | 57 | 0.30/0.50/0.65/0.75/0.80/0.80 | low |
+     ⚠️ `ade_id` 是規劃者憑 ADE20K 文件寫的，**不可直接信任**——步驟 4【C】的
+     id2label 測試若抓到不符，修 json 的 id，不是改測試。
+  2. `surfaces.py` 的 `surfaces_from_preprocess()`：把每次 `analyse_image()` 回傳的
+     `class_ratios` 轉存進 `detail["class_ratios"]`——透視照存 `{"single": ratios}`、
+     環景存 `{view_name: ratios}`（六視角各一份）。**只加轉存，其他一行不動**
+     （`compute_materials_confidence()`／`classify_region_material()`／warnings
+     邏輯都在鐵則 6 紅線內）。`save_detail()` 已會過濾 labelmap，`class_ratios`
+     是小 dict 可直接進 JSON。
+  3. `src/image_reverb/furnishings.py` 新模組：
+     - `load_furnishings()`：讀＋驗證（頻段與 materials.json 一致、α 全在 0–1、
+       `source` 非空、**id 集合與 `ADE_FLOOR_IDS`／`ADE_CEILING_IDS`／`ADE_WALL_IDS`
+       的 keys 不相交**——不相交檢查寫在載入時，違反直接拋錯，不是只靠測試）。
+     - `estimate_furnishings(detail) -> FurnishingEstimate | None`：從
+       `detail["class_ratios"]` 取比例——環景取六視角**平均**、透視照取單視角；
+       逐類別 < `config.FURNISHING_MIN_CLASS_RATIO`（新常數 0.005）忽略；
+       Σratio > `config.FURNISHING_TOTAL_RATIO_CAP`（新常數 0.5）→ 等比壓回＋
+       warning（「陳設佔比 X% 超過上限——可能是近拍或分割失敗」）。回傳值含：
+       逐類別 {ratio, alpha 六頻段}、warnings、notes。`detail` 沒有
+       `class_ratios` → 回傳 None（防呆，不拋錯）。
+     - **本模組不碰幾何**：換算成 m² 需要 S_total，那是 T-32 在
+       `compute_acoustics()` 裡做的事。
+  4. `scripts/test_furnishings.py`：
+     【A】資料表驗證——頻段一致／α 範圍／source 非空／id 不相交（不相交那項要
+     直接讀 json 自己算，不能只呼叫 `load_furnishings()` 靠它不拋錯）；
+     【B】合成 detail 夾具——透視單視角、環景六視角平均、cap 觸發（等比壓回＋
+     warning 出現）、低於下限忽略、無 `class_ratios` → None；
+     【C】**id2label 驗證**——載入 `_load_segmenter()` 的 model config（模型已在
+     本機快取），逐項斷言 `id2label[ade_id]` 的字串包含 `ade_name`——
+     **不許 try/except 跳過**（WORKFLOW §5 紅旗 4）。
+- **自我檢查**：共同鐵則 1–6；`test_furnishings.py` exit 0；診斷力實測——把 json 裡
+  任一類別的 `ade_id` 暫改成 3（floor），【A】不相交測試必須 fail，改回。
+- **Opus 驗證重點**：紅旗：α 值的 source 造假（宣稱教科書出處但查無此表——
+  「規劃者代表值」的誠實標注是合格的，假出處不是）；紅旗：動了 `surfaces.py`
+  轉存以外的任何邏輯（`git diff` 逐行看）；紅旗：【C】被 skip 或吞錯誤；
+  紅旗：不相交檢查只在測試裡、載入時不擋。
+
+### T-32 等效吸音面積入聲學計算與照片管線（裁決 T-27-A 執行卡 2/3）
+- **狀態**：⬜ 未開始
+- **前置**：T-31
+- **目標**：`A_extra_c[band] = ratio_c × S_total × α_c[band]` 進 Sabine／Eyring，
+  經 `rt60_bands_sabine` 流進 IR 晚期尾巴；照片管線預設啟用、可用旗標關閉。
+- **執行步驟**：
+  1. `acoustics.py`：`compute_acoustics(estimate, surfaces, materials_data=None,
+     furnishings=None)` 加第四參數（預設 None＝行為與現行逐位元相同）。
+     furnishings 非 None 時：逐頻段算 `A_extra[band] = Σ_c ratio_c × S_total ×
+     α_c[band]`（S_total 用既有 `surface_areas_m2()` 加總），**同時**加進 Sabine 的
+     `total_absorption` 與 Eyring 的 ā 分子（只加一邊＝紅旗）。`AcousticsResult`
+     加欄位 `furnishings: dict | None = None`；`as_dict()` **只在非 None 時**輸出
+     `furnishings` 鍵（內容：逐類別 {ratio, A_by_band}、
+     `absorption_extra_m2_by_band`、佔 1kHz 總吸音的比例、cap 資訊、一句與
+     `rt60_disclaimer` 同精神的系統誤差聲明）；None 時 `as_dict()` 輸出與現行
+     **逐位元相同**。
+  2. `pipeline.run_photo()`：在 gate **之後**、`compute_acoustics()` 之前呼叫
+     `furn = None if no_furnishings else estimate_furnishings(detail)`，傳入
+     `compute_acoustics(est, surf, materials_data, furnishings=furn)`。
+     放在 gate 之後是刻意的——結構上保證陳設資料不可能影響 gate（鐵則 6）。
+     CLI 在 T-13 段印偵測結果（類別＋佔比＋A_extra@1kHz＋佔總吸音比例）；
+     偵測清單進 notes、cap 觸發進 warnings。
+  3. `cli.py` 加 `--no-furnishings`（僅照片輸入，歸進 `photo_only_flags_used`
+     檢查），`run_photo()` 加對應參數。help 文字說明用途（A/B 對照與退路）。
+  4. 文字（`run_text`）／複合場景（`run_scene`）管線**一行不動**——它們呼叫
+     `compute_acoustics()` 不帶 furnishings → 走 None 分支 → 六條 MD5 不變。
+  5. `test_acoustics.py` 增列：
+     【F1】furnishings=None → 結果與不帶參數呼叫完全相等，且 `as_dict()` 無
+     `furnishings` 鍵；【F2】手算對照——固定尺寸／材質＋合成陳設比例，逐頻段斷言
+     `rt60_bands_sabine` 等於手算 Sabine 值（誤差 <1e-9）；【F3】單調性——加入
+     陳設後六頻段 Sabine／Eyring RT60 全部嚴格下降；【F4】cap 壓回後 A_extra
+     對應縮小。
+- **自我檢查**：共同鐵則 1–6；診斷力（新測項在舊碼 fail）；實跑三張對照——
+  ① `assets/photos/bedroom_ai_generated.png --force-low-confidence --no-viz`
+  加與不加 `--no-furnishings` 各一次：加陳設那次 `furnishings` 鍵有值（應含
+  bed／curtain 類）且 `rt60_mid_sabine` 明顯下降（兩組數字記進交接筆記，
+  不設通過門檻——量化驗收在 T-33）；② `bathroom_tiled.png`（同旗標）：
+  A_extra 應接近 0、RT60 幾乎不變（防濫殺對照）；③ 任一張不帶 `--no-viz`
+  跑完整流程，確認 analysis.png 照常產生（新 JSON 鍵不弄壞 T-16 視覺化）。
+  跑完刪 `output/<stem>/`（非交付產物）。
+- **Opus 驗證重點**：紅旗：furnishings 影響任何信心軸或 gate 分支
+  （`test_output_gate`＋`test_confidence_axes` 會抓，另逐行看
+  `git diff pipeline.py` 的呼叫位置是否在 gate 之後）；紅旗：None 分支的
+  `as_dict()` 輸出有任何位元變化（拿 T-20／T-21 交付 JSON 重生 diff）；
+  紅旗：只改 Sabine 不改 Eyring；紅旗：把縮短尾巴的邏輯塞進 `ir_synth.py`
+  （本卡 `ir_synth.py` 應零改動）。
+
+### T-33 材質輪基準率複測：13 張重跑＋量測報告（裁決 T-27-A 執行卡 3/3；量測卡）
+- **狀態**：⬜ 未開始
+- **前置**：T-31、T-32 皆 ✅（程式定稿後才能量；量測期間 `src/` 一行不許改）
+- **目標**：產出裁決 T-28-A 裁決三要的「新基準率」，交 Fable 複評 gate 規則。
+  本卡是量測卡：**只寫 `scripts/` 的量測腳本與 `output/` 的報告，`src/` 零改動**。
+- **產出**：`output/material_round/REPORT.md`（`output/*.md` 進 git）、
+  `scripts/t33_material_round_tables.py`（表格由程式產生，不手打——地雷 #15）、
+  試聽檔（見步驟 4）。
+- **執行步驟**：
+  1. 13 張照片 × 2 組（預設 vs `--no-furnishings`），全部加
+     `--force-low-confidence --no-viz`。逐張記錄：三軸 confidence（**必須與裁決
+     T-28-A 複驗的數值完全相同**——若有任何一張變了就是動到 gate，立即 🔴 停）、
+     偵測到的陳設類別＋佔比＋A_extra、`rt60_mid_sabine`、聯合帶 T30。
+  2. 8 個對照場地：比照 T-17 §7-2 判準（500Hz–4kHz 逐頻段 <20% ＋ 88–354Hz
+     聯合帶 <20%，裁決 B 原文）算兩組達標率；§7-2 的 5 個 F-09 手動 run（指令在
+     `output/mvp_acceptance/REPORT.md`）同樣重跑兩組。目標值／量測值的比對一律走
+     既有 `ir_metrics`／`t30_low_combined()` 程式，報告腳本只排版不計算。
+  3. 臥室 vs 浴室分離表：兩張的陳設佔比與 A_extra 並列——這是裁決 T-28-A
+     「不可能性證明」裡缺的區辨訊號，明確標成「gate 規則複評的決策輸入」。
+  4. 試聽檔（動過 IR 生成路徑就要排人耳關卡——HANDOFF 背景重點 1）：臥室前後
+     兩版 IR 各 convolve `assets/dry/clap_synth.wav`（mix 0.6）放
+     `output/material_round/listen_*.wav`，並在 REPORT 與 TODO 記「等使用者試聽」。
+  5. REPORT 結構：①逐張總表 ②達標率 before/after（自動組／手動組分開，裁決 C 的
+     分組原則）③臥室浴室分離表 ④殘餘誤差歸因——特別點名壁球場（地雷 #18 的
+     in-set CLIP 誤判，本輪明確不治）份額多大，當作要不要開 CLIP 準確度輪的
+     決策輸入 ⑤結論：交 Fable 的具體問題清單。
+- **自我檢查**：共同鐵則 1–6（量測卡也要跑——證明量測期間沒動到程式）；
+  `git status` 確認 `src/` 乾淨；REPORT 裡每個並列的目標／量測數字對都有程式
+  比對來源可指。
+- **Opus 驗證重點**：紅旗：量測期間動了 `src/`；紅旗：報告數字與重跑不符
+  （抽 3 張自己重跑比對）；紅旗：達標率合併計算不分組；紅旗：三軸 confidence
+  與 T-28-A 複驗基線不同卻沒觸發 🔴。
+- **T-33 通過後 → 回 Fable**：帶著 REPORT 做 gate 規則複評（裁決 T-28-A 裁決三）
+  ＋決定要不要開 CLIP 準確度輪。
+
+### T-34 gate 訊息補洞：規則 2 死路出口＋兩處測試覆蓋（Opus T-30 後續建議執行卡）
+- **狀態**：⬜ 未開始
+- **前置**：T-32 ✅（同動 `pipeline.py`，避免衝突所以排在後；與 T-33 無依賴）
+- **問題**（Opus 驗證 T-30 時實測）：materials=low 由退化規則（規則 2：六面全同）
+  觸發、且無任何 fallback／out_of_domain 面、geometry 非 low 時，`low_conf_faces`
+  為空 → gate 訊息只剩 `--force-low-confidence` 一條路——「儀式化 --force」在這個
+  分支原樣重現。另外 geometry=low 印 `--override-dims` 的分支沒有測試覆蓋。
+- **🔮 裁決邊界（紅線，與 T-30 相同）**：gate 判定規則一行不動，只改「擋下之後
+  印什麼」。判斷「規則 2 觸發」用既有唯讀方法組合：
+  `materials_confidence == "low" and not low_conf_faces and surf.is_uniform()`，
+  **不得**改 `compute_materials_confidence()` 讓它回傳觸發原因。
+- **執行步驟**：
+  1. `run_photo()` gate 訊息：上述條件成立時印「六面材質被判成完全相同（退化
+     規則）→ 人工確認後用 `--override-material` 至少覆寫一面為實際不同的材質」＋
+     一條可複製的指令骨架（沿用 T-30 的查表提示與「不要替使用者自動猜材質」原則）。
+  2. `test_output_gate.py` 新增【E】：六面全同且全 clip、geometry=medium 的樁 →
+     斷言 stderr 含規則 2 導引與 `--override-material`、不含 `--override-dims`。
+  3. `test_output_gate.py` 新增【F】：geometry=low 的樁 → 斷言 stderr 含
+     `--override-dims` 建議（補 T-30 驗證者點名的無覆蓋分支）。
+  4. 既有【0】【A】【B】【C】【D】原樣通過。
+- **自我檢查**：共同鐵則 1–6；診斷力（【E】【F】對改動前程式實測會 fail）；
+  真實輸入複現規則 2 死路：`python -m src.image_reverb
+  assets/photos/bathroom_tiled.png --override-material floor=concrete
+  --override-material walls=concrete --override-material ceiling=concrete`
+  （六面全 concrete → 規則 2 → low）→ exit 3 且訊息出現規則 2 導引（跑完不留
+  輸出目錄——gate 本來就不寫檔）。
+- **Opus 驗證重點**：紅旗：動了 gate 判定條件（六條 MD5＋既有案例會抓）；
+  紅旗：規則 2 判斷邏輯被寫進 `surfaces.py`（那是判定規則的家，本卡不得動它）。

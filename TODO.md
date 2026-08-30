@@ -95,7 +95,16 @@
       現有訊息卻只提走不通的 `--override-dims`）；**準確度先行**（材質輪後用新
       基準率複測再談調規則）。另記 HANDOFF 地雷 #23/#24（無來源第四狀態；
       透視照 materials high 結構性不可達）。全文見 TASKS.md T-28 卡尾。
-- [ ] **🔮 待 Fable 裁決（一張）**：**T-27 室內陳設吸音表示** —— 等效吸音面積 vs occupancy
+- [x] **🔮 T-27 已裁決（Fable 裁決 T-27-A，2026-08-30）**：採「逐頻段等效吸音面積」
+      （Sabine A 的加項，經 `rt60_bands_sabine` 流進 IR 晚期尾巴），不採 occupancy
+      係數（寬頻單一旋鈕＝重犯地雷 #8，且無現成物理插入點）。資料源＝ADE20K 陳設
+      類別全圖像素佔比，類別 id 與六角色 id 不相交、rug／玻璃鏡面排除。
+      全文見 TASKS.md T-27 卡。
+- [ ] **Phase 1.7 材質修正輪（Fable 規劃 2026-08-30，卡片在 TASKS.md 檔尾）**：
+      T-31 ⬜（陳設資料表＋偵測模組）→ T-32 ⬜（等效吸音入聲學計算，
+      `--no-furnishings` 旗標）→ T-33 ⬜（13 張基準率複測量測卡，通過後回 Fable
+      複評 gate 規則）→ T-34 ⬜（gate 訊息規則 2 死路出口＋測試補洞）。
+      共同紅線：gate 判定規則零改動、六條交付 IR MD5 不變、陳設資料不得餵進信心軸。
 - [x] **T-30 gate 出口導引 ✅ 通過（Opus 驗證 2026-08-30）**：
       只改 `pipeline.run_photo()` gate 觸發後印的訊息——逐面點名 fallback/ood
       面（無來源面／clip 面不列）、依軸分開給建議（geometry=low 才印
