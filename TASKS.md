@@ -5045,7 +5045,7 @@ T-34 與 T-35 都動 `pipeline.py`／`cli.py`，依序做避免衝突；T-36 是
   角色分組結論（地板最差，對應表 6 的地板 in-set 誤判）。
   `grep -n "表 [0-9]" output/clip_accuracy/REPORT.md output/clip_accuracy/tables.md`
   逐條核對過，REPORT 內文的表 2/3/4/6/7/8 引用全部指向重編號後的正確表格
-  （详見下方「自我檢查」）。
+  （詳見下方「自我檢查」）。
 
   **必修 2（地雷 #16 誤述）已更正四處**：
   1. `scripts/t36_analysis.py` 的 `write_report()`：「意外發現」節標題改為
@@ -5298,6 +5298,28 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
 變數推導（地雷 #15 精神）；⑤TASKS.md 退回修正紀錄的「详見」改「詳見」。
 ②③④動 `scripts/t36_analysis.py` 樣板後重跑產出（`output/clip_accuracy/`
 僅限此範圍）。commit `docs: T-36 文件修正`。
+
+- **✅ 執行紀錄（Sonnet，2026-08-31）**：五項逐條執行——①確認交接筆記已由
+  驗證者就地標註，未再動；②`scripts/t36_analysis.py` 的
+  `site_photo_department_store` 同意偏誤舉例改為 5 面（獨立核對
+  `output/clip_accuracy/runs/site_photo_department_store/detail.json`：
+  ceiling＋west/east/south/north 五面 `method: "fallback"`，floor 是
+  `clip`，5 面數字正確）；③表 7 標題與 REPORT ②內文的「0.4」改為由
+  `sensitivity["sweep"][-1]["threshold"]`（即呼叫端傳入的
+  `config.CLIP_CONFIDENCE_THRESHOLD`）動態產生的 `current_threshold`
+  變數，不再手打；④REPORT ③結論句改用 `model_ab_diff_clause`
+  （`model_ab_diff_count == 0` 時輸出原句、否則輸出張數不同的版本），
+  不再是寫死文字；⑤TASKS.md 第 5048 行「详見」改「詳見」（第 5187／5298
+  行是紀錄本身對此瑕疵的描述文字，不是瑕疵發生處，維持原樣）。
+  重跑 `python scripts/t36_clip_accuracy.py`（沿用快取，未重跑模型）後
+  `REPORT.md` 只有上述②④對應的兩處文字變動、`tables.md` 因數值未變
+  （門檻本來就是 0.4）而 bit-identical；`git diff` 確認 `src/`、
+  `ir_metrics.py`、`SPEC.md`／`ROADMAP.md`／`WORKFLOW.md`、
+  `output/mvp_acceptance/`、`output/material_round/` 全部空白。
+  自我檢查：13 支 `test_*.py` 全部 exit 0；六條交付 IR 用
+  `find output -name "*.wav" | xargs md5` 逐條核對 MD5 全中
+  （T-14 兩條另由 `test_ir_synth.py` 硬編碼比對通過）。
+  下一步：T-37（地雷 #16 修正）。
 
 **本輪明確不做（裁決 T-36-A 已記錄理由，不要「順手」做）**：
 - gate 判定規則任何調整——**已定案、議題關閉**（裁決一；重開需四樣證據）。

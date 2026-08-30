@@ -1,5 +1,21 @@
 # Dev Log
 
+## 2026-08-31 (76)
+
+- **T-36 文件修正（Sonnet，Phase 1.9 第一步）**：照 T-36 卡「Opus 複驗紀錄」
+  6 項非退回事項逐條執行剩餘 4 項——`scripts/t36_analysis.py` 的
+  `site_photo_department_store` 同意偏誤舉例 4 面改 5 面（獨立核對
+  detail.json：ceiling＋四面牆共 5 面 fallback）；表 7 標題與 REPORT ②
+  內文硬寫的「0.4」改成由 `sensitivity` 動態帶出的 `current_threshold`
+  變數（來源仍是 `config.CLIP_CONFIDENCE_THRESHOLD`）；REPORT ③「兩個模型
+  結果完全相同」改由 `model_ab_diff_count` 推導條件句（地雷 #15 精神）；
+  TASKS.md 第 5048 行簡體字「详見」改「詳見」。重跑
+  `t36_clip_accuracy.py`（沿用快取），`REPORT.md` 只有對應兩處文字變動、
+  `tables.md` 數值 bit-identical（門檻本來就是 0.4）。13 支測試全 exit 0、
+  六條交付 IR MD5 全中、`src/`／`ir_metrics.py`／SPEC／ROADMAP／WORKFLOW／
+  `output/mvp_acceptance`／`output/material_round` 全部零改動。
+  下一步：T-37（地雷 #16 修正）。
+
 ## 2026-08-31 (75)
 
 - **裁決 T-36-A（Fable）：gate 規則就地定案＋開 Phase 1.9 CLIP 治療輪＋陳設

@@ -303,6 +303,7 @@ def write_report(out_dir: Path, accuracy: dict, error_types: dict, sensitivity: 
     clip_bucket = per_source.get("clip", {"total": 0, "correct": 0, "excluded": 0})
     clip_denom = clip_bucket["total"] - clip_bucket["excluded"]
     non_clip_correct = overall["correct"] - clip_bucket["correct"]
+    current_threshold = sensitivity["sweep"][-1]["threshold"]
 
     # ---------- tables.md ----------
     tbl_parts = []
@@ -363,7 +364,7 @@ def write_report(out_dir: Path, accuracy: dict, error_types: dict, sensitivity: 
     else:
         tbl_parts.append("（無）")
 
-    tbl_parts.append("\n\n## 表 7：fallback 門檻（0.4）敏感度分析\n")
+    tbl_parts.append(f"\n\n## 表 7：fallback 門檻（{current_threshold}）敏感度分析\n")
     tbl_parts.append(_md_table(
         ["候選門檻", "會被放行到 clip 的面數", "放行後答對", "放行後答錯"],
         [[f"{r['threshold']:.2f}", str(r["would_flip_to_clip"]), str(r["would_be_correct"]), str(r["would_be_wrong"])]
@@ -416,6 +417,11 @@ def write_report(out_dir: Path, accuracy: dict, error_types: dict, sensitivity: 
     model_ab_diff_count = sum(
         1 for s in simulation if s["simulated_confidence"] != s["simulated_confidence_b"]
     )
+    model_ab_diff_clause = (
+        "也就是說本卡實測下，兩個模型的 13 張結果完全相同"
+        if model_ab_diff_count == 0
+        else f"即兩個模型在本卡實測下，13 張裡有 {model_ab_diff_count} 張結果不同"
+    )
 
     report = f"""# T-36 CLIP 材質判定準確度診斷報告
 
@@ -448,7 +454,7 @@ Ground truth 來源：[data/material_ground_truth.json](../../data/material_grou
   fallback／out_of_domain／無來源時系統輸出的預設值 `gypsum_board` 剛好等於
   ground truth——而這些面裡有相當比例的 ground truth 是使用者「對照裁切圖未提出
   異議、沿用 AI 判定」而來（`SteinmanHall` 4 面、`site_photo_department_store`
-  4 面、`RacquetballCourt4` 2 面等），存在**同意偏誤**：AI 沒判到 → 落到預設值 →
+  5 面、`RacquetballCourt4` 2 面等），存在**同意偏誤**：AI 沒判到 → 落到預設值 →
   使用者沿用 → 統計上算 AI「答對」。真正該拿去推 gate 規則的分子分母是
   **clip 面 {_pct(clip_bucket['correct'], clip_denom)}**，其餘三組更接近
   「fallback 預設值命中率」，不是 CLIP 本身的準確度。
@@ -458,7 +464,7 @@ Ground truth 來源：[data/material_ground_truth.json](../../data/material_grou
 | 型態 | 面數 |
 |---|---|
 | in-set 誤判（地雷 #18 型：CLIP 有信心，答案卻錯） | {len(error_types['in_set_errors'])} |
-| 不該 fallback 而 fallback（top-1 其實對，門檻 0.4 太嚴） | {len(error_types['fallback_should_have'])} |
+| 不該 fallback 而 fallback（top-1 其實對，門檻 {current_threshold} 太嚴） | {len(error_types['fallback_should_have'])} |
 | 確實該 fallback（top-1 也錯） | {len(error_types['fallback_confirmed'])} |
 | 域外誤觸（out_of_domain 判定錯，候選裡其實有對的答案） | {len(error_types['ood_false_trigger'])} |
 | 確實域外（out_of_domain 判定合理） | {len(error_types['ood_confirmed'])} |
@@ -467,7 +473,7 @@ Ground truth 來源：[data/material_ground_truth.json](../../data/material_grou
 官網資料與畫面都明確是玻璃隔間（`glass`），CLIP 卻以真實信心判成 `curtain_fabric`，
 單獨這一面誤判就足以拖垮整條 IR 的材質分佈。
 
-門檻敏感度分析（表 7）：把門檻從 0.4 調低，會同時放行「答對」與「答錯」的面——
+門檻敏感度分析（表 7）：把門檻從 {current_threshold} 調低，會同時放行「答對」與「答錯」的面——
 調到多低才划算，數字見表 7，供 Fable 決定治療方案時參考，本卡不建議調整門檻。
 
 ## ③ 天花板模擬結果（判定全對時，materials_confidence 會是什麼）
@@ -491,8 +497,8 @@ Ground truth 來源：[data/material_ground_truth.json](../../data/material_grou
   `materials_confidence` 的結構性天花板問題（地雷 #24）比目前數字看起來更嚴重。
 - **「無來源」第四態（地雷 #23）在全對情境下的真實行為**：13 張裡有
   **{no_source_photo_count} 張**含至少一面實際無來源。表 8 對照模型 A／模型 B
-  的結果：**{model_ab_diff_count} 張**模擬值不同——也就是說本卡實測下，兩個模型
-  的 13 張結果完全相同，因為達到 `high` 的照片本來就沒有無來源面，含無來源面的
+  的結果：**{model_ab_diff_count} 張**模擬值不同——{model_ab_diff_clause}，
+  因為達到 `high` 的照片本來就沒有無來源面，含無來源面的
   照片本來就會被規則 3 卡在 `medium` 以下（無來源面的 `sources.get(name, "")`
   不是 `"clip"`，永遠無法六面皆 `clip`），模型 A 的「樂觀上界」假設在本卡 13 張
   的範圍內並不影響天花板模擬結論，但兩個模型的差異本身仍是 Fable 定案地雷 #23

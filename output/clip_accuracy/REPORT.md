@@ -29,7 +29,7 @@ Ground truth 來源：[data/material_ground_truth.json](../../data/material_grou
   fallback／out_of_domain／無來源時系統輸出的預設值 `gypsum_board` 剛好等於
   ground truth——而這些面裡有相當比例的 ground truth 是使用者「對照裁切圖未提出
   異議、沿用 AI 判定」而來（`SteinmanHall` 4 面、`site_photo_department_store`
-  4 面、`RacquetballCourt4` 2 面等），存在**同意偏誤**：AI 沒判到 → 落到預設值 →
+  5 面、`RacquetballCourt4` 2 面等），存在**同意偏誤**：AI 沒判到 → 落到預設值 →
   使用者沿用 → 統計上算 AI「答對」。真正該拿去推 gate 規則的分子分母是
   **clip 面 11/21（52.4%）**，其餘三組更接近
   「fallback 預設值命中率」，不是 CLIP 本身的準確度。
@@ -72,8 +72,8 @@ Ground truth 來源：[data/material_ground_truth.json](../../data/material_grou
   `materials_confidence` 的結構性天花板問題（地雷 #24）比目前數字看起來更嚴重。
 - **「無來源」第四態（地雷 #23）在全對情境下的真實行為**：13 張裡有
   **7 張**含至少一面實際無來源。表 8 對照模型 A／模型 B
-  的結果：**0 張**模擬值不同——也就是說本卡實測下，兩個模型
-  的 13 張結果完全相同，因為達到 `high` 的照片本來就沒有無來源面，含無來源面的
+  的結果：**0 張**模擬值不同——也就是說本卡實測下，兩個模型的 13 張結果完全相同，
+  因為達到 `high` 的照片本來就沒有無來源面，含無來源面的
   照片本來就會被規則 3 卡在 `medium` 以下（無來源面的 `sources.get(name, "")`
   不是 `"clip"`，永遠無法六面皆 `clip`），模型 A 的「樂觀上界」假設在本卡 13 張
   的範圍內並不影響天花板模擬結論，但兩個模型的差異本身仍是 Fable 定案地雷 #23
