@@ -548,5 +548,23 @@ python scripts/t17_report_tables.py   # 統計 → output/mvp_acceptance/tables.
 python scripts/t17_blind_test.py      # §7-1 盲聽素材（固定種子，可重現同一組打亂）
 ```
 
+> ⚠️ **2026-08-30 之後重生 IR 必須加 `--force-low-confidence`**（T-26 修正輪的連帶影響）。
+> T-26 為 `pipeline.run_photo()` 加了輸出 gate：overall confidence 為 `low` 就不寫任何檔、
+> 回傳 exit 3。**實測本專案 13 張照片（§7-2 的 8 個對照場地 ＋ §7-1 的 5 張盲聽照片）
+> 100% 都會被擋**，因為 T-25 的 `materials_confidence` 規則是「六面任一面 fallback
+> 就 low」，而 CLIP 門檻 0.4 之下至少一面 fallback 幾乎必然發生。
+>
+> 所以要重現本報告的生成側 IR，指令要改成：
+> ```bash
+> python -m src.image_reverb <照片> --force-low-confidence --no-viz
+> ```
+> **本報告的所有數字仍然有效**——它們是 gate 上線前產生的，而 gate 只擋輸出、
+> 不改變任何合成邏輯（六條交付 IR 的 MD5 在 T-23~T-26 全程零回歸，已逐輪複驗）。
+>
+> 這個 100% 觸發率**本身是個待裁決的問題**，已開卡 **T-28** 記錄實測數據與兩難：
+> 「擋得對」（與 §7-2 達標率 0/8 的結論一致）vs「擋過頭」（產品對所有真實輸入
+> 都拒絕輸出，gate 會退化成人人加旗標的儀式）。**規格的基準率是規劃者沒有事先量過
+> 的疏漏，不是實作或驗證的錯誤。**
+
 生成側 IR 的重跑指令逐一列在 `rt60_table.json` 的 `run` 欄；`manual` 組的
 `--override-dims` 參數列在 tables.md 表 4。

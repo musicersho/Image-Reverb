@@ -1,5 +1,32 @@
 # Dev Log
 
+## 2026-08-30 (53)
+
+- ✅ **修正輪第二批全過：T-24 / T-25 / T-26 三張皆 Opus 驗證通過**，
+  加上第一批的 T-23，**四張執行卡全部完成**。
+- **規劃者獨立複驗（不採信 agent 回報）**：九支測試套件自己重跑全 exit 0；
+  六條交付 IR 自己重生比對 **MD5 零回歸**；
+  `git diff a98624a HEAD` 對 `ir_metrics.py`／SPEC／ROADMAP／WORKFLOW／
+  `output/mvp_acceptance/` **全為空**；gate 實測體育館 exit 3 且
+  **輸出目錄完全沒被建立**（證明 gate 在合成之前）；加 `--force-low-confidence`
+  → exit 0 且 JSON 有 `forced_low_confidence: true`；臥室 `medium → low`
+  且 `ir_mono.wav` MD5 未變；`grep ADE_TRUSTED_MATERIAL src/` = 0 行。
+- **🔴 但複驗發現一個規劃者自己的規格錯誤（開 T-28）**：gate 上線後
+  **專案裡 13 張照片 100% 被擋**（§7-2 八個場地 8/8＋§7-1 五張 5/5）。
+  根因是 T-25 卡片把 `materials_confidence` 定成「六面任一面 fallback → low」，
+  而實測六面來源分布是 fallback 10 面／out_of_domain 5 面／clip 12 面——
+  CLIP 門檻 0.4 下至少一面 fallback 幾乎必然，這條規則等價於「永遠 low」。
+  **T-25 的實作完全照卡片做、驗證者也正確驗了規則邏輯；錯的是卡片規格本身。
+  規劃者寫規則時沒有先量基準率——這是規劃錯誤，不是執行或驗證錯誤。**
+  T-28 記錄了兩難（擋得對 vs 擋過頭）並明訂「不要用調鬆門檻草草了事」，
+  要調必須附實測且**臥室那筆必須仍被擋住**。
+- **另開 T-29**：三軸信心只加在 `run_photo()`，`--text` 只有 `confidence`、
+  `--scene` 連 `confidence` 都沒有。T-25 驗證者已主動揭露，規劃者實測確認。
+  未必是 bug（preset 路徑的信心語義不同），但三條管線 schema 不一致要有意識地決定。
+- **REPORT §7 已補**：2026-08-30 後重生 IR 需加 `--force-low-confidence`；
+  並聲明本報告數字仍有效（gate 只擋輸出、不改合成邏輯，MD5 全程零回歸）。
+- 下一步：T-27（室內陳設吸音）與 T-28（gate 基準率）都需要 Fable 裁決。
+
 ## 2026-08-30 (52)
 
 - **T-26 完成，🔵 待驗證**：`pipeline.run_photo()` 加輸出 gate——overall
