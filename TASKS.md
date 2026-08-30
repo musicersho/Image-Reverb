@@ -2495,7 +2495,7 @@
    自我檢查要附上「在舊碼上跑會 fail」的實測輸出
 
 ### T-23 fallback 材質的單一事實來源（REPORT §2.6 缺陷 F）
-- **狀態**：🔵 待驗證
+- **狀態**：✅ 通過（Opus 驗證 2026-08-30）
 - **前置**：無（最安全的一張，先做）
 - **問題**：fallback 材質四處說法不一致——`data/materials.json:10` 說 `generic_wall`、
   `src/image_reverb/config.py:95` 實際是 `gypsum_board`、`config.py:103` 註解說
@@ -2580,6 +2580,56 @@
   - 下一步：Opus 驗證本卡 → 通過後 T-24 依鐵則 0 前置要求接續執行
     （T-24 卡片提到「本卡計分改成角色 mask 內比例」，跟本卡的常數讀取方式互不相關，
     不會有檔案內容衝突，只有前置順序上的相依）。
+
+- **Opus 驗證紀錄（2026-08-30，全部由驗證者自己實跑，不採信轉述）**：
+  - **鐵則 1（六套測試全部 exit 0）**：乾淨工作區（`git status --porcelain` 為空）下
+    逐一實跑——`test_material_fallback.py` EXIT=0（3 項全過）、`test_ir_synth.py`
+    EXIT=0（23 項，末項「防禦性警示觸發測試」通過）、`test_scene_text.py` EXIT=0、
+    `test_coupled.py` EXIT=0、`test_acoustics.py` EXIT=0、`test_t30_low_combined.py`
+    EXIT=0（聯合帶 T30 = 0.9823s）。
+  - **鐵則 2（六條 MD5 零回歸）**：驗證者自己重新生成並 `md5` 比對——
+    `chk_bath_opus.wav` = `2adbaa75eb698772a8c9aa693179ec47` ✅、
+    `chk_church_opus.wav` = `2dd19b6e6d351d713887636fe45cd67e` ✅、
+    `coupled_neighbor_voices.wav` = `9a94ffdf5d8295aee7889729c39c9cd8` ✅、
+    `coupled_stadium_corridor.wav` = `a1c21bcc3fd9aa3480df203a89c8cd05` ✅；
+    T-14 兩條由 `test_ir_synth.py`【6】硬編碼比對，實際輸出
+    `f3a763bed13cf4d6f49dbacddee6313f`（small_surf_carpet）與
+    `f24353b5dbecf0f6073ca65a7be44ad3`（hall）皆「與 T-14 交付版相同」。
+    驗證用的 `chk_*_opus.wav/.json` 已刪除，`output/ir_synth/` 無 chk 殘留。
+  - **鐵則 3**：`git diff 6cbbcfd 56eab61 -- src/image_reverb/ir_metrics.py` 為 0 行。
+  - **鐵則 4**：`git diff --stat` 對 `SPEC.md`／`ROADMAP.md`／`WORKFLOW.md`／
+    `output/mvp_acceptance/` 為 0 行。commit 只碰 7 個檔（3 個程式碼＋1 個新測試
+    ＋TASKS/DEV_LOG/TODO），無越界。
+  - **鐵則 5（診斷力，驗證者自己還原舊碼實測，非採信 Sonnet 貼的輸出）**：
+    `git checkout 6cbbcfd -- data/materials.json config.py surfaces.py` 還原到
+    修改前狀態（確認舊碼確實是 `materials.json:10 fallback_id="generic_wall"`＋
+    `config.py:95 DEFAULT_WALL_MATERIAL = "gypsum_board"`），重跑新測試：
+    ```
+    ❌ config.DEFAULT_WALL_MATERIAL == materials.json['fallback_id']：
+       config='gypsum_board'，json='generic_wall'
+    ❌ fallback_id == 'gypsum_board'：實際值 'generic_wall'
+    ❌ 2 項失敗   EXIT=1
+    ```
+    確認**非空測試**。隨後 `git checkout 56eab61 --` 還原，工作區回到乾淨。
+  - **紅旗一（偷偷把行為改成 `generic_wall`）→ 不成立**：六條 MD5 全數相同；
+    `python -c` 實測 `config.DEFAULT_WALL_MATERIAL == 'gypsum_board'`。
+  - **紅旗二（新測試在舊的不一致狀態下也能過＝空測試）→ 不成立**：見鐵則 5，
+    舊碼上 3 項中 2 項 fail。
+  - **「只改文件不改行為」的獨立佐證**：`grep -rn "fallback_id"` 確認**全專案只有
+    新測試與 `config.py` 的新讀取函式在讀這個鍵**，`materials.py`／`surfaces.py`
+    ／preset 都沒有讀它——所以把 JSON 值由 `generic_wall` 改成 `gypsum_board`
+    確實**不會改變任何執行路徑**（`generic_wall` 仍是材質表第 178 行的合法材質，
+    `scene_presets.json`／`stadium_corridor.json` 照舊使用，未受影響）。
+  - **範圍未擴大**：`surfaces.py` 的 diff 只有 5 行且全在 docstring 內；
+    `inspect.getsource(classify_region_material)` 確認四個 return 出口
+    （3 個回 `config.DEFAULT_WALL_MATERIAL` ＋ 1 個回 `best_id`）邏輯未動。
+  - **循環 import 的說法屬實**：`materials.py:19` 確為 `from . import config`，
+    所以 `config.py` 內另寫最小讀取邏輯是合理做法；實測
+    `import config, materials, surfaces` 三者同時 import 無誤。
+  - **小提醒（不影響本卡通過，留給後續卡注意）**：測試【1】現在兩邊都讀同一份
+    JSON，屬於「同源比對」，只能抓到「有人把 `config.py` 改回字面值**且**同時改動
+    JSON 值」的情形；真正錨住數值的是【3】。若日後 `fallback_id` 有正當理由要改值
+    （非本卡範圍，屬 T-27 議題），記得【3】會擋，要一併更新。
 
 ### T-24 ADE 可信材質分支：修好計分錯誤、清掉死碼與誤導性註解（REPORT §2.6 缺陷 D）
 - **狀態**：⬜ 未開始
