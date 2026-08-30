@@ -4005,7 +4005,87 @@
     六頻段 `list[float]`，可以直接乘 `S_total` 換算 m²。
 
 ### T-32 等效吸音面積入聲學計算與照片管線（裁決 T-27-A 執行卡 2/3）
-- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-08-30，等 Opus）
+- **狀態**：✅ 通過（Opus 驗證，2026-08-30）——無退回項；附四項非阻擋事項（含一項
+  T-31 遺留、必須在 T-33 開工前補），見下方「Opus 驗證紀錄」
+- **Opus 驗證紀錄（2026-08-30）**：**✅ 通過**。全部驗證指令由驗證者在乾淨工作區親自重跑，
+  非採信自檢宣稱；另用 `git worktree` 建 T-31 版（`8d1c646`）與 HEAD 版兩份獨立工作區交叉比對。
+  - **鐵則 1**：十套測試逐一實跑全部 exit 0（`test_ir_synth`／`test_output_gate`／
+    `test_confidence_axes`／`test_material_fallback`／`test_surface_trusted_scope`／
+    `test_t30_low_combined`／`test_scene_text`／`test_coupled`／`test_furnishings`／
+    `test_acoustics`）。
+  - **鐵則 2**：六條交付 IR 逐條重生比對，MD5 全部相同——T-14 兩條由 `test_ir_synth`【6】
+    內建比對（exit 0）；T-20 得 `2adbaa75eb698772a8c9aa693179ec47`／
+    `2dd19b6e6d351d713887636fe45cd67e`；T-21 得 `9a94ffdf5d8295aee7889729c39c9cd8`／
+    `a1c21bcc3fd9aa3480df203a89c8cd05`，與卡片記錄逐字相同。
+  - **鐵則 3／4**：`git diff -- src/image_reverb/ir_metrics.py SPEC.md ROADMAP.md WORKFLOW.md
+    output/mvp_acceptance/` 對 `HEAD~1` 與對 T-30 驗證點 `64ec163` 皆輸出 0 行。
+    T-32 只動 `acoustics.py`／`cli.py`／`pipeline.py` 三檔；`ir_synth.py`／`surfaces.py`／
+    `coupled.py`／`furnishings.py` 零 diff（紅旗「把縮短尾巴的邏輯塞進 ir_synth.py」不成立）。
+  - **鐵則 5（診斷力實測）**：把新版 `test_acoustics.py` 放進 T-31 版工作區跑舊
+    `compute_acoustics()`，【F1】即 `TypeError: compute_acoustics() got an unexpected
+    keyword argument 'furnishings'` 崩潰，exit 1。
+  - **鐵則 6（gate 零改動）**：`pipeline.py` 逐行 diff 只有四處——`_NOTE_MARKERS` 加一條、
+    `run_photo()` 簽章加 `no_furnishings`、`furn = ...` ＋ CLI 印出、`analysis.json` 加
+    `furnishings` 鍵與一條 note。`furn` 的計算點在 `if overall_confidence == "low":`
+    整個 gate 區塊**之後**（`pipeline.py:325-327`），gate 判定所依據的 `est.confidence`／
+    `materials_confidence` 皆在其之前定案；`_overall_confidence()`／
+    `compute_materials_confidence()`／scene_cues 段一行未動。`test_output_gate`＋
+    `test_confidence_axes` exit 0 佐證。
+  - **None 分支逐位元不變（拿交付 JSON 重生 diff，卡片指定的紅旗檢查）**：在 T-31 版工作區
+    重生 T-20 浴室與 T-21 stadium_corridor，與 HEAD 版產物 `diff`——T-21 JSON **零差異**，
+    T-20 JSON 唯一差異是我自己指定的輸出檔名（`ir_file` 欄位），WAV MD5 四條兩兩相同。
+  - **非假實作（驗證者自己實跑，不採信轉述）**：
+    - 【手算】F2 六頻段手算與實得誤差 `0.00e+00`（非「小於門檻」而是逐位元相同）。
+    - 【變異測試】把 Eyring 那行的 `total_absorption` 改成 `surfaces_absorption`（模擬
+      「只加 Sabine 不加 Eyring」紅旗），`test_acoustics.py` 立刻 exit 1、F3 失敗——
+      證實測試對這個紅旗有真實診斷力，不是靠註解自我宣告。原始碼中兩者共用同一個
+      逐頻段 `total_absorption` 變數，結構上不可能只加一邊。
+    - 【真實照片】`bedroom_ai_generated.png --force-low-confidence --no-viz`：加陳設得
+      person 3.2%／bed 21.2%／curtain 9.0%／pillow 0.5%、佔 1kHz 總吸音 87.8%、
+      `rt60_bands_target_sabine`＝`[0.6334, 0.6686, 0.5703, 0.4682, 0.4253, 0.408]`；
+      `--no-furnishings` 得 `furnishings: null`、`[1.016, 2.5562, 3.8388, 3.5526, 2.285,
+      1.6554]`——與 Sonnet 自檢數字逐位元相同，可重現。
+    - 【防濫殺】`bathroom_tiled.png` 加/不加旗標 RT60 完全相同
+      `[1.0786, 2.5522, 3.5093, 3.0478, 2.0199, 1.4811]`、`absorption_extra_m2_by_band`
+      六個 0.0、`categories={}`，無誤報。
+    - 【T-16 不回歸】不帶 `--no-viz` 完整跑一次，`analysis.png` 正常產生（393KB）；
+      `check_audio.py` 量得 `ir_mono.wav` RMS=0.014885、峰值 0.708、48kHz、0.937s，非靜音。
+  - **驗證者補測（Sonnet 自檢未涵蓋的路徑）**：
+    - 【cap 端到端】`livehouse_riverside_ximen.png` 跑完整管線：`cap_applied=true`、
+      `total_ratio=0.5`、cap 警告「陳設佔比 50.4% 超過上限 50%……」**正確落在
+      `analysis.json` 的 `warnings`**、未誤入 `notes`；視角說明「陳設比例取自單一透視視角」
+      正確落在 `notes`。`_split_notes_and_warnings()` 對兩種文案的分流另以單元探針確認。
+    - 【錯誤處理】`--no-furnishings` 搭配不存在檔案／非圖片（README.md）／資料夾，
+      三者皆 exit 2 且訊息清楚，無 crash、無吞錯；搭配 `--text` 正確擋下（exit 2）並
+      在錯誤訊息中列出 `--no-furnishings`。
+    - 【飽和不崩潰】極端合成案例（六面高吸音材質 + cap 上限 0.5 且 α=1.0 的陳設）不崩潰——
+      `rt60_eyring_band()` 既有的 `min(ā, 1-1e-9)` 夾子擋住 `log(0)`（該夾子是 T-13 既有，
+      非 T-32 新增）。但 Eyring 六頻段會全部貼到 0.0039s 的無意義地板，見非阻擋事項【1】。
+  - **非阻擋事項（不影響本卡通過，但要接手）**：
+    1. **【給 T-33 的重要輸入】cap=0.5 偏鬆的直接證據**：`livehouse_riverside_ximen.png`
+       加陳設後 1k/2k/4k 的 `rt60_bands_target_sabine` = 0.0817/0.0790/0.0800 s，**跌破
+       WORKFLOW §5 第二層「RT60 在 0.1–12 秒」的合理性下限**（不加陳設是
+       `[0.4036, 0.3656, 0.1723, 0.1345, 0.1179, 0.1213]`，剛好在線上）。成因是幾何被人群
+       壓成 2.75×3.18×2.00 m（17.5 m³）再疊上壓回至 cap 上限的陳設吸音。**這張照片本來就被
+       gate 擋下**（需 `--force-low-confidence` 才看得到），所以不在交付路徑上、不構成本卡缺陷；
+       但公式 `ratio × S_total × α` 在小體積 + 高佔比時會把 RT60 推出物理合理範圍是事實。
+       **T-33 量測時請一併記錄「A_extra 佔總吸音比例」與「RT60 是否跌破 0.1s」兩欄**，
+       連同上述飽和行為交 Fable 複評 cap 值與是否需要下限保護。
+    2. **【T-31 遺留，非 T-32 職責，但必須在 T-33 開工前補掉】**：T-31 卡指定「須併入
+       『T-31: 驗證通過』commit 的文件修正」（`data/furnishings.json` 的 `curtain.source`
+       描述應改為中量級 14 oz/yd² 天鵝絨、`curtain`／`seat` 兩筆的精確書目出處應退回通用
+       寫法或註明未逐頁查證）**至今未執行**；且 git 史上**沒有 `T-31: 驗證通過` 這個 commit**，
+       T-31 的 ✅ 狀態是夾帶在 `55855bf`（T-32 commit）裡的，違反 WORKFLOW §4「一個任務 =
+       至少一個獨立 commit」。T-33 是量測卡、`src/` 一行不許改，`data/` 同理該先定稿，
+       所以這項要在 T-33 開工前補完。
+    3. **【小】** TODO.md 第 104 行仍寫「T-31 🔵 待驗證」，與 TASKS.md 的 ✅ 不同步
+       （WORKFLOW §4 第 3 步）——已由本次驗證一併修正。
+    4. **【小，記錄備查】** `acoustics.py` 的 `cap_applied: bool(furnishings.warnings)` 是用
+       「warnings 非空」**反推** cap 有沒有觸發。目前 `furnishings.py` 只產生 cap 這一種
+       warning，所以結果正確；但 T-33 卡把 `cap_applied` 當成現成入口使用，日後
+       `furnishings.py` 若加入任何非 cap 的 warning，這個欄位會安靜地變錯。建議改成由
+       `FurnishingEstimate` 帶一個明確旗標。另：無陳設場景 `total_ratio` 輸出成 int `0`
+       而非 `0.0`（`round(sum([]), 5)`），純外觀、不影響數值。
 - **前置**：T-31
 - **目標**：`A_extra_c[band] = ratio_c × S_total × α_c[band]` 進 Sabine／Eyring，
   經 `rt60_bands_sabine` 流進 IR 晚期尾巴；照片管線預設啟用、可用旗標關閉。

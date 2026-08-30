@@ -101,14 +101,16 @@
       類別全圖像素佔比，類別 id 與六角色 id 不相交、rug／玻璃鏡面排除。
       全文見 TASKS.md T-27 卡。
 - [ ] **Phase 1.7 材質修正輪（Fable 規劃 2026-08-30，卡片在 TASKS.md 檔尾）**：
-      **T-31 🔵 待驗證**（陳設資料表＋偵測模組，Sonnet 自檢通過 2026-08-30；
-      九個類別 α 值逐字轉錄、`ade_id` 已用 `id2label` 實測核對相符、十套測試
-      exit 0、六條交付 IR MD5 零回歸、gate 判定零改動）→ **T-32 🔵 待驗證**
-      （等效吸音入聲學計算，Sonnet 自檢通過 2026-08-30；`compute_acoustics()`
-      加 `furnishings` 參數＋`--no-furnishings` 旗標，furnishings=None 時逐位元
-      不變；十套測試 exit 0（新增 F1–F4）、六條交付 IR MD5 零回歸、gate 判定
-      零改動、`bedroom_ai_generated.png` 實測代表殘響 ~3.7s→~0.52s）→
-      T-33 ⬜（13 張基準率複測量測卡，通過後回 Fable 複評 gate 規則）→
+      **T-31 ✅ 通過**（Opus 驗證 2026-08-30；陳設資料表＋偵測模組。⚠️ 卡片指定的
+      `data/furnishings.json` source 文件修正**尚未執行**，且從未有獨立的
+      `T-31: 驗證通過` commit——兩者都要在 T-33 開工前補掉）→ **T-32 ✅ 通過**
+      （Opus 驗證 2026-08-30；`compute_acoustics()` 加 `furnishings` 參數＋
+      `--no-furnishings` 旗標，furnishings=None 時逐位元不變。驗證者在乾淨工作區
+      重跑十套測試 exit 0、六條交付 IR MD5 零回歸、None 分支交付 JSON 重生 diff 為空、
+      gate 判定零改動；另以變異測試證實「只加 Sabine 不加 Eyring」會被 F3 抓到。
+      ⚠️ 帶給 T-33 的輸入：`livehouse_riverside_ximen.png` 加陳設後 RT60 跌到 0.08s，
+      跌破 WORKFLOW §5 的 0.1s 合理性下限——cap=0.5 偏鬆的證據，量測時要一併記錄）→
+      T-33 ⬜（13 張基準率複測量測卡，通過後回 Fable 複評 gate 規則與 cap 值）→
       T-34 ⬜（gate 訊息規則 2 死路出口＋測試補洞）。共同紅線：gate 判定規則
       零改動、六條交付 IR MD5 不變、陳設資料不得餵進信心軸。
 - [x] **T-30 gate 出口導引 ✅ 通過（Opus 驗證 2026-08-30）**：

@@ -1,5 +1,29 @@
 # Dev Log
 
+## 2026-08-30 (61)
+
+- ✅ **T-32 Opus 驗證通過**：等效吸音面積入聲學計算與照片管線。全部驗證指令由驗證者在
+  乾淨工作區親自重跑，並用 `git worktree` 另建 T-31 版（`8d1c646`）與 HEAD 版兩份獨立
+  工作區交叉比對，非採信 Sonnet 自檢轉述。十套測試 exit 0；六條交付 IR MD5 逐條重生
+  相同；None 分支拿 T-20／T-21 交付 JSON 重生 `diff` 為空（T-21 零差異、T-20 僅差我自己
+  指定的檔名）；`ir_metrics.py`／SPEC／ROADMAP／WORKFLOW／`output/mvp_acceptance/` diff 0 行；
+  `ir_synth.py`／`surfaces.py`／`coupled.py` 零 diff。
+- **非假實作的實證**：F2 手算與實得誤差 `0.00e+00`；另做**變異測試**——把 Eyring 那行
+  改吃 `surfaces_absorption`（模擬「只加 Sabine 不加 Eyring」紅旗），`test_acoustics.py`
+  立刻 exit 1、F3 失敗，證實測試對該紅旗有真實診斷力。鐵則 6 逐行核對：`furn` 計算點
+  在 gate 區塊之後（`pipeline.py:325-327`），gate 判定所依據的兩軸皆在其之前定案。
+- **驗證者補測 Sonnet 未涵蓋的路徑**：`livehouse_riverside_ximen.png` 走完整管線驗證
+  cap 端到端（`cap_applied=true`、cap 警告落在 `warnings`、視角說明落在 `notes`）；
+  三種壞輸入皆 exit 2 無 crash；極端飽和案例不崩潰（`min(ā, 1-1e-9)` 夾子擋住 `log(0)`）。
+- **四項非阻擋事項**（詳見 TASKS.md T-32 卡）：①`livehouse` 加陳設後 RT60 跌到 0.08s、
+  跌破 WORKFLOW §5 的 0.1s 下限（該照片本來就被 gate 擋，不在交付路徑上，但是 cap=0.5
+  偏鬆的直接證據，T-33 量測要加記兩欄）；②**T-31 遺留必須在 T-33 前補**——卡片指定的
+  `data/furnishings.json` source 文件修正未執行，且從未有獨立的 `T-31: 驗證通過` commit
+  （T-31 的 ✅ 被夾帶在 T-32 commit 裡，違反 WORKFLOW §4）；③TODO.md 的 T-31 狀態陳舊
+  （本次已修）；④`cap_applied` 用「warnings 非空」反推、`total_ratio` 輸出 int `0`（記錄備查）。
+- 下一步：補完非阻擋事項②（T-31 的 `data/furnishings.json` 文件修正），再由 Sonnet
+  執行 T-33（13 張基準率複測，量測卡；量測期間 `src/` 一行不許改）。
+
 ## 2026-08-30 (60)
 
 - ✅ **T-32 Sonnet 執行完成，自檢通過（待 Opus 驗證）**：等效吸音面積入聲學計算與
