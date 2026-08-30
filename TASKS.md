@@ -3545,7 +3545,8 @@
   結果做出 3.56 秒殘響、盲聽被聽成教堂。這是本卡要解的核心問題。
 
 ### T-28（🔮 Fable 裁決用，Sonnet 不要做）gate 擋掉 13/13 全部照片 —— 規格的基準率沒被量過
-- **狀態**：⬜ 未開始（**需要產品層決策**）
+- **狀態**：🔮 **已裁決（Fable，2026-08-30，裁決 T-28-A）**——gate 規則不動、
+  修出口（執行卡 T-30）、準確度先行；含對本卡原始數據的三處更正（見卡尾裁決全文）
 - **發現者**：Opus 規劃者，2026-08-30 T-26 驗收通過後的獨立複驗
 - **📊 實測數據**：T-26 的 gate 上線後，**專案裡 13 張照片全部 exit 3 被擋**——
   §7-2 的 8 個對照場地 8/8、§7-1 的 5 張盲聽照片 5/5，無一例外。
@@ -3578,6 +3579,51 @@
   不該一票否決）②區分 `fallback`（模型沒把握）與 `out_of_domain`（模型說這不是建築）
   ——後者應該更嚴 ③先做 T-27（室內陳設吸音），材質準確度提升後基準率自然下降
 
+- **🔮 Fable 裁決 T-28-A（2026-08-30）**——裁決前先由 Fable 親自零信用複驗
+  （13 張逐張重跑 `python -m src.image_reverb <照片> --no-viz`，不採信任何轉述），
+  **先更正本卡數據，再裁決**：
+  - **對本卡原始數據的三處更正（複驗實測）**：
+    1. 「8 個對照場地 materials 全部 low」**不成立**：DivorceBeach 的 materials 是
+       **medium**，該張是被 **geometry=low** 擋的。實際 materials=low 為 **12/13**。
+    2. 「六面來源分布 fallback 10 面／out_of_domain 5 面／clip 12 面」**單位標錯**：
+       13 張 × 6 面 = 78 面的實測面數分布是 **fallback 32／out_of_domain 13／
+       clip 22／無來源 11**。本卡的 10 與 5 其實是「含該來源的**照片張數**」
+       （10 張含 fallback、5 張含 ood），含 clip 的是 11 張非 12。另有本卡從未
+       提及的**第四種來源狀態「無來源」**（該角色未被觀測到，`sources` 無此面
+       條目，CLI 印成 `-`）佔 11/78 面。
+    3. **被擋原因逐張拆解**：僅材質軸擋（geometry=medium）**7 張**
+       （bathroom／bedroom／stairwell／Cathedral／Racquetball／Tunnel／
+       dept_store）、僅幾何軸擋 **1 張**（DivorceBeach）、兩軸皆 low **5 張**
+       （arena／car／Steinman／gym／restaurant）——**就算材質規則整條修好，
+       仍有 6/13 被 geometry=low 擋住**。評估「調材質規則的效益」必須用這組數字，
+       用本卡原數字會把效益高估約一倍。
+  - **裁決一：gate 判定規則維持原樣，不調（方向①②不採）。** 決定性理由是
+    複驗得到的**不可能性證明**：臥室（本卡硬性約束：必須續擋）與浴室
+    （§7-1 盲聽僅有的兩個答對案例之一）的六面「材質 id＋來源」**逐面完全相同**
+    ——四牆 `generic_wall/clip`＋地板 `gypsum_board/fallback`＋天花板
+    `gypsum_board/無來源`。任何只讀來源與材質的規則（計數、面積加權、
+    fallback/ood 分級全屬此類）對這兩張必然給出同一個判定：臥室要擋 →
+    浴室必然陪葬。**區辨兩者所需的訊號（室內陳設）在現有資料裡根本不存在**，
+    所以①②不是不想做，是**做不到**；另一個盲聽答對案例樓梯間是六面全
+    fallback，更沒有任何放寬版規則救得回。次要理由：13/13 與 T-17 量測一致
+    （§7-2 自動組 0/8、手動組 0/5、盲聽 2/5）——目前自動路徑的輸出品質本來就
+    不該無標記出貨，**gate 是溫度計，不是病**。
+  - **裁決二：解「儀式化 --force」靠修出口，不靠鬆規則——開執行卡 T-30
+    （gate 出口導引）。** 複驗實測：既有錯誤訊息的建議 1（`--override-dims`）
+    **單獨走不通**（照樣 exit 3）；唯一可行的非 force 出口——把 fallback/ood
+    的面用 `--override-material` 覆寫掉，規則 1 解除、materials 變 medium、
+    exit 0——**訊息裡隻字未提**。T-30 讓 gate 擋下時逐面點名低信心面並給出
+    可直接複製的覆寫指令，把 gate 從「牆」變成「引導人工確認的流程」，
+    與 SPEC §8「手動覆寫 P0」的緩解路線一致。
+  - **裁決三：基準率的長期解是準確度（方向③），規則複測排在材質輪之後。**
+    T-27／材質修正輪完成後，用當時的新基準率把 13 張重測一輪，再評估規則
+    是否需要調；在那之前任何門檻調整都沒有實證基礎（WORKFLOW §5 紅旗 3）。
+  - **附帶裁決：兩個結構性事實記入 HANDOFF 地雷 #23／#24，本輪只文件化不改碼**：
+    (a) 「無來源」第四狀態的語義——不觸發規則 1（不逼 low），但永久阻斷規則 3
+    （擋 high）；(b) 透視照的 materials `high` **結構性不可達**——透視照只要判到
+    牆就必然掛上「四面牆共用同一材質判定值」warning，而規則 3 要求零 warnings。
+    這是與本卡同型的「沒量過基準率就寫規則」，留給材質輪一併檢討規則 3。
+
 ### T-29 三軸信心只加在照片管線，`--text` / `--scene` 仍是舊 schema
 - **狀態**：⬜ 未開始
 - **前置**：T-25 ✅
@@ -3590,3 +3636,49 @@
   下游（T-16 視覺化、未來的 plugin 整合）要各別處理。
 - **需要決定**：三軸推廣到三條管線並定義 preset 路徑的信心語義，
   還是明確文件化「三軸只適用照片管線」並讓 schema 差異變成有意的設計？
+
+### T-30 gate 出口導引：把「怎麼繼續」從死路改成可走的路（裁決 T-28-A 執行卡）
+- **狀態**：⬜ 未開始
+- **前置**：T-26 ✅（gate 本體）；裁決 T-28-A（見 T-28 卡尾，2026-08-30）
+- **⚠️ 命名註記**：本卡是任務編號 T-30，與聲學量 T30（`t30_low_combined()`）無關。
+- **問題**：gate 擋下時印的「怎麼繼續」兩條建議，Fable 2026-08-30 實測：
+  建議 1（`--override-dims`）**單獨走不通**——手動尺寸只救幾何軸，materials 仍
+  low → 照樣 exit 3；唯一可行的非 force 出口（把 `fallback`／`out_of_domain` 的面
+  用 `--override-material` 覆寫掉 → 規則 1 解除、materials=medium → exit 0，
+  以 bathroom_tiled 實測確認）**訊息裡完全沒提**。結果是使用者實際上只剩
+  `--force-low-confidence` 一條路——正是 T-28 記錄的「儀式化」風險。
+- **🔮 裁決邊界（紅線）**：gate 的**判定規則一行都不許動**——
+  `compute_materials_confidence()` 與 `run_photo()` 的 gate 觸發／放行條件零改動。
+  本卡只改「擋下之後印什麼」。
+- **執行步驟**：
+  1. `run_photo()` gate 擋下時，逐面列出低信心面：面名＋目前推測的材質 id＋來源。
+     **只列 `fallback` 與 `out_of_domain` 的面**；來源為空（無來源，CLI 顯示 `-`）
+     的面**不列**——它們不觸發規則 1，覆寫它們不是過 gate 的必要條件，列了會誤導。
+     這些資訊 gate 觸發當下都在 `surf.sources`／`surf.as_dict()` 裡，不需要新計算。
+  2. 建議依軸分開印：只有 `geometry == "low"` 才印 `--override-dims` 建議；
+     `materials == "low"` 時印一條可直接複製的指令骨架，把步驟 1 列出的面逐一寫成
+     `--override-material 面=<材質id>`（`<材質id>` 保留佔位，並提示用
+     `python scripts/gen_ir_manual.py --list-materials` 查表——**不要替使用者猜
+     材質**，這個出口的意義是人工確認，不是又一層自動猜測），並附一句提醒：
+     覆寫後六面若**全部相同**會落入退化規則（規則 2）仍是 low。
+  3. `--force-low-confidence` 維持列為最後選項，文案標明「結果會被標記為不可信
+     （`forced_low_confidence: true`），不建議當常規路徑」。
+  4. `scripts/test_output_gate.py` 擴充：【A】案例加斷言——stderr 列出觸發面的
+     面名與 `--override-material` 字樣，且**不**出現無來源面；新增【D】案例：
+     materials=low 且 geometry=medium 時，stderr **不**出現 `--override-dims`
+     建議（驗證依軸給建議）。既有【0】【A】【B】【C】案例原樣通過。
+- **硬判準（共同鐵則）**：六條交付 IR MD5 不變（本卡不碰合成路徑的證據）；
+  gate 觸發／放行條件無任何變化；九套測試（`test_ir_synth`／`test_output_gate`／
+  `test_confidence_axes`／`test_material_fallback`／`test_surface_trusted_scope`／
+  `test_t30_low_combined`／`test_scene_text`／`test_coupled`／`test_acoustics`）
+  全 exit 0。
+- **自我檢查**：實跑 `assets/photos/bathroom_tiled.png` → exit 3 且訊息點名
+  `floor`（fallback）、**不**點名 `ceiling`（無來源）與四面牆（clip）、**無**
+  `--override-dims` 建議（該張 geometry=medium）；照訊息把 floor 覆寫成任一非
+  gypsum_board 材質重跑 → exit 0 且 `analysis.json` 的
+  `materials_confidence=medium`（跑完可刪 `output/bathroom_tiled/`，非交付產物）；
+  `test_output_gate.py` exit 0；六條 MD5 比對。
+- **Opus 驗證重點**：紅旗：順手動了 gate 判定條件或 `compute_materials_confidence()`
+  （六條 MD5＋既有【A】【B】【C】案例會抓）；紅旗：替使用者自動選材質；
+  紅旗：把無來源面列進覆寫建議；紅旗：geometry=medium 的照片仍印
+  `--override-dims` 建議。

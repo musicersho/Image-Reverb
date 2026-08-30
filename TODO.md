@@ -55,8 +55,8 @@
       （且計分用全圖比例，補個 if 就啟用會引入新錯誤）、pipeline 無輸出 gate、
       fallback 四處說法不一致、我自己的 `t17_blind_test.py` 可接受舊產物（**已修並實測**）。
       → HANDOFF 地雷 #19–#22、REPORT §2.6
-- [ ] **Phase 1.6 修正輪（T-23→T-24→T-25→T-26 依序，Opus 2026-08-30 規劃）**：
-      **T-23 🔵 待驗證（2026-08-30）**——fallback 材質單一事實來源，`materials.json`
+- [x] **Phase 1.6 修正輪（T-23→T-24→T-25→T-26 依序，Opus 2026-08-30 規劃）✅ 四張全過**：
+      **T-23 ✅ 通過**——fallback 材質單一事實來源，`materials.json`
       的 `fallback_id` 改成 `gypsum_board`（現行實際行為）、`config.py` 改成動態讀取、
       新增 `test_material_fallback.py`。
       **T-24 ✅ 通過（Opus 驗證，第三輪）**——`ADE_TRUSTED_MATERIAL`
@@ -69,7 +69,7 @@
       medium→low（材質是 fallback，舊行為看不出來）、`--override-dims` 不再
       整體誤標 high；`ir_mono.wav` MD5 改動前後相同。新增
       `test_confidence_axes.py`（11 項）。
-      **T-26 🔵 待驗證（2026-08-30）**——`run_photo()` 在 T-13 聲學計算之前加
+      **T-26 ✅ 通過**——`run_photo()` 在 T-13 聲學計算之前加
       gate：overall confidence 為 `low` 就擋下（不寫任何 WAV／JSON，exit 3），
       新旗標 `--force-low-confidence` 是唯一出口（帶了照樣輸出，JSON 標記
       `forced_low_confidence: true`）；`--override-dims` 不會自動解除 gate。
@@ -84,13 +84,21 @@
       gate 實測體育館 exit 3 且輸出目錄完全沒被建立、臥室 medium→low 且 IR MD5 未變）
       - T-24 依裁決 T-24-A 移除不可達死碼：可信類別 id 與角色 id **交集為 ∅**，
         在 ADE20K 一像素一 label 的前提下**永遠不可達**，非漏寫；清單搬去 T-27
-- [ ] **🔮 待 Fable 裁決（兩張）**：
-      - **T-28 gate 擋掉 13/13 全部照片** —— **規劃者自己的規格錯誤**：
-        `materials_confidence` 定成「六面任一面 fallback → low」，但實測六面來源是
-        fallback 10／out_of_domain 5／clip 12，CLIP 門檻 0.4 下至少一面 fallback
-        幾乎必然，等價於「永遠 low」。兩難：擋得對（與 §7-2 達標率 0/8 一致）
-        vs 擋過頭（gate 退化成人人加旗標的儀式）。**不要用調鬆門檻草草了事**
-      - **T-27 室內陳設吸音表示** —— 等效吸音面積 vs occupancy
+- [x] **🔮 T-28 已裁決（Fable 裁決 T-28-A，2026-08-30，零信用複驗後）**：
+      裁決前 Fable 親自重跑 13 張，**更正原卡三處數據**（materials=low 是 12/13
+      非 13/13——DivorceBeach 是被 geometry 擋的；「fallback 10／ood 5／clip 12 面」
+      單位其實是照片張數，真實面數分布為 fallback 32／ood 13／clip 22／無來源 11；
+      修好材質規則仍有 6/13 被 geometry=low 擋）。裁決：**規則不動**（實測不可能性
+      證明：臥室與浴室六面「材質＋來源」逐面相同，任何來源規則放浴室必放臥室，
+      而臥室必須擋）；**修出口開 T-30**（gate 擋下時逐面點名 fallback/ood 面＋
+      給可複製的 `--override-material` 指令——實測這是唯一可行的非 force 出口，
+      現有訊息卻只提走不通的 `--override-dims`）；**準確度先行**（材質輪後用新
+      基準率複測再談調規則）。另記 HANDOFF 地雷 #23/#24（無來源第四狀態；
+      透視照 materials high 結構性不可達）。全文見 TASKS.md T-28 卡尾。
+- [ ] **🔮 待 Fable 裁決（一張）**：**T-27 室內陳設吸音表示** —— 等效吸音面積 vs occupancy
+- [ ] **T-30 gate 出口導引**（裁決 T-28-A 執行卡，Sonnet 可做）：只改 gate 擋下後
+      印什麼——逐面點名 fallback/ood 面、依軸給建議、附可複製的覆寫指令骨架；
+      **gate 判定規則一行都不許動**，六條 MD5 不變。卡片見 TASKS.md T-30
 - [ ] **T-29**：三軸信心只加在 `run_photo()`，`--text` 只有 `confidence`、
       `--scene` 連 `confidence` 都沒有；三條管線 schema 不一致要有意識地決定
 - [ ] **← 之後（Fable）**：§7-1＋§7-2 皆未達標，要不要再加一輪。
