@@ -140,7 +140,8 @@
       Opus 驗證：十套測試＋六條 MD5＋三態實跑全部驗證者自己重跑；預設與
       `--no-furnishings` 的 `ir_mono.wav` MD5 逐位元相同＝沒有偷套用；【D】對舊碼
       實測 fail。附一則交 T-36 帶走的提醒：`t33_material_round_tables.py` 的套用組
-      要改成顯式 `--furnishings`）→ **下一步 T-36（需使用者參與標註）**。
+      要改成顯式 `--furnishings`）→ **下一步 T-36（需使用者參與標註；
+      執行交接與各階段 Prompt 見 HANDOFF_T36.md）**。
       共同紅線：gate 判定規則零改動、六條交付 IR MD5 不變、陳設資料不得餵進信心軸。
 - [ ] **🔮 Fable 複評裁決 T-33-A ✅ 已裁決（2026-08-31，全文在 TASKS.md T-33 卡尾）
       → 開 Phase 1.8 輪（陳設觀測化與 CLIP 準確度診斷，卡片在 TASKS.md 檔尾）**：

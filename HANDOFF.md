@@ -26,6 +26,8 @@ Phase 1.6 修正輪（T-23~T-26）✅ 四張全過（2026-08-30）。**
 
 🎯 **現在該做的：T-35 已由 Opus 驗證通過（2026-08-31，✅）→ 開 Sonnet 視窗執行 T-36**
 （CLIP 材質判定準確度診斷；**需使用者參與** ground truth 逐面確認，約 13 張 × 6 面）。
+📄 **T-36 的完整執行交接與五個階段要貼的 Prompt 全部在 [HANDOFF_T36.md](HANDOFF_T36.md)**
+——因為它是專案第一張需要使用者親自參與的卡，流程比平常多兩個來回，開工前先讀那份。
 Phase 1.7 三張執行卡（T-31／T-32／T-33）已全部 ✅ 通過；T-33 量出陳設機制
 淨效果為負（自動組 22%→10%、手動組 20%→12%，Steinman Hall 4/5→1/5），
 Fable 已於 2026-08-31 作出**裁決 T-33-A**（全文在 TASKS.md T-33 卡尾）並開
@@ -592,6 +594,9 @@ python scripts/convolve.py assets/dry/clap_synth.wav output/ir_room_small_carpet
 【現在該做的 — 開 Sonnet 視窗執行 T-36（CLIP 準確度診斷，量測卡）】（模型選 Sonnet）
   需要使用者參與：Sonnet 先產出 13 張×六面的標註輔助材料，**使用者逐面確認**
   材質 ground truth 後才能量測。量測期間 src/ 一行不許改。
+  → **完整流程與五個階段的 Prompt 全文見 HANDOFF_T36.md**（含使用者怎麼回答、
+    12 個候選材質、13 張照片與 T-28-A 基線表、共同鐵則、T-35 留下的
+    t33 腳本坑）。開工前先讀那份，不要只讀 TASKS.md 的卡。
 
 【T-36 通過後 — 回 Fable 做 gate 規則就地定案】（模型選 Fable）
   依裁決 T-33-A 裁決 C 終止條款：帶 output/clip_accuracy/REPORT.md 把 gate
