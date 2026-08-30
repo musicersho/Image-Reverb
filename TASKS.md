@@ -3100,7 +3100,7 @@
 </details>
 
 ### T-25 confidence 拆成幾何／材質／overall 三軸（REPORT §2.5 缺陷 B）
-- **狀態**：🔵 待驗證（Sonnet 完成自檢，2026-08-30）
+- **狀態**：✅ 通過（Opus 驗證 2026-08-30）
 - **前置**：T-24
 - **問題**：`pipeline.py:248-253` 把輸出 `confidence` 直接設成 `est.confidence`
   ——只反映幾何。T-17 §7-1 的臥室因此拿到 `medium`：地板已 fallback、四面牆只判成
@@ -3230,6 +3230,56 @@
     ——如果只鎖照片管線（卡片沒提到文字/複合場景），這個落差不影響它；
     如果要涵蓋全部三種輸入，這個落差要一併處理，但卡片裁決範圍不包含這個，
     留給 Fable／T-26 卡自己判斷是否要擴大。
+
+- **Opus 驗證紀錄（2026-08-30，全部由驗證者自己實跑，不採信 Sonnet 轉述）**：
+  - **鐵則 1（八套測試）全部 `EXIT=0`**（逐一實跑）：`test_ir_synth.py`
+    （輸出 24 個 ✅ ＝ 23 項 ＋ 總結行）、`test_scene_text.py`、`test_coupled.py`、
+    `test_acoustics.py`、`test_t30_low_combined.py`、`test_material_fallback.py`
+    （T-23）、`test_surface_trusted_scope.py`（T-24）、`test_confidence_axes.py`
+    （T-25 新增，11 項）。
+  - **鐵則 2（六條交付 IR 的 MD5）**：驗證者重新產檔後 `md5` 實測——
+    `2adbaa75eb698772a8c9aa693179ec47`（浴室）／`2dd19b6e6d351d713887636fe45cd67e`
+    （大教堂）／`9a94ffdf5d8295aee7889729c39c9cd8`（neighbor_voices）／
+    `a1c21bcc3fd9aa3480df203a89c8cd05`（stadium_corridor）全部相符；T-14 兩條
+    （`f3a763bed13cf4d6f49dbacddee6313f`／`f24353b5dbecf0f6073ca65a7be44ad3`）
+    由 `test_ir_synth.py`【6】硬編碼比對通過。臨時檔已刪除。
+  - **鐵則 3／4**：`git diff HEAD~1 HEAD -- src/image_reverb/ir_metrics.py` ＝ 0 行；
+    `git diff --stat HEAD~1 HEAD -- SPEC.md ROADMAP.md WORKFLOW.md output/mvp_acceptance/`
+    ＝ 空。本 commit 只碰 6 個檔（`pipeline.py`／`surfaces.py`／新測試＋三份文件）。
+  - **鐵則 5（診斷力，驗證者用 `git worktree` 自己重跑，沒有採信貼上來的輸出）**：
+    ① 在 `HEAD~1`（改動前）的 worktree 放進新測試 →
+    `ImportError: cannot import name '_overall_confidence'`，`EXIT=1`。
+    ② 額外做**突變測試**（比鐵則 5 更嚴，直接針對卡片的第二面紅旗）：在拋棄式
+    worktree 把 `compute_materials_confidence()` 改成永遠回傳 `"medium"` 的空實作、
+    把 `_overall_confidence()` 改成永遠回傳第一個參數 → 新測試 **5 項失敗、`EXIT=1`**
+    （high/fallback/out_of_domain/退化/`high+low→low` 都被抓到）。空實作紅旗排除。
+  - **紅旗①「動到 IR 內容」——排除**：驗證者分別在改動後的工作區與 `HEAD~1`
+    worktree 各跑一次 `python -m src.image_reverb assets/photos/bedroom_ai_generated.png
+    --no-viz`，`ir_mono.wav` 兩邊 MD5 都是 `989b9f354df926fea376ff94c2099526`，
+    **逐位元相同**。
+  - **卡片自我檢查（臥室）複驗通過**：舊碼 CLI 印 `confidence=medium`、
+    `analysis.json` 只有 `confidence: medium`；新碼印
+    `confidence：geometry=medium, materials=low, overall=low`，`analysis.json` 有
+    `confidence=low` ＋ `geometry_confidence=medium` ＋ `materials_confidence=low`
+    （`surfaces_sources.floor = "fallback"` 命中規則①）。
+  - **第二個 bug 複驗**：`--override-dims 4x3x2.5` →
+    `geometry=high, materials=low, overall=low`（舊行為會整體標成 `high`），
+    且拿掉 `--no-viz` 走 T-16 視覺化路徑正常產出 `analysis.png` 不炸
+    （`visualize.py` 只讀 `analysis['confidence']`，鍵仍在，語義改成 overall）。
+  - **實作面複核**：`sources` 的值確實來自 `obs.method`
+    （`surfaces.py:173/197/200` 產生 `"fallback"`/`"out_of_domain"`/`"clip"`），
+    規則不是對著不存在的字串比對；`_CONFIDENCE_RANK` 的三個 key 涵蓋
+    `geometry.py` 會產生的全部 confidence 值（只有 low/medium/high），無 KeyError 風險；
+    `materials_confidence` 的呼叫點確在 `apply_overrides()` 之後、且用的是同一個
+    `surf` 物件（沒有另外造一份，不影響傳給 `compute_acoustics()` 的值）。
+  - **錯誤處理（WORKFLOW §5 第三層）**：不存在的檔案 → `錯誤：找不到檔案 ...`；
+    非圖片（`README.md`）→ `錯誤：無法辨識為圖片檔 ...`，都不是 traceback。
+  - **一個保留意見（不構成退回，交給 T-26／Fable 判斷）**：三軸只加在
+    `run_photo()`，`run_text()`/`run_scene()` 的 `analysis.json` 仍是舊 schema
+    （只有 `confidence`，語義是純幾何）。卡片描述的問題確實只發生在照片管線，
+    且步驟 2 的判定規則（`clip`/`fallback`/`out_of_domain`）對文字／複合場景
+    沒有意義，故判定為合理的範圍收斂；但 T-26 若要用信心 gate 涵蓋三種輸入，
+    要先補齊這個落差。Sonnet 已在交接筆記主動揭露此事，沒有隱瞞。
 
 ### T-26 低信心／域外輸入的輸出 gate（REPORT §2.6 缺陷 E）
 - **狀態**：⬜ 未開始
