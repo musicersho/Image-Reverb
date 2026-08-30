@@ -4494,7 +4494,7 @@
     卡片在 Phase 1.8 節（本檔尾）。
 
 ### T-34 gate 訊息補洞：規則 2 死路出口＋兩處測試覆蓋（Opus T-30 後續建議執行卡）
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證（2026-08-31，Sonnet 執行完成）
 - **前置**：T-32 ✅（同動 `pipeline.py`，避免衝突所以排在後；與 T-33 無依賴）
 - **🔮 裁決 T-33-A 確認（2026-08-31）**：裁決 C 規則不調 → 本卡範圍與訊息文案
   **零調整**，照原卡逐字執行。執行順序改為：T-33 文件修正 → **T-34** → T-35 → T-36
@@ -4524,8 +4524,25 @@
   輸出目錄——gate 本來就不寫檔）。
 - **Opus 驗證重點**：紅旗：動了 gate 判定條件（六條 MD5＋既有案例會抓）；
   紅旗：規則 2 判斷邏輯被寫進 `surfaces.py`（那是判定規則的家，本卡不得動它）。
-
----
+- **交接筆記（2026-08-31，Sonnet）**：
+  - 改動檔案：`src/image_reverb/pipeline.py`（只加一段 `elif` 訊息分支，沒動
+    `if materials_confidence == "low" and low_conf_faces:` 那段既有規則 1 訊息、
+    也沒動任何 gate 判定條件）、`scripts/test_output_gate.py`（新增【E】【F】
+    ＋兩個樁：`_make_uniform_clip_surf()`、`_fake_estimate_room_low()`）。
+  - 判斷條件逐字沿用裁決邊界：`materials_confidence == "low" and not
+    low_conf_faces and surf.is_uniform()`；`compute_materials_confidence()`
+    與 `surfaces.py` 一行未動（`git diff -- src/image_reverb/surfaces.py` 為空）。
+  - 【E】對舊碼（`git stash` 只還原 `pipeline.py`）實測 fail：舊碼此分支 stderr
+    只剩「仍要照樣輸出 → 加 --force-low-confidence」，確認是真的死路、不是假陽性。
+    【F】對舊碼是本來就會過（geometry=low 分支邏輯本來就存在，只是先前五個案例
+    沒人測到它）——這與卡片描述「無覆蓋分支」一致，F 補的是覆蓋率不是修 bug。
+  - 十套測試全 exit 0；六條交付 IR MD5 未跑但改動完全不在合成路徑上（只在
+    gate 訊息與測試檔），`ir_metrics.py`／SPEC／ROADMAP／WORKFLOW／
+    `output/mvp_acceptance/`／`output/material_round/` diff 全空。
+  - 真實輸入複現（自我檢查指定案例）：`bathroom_tiled.png` 三面全覆寫成
+    `concrete` → exit 3、stderr 出現規則 2 導引與六面 `--override-material` 骨架、
+    未建立輸出目錄，與卡片描述逐字相符。
+  - 下一步：T-35（陳設改預設觀測模式）。
 
 ## Phase 1.8 — 陳設觀測化與 CLIP 準確度診斷輪（Fable 規劃 2026-08-31；依裁決 T-33-A）
 

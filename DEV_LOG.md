@@ -1,5 +1,23 @@
 # Dev Log
 
+## 2026-08-31 (68)
+
+- **T-34 gate 訊息補洞：規則 2 死路出口＋兩處測試覆蓋**（Opus 驗證 T-30 時開出的
+  後續建議執行卡；裁決 T-33-A 確認範圍與文案零調整，照原卡逐字執行）。
+  `pipeline.py` 的 gate 訊息在「materials=low 由規則 2（六面全同的退化規則）觸發、
+  且沒有任何 fallback/out_of_domain 面」這個分支下，原本只剩
+  `--force-low-confidence` 一條路（規則 1 的 `--override-material` 導引只在
+  `low_conf_faces` 非空時才印）——這是 Opus 驗證 T-30 時實測抓到的死路。
+  修法：加一段 `elif materials_confidence == "low" and not low_conf_faces and
+  surf.is_uniform():` 分支，印規則 2 專屬導引＋六面 `--override-material` 骨架；
+  gate 判定條件（`compute_materials_confidence()`／`surfaces.py`）**一行未動**。
+  另補 geometry=low 分支的測試覆蓋（先前五個案例都沒測到 `--override-dims`
+  建議這條路）。新增 `test_output_gate.py`【E】【F】，對舊碼實測【E】會 fail
+  （死路重現）、【F】本來就會過（純補覆蓋率）。十套測試全 exit 0；
+  `ir_metrics.py`／SPEC／ROADMAP／WORKFLOW／`output/mvp_acceptance/`／
+  `output/material_round/` diff 全空。真實輸入複現：`bathroom_tiled.png` 三面
+  覆寫成 `concrete` → exit 3、規則 2 導引出現、不留輸出目錄。下一步：T-35。
+
 ## 2026-08-31 (67)
 
 - **T-33 文件修正（純文件小步，Opus 驗證 2026-08-31 開出的兩則）**：

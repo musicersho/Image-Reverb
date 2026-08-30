@@ -310,6 +310,27 @@ def run_photo(
                         file=sys.stderr,
                     )
                     step += 1
+                elif materials_confidence == "low" and not low_conf_faces and surf.is_uniform():
+                    # T-34：規則 1（fallback/out_of_domain）沒觸發，materials 仍為 low
+                    # 只可能是規則 2（六面全同的退化情況）——這種情況 low_conf_faces
+                    # 是空的，之前完全沒有導引，只剩 --force-low-confidence 一條路
+                    # （Opus 驗證 T-30 時指出的死路）。
+                    skeleton = " ".join(
+                        f"--override-material {name}=<材質id>" for name in SURFACE_NAMES
+                    )
+                    print(
+                        f"    {step}) 六面材質被判成完全相同（退化規則）→ 人工確認後用 "
+                        "--override-material 至少覆寫一面為實際不同的材質，例如："
+                        f"python -m src.image_reverb {photo_path} {skeleton}",
+                        file=sys.stderr,
+                    )
+                    print(
+                        "       <材質id> 請自行判斷並用 "
+                        "`python scripts/gen_ir_manual.py --list-materials` 查表填入"
+                        "——這是人工確認的出口，不要用另一層自動猜測取代 CLIP。",
+                        file=sys.stderr,
+                    )
+                    step += 1
                 print(
                     f"    {step}) 仍要照樣輸出 → 加 --force-low-confidence"
                     "（結果會標記 forced_low_confidence=true，不建議當常規路徑）",

@@ -30,6 +30,12 @@ T-13 聲學計算、T-14 IR 合成／匯出、wet preview 全部走**真實程�
   D. materials=low 且 geometry=medium（T-30）→ exit 3，stderr **不**出現
      `--override-dims` 建議（幾何不是 low，這條建議救不了 gate），但仍有
      `--override-material` 建議——驗證建議是依軸分開給的，不是無條件全列
+  E.（T-34）六面全同且全 clip、geometry=medium → materials=low 是規則 2
+     （退化規則）觸發、非規則 1（沒有 fallback/out_of_domain 面，`low_conf_faces`
+     是空的）→ stderr 含規則 2 導引與 `--override-material`、不含 `--override-dims`
+     （T-30 沒覆蓋到的死路：舊碼此時只剩 `--force-low-confidence` 一條路）
+  F.（T-34）geometry=low、materials=medium → stderr 含 `--override-dims` 建議
+     （T-30 驗證者點名的無覆蓋分支：先前所有測試案例的 geometry 都不是 low）
   （C 額外用 `ir_synth.synthesize_ir` 呼叫次數佐證：A 呼叫 0 次、B/C 呼叫 1 次——
   gate 確實擋在合成之前，不是算完才丟棄結果）
 
@@ -87,6 +93,19 @@ def _make_surf(source_for_all: str) -> SurfaceMaterials:
     return surf
 
 
+def _make_uniform_clip_surf() -> SurfaceMaterials:
+    """T-34 案例 E：六面全同一種材質、來源全是 'clip'——不觸發規則 1
+    （沒有 fallback/out_of_domain），但 `is_uniform()` 為真觸發規則 2。
+    """
+    surf = SurfaceMaterials(
+        floor="concrete", ceiling="concrete", west="concrete",
+        east="concrete", south="concrete", north="concrete",
+    )
+    for name in SURFACE_NAMES:
+        surf.sources[name] = "clip"
+    return surf
+
+
 def _make_mixed_surf() -> SurfaceMaterials:
     """T-30：floor=fallback、四面牆=clip、ceiling **不設定來源**（模擬地雷 #23
     的「無來源」狀態——`bathroom_tiled` 的真實分佈：floor fallback、ceiling 無來源、
@@ -104,6 +123,15 @@ def _fake_estimate_room_medium(summary, override_dims=None, scene_cues=None):
     return RoomEstimate(
         length_m=4.0, width_m=3.0, height_m=2.5,
         confidence="medium", dims_source="metric_depth",
+    )
+
+
+def _fake_estimate_room_low(summary, override_dims=None, scene_cues=None):
+    """T-34 案例 F 用：geometry=low，用來覆蓋先前所有案例都沒測到的
+    `--override-dims` 建議分支。"""
+    return RoomEstimate(
+        length_m=4.0, width_m=3.0, height_m=2.5,
+        confidence="low", dims_source="metric_depth",
     )
 
 
@@ -173,12 +201,20 @@ def main() -> int:
         low_forced_photo = Path(tmp) / "_test_t26_gate_low_forced.png"
         medium_photo = Path(tmp) / "_test_t26_gate_medium.png"
         mixed_geom_photo = Path(tmp) / "_test_t30_gate_mixed_geom.png"
-        for p in (low_photo, low_forced_photo, medium_photo, mixed_geom_photo):
+        uniform_photo = Path(tmp) / "_test_t34_gate_uniform.png"
+        low_geom_photo = Path(tmp) / "_test_t34_gate_low_geom.png"
+        for p in (
+            low_photo, low_forced_photo, medium_photo, mixed_geom_photo,
+            uniform_photo, low_geom_photo,
+        ):
             p.write_bytes(b"")
 
         out_dirs = [
             OUTPUT_ROOT / p.stem
-            for p in (low_photo, low_forced_photo, medium_photo, mixed_geom_photo)
+            for p in (
+                low_photo, low_forced_photo, medium_photo, mixed_geom_photo,
+                uniform_photo, low_geom_photo,
+            )
         ]
         for d in out_dirs:
             if d.exists():
@@ -338,6 +374,74 @@ def main() -> int:
                 "stderr 仍有 --override-material 建議（materials=low 才是觸發原因）",
                 "--override-material floor=" in stderr_d,
                 f"stderr={stderr_d!r}",
+            )
+
+            # --- 案例 E（T-34）：六面全同且全 clip → 規則 2 死路 -----------------
+            print("【E】materials=low 由規則 2（六面全同）觸發、geometry=medium "
+                  "→ stderr 含規則 2 導引與 --override-material、不含 --override-dims")
+            uniform_surf = _make_uniform_clip_surf()
+            orig_stubs_e = _install_stubs(uniform_surf)
+            orig_estimate_room_e = pipeline.estimate_room
+            pipeline.estimate_room = _fake_estimate_room_medium
+            stderr_buf_e = io.StringIO()
+            try:
+                with contextlib.redirect_stderr(stderr_buf_e):
+                    rc = pipeline.run_photo(str(uniform_photo), no_viz=True)
+            finally:
+                _restore_stubs(*orig_stubs_e)
+                pipeline.estimate_room = orig_estimate_room_e
+            stderr_e = stderr_buf_e.getvalue()
+
+            check(
+                "exit code == 3（materials=low 由規則 2 觸發）",
+                rc == 3,
+                f"rc={rc}",
+            )
+            check(
+                "stderr 含規則 2 導引文字",
+                "六面材質被判成完全相同" in stderr_e,
+                f"stderr={stderr_e!r}",
+            )
+            check(
+                "stderr 含 --override-material 骨架",
+                "--override-material floor=" in stderr_e,
+                f"stderr={stderr_e!r}",
+            )
+            check(
+                "stderr 不含 --override-dims（geometry=medium，不是 low）",
+                "--override-dims" not in stderr_e,
+                f"stderr={stderr_e!r}",
+            )
+
+            # --- 案例 F（T-34）：geometry=low → --override-dims 建議 ------------
+            print("【F】geometry=low、materials=medium → stderr 含 --override-dims 建議")
+            medium_surf_f = _make_surf("manual")
+            orig_stubs_f = _install_stubs(medium_surf_f)
+            orig_estimate_room_f = pipeline.estimate_room
+            pipeline.estimate_room = _fake_estimate_room_low
+            stderr_buf_f = io.StringIO()
+            try:
+                with contextlib.redirect_stderr(stderr_buf_f):
+                    rc = pipeline.run_photo(str(low_geom_photo), no_viz=True)
+            finally:
+                _restore_stubs(*orig_stubs_f)
+                pipeline.estimate_room = orig_estimate_room_f
+            stderr_f = stderr_buf_f.getvalue()
+
+            check(
+                "exit code == 3（geometry=low → overall=low）",
+                rc == 3,
+                f"rc={rc}",
+            )
+            check(
+                "stderr 含 --override-dims 建議（geometry=low 才是觸發原因）",
+                "--override-dims" in stderr_f,
+                f"stderr={stderr_f!r}",
+            )
+            check(
+                "stderr 不含 --override-material（materials 不是 low，不該被建議）",
+                "--override-material" not in stderr_f,
+                f"stderr={stderr_f!r}",
             )
         finally:
             ir_synth.synthesize_ir = real_synthesize_ir
