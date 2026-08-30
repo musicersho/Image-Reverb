@@ -1,5 +1,23 @@
 # Dev Log
 
+## 2026-08-31 (78)
+
+- **T-37 地雷 #16 修正完成（Sonnet，🔵 待驗證）**：`preprocess.is_equirect()`
+  加極點列均勻度檢查——長寬比 2:1±5% **AND** 首/尾列灰階相鄰像素絕對差均值
+  低於門檻（`config.EQUIRECT_POLE_DIFF_THRESHOLD = 1.2`）。門檻由
+  `scripts/t37_rebaseline.py` 程式量測：4 張真環景 max 0.4859，TunnelToHell
+  4.5149，兩側餘裕 2.47x／3.76x。TunnelToHell.jpg 修正後正確判為 False（改走
+  透視路徑），`geometry_confidence` medium → low（未比原本更自信）；4 張真
+  環景（CathedralRoom／DivorceBeach／RacquetballCourt4／SteinmanHall）維持
+  True；其餘 12 張三軸 confidence／gate 逐值不變、72 面材質判定逐面不變
+  （程式化守門，未觸發任何 🔴）。EXIF/XMP 輔助訊號評估後決定不實作——極點列
+  均勻度統計量本身餘裕已足夠（>2x），函式簽章與呼叫點都不必為此變動。
+  新增 4 個測試（2 個資產案例＋2 個合成案例），對舊碼用 `git worktree` 實測
+  確認會 fail。13 支測試全 exit 0，六條交付 IR MD5 逐位元相同，`src/` 只動
+  `config.py`／`preprocess.py`，`ir_metrics.py`／gate 判定邏輯零改動。
+  詳見 TASKS.md T-37 卡「交接筆記」與 `output/equirect_fix/REPORT.md`。
+  下一步：Opus 驗證 → 通過後開 T-40（評測快取指紋）。
+
 ## 2026-08-31 (77)
 
 - **Fable 插卡規劃：Phase 1.9 加開「產物可信度修正輪」T-40～T-43**。外部（Codex）

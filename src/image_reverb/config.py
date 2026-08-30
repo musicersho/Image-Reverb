@@ -22,10 +22,21 @@ BORDER_SPREAD_THRESHOLD = 3.0  # p90-p10 小於此值（0-255 尺度）視為純
 BORDER_MAX_CROP_RATIO = 0.45  # 單邊最多裁掉整體寬/高的比例，避免暗色照片被裁光
 
 # ------------------------------------------------------------
-# 環景（equirectangular）偵測 —— 只看長寬比，不看檔名
+# 環景（equirectangular）偵測 —— 長寬比 AND 極點列均勻度（地雷 #16 修正，T-37）
+#
+# 純長寬比會把剛好 2:1 的一般透視照（TunnelToHell.jpg）誤判成環景。equirect
+# 依定義第一列/最後一列是天頂/天底被拉伸成整列，相鄰像素幾乎不變；一般透視照
+# 即使長寬比巧合為 2:1，首尾列仍是正常場景內容，相鄰像素差異明顯較大。
+#
+# 門檻取自 output/equirect_fix/REPORT.md 的實測（灰階首/尾列相鄰像素絕對差
+# 均值，兩者取 max）：4 張真環景（CathedralRoom/DivorceBeach/RacquetballCourt4/
+# SteinmanHall）最大值 0.486；TunnelToHell 為 4.515——取兩者附近的 1.2 當門檻，
+# 兩側都有 >2x 餘裕（真環景側 2.47x、TunnelToHell 側 3.76x）。數字以
+# output/equirect_fix/REPORT.md 表 1 的程式產出為準，此處僅供快速參考。
 # ------------------------------------------------------------
 EQUIRECT_ASPECT_RATIO = 2.0
 EQUIRECT_ASPECT_TOLERANCE = 0.05  # 容差 ±5%
+EQUIRECT_POLE_DIFF_THRESHOLD = 1.2  # 首/尾列灰階相鄰像素絕對差均值需低於此值
 
 # ------------------------------------------------------------
 # equirect → 多視角透視投影

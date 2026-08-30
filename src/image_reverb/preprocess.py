@@ -78,15 +78,33 @@ def detect_and_crop_border(
     return cropped, info
 
 
+def _pole_row_diff_mean(row: np.ndarray) -> float:
+    """一列灰階像素相鄰像素絕對差的平均值，越接近 0 代表這一列越均勻。"""
+    return float(np.mean(np.abs(np.diff(row.astype(np.float64)))))
+
+
 def is_equirect(
     img: Image.Image,
     aspect_ratio: float = config.EQUIRECT_ASPECT_RATIO,
     tolerance: float = config.EQUIRECT_ASPECT_TOLERANCE,
+    pole_diff_threshold: float = config.EQUIRECT_POLE_DIFF_THRESHOLD,
 ) -> bool:
-    """只看長寬比是否 ≈ 2:1（容差 ±5%），不看檔名。"""
+    """長寬比 ≈ 2:1（容差 ±5%）**且**首/尾列（天頂/天底）夠均勻，才判為 equirect。
+
+    地雷 #16：只看長寬比會把剛好 2:1 的一般透視照（如 TunnelToHell.jpg）誤判成
+    360° 環景。equirect 的第一列/最後一列依定義是天頂/天底被拉伸成整列，相鄰
+    像素幾乎不變；一般透視照即使長寬比巧合落在容差內，首尾列仍是正常場景內容，
+    相鄰像素差異明顯較大。門檻推導見 output/equirect_fix/REPORT.md。
+    """
     w, h = img.size
     ratio = w / h
-    return abs(ratio - aspect_ratio) <= aspect_ratio * tolerance
+    if abs(ratio - aspect_ratio) > aspect_ratio * tolerance:
+        return False
+
+    gray = np.asarray(img.convert("L"))
+    top_diff = _pole_row_diff_mean(gray[0])
+    bottom_diff = _pole_row_diff_mean(gray[-1])
+    return max(top_diff, bottom_diff) < pole_diff_threshold
 
 
 def project_equirect_to_perspectives(

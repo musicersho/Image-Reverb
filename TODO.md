@@ -164,7 +164,13 @@
       `config.CLIP_CONFIDENCE_THRESHOLD`、模型 A/B 結論句改由
       `model_ab_diff_count` 推導、TASKS.md 簡體字修正）；重跑後 REPORT 只有
       對應文字變動、tables.md bit-identical，十三套測試與六條 IR MD5 全綠。
-      **下一步：T-37（地雷 #16 修正）**。
+      **T-37 🔵 待驗證（Sonnet，2026-08-31）**：`is_equirect()` 加極點列均勻度
+      檢查（長寬比 AND 灰階首/尾列相鄰像素絕對差均值 <1.2），TunnelToHell
+      正確判為 False（geometry medium→low，未比原本更自信）、4 張真環景維持
+      True、其餘 12 張三軸 confidence／gate 與 72 面材質判定逐值不變（程式化
+      守門，`scripts/t37_rebaseline.py`）。13 支測試全綠、六條 IR MD5 不變、
+      `src/` 只動 `config.py`／`preprocess.py`。詳見 TASKS.md T-37 卡。
+      **下一步：Opus 驗證 T-37 → 通過後開 T-40（評測快取指紋）**。
 - [ ] **🔮 Phase 1.9 插卡（Fable 規劃 2026-08-31）：產物可信度修正輪
       T-40～T-43（卡片與裁決全文在 TASKS.md「Phase 1.9 插卡」節）**——
       外部掃描五項缺陷逐項對碼核實屬實後插卡：**T-40**（評測快取指紋與

@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """T-10 前處理迴歸測試 —— 地雷第 11 條：equirect 極點均勻列不能被黑邊裁切吃掉。
+T-37 新增：地雷 #16（`is_equirect()` 純長寬比誤判 2:1 透視照為環景）迴歸測試。
 
-不依賴外部素材，全部合成圖片，可在任何 clone 上重跑。
+前兩支（極點列存活／letterbox 非環景）不依賴外部素材，全部合成圖片，可在任何
+clone 上重跑；T-37 新增的合成案例同樣不依賴外部素材。TunnelToHell／4 張真環景
+的資產測試需要 `assets/reference_irs/`（不在 git 裡），若素材不存在會清楚印出
+略過訊息並繼續（不是靜默通過，也不會讓沒有素材的乾淨 clone 失敗）。
 
 用法：
     python scripts/test_preprocess.py
@@ -16,7 +20,9 @@ from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.image_reverb.preprocess import preprocess_image  # noqa: E402
+from src.image_reverb.preprocess import is_equirect, load_image, preprocess_image  # noqa: E402
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
 def die(msg, code=1):
@@ -106,10 +112,75 @@ def test_non_equirect_letterbox_still_cropped():
         print(f"    ✓ 黑邊裁切正常運作（左{b['crop_left_px']}px 右{b['crop_right_px']}px）")
 
 
+def make_synthetic_2to1_nonuniform_poles(width=1024, height=512, seed=2):
+    """模擬地雷 #16 的核心案例：長寬比剛好 2:1，但首/尾列不是天頂/天底、
+    是正常場景內容（隨機紋理，相鄰像素差異大）——不應被判為環景。"""
+    rng = np.random.default_rng(seed)
+    body = rng.integers(0, 256, size=(height, width, 3), dtype=np.uint8)
+    return Image.fromarray(body)
+
+
+def make_synthetic_uniform_pole_equirect(width=1024, height=512, pole_rows=1, seed=3):
+    """模擬極點列均勻的合成 equirect：只有首/尾各一列是均勻純色（天頂/天底），
+    中間隨機紋理，長寬比 2:1。"""
+    rng = np.random.default_rng(seed)
+    body = rng.integers(0, 256, size=(height, width, 3), dtype=np.uint8)
+    body[:pole_rows, :, :] = 90
+    body[height - pole_rows :, :, :] = 200
+    return Image.fromarray(body)
+
+
+def test_is_equirect_synthetic_pole_uniformity():
+    """地雷 #16 迴歸案例（合成，不依賴資產）：2:1 但極點列不均勻 → False；
+    極點列均勻的合成 equirect → True。對舊碼（純長寬比判定）必定 fail——
+    舊碼會把兩者都判為 True，因為兩者長寬比都是 2:1。"""
+    print("[3/4] 合成「2:1 但極點列不均勻」影像（地雷 #16 核心案例）...")
+    nonuniform = make_synthetic_2to1_nonuniform_poles()
+    if is_equirect(nonuniform):
+        die("長寬比 2:1 但極點列不均勻的合成影像被誤判為環景（地雷 #16 回歸了）")
+    print("    ✓ 正確判為非環景")
+
+    print("[4/4] 合成極點列均勻的 equirect（首尾各一列純色）...")
+    uniform = make_synthetic_uniform_pole_equirect()
+    if not is_equirect(uniform):
+        die("極點列均勻的合成 equirect 被誤判為非環景")
+    print("    ✓ 正確判為環景")
+
+
+def test_is_equirect_real_assets():
+    """地雷 #16 的真實案例：TunnelToHell.jpg（2592×1296，長寬比巧合 2.000 的
+    一般透視照）必須判為 False；4 張真環景（CathedralRoom／DivorceBeach／
+    RacquetballCourt4／SteinmanHall）必須全部判為 True。依賴
+    `assets/reference_irs/`（不在 git 裡），素材不存在時清楚印出略過訊息。"""
+    cases = [
+        ("TunnelToHell", "assets/reference_irs/tunnel_to_hell/TunnelToHell.jpg", False),
+        ("CathedralRoom", "assets/reference_irs/cathedral_room_shasta_lake_caverns/CathedralRoom.jpg", True),
+        ("DivorceBeach", "assets/reference_irs/divorce_beach/DivorceBeach.jpg", True),
+        ("RacquetballCourt4", "assets/reference_irs/racquetball_court_4/RacquetballCourt4.jpg", True),
+        ("SteinmanHall", "assets/reference_irs/steinman_hall/SteinmanHall.jpg", True),
+    ]
+    missing = [name for name, rel, _ in cases if not (REPO_ROOT / rel).is_file()]
+    if missing:
+        print(f"[資產測試] 略過（{', '.join(missing)} 不存在——素材未進版控，"
+              "全新 clone 需照 assets/SOURCES.md 重新下載）。")
+        return
+
+    print("[資產測試] 5 張真實照片的 is_equirect() 判定 ...")
+    for name, rel, expected in cases:
+        img = load_image(REPO_ROOT / rel)
+        actual = is_equirect(img)
+        if actual != expected:
+            die(f"{name} 判定為 {actual}，預期 {expected}（地雷 #16 回歸了）")
+        print(f"    ✓ {name} → {actual}")
+
+
 def main():
     test_equirect_poles_survive()
     test_non_equirect_letterbox_still_cropped()
-    print("\n全部通過：equirect 極點不再被誤裁，非環景黑邊裁切行為未被破壞。")
+    test_is_equirect_synthetic_pole_uniformity()
+    test_is_equirect_real_assets()
+    print("\n全部通過：equirect 極點不再被誤裁，非環景黑邊裁切行為未被破壞，"
+          "地雷 #16（2:1 透視照誤判環景）已修正。")
     return 0
 
 

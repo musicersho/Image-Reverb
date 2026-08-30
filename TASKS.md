@@ -5370,7 +5370,7 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
      （T-41／T-42／T-43）一律照原文重跑 13 張產表。
 
 ### T-37 地雷 #16 修正：`is_equirect()` 加極點列均勻度檢查（裁決 T-36-A 執行卡 1/3）
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-08-31）
 - **前置**：T-36 ✅＋「T-36 文件修正」已 commit；本卡動 `src/image_reverb/preprocess.py`
 - **問題**（HANDOFF.md 地雷 #16，T-17 驗收發現、T-36 再現並補量化證據）：
   `is_equirect()` 只看長寬比（2.0±5%），`TunnelToHell.jpg`（2592×1296 的
@@ -5411,6 +5411,72 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
   沿用舊快取會讓再基線量到修正前的碼（外部掃描 P2 的失效模式）。重跑指令
   與快取策略寫進 `output/equirect_fix/REPORT.md`；本卡產生的快取日後由 T-40
   接上指紋，本卡不必自己實作指紋。
+
+- **✅ 交接筆記（Sonnet，2026-08-31）**：
+  - **產出檔案**：`src/image_reverb/preprocess.py`（`is_equirect()` 改動＋新增
+    `_pole_row_diff_mean()`）、`src/image_reverb/config.py`（新增
+    `EQUIRECT_POLE_DIFF_THRESHOLD = 1.2`）、`scripts/test_preprocess.py`
+    （新增 4 個測試函式）、`scripts/t37_rebaseline.py`（新腳本，唯讀引用
+    `t36_clip_accuracy`／`t36_analysis`）、`output/equirect_fix/REPORT.md`＋
+    `tables.md`（程式產出）。
+  - **步驟 1 量測結果**（`scripts/t37_rebaseline.py` 程式產出，見
+    `output/equirect_fix/tables.md` 表 1）：統計量選用「灰階首/尾列相鄰像素
+    絕對差的平均值，兩者取 max」——4 張真環景 max 0.4859（CathedralRoom）；
+    TunnelToHell 4.5149。門檻取 **1.2**（真環景側餘裕 2.47x、TunnelToHell
+    側餘裕 3.76x，兩側皆 >2x）。比較過 border-crop 既有用的 p90-p10 spread
+    統計量，margin 較差（真環景 CathedralRoom 83 vs TunnelToHell 150，僅
+    ~1.8x），故未採用；相鄰像素差分平均值的區辨力明顯更好。
+  - **EXIF/XMP 決定不實作**：任務卡與地雷 #16 都把它列為「可選的正向輔助」，
+    且函式簽章／呼叫點要求不變。極點列均勻度統計量本身餘裕已 >2x，不需要疊加
+    更弱的輔助訊號（EXIF 需額外解析、XMP 這個 codebase 沒有解析庫），且
+    EchoThief 這批照片已被 Photoshop 重存，中繼資料未必可靠。`is_equirect()`
+    新增的 `pole_diff_threshold` 參數有預設值，`preprocess_image()` 的既有
+    呼叫點 `is_equirect(img)` 完全不必修改。
+  - **新測試對舊碼驗證**：用 `git worktree add /tmp/ir_old_code HEAD` 建出
+    T-37 改動前的程式碼，把新版 `test_preprocess.py` 複製進去（並用符號連結
+    接上 `assets/reference_irs/` 底下需要的 5 個 .jpg，因為素材不進版控），
+    實測 `[3/4]` 案例（2:1 但極點列不均勻的合成影像）在舊碼上確實印出
+    「🔴 長寬比 2:1 但極點列不均勻的合成影像被誤判為環景（地雷 #16 回歸了）」
+    並 exit 1；新碼上四個新測試與既有兩個測試全部通過（exit 0）。已刪除該
+    worktree。資產依賴的測試（`test_is_equirect_real_assets`）在素材缺席時
+    會清楚印出略過訊息並回傳成功，不會讓沒有 `assets/reference_irs/` 的乾淨
+    clone 失敗；本機素材齊全，本次為真實驗證（非略過）。
+  - **`scripts/t37_rebaseline.py` 設計**：唯讀 import `t36_clip_accuracy` 的
+    `GATE_ITEMS`／`EXPECTED_GATE`（13 張清單，不重打）與 `t36_analysis` 的
+    `build_accuracy_tables()`（材質計分邏輯，不重新實作）；`before` 基準分別
+    讀 `output/material_round/runs/<name>__no_furn/analysis.json`（T-33 凍結，
+    三軸 confidence／gate）與 `output/clip_accuracy/runs/<name>/detail.json`
+    （T-36 凍結，逐面判定）——兩者只讀不寫；`after` 用
+    `python -m src.image_reverb <photo> --force-low-confidence --no-furnishings
+    --no-viz`（與 T-33 `__no_furn` 組方法論相同，才能逐值比較）對 13 張**全量
+    重跑**（無任何跨次快取判斷——每次執行都整個目錄覆蓋重寫，符合 Fable
+    2026-08-31 補充的要求），輸出到 `output/equirect_fix/runs/<name>/`（全新
+    目錄，未觸碰任何凍結基線）。腳本內建三道程式化守門（非 TunnelToHell 的
+    三軸/gate 漂移、非 TunnelToHell 的材質判定漂移、臥室紅旗），任一項不符
+    直接 `sys.exit(1)`，本次執行全部通過、無需人工核對。
+  - **再基線結果**（`output/equirect_fix/REPORT.md`／`tables.md`，程式產出）：
+    TunnelToHell `dims_source` equirect_multiview → metric_depth（改走透視
+    路徑）、`geometry_confidence` medium → **low**（未比原本更自信，符合卡片
+    驗收要求）、`materials_confidence` low → low（不變）；其餘 12 張三軸
+    confidence／gate **逐值不變**（程式化核對，`tables.md` 表 2）。逐面材質
+    判定：TunnelToHell 6 面裡 5 面判定有變（走透視路徑後四面牆共用同一個
+    判定值——單張透視照的既有架構限制，不是本卡新行為），其餘 **72 面逐面
+    不變**（`tables.md` 表 3）。`bedroom_ai_generated` 未觸發臥室紅旗
+    （materials／overall 維持 low → low）。
+  - **自我檢查實測紀錄**：13 支 `test_*.py` 全部 exit 0；六條交付 IR MD5——
+    T-14 兩條由 `test_ir_synth.py` 自動驗證通過（`f3a763be…`／`f24353b5…`）；
+    T-20/T-21 四條重新生成後手動 `md5` 比對，與 `output/equirect_fix/` 前的
+    紀錄逐位元相同（`2adbaa75…`／`2dd19b6e…`／`9a94ffdf…`／`a1c21bcc…`）；
+    `git diff --stat -- src/` 只有 `config.py`／`preprocess.py` 兩個檔案，
+    `ir_metrics.py`／`surfaces.py`／`pipeline.py`／`geometry.py` 零改動；
+    `git status --short SPEC.md ROADMAP.md WORKFLOW.md output/mvp_acceptance/
+    output/material_round/ output/clip_accuracy/` 全部空白（未觸碰）。
+  - **已知限制**：逐面材質判定漂移表（表 3）只列出「AI 判定／來源／正確性」
+    任一項改變的面（5 面），TunnelToHell 的 west 面判定值與來源在新舊路徑
+    下剛好相同，因此表 3 沒有列出 west——這是巧合而非程式遺漏（腳本用
+    `before/after` 逐面比對，west 兩邊完全相同時本來就不該出現在漂移表）。
+  - **下一步**：請 Opus 驗證本卡；通過後依 Phase 1.9 固定順序開 T-40（評測
+    快取指紋，插卡 1/4）。
 
 ### T-38 CLIP 提示詞治療：地板優先＋in-set 混淆對（裁決 T-36-A 執行卡 2/3）
 - **狀態**：⬜ 未開始

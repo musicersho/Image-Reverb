@@ -1,11 +1,11 @@
 # 交接文件 — 給下一個視窗
 
-> 最後更新：2026-08-31（Fable 視窗：**Phase 1.9 插卡「產物可信度修正輪」
-> T-40～T-43**——外部掃描五項缺陷核實屬實後開四張卡並裁決順序；下一步仍是
-> T-37（地雷 #16 修正））
+> 最後更新：2026-08-31（Sonnet 視窗：**T-37 地雷 #16 修正完成，🔵 待驗證**——
+> `is_equirect()` 加極點列均勻度檢查，TunnelToHell 正確判為 False；下一步是
+> Opus 驗證 T-37，通過後開 T-40）
 > **新視窗請先讀 [CLAUDE.md](CLAUDE.md) 知道自己的角色，再讀本檔知道現在的狀況。**
 >
-> 驗證本檔是否過期：看 [DEV_LOG.md](DEV_LOG.md) 最上面一筆是不是 `2026-08-31 (77)`；
+> 驗證本檔是否過期：看 [DEV_LOG.md](DEV_LOG.md) 最上面一筆是不是 `2026-08-31 (78)`；
 > 若已有更新的紀錄，以 DEV_LOG 為準。
 
 ---
@@ -25,11 +25,12 @@ Phase 1.6 修正輪（T-23~T-26）✅ 四張全過（2026-08-30）。**
 **gate 規則不動、修出口（T-30）、材質準確度先行**（全文見 TASKS.md T-28 卡尾）。
 文字（`--text`）與複合場景（`--scene`）兩條管線不受 gate 影響，端到端可用。
 
-🎯 **現在該做的：Phase 1.8 全數結案＋「T-36 文件修正」已完成 → 開 Sonnet 視窗
-執行 T-37（地雷 #16 修正）**。⚠️ 2026-08-31 Fable 已依外部掃描報告在 Phase 1.9
-插入**產物可信度修正輪 T-40～T-43**（評測快取指紋／SegFormer 去重／gate 交易式
-輸出／T-17 產物溯源——五項缺陷全部對碼核實屬實），完整順序更新為
-**T-37 → T-40 → T-41 → T-38 → T-39 → T-42 → T-43 → 收尾複評**；
+🎯 **現在該做的：T-37（地雷 #16 修正）已完成自檢，🔵 待驗證 → 開 Opus 視窗
+驗證 T-37，通過後開 Sonnet 視窗執行 T-40（評測快取指紋）**。⚠️ 2026-08-31
+Fable 已依外部掃描報告在 Phase 1.9 插入**產物可信度修正輪 T-40～T-43**
+（評測快取指紋／SegFormer 去重／gate 交易式輸出／T-17 產物溯源——五項缺陷
+全部對碼核實屬實），完整順序更新為
+**T-37（🔵 待驗證）→ T-40 → T-41 → T-38 → T-39 → T-42 → T-43 → 收尾複評**；
 **任何新的正式盲聽必須在 T-42＋T-43 之後**（現存盲測素材是 `d958b3c` 產的，
 舊 2/5 不能宣稱屬於現行碼）。卡片與插卡裁決全文在 TASKS.md 檔尾 Phase 1.9 節。
 
@@ -176,7 +177,8 @@ T-21 ✅（四輪迭代）｜T-17 §7-4 ✅ 已執行（無鐵筒子 artifact；
 | — | 🔮 裁決 T-33-A（T-33 複評＋Phase 1.8 規劃） | ✅ **已裁決**（Fable 2026-08-31：陳設改觀測模式、開 CLIP 診斷輪、gate 依據改寫；全文 TASKS.md T-33 卡尾） |
 | T-34 | gate 訊息補洞（規則 2 死路＋測試覆蓋） | ✅ **通過**（Opus 驗證 2026-08-31；gate 判定條件零改動，只補訊息與測試；附兩則文件修正建議） |
 | T-35 | 陳設改預設觀測模式（裁決 T-33-A 裁決 A） | ✅ **通過**（Opus 驗證，2026-08-31） |
-| T-36 | CLIP 材質判定準確度診斷（量測卡，需使用者標註） | ⬜ **未開始（下一張，需使用者參與標註）**；交回時 gate 規則就地定案 |
+| T-36 | CLIP 材質判定準確度診斷（量測卡，需使用者標註） | ✅ **通過**（Opus 複驗 2026-08-31）；裁決 T-36-A 已下，開 Phase 1.9 治療輪 |
+| T-37 | 地雷 #16 修正：`is_equirect()` 加極點列均勻度檢查 | 🔵 **待驗證**（Sonnet 自檢通過，2026-08-31；`output/equirect_fix/REPORT.md`） |
 | T-29 | 三管線 analysis.json schema 一致性 | ⬜ 未裁決（不進 Phase 1.8） |
 
 逐卡的詳細交接筆記在 [TASKS.md](TASKS.md) 每張卡的「交接筆記」欄，本檔不重複。
@@ -633,15 +635,30 @@ python scripts/convolve.py assets/dry/clap_synth.wav output/ir_room_small_carpet
   事項（詳細執行紀錄見 TASKS.md T-36 卡尾），十三套測試與六條 IR MD5 全綠、
   `src/` 零改動。
 
-【現在該做的 — 開 Sonnet 視窗執行 T-37】（模型選 Sonnet）
-  執行 T-37（地雷 #16 修正：`is_equirect()` 加極點列均勻度檢查）。
-  ⚠️ 本輪基準率**允許動**（治療是目的），但每張卡要產程式生成的「基線變化表」；
-  gate 判定規則與門檻 0.4 依然一行不許動（Phase 1.9 共同鐵則 6）；新增
-  「臥室紅旗」鐵則——bedroom_ai_generated 若從擋變放，🔴 停、回 Fable。
-  ⚠️ T-37 卡有一則 2026-08-31 Fable 補充：再基線必須全量重跑、不得沿用任何
-  既有 detail.json 快取（快取指紋機制要到 T-40 才有）。
+【已完成 — T-37 🔵 待驗證】（Sonnet 執行，2026-08-31）
+  地雷 #16 修正：`preprocess.is_equirect()` 加極點列均勻度檢查（長寬比 2:1±5%
+  AND 灰階首/尾列相鄰像素絕對差均值 < `config.EQUIRECT_POLE_DIFF_THRESHOLD`
+  = 1.2；門檻由 `scripts/t37_rebaseline.py` 程式量測，4 張真環景 max 0.4859、
+  TunnelToHell 4.5149，兩側餘裕 2.47x／3.76x）。TunnelToHell.jpg 修正後正確
+  判為 False（改走透視路徑，`geometry_confidence` medium→low，未比原本更
+  自信）；4 張真環景維持 True；其餘 12 張三軸 confidence／gate 與 72 面材質
+  判定逐值不變（`scripts/t37_rebaseline.py` 內建三道程式化守門：非 TunnelToHell
+  漂移／臥室紅旗，本次執行全部通過）。新增 4 個測試（2 資產案例＋2 合成案例），
+  用 `git worktree` 對舊碼實測確認會 fail。`is_equirect()` 函式簽章維持相容
+  （新參數有預設值，既有呼叫點不必修改）；EXIF/XMP 評估後決定不實作（極點列
+  統計量餘裕已 >2x，不需要更弱的輔助訊號）。
+  自我檢查：13 支測試全 exit 0；六條交付 IR MD5 逐位元相同；`src/` 只動
+  `config.py`／`preprocess.py`，`ir_metrics.py`／gate 判定邏輯零改動；
+  `output/clip_accuracy/`／`output/material_round/`／SPEC／ROADMAP／WORKFLOW
+  全部未觸碰。詳見 TASKS.md T-37 卡「交接筆記」與 `output/equirect_fix/REPORT.md`。
 
-【T-37 之後 — 依序 T-40 → T-41 → T-38 → T-39 → T-42 → T-43】（模型選 Sonnet）
+【現在該做的 — 開 Opus 視窗驗證 T-37】（模型選 Opus）
+  依 WORKFLOW.md 第 5 節驗證標準審查 T-37。重點：門檻是否只救 TunnelToHell
+  卻讓任一張真環景掉出（4 張必須全 True）；是否動了 `is_equirect()` 以外的
+  前處理邏輯；12 張基線是否有任何漂移；新測試對舊碼是否真的 fail（可用
+  `git worktree` 或 `git stash` 重現）。通過後開 Sonnet 視窗執行 T-40。
+
+【T-37 通過後 — 依序 T-40 → T-41 → T-38 → T-39 → T-42 → T-43】（模型選 Sonnet）
   2026-08-31 插卡的產物可信度修正輪：T-40（評測快取指紋與自動失效＋T-36
   凍結基線 FREEZE_MANIFEST）→ T-41（透視照 SegFormer 去重，13 張基線逐值
   不變）→ 治療主線 T-38 → T-39 → T-42（gate 交易式輸出與舊產物 archive
