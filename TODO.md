@@ -101,9 +101,11 @@
       類別全圖像素佔比，類別 id 與六角色 id 不相交、rug／玻璃鏡面排除。
       全文見 TASKS.md T-27 卡。
 - [ ] **Phase 1.7 材質修正輪（Fable 規劃 2026-08-30，卡片在 TASKS.md 檔尾）**：
-      **T-31 ✅ 通過**（Opus 驗證 2026-08-30；陳設資料表＋偵測模組。⚠️ 卡片指定的
-      `data/furnishings.json` source 文件修正**尚未執行**，且從未有獨立的
-      `T-31: 驗證通過` commit——兩者都要在 T-33 開工前補掉）→ **T-32 ✅ 通過**
+      **T-31 ✅ 通過**（Opus 驗證 2026-08-30；陳設資料表＋偵測模組。卡片指定的
+      `data/furnishings.json` source 文件修正已於 2026-08-30 補完並以獨立的
+      `T-31: 驗證通過` commit 提交——curtain.source 描述改為中量級 14 oz/yd² 天鵝絨，
+      curtain／seat 兩筆的精確書目點名退回卡片原本要求的通用寫法，α 數值不變，
+      十套測試 exit 0）→ **T-32 ✅ 通過**
       （Opus 驗證 2026-08-30；`compute_acoustics()` 加 `furnishings` 參數＋
       `--no-furnishings` 旗標，furnishings=None 時逐位元不變。驗證者在乾淨工作區
       重跑十套測試 exit 0、六條交付 IR MD5 零回歸、None 分支交付 JSON 重生 diff 為空、

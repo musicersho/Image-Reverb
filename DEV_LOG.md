@@ -1,5 +1,23 @@
 # Dev Log
 
+## 2026-08-30 (62)
+
+- ✅ **T-31 遺留文件修正補完＋補齊獨立 `T-31: 驗證通過` commit**：T-32 Opus 驗證
+  紀錄的非阻擋事項②指出 T-31 卡片指定「須併入『T-31: 驗證通過』commit 的文件
+  修正」從未執行、且 git 史上沒有這個獨立 commit（T-31 的 ✅ 被夾帶在 T-32 commit
+  `55855bf` 裡，違反 WORKFLOW §4）。本次補做：`data/furnishings.json` 的
+  `curtain.source` 描述由誤標的「重質天鵝絨窗簾（heavy velour drape, 18 oz/yd²）」
+  改為正確的「中量級（約 14 oz/yd²）天鵝絨窗簾」；`curtain`／`seat` 兩筆的 Egan／
+  Vér & Beranek 精確書目點名退回卡片原本要求的通用寫法（僅留「建築聲學教科書
+  通用吸音係數表」）。**只改 `source` 描述字串，α 六頻段數值逐位元未動**（`git diff`
+  核對僅兩行變更）。
+- 十套測試（`test_furnishings`／`test_ir_synth`／`test_output_gate`／
+  `test_confidence_axes`／`test_material_fallback`／`test_surface_trusted_scope`／
+  `test_t30_low_combined`／`test_scene_text`／`test_coupled`／`test_acoustics`）
+  全部重跑 exit 0；純文件修正不影響任何程式邏輯，六條交付 IR MD5 不受影響。
+  同步更新 TASKS.md T-31／T-32 卡與 TODO.md 第 103–115 行反映此修正已完成。
+- 下一步：Sonnet 執行 T-33（13 張基準率複測，量測卡；量測期間 `src/` 一行不許改）。
+
 ## 2026-08-30 (61)
 
 - ✅ **T-32 Opus 驗證通過**：等效吸音面積入聲學計算與照片管線。全部驗證指令由驗證者在

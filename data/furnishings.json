@@ -80,7 +80,7 @@
         "4000": 0.59
       },
       "confidence": "medium",
-      "source": "建築聲學教科書通用吸音係數表中「無人（unoccupied）軟包劇院/會場座椅」欄位的經典值（0.19/0.37/0.56/0.67/0.61/0.59），如 Egan《Architectural Acoustics》或 Vér & Beranek《Noise and Vibration Control Engineering》材料表所列的無人座椅吸音係數。"
+      "source": "建築聲學教科書通用吸音係數表中「無人（unoccupied）軟包劇院/會場座椅」欄位的經典值（0.19/0.37/0.56/0.67/0.61/0.59）。"
     },
     {
       "ade_id": 19,
@@ -110,7 +110,7 @@
         "4000": 0.60
       },
       "confidence": "medium",
-      "source": "建築聲學教科書通用吸音係數表中「重質天鵝絨窗簾，摺疊至展開面積一半（heavy velour drape, draped to half area）」欄位的經典值（0.07/0.31/0.49/0.75/0.70/0.60），如 Egan《Architectural Acoustics》或 Vér & Beranek《Noise and Vibration Control Engineering》材料表所列數值。"
+      "source": "建築聲學教科書通用吸音係數表中「中量級（約 14 oz/yd²）天鵝絨窗簾，摺疊至展開面積一半（medium-weight velour drape, ~14 oz/yd², draped to half area）」欄位的經典值（0.07/0.31/0.49/0.75/0.70/0.60）。"
     },
     {
       "ade_id": 39,

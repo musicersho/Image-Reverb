@@ -3847,7 +3847,7 @@
    它影響 geometry confidence，動了就等於動 gate。
 
 ### T-31 陳設等效吸音：資料表＋偵測模組（裁決 T-27-A 執行卡 1/3）
-- **狀態**：✅ 通過（Opus 驗證，2026-08-30）——附一項須併入「驗證通過」commit 的文件修正，見下方「Opus 驗證紀錄」
+- **狀態**：✅ 通過（Opus 驗證，2026-08-30；文件修正已於 2026-08-30 補完，見下方「文件修正紀錄」）
 - **Opus 驗證紀錄（2026-08-30）**：全部驗證指令由驗證者在乾淨工作區實際重跑，非採信自檢宣稱。
   - **鐵則 1**：十套測試全部 exit 0（`test_ir_synth`／`test_output_gate`／`test_confidence_axes`／
     `test_material_fallback`／`test_surface_trusted_scope`／`test_t30_low_combined`／
@@ -3885,6 +3885,15 @@
     Egan《Architectural Acoustics》與 Vér & Beranek《Noise and Vibration Control Engineering》
     ——書是真的、也確實收錄材料表，未達「假造出處」，但這是 Sonnet 無從查證的精確出處，
     建議退回卡片原本要求的通用寫法（或保留書名但註明「未逐頁查證」）。
+  - **文件修正紀錄（2026-08-30，補於 `T-31: 驗證通過` commit）**：`curtain.source`
+    描述改為「中量級（約 14 oz/yd²）天鵝絨窗簾，摺疊至展開面積一半」（原誤標
+    heavy/18 oz/yd²）；`curtain`／`seat` 兩筆的 Egan／Vér & Beranek 精確書目點名
+    退回卡片原本要求的通用寫法（僅保留「建築聲學教科書通用吸音係數表」）。
+    只改 `source` 字串，α 六頻段數值逐位元未動（`git diff` 核對僅兩行變更）；
+    `test_furnishings.py` 與其餘九套測試重跑全部 exit 0。此修正原本應併入
+    `8d1c646`／`T-31: 驗證通過` commit，因故延遲到 T-33 開工前才補（見 T-32 卡
+    非阻擋事項②、DEV_LOG (61)），現已補齊，WORKFLOW §4「一個任務至少一個獨立
+    commit」缺口一併解決。
   - **給 T-32 的提醒（非缺陷，Sonnet 已於交接筆記載明，驗證者確認屬實）**：
     `save_detail()` 現在會把 `class_ratios` 寫進磁碟 JSON，但 JSON 的 key 一律是**字串**；
     `estimate_furnishings()` 用 **int** key 查表。T-32 必須吃
@@ -4071,13 +4080,11 @@
        但公式 `ratio × S_total × α` 在小體積 + 高佔比時會把 RT60 推出物理合理範圍是事實。
        **T-33 量測時請一併記錄「A_extra 佔總吸音比例」與「RT60 是否跌破 0.1s」兩欄**，
        連同上述飽和行為交 Fable 複評 cap 值與是否需要下限保護。
-    2. **【T-31 遺留，非 T-32 職責，但必須在 T-33 開工前補掉】**：T-31 卡指定「須併入
-       『T-31: 驗證通過』commit 的文件修正」（`data/furnishings.json` 的 `curtain.source`
-       描述應改為中量級 14 oz/yd² 天鵝絨、`curtain`／`seat` 兩筆的精確書目出處應退回通用
-       寫法或註明未逐頁查證）**至今未執行**；且 git 史上**沒有 `T-31: 驗證通過` 這個 commit**，
-       T-31 的 ✅ 狀態是夾帶在 `55855bf`（T-32 commit）裡的，違反 WORKFLOW §4「一個任務 =
-       至少一個獨立 commit」。T-33 是量測卡、`src/` 一行不許改，`data/` 同理該先定稿，
-       所以這項要在 T-33 開工前補完。
+    2. **【T-31 遺留，已於 2026-08-30 補完】**：T-31 卡指定「須併入『T-31: 驗證通過』
+       commit 的文件修正」（`data/furnishings.json` 的 `curtain.source` 描述改為中量級
+       14 oz/yd² 天鵝絨、`curtain`／`seat` 兩筆的精確書目出處退回通用寫法）已補做，
+       並以獨立的 `T-31: 驗證通過` commit 提交，補上 WORKFLOW §4「一個任務 = 至少一個
+       獨立 commit」的缺口。詳見 T-31 卡「文件修正紀錄」。
     3. **【小】** TODO.md 第 104 行仍寫「T-31 🔵 待驗證」，與 TASKS.md 的 ✅ 不同步
        （WORKFLOW §4 第 3 步）——已由本次驗證一併修正。
     4. **【小，記錄備查】** `acoustics.py` 的 `cap_applied: bool(furnishings.warnings)` 是用
