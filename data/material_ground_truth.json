@@ -1,0 +1,518 @@
+{
+  "version": "1.0",
+  "description": "T-36 CLIP 材質判定準確度診斷：13 張照片 × 六面的人工 ground truth。由使用者於對話中逐面確認（非 AI 自填），confirmed_by 一律為 'user'。material_id 為 data/materials.json 的 12 個候選 id 之一，或 'unknown'（照片看不到/判不了的面，這些面排除在 t36_clip_accuracy.py 的正確率分母外）。'proxy': true 標記代表真實材質不在 12 個候選裡，使用者選擇聲學特性最接近的候選作為近似值——這類面的『誤判』統計需搭配這個標記解讀，不是單純的判斷錯誤。",
+  "confirmed_date": "2026-08-31",
+  "candidate_material_ids": [
+    "concrete",
+    "brick",
+    "wood_panel",
+    "gypsum_board",
+    "glass",
+    "marble",
+    "carpet",
+    "curtain_fabric",
+    "acoustic_panel",
+    "audience_seating",
+    "grass_soil",
+    "generic_wall"
+  ],
+  "photos": {
+    "bathroom_tiled": {
+      "floor": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31"
+      },
+      "ceiling": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "使用者判斷天花板為平整塗料/塑膠材質，12 候選裡沒有塑膠選項，使用者選擇最接近的 gypsum_board 作為近似值",
+        "proxy": true
+      },
+      "west": {
+        "material_id": "generic_wall",
+        "confirmed_by": "user",
+        "date": "2026-08-31"
+      },
+      "east": {
+        "material_id": "generic_wall",
+        "confirmed_by": "user",
+        "date": "2026-08-31"
+      },
+      "south": {
+        "material_id": "generic_wall",
+        "confirmed_by": "user",
+        "date": "2026-08-31"
+      },
+      "north": {
+        "material_id": "generic_wall",
+        "confirmed_by": "user",
+        "date": "2026-08-31"
+      }
+    },
+    "bedroom_ai_generated": {
+      "floor": {
+        "material_id": "wood_panel",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "AI 判定 gypsum_board（fallback）用在地板上邏輯不通，使用者對照完整照片後改判為淺色木地板"
+      },
+      "ceiling": {
+        "material_id": "concrete",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "整張為 AI 生成影像，使用者判斷天花板／牆同為水泥材質"
+      },
+      "west": {
+        "material_id": "concrete",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "使用者判斷牆面為水泥材質，覆寫 AI 原判定 generic_wall（clip）"
+      },
+      "east": {
+        "material_id": "concrete",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同上"
+      },
+      "south": {
+        "material_id": "concrete",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同上"
+      },
+      "north": {
+        "material_id": "concrete",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同上"
+      }
+    },
+    "stairwell_tiled": {
+      "floor": {
+        "material_id": "marble",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "樓梯踏面為磨石子/水磨石拼色地面，12 候選無磨石子選項，使用者選擇最接近的 marble（大理石/磁磚類）",
+        "proxy": true
+      },
+      "ceiling": {
+        "material_id": "generic_wall",
+        "confirmed_by": "user",
+        "date": "2026-08-31"
+      },
+      "west": {
+        "material_id": "generic_wall",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "照片可見清楚馬賽克磁磚牆面，使用者仍選擇標為 generic_wall"
+      },
+      "east": {
+        "material_id": "generic_wall",
+        "confirmed_by": "user",
+        "date": "2026-08-31"
+      },
+      "south": {
+        "material_id": "generic_wall",
+        "confirmed_by": "user",
+        "date": "2026-08-31"
+      },
+      "north": {
+        "material_id": "generic_wall",
+        "confirmed_by": "user",
+        "date": "2026-08-31"
+      }
+    },
+    "arena_ntsu_linkou": {
+      "floor": {
+        "material_id": "audience_seating",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "地板被密集站立觀眾完全遮蔽，使用者判斷：這類場館啟用時地板通常被觀眾佔滿，以 audience_seating（人群/座椅，以地板面積計）代表"
+      },
+      "ceiling": {
+        "material_id": "unknown",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "AI 判定 audience_seating（clip）其實是分割階段誤將對面看台認成天花板角色，根本沒拍到真正屋頂；已查證林口體育館為半球形三角鋼架屋頂結構，但查無內裝飾面資料，12 候選無合適對應，故標 unknown"
+      },
+      "west": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31"
+      },
+      "east": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31"
+      },
+      "south": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31"
+      },
+      "north": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31"
+      }
+    },
+    "car_interior_suv": {
+      "floor": {
+        "material_id": "carpet",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "AI 判定 curtain_fabric（clip，信心 0.760）——這正是 surfaces.py 程式碼註解記載的 2026-08-18 經典誤判案例。畫面實際是黑色車內地毯地墊，使用者確認材質應為 carpet"
+      },
+      "ceiling": {
+        "material_id": "curtain_fabric",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "車頂棚為絨面內裝，12 候選無專屬車用內裝材質，使用者選擇最接近的 curtain_fabric 作為近似值",
+        "proxy": true
+      },
+      "north": {
+        "material_id": "glass",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "使用者將單張透視照無法區分方位的四面牆，依車內構造拆成「前後擋風玻璃區」與「左右車門」；north/south 代表前後＝glass"
+      },
+      "south": {
+        "material_id": "glass",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同 north 備註：south 代表前後＝glass"
+      },
+      "east": {
+        "material_id": "acoustic_panel",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "east/west 代表左右車門內裝（軟質絨面板），12 候選無專屬材質，使用者選擇最接近的 acoustic_panel 作為近似值",
+        "proxy": true
+      },
+      "west": {
+        "material_id": "acoustic_panel",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同 east 備註：west 代表左右車門內裝"
+      }
+    },
+    "CathedralRoom": {
+      "floor": {
+        "material_id": "concrete",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "六面 AI 判定全部是 gypsum_board，且來源清一色 fallback/out_of_domain（無任何一面是真正 clip 判定）——形同零真實判斷。官網資料標註材質為 Limestone, concrete；裁切圖畫面昏暗看不出細節，使用者依官網資訊六面統一標為 concrete",
+        "proxy": true
+      },
+      "ceiling": {
+        "material_id": "concrete",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同上，六面統一標註理由見 floor 備註",
+        "proxy": true
+      },
+      "west": {
+        "material_id": "concrete",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同上",
+        "proxy": true
+      },
+      "east": {
+        "material_id": "concrete",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同上",
+        "proxy": true
+      },
+      "south": {
+        "material_id": "concrete",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同上",
+        "proxy": true
+      },
+      "north": {
+        "material_id": "concrete",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同上",
+        "proxy": true
+      }
+    },
+    "DivorceBeach": {
+      "floor": {
+        "material_id": "concrete",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "AI 判定 concrete（clip），使用者確認沿用"
+      },
+      "ceiling": {
+        "material_id": "unknown",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "戶外沙灘場景，不存在實體天花板，使用者確認標 unknown"
+      },
+      "west": {
+        "material_id": "grass_soil",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "四面牆皆為沙岩峭壁（風化砂岩），符合官網「Sand, sandstone」描述；12 候選無天然岩石選項，使用者選擇最接近的 grass_soil",
+        "proxy": true
+      },
+      "east": {
+        "material_id": "grass_soil",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同 west 備註",
+        "proxy": true
+      },
+      "south": {
+        "material_id": "grass_soil",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同 west 備註",
+        "proxy": true
+      },
+      "north": {
+        "material_id": "grass_soil",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同 west 備註",
+        "proxy": true
+      }
+    },
+    "site_photo_department_store": {
+      "floor": {
+        "material_id": "carpet",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "AI 判定 acoustic_panel（clip）用在地板上邏輯不通；使用者判斷零售服飾區地板為地毯織物纖維（研判因顏色相近被誤判成吸音板）"
+      },
+      "ceiling": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "使用者確認沿用 AI 判定（無明顯衝突）"
+      },
+      "west": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同上"
+      },
+      "east": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同上"
+      },
+      "south": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同上"
+      },
+      "north": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同上"
+      }
+    },
+    "site_photo_gym": {
+      "floor": {
+        "material_id": "carpet",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "AI 判定 acoustic_panel（clip）用在地板上邏輯不通；畫面實際是深色橡膠防震地墊，12 候選無橡膠選項，使用者選擇聲學特性最接近的 carpet 作為近似值",
+        "proxy": true
+      },
+      "ceiling": {
+        "material_id": "concrete",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "無來源（角色未被觀測到，AI 判定為系統預設值），裁切圖顯示斜頂白色烤漆金屬鋼構屋頂，12 候選無金屬鋼構選項，使用者判斷最接近一般建築物水泥材質",
+        "proxy": true
+      },
+      "west": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "使用者對照裁切圖（深灰漆面牆＋紋理壁材）未提出異議，沿用 AI 判定"
+      },
+      "east": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同上"
+      },
+      "south": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同上"
+      },
+      "north": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同上"
+      }
+    },
+    "site_photo_restaurant": {
+      "floor": {
+        "material_id": "carpet",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "無來源（角色未被觀測到，AI 判定為系統預設值）；該區域裁切圖其實是鏡子反射出的天花板（分割誤判，並非真正地板畫面），使用者依餐廳常見地板材質判斷為地毯"
+      },
+      "ceiling": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "AI 判定 curtain_fabric（clip）；畫面實際是標準商用輕鋼架天花板（方形嵌板＋崁燈＋風口），無布料痕跡，使用者改判為 gypsum_board"
+      },
+      "west": {
+        "material_id": "brick",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "AI 判定 gypsum_board（fallback）；畫面清楚可見白色油漆磚牆、磚縫明顯，使用者改判為 brick"
+      },
+      "east": {
+        "material_id": "brick",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同 west 備註"
+      },
+      "south": {
+        "material_id": "brick",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同 west 備註"
+      },
+      "north": {
+        "material_id": "brick",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "同 west 備註"
+      }
+    },
+    "RacquetballCourt4": {
+      "floor": {
+        "material_id": "wood_panel",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "AI 判定 wood_panel（clip），使用者確認沿用，與官網「Wood, glass」描述一致"
+      },
+      "ceiling": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "使用者對照裁切圖未提出異議，沿用 AI 判定"
+      },
+      "north": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "使用者對照裁切圖未提出異議，沿用 AI 判定"
+      },
+      "east": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "使用者對照裁切圖未提出異議，沿用 AI 判定"
+      },
+      "south": {
+        "material_id": "glass",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "AI 判定 glass（clip），使用者確認沿用，與官網描述一致"
+      },
+      "west": {
+        "material_id": "glass",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "地雷 #18 案例：AI 判定 curtain_fabric（clip），但畫面明顯是玻璃隔間牆，且官網標註此場地為「Wood, glass」全硬面壁球場，使用者確認改判為 glass"
+      }
+    },
+    "SteinmanHall": {
+      "floor": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "使用者對照裁切圖未提出異議，沿用 AI 判定"
+      },
+      "ceiling": {
+        "material_id": "curtain_fabric",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "AI 判定 curtain_fabric（clip），裁切圖可見天花板/舞台上緣有深色垂墜布幔痕跡，與官網「upholstery」描述不衝突，使用者確認沿用"
+      },
+      "north": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "使用者對照裁切圖未提出異議，沿用 AI 判定"
+      },
+      "east": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "使用者對照裁切圖未提出異議，沿用 AI 判定"
+      },
+      "south": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "使用者對照裁切圖未提出異議，沿用 AI 判定"
+      },
+      "west": {
+        "material_id": "curtain_fabric",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "AI 判定 curtain_fabric（clip），畫面為觀眾席側牆，使用者確認沿用"
+      }
+    },
+    "TunnelToHell": {
+      "floor": {
+        "material_id": "marble",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "⚠️ 裁切圖整張近乎全黑，畫面內容無法辨識。使用者在知情（已告知看不出來，建議 unknown）的情況下仍選擇明確標註 marble，非依畫面內容判斷，特此記錄以利 Opus 驗證判斷"
+      },
+      "ceiling": {
+        "material_id": "concrete",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "AI 判定 gypsum_board（out_of_domain，系統預設值），依官網「Painted concrete」場地資訊統一改判為 concrete"
+      },
+      "west": {
+        "material_id": "concrete",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "AI 判定 gypsum_board（fallback），依官網「Painted concrete」場地資訊統一改判為 concrete"
+      },
+      "east": {
+        "material_id": "concrete",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "AI 判定 gypsum_board（clip），依官網「Painted concrete」場地資訊統一改判為 concrete"
+      },
+      "south": {
+        "material_id": "marble",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "AI 判定 marble（clip）。使用者對照裁切圖（粗糙白漆水泥牆面＋塗鴉刻痕，與官網「Painted concrete」不符）後，仍選擇維持 AI 原判定不覆寫，非依畫面內容判斷，特此記錄以利 Opus 驗證判斷"
+      },
+      "north": {
+        "material_id": "concrete",
+        "confirmed_by": "user",
+        "date": "2026-08-31",
+        "note": "AI 判定 gypsum_board（out_of_domain），依官網「Painted concrete」場地資訊統一改判為 concrete"
+      }
+    }
+  }
+}

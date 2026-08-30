@@ -4796,7 +4796,7 @@ T-34 與 T-35 都動 `pipeline.py`／`cli.py`，依序做避免衝突；T-36 是
 
 
 ### T-36 CLIP 材質判定準確度診斷（裁決 T-33-A 裁決 B 執行卡 1/n；量測卡）
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證
 - **前置**：T-35 ✅（程式定稿後才能量；量測期間 `src/` 一行不許改）；
   **需使用者參與**（ground truth 逐面確認，約 13 張 × 6 面）
 - **📄 執行交接**：[HANDOFF_T36.md](HANDOFF_T36.md)——五個階段的流程與要貼的
@@ -4844,3 +4844,55 @@ T-34 與 T-35 都動 `pipeline.py`／`cli.py`，依序做避免衝突；T-36 是
 - **T-36 通過後 → 回 Fable**：依裁決 T-33-A 裁決 C 終止條款做 gate 規則
   **就地定案**（含規則 1／2／3 與地雷 #23／#24，一次收齊、不得再展延）
   ＋規劃治療卡＋評估要不要開陳設公式修正輪。
+
+- **交接筆記（Sonnet，2026-08-31）**：
+  - **產出檔案**：`data/material_ground_truth.json`（78 面，使用者逐面確認，見下）、
+    `scripts/t36_clip_accuracy.py`（主驅動，只 import `src/image_reverb`）、
+    `scripts/t36_analysis.py`（統計/排版輔助函式，避免主檔案過長，非任務卡列名產出但
+    是 `t36_clip_accuracy.py` 執行必須的模組）、`output/clip_accuracy/REPORT.md`＋
+    `tables.md`（含快取用的 `output/clip_accuracy/runs/<name>/detail.json`／
+    `preprocess/`）。**`src/` 全程零改動**（`git diff --stat -- src/` 確認為空）。
+  - **階段 1→2 的使用者確認過程比預期深入**：原本設計是使用者對照標註輔助材料逐面
+    回答，實際執行中使用者一開始想「blanket 確認其餘 12 張＝AI 判定正確」，
+    但過程中發現多起 AI 判定與畫面明顯衝突的案例（例如 `RacquetballCourt4` 西牆
+    AI 判 `curtain_fabric` 但畫面是玻璃隔間、`car_interior_suv` 地板 AI 判
+    `curtain_fabric` 但畫面是地毯地墊——這正是 `surfaces.py` 程式碼註解記載的
+    2026-08-18 經典案例、`CathedralRoom`／`stairwell_tiled` 六面全部是
+    fallback/out_of_domain 系統預設值等於零真實判斷），逐一提出讓使用者重新判斷，
+    最終 78 面裡 **47 面（60%）人工覆寫**、2 面標 `unknown`。這證明一開始的
+    blanket 確認若照做會嚴重污染 ground truth，過程中的追問是必要的，不是自行擴大範圍。
+  - **`proxy` 欄位（任務卡原始四欄位之外的擴充）**：78 面裡有 16 面的真實材質根本
+    不在 12 個候選材質裡（塑膠天花板、磨石子樓梯、橡膠地墊、天然岩壁、車用內裝
+    織物等），使用者選擇聲學特性最接近的候選當近似值。這些面在 ground truth JSON
+    裡多標一個 `"proxy": true`，`t36_clip_accuracy.py` 據此把準確率拆成
+    proxy／非 proxy 兩組報告（非 proxy 51.7% vs proxy 6.2%），避免這 16 面的
+    「必然誤判」污染整體正確率的解讀。
+  - **意外發現，未在既有地雷清單／裁決 T-33-A 提及**：`TunnelToHell.jpg`
+    （2592×1296，長寬比剛好 2.0）被 `preprocess.py` 的 `is_equirect()`
+    純長寬比判定誤判成 360° 環景，實際上是 `SOURCES.md` 記載的一般透視照
+    （iPhone 4 拍攝）。這解釋了使用者逐面確認階段看到的部分裁切圖完全死黑／
+    抽象色塊。**已寫入 REPORT.md「意外發現」與問題清單第 3 項，本卡未修改
+    `is_equirect()`**（量測期間 `src/` 一行不許改），留給 Fable 決定是否獨立開卡。
+  - **`t36_clip_accuracy.py` 的資料來源與交叉驗證機制**：逐面判定明細用
+    `preprocess.preprocess_image()` ＋ `surfaces.surfaces_from_preprocess()`
+    唯讀重跑（含 CLIP top3 原始候選，供 fallback／out_of_domain 的門檻敏感度分析
+    用），輸出快取在 `output/clip_accuracy/runs/<name>/detail.json`（可重跑，加
+    `--fresh` 強制重算）。每張重跑完會**強制交叉比對** `output/material_round/runs/
+    <name>__no_furn/analysis.json`（T-33 凍結快取）的 `surfaces`／`surfaces_sources`，
+    並唯讀呼叫 `compute_materials_confidence()` 重算一次跟裁決 T-28-A 基線比對，
+    任一項不符會 `sys.exit(1)` 直接卡關，不會靜默通過（紅線 #6 的程式化守門）。
+    本次執行 13 張全部通過。
+  - **天花板模擬（③）的簡化與已知限制**：單張透視照（8 張，`TunnelToHell` 因上述
+    equirect 誤判不算在內）架構上四面牆只能共用一個判定值；若 ground truth 四面牆
+    不同值（僅 `car_interior_suv` 一例，使用者拆了前後/左右），模擬取 west 值代表，
+    並在 tables.md 表 7 備註欄標「🔺 舊架構限制未反映」。「無來源」面在模擬中刻意
+    不設定 `source`（維持角色未觀測到的語意），不是隨便給個 clip 來源灌水。
+  - **自我檢查實測紀錄**：十套測試全 exit 0；`git diff --stat` 確認 `src/`／
+    `ir_metrics.py`／SPEC／ROADMAP／WORKFLOW／`output/mvp_acceptance/`／
+    `output/material_round/` 全部零改動；T-14 兩條 MD5（`test_ir_synth.py` 自動
+    驗證）＋T-20/T-21 四條 MD5（`find output -name "*.wav" | xargs md5` 比對）全部
+    逐位元相同；gate 判定規則（`compute_materials_confidence()`／`run_photo()`）
+    零改動。本卡屬量測/診斷卡，未新增行為測試（第 5 項自我檢查「不適用」）——
+    程式化的守門檢查（見上一條）取代了傳統的「對舊碼會 fail」新增測試。
+  - **下一步**：請 Opus 驗證本卡；通過後開 Fable 視窗做 gate 規則就地定案
+    （依裁決 T-33-A 裁決 C 終止條款，[HANDOFF_T36.md](HANDOFF_T36.md) §4.4 有現成 Prompt）。

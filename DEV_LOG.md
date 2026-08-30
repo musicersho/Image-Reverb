@@ -1,5 +1,24 @@
 # Dev Log
 
+## 2026-08-31 (73)
+
+- **T-36 CLIP 材質判定準確度診斷：🔵 待驗證**。13 張照片 × 六面的 ground truth
+  由使用者逐面確認完成（`data/material_ground_truth.json`），過程中使用者原想
+  「blanket 確認其餘 12 張＝AI 判定正確」，但逐一核對裁切圖後抓出多起明顯誤判
+  （`RacquetballCourt4` 西牆玻璃被判成 curtain_fabric、`CathedralRoom`／
+  `stairwell_tiled` 六面全是系統預設值零真實判斷等），最終 78 面裡 **47 面（60%）
+  人工覆寫**、2 面標 `unknown`。
+- `scripts/t36_clip_accuracy.py`（＋輔助模組 `t36_analysis.py`）唯讀量測：總體
+  正確率 32/76（42.1%，proxy 面 6.2% vs 非 proxy 面 51.7%）；天花板模擬顯示
+  13 張裡只有 3 張在「判定全對」情境下能達到 `materials_confidence=high`，
+  8 張透視照結構性永遠到不了 high（地雷 #24 實測證據）。全文見
+  `output/clip_accuracy/REPORT.md`。
+- **意外發現**：`TunnelToHell.jpg`（2592×1296，長寬比剛好 2.0）被 `is_equirect()`
+  純長寬比判定誤判成 360° 環景，實際是一般透視照——列入問題清單，本卡未動
+  `src/`。
+- 十套測試 exit 0、六條交付 IR MD5 全相符、`src/` 全程零改動、gate 判定規則零改動。
+  下一步：Opus 驗證本卡。
+
 ## 2026-08-31 (72)
 
 - **新增 [HANDOFF_T36.md](HANDOFF_T36.md)：T-36 的單張任務執行交接**。T-36 是專案
