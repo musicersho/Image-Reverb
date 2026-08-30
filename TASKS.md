@@ -4796,7 +4796,8 @@ T-34 與 T-35 都動 `pipeline.py`／`cli.py`，依序做避免衝突；T-36 是
 
 
 ### T-36 CLIP 材質判定準確度診斷（裁決 T-33-A 裁決 B 執行卡 1/n；量測卡）
-- **狀態**：🔵 待驗證
+- **狀態**：🔵 待驗證（退回修正完成，2026-08-31）——Opus 三項必修（按角色正確率／
+  地雷 #16 誤述／無來源模擬敘述）與三項小瑕疵已逐條回覆，見下方「退回修正紀錄（Sonnet，2026-08-31）」；Opus 原始驗證紀錄保留不動（見下方「🧾 Opus 驗證紀錄」）。
 - **前置**：T-35 ✅（程式定稿後才能量；量測期間 `src/` 一行不許改）；
   **需使用者參與**（ground truth 逐面確認，約 13 張 × 6 面）
 - **📄 執行交接**：[HANDOFF_T36.md](HANDOFF_T36.md)——五個階段的流程與要貼的
@@ -4867,12 +4868,18 @@ T-34 與 T-35 都動 `pipeline.py`／`cli.py`，依序做避免衝突；T-36 是
     裡多標一個 `"proxy": true`，`t36_clip_accuracy.py` 據此把準確率拆成
     proxy／非 proxy 兩組報告（非 proxy 51.7% vs proxy 6.2%），避免這 16 面的
     「必然誤判」污染整體正確率的解讀。
-  - **意外發現，未在既有地雷清單／裁決 T-33-A 提及**：`TunnelToHell.jpg`
+  - **本卡實測再現了地雷 #16，並非新發現**：`TunnelToHell.jpg`
     （2592×1296，長寬比剛好 2.0）被 `preprocess.py` 的 `is_equirect()`
     純長寬比判定誤判成 360° 環景，實際上是 `SOURCES.md` 記載的一般透視照
-    （iPhone 4 拍攝）。這解釋了使用者逐面確認階段看到的部分裁切圖完全死黑／
-    抽象色塊。**已寫入 REPORT.md「意外發現」與問題清單第 3 項，本卡未修改
-    `is_equirect()`**（量測期間 `src/` 一行不許改），留給 Fable 決定是否獨立開卡。
+    （iPhone 4 拍攝）——這就是 [HANDOFF.md](HANDOFF.md) 第 412 行**地雷 #16**，
+    2026-08-30 T-17 驗收就記錄過（佐證完全相同：EXIF `ImageLength=1936`＋
+    Photoshop CS5、SOURCES.md／INFO.md 標「一般透視（iPhone 4）」），**不是本卡
+    的新發現**（初版交接筆記與 REPORT 誤述為新問題，已於退回修正輪更正，
+    見下方「退回修正紀錄」）。這解釋了使用者逐面確認階段看到的部分裁切圖完全
+    死黑／抽象色塊。**已寫入 REPORT.md「本卡實測再現了地雷 #16」與問題清單
+    第 3 項，本卡未修改 `is_equirect()`**（量測期間 `src/` 一行不許改），留給
+    Fable 決定是否獨立開卡；地雷 #16 已記載比 EXIF/XMP 更強的修法（極點列
+    均勻度檢查）。
   - **`t36_clip_accuracy.py` 的資料來源與交叉驗證機制**：逐面判定明細用
     `preprocess.preprocess_image()` ＋ `surfaces.surfaces_from_preprocess()`
     唯讀重跑（含 CLIP top3 原始候選，供 fallback／out_of_domain 的門檻敏感度分析
@@ -4896,3 +4903,206 @@ T-34 與 T-35 都動 `pipeline.py`／`cli.py`，依序做避免衝突；T-36 是
     程式化的守門檢查（見上一條）取代了傳統的「對舊碼會 fail」新增測試。
   - **下一步**：請 Opus 驗證本卡；通過後開 Fable 視窗做 gate 規則就地定案
     （依裁決 T-33-A 裁決 C 終止條款，[HANDOFF_T36.md](HANDOFF_T36.md) §4.4 有現成 Prompt）。
+
+
+- **🧾 Opus 驗證紀錄（2026-08-31）：🟠 退回，三項必修（量測基礎照收，不必重做）**
+
+  **驗證者自己實跑的證據（不採信貼上來的輸出）**
+
+  - ✅ **量測可重現**：`python scripts/t36_clip_accuracy.py` 重跑，`REPORT.md`／
+    `tables.md` 與 commit 版本**逐位元相同**（`git diff` 空）。
+  - ✅ **快取不是捏造的**：刪掉 `RacquetballCourt4`／`bathroom_tiled`／
+    `car_interior_suv` 三張的 `detail.json` 強制重跑真模型（39 秒），
+    重算出來的 `detail.json` 與原快取**逐位元相同**，報告也沒變。
+  - ✅ **守門檢查真的會擋**：把 `SteinmanHall` 快取的 `surfaces["north"]` 竄改成
+    `marble`，腳本**印出 🔴 卡關並 exit 1**，沒有靜默通過。
+  - ✅ **每個數字獨立重算**：驗證者不 import `t36_analysis`，只用 `detail.json`＋
+    ground truth 自己重寫一份統計——總面 78／排除 2／分母 76／正確 32（42.1%）、
+    非 proxy 31/60（51.7%）、proxy 1/16（6.2%）、按來源 clip 11/21・fallback 15/32・
+    out_of_domain 5/13・無來源 1/10、錯誤型態 10／3／29／2／11／10、
+    天花板模擬 3 張 high・1 張 low・8 張透視全部到不了 high——**與 REPORT 完全一致**。
+  - ✅ **紅旗逐條清查**：ground truth 78 面 `confirmed_by` 全 `"user"`、13 張 ×6 面
+    無缺漏、material_id 全部落在 12 候選內或 `unknown`；2 面 `unknown` 確實排除在
+    分母外且有回報；天花板模擬是唯讀 `surfaces_mod.compute_materials_confidence(sim)`，
+    沒有重寫、沒有改簽章；`git diff 229fd4b HEAD -- src/` 為空，
+    SPEC／ROADMAP／WORKFLOW／`output/mvp_acceptance/`／`output/material_round/` 皆為空。
+  - ✅ **共同鐵則 1**：十套測試驗證者自己重跑，**EXIT 全部 = 0**。
+  - ✅ **共同鐵則 2**：T-20/T-21 四條 MD5 自己 `md5` 比對相符
+    （`text_bathroom`／`text_church`／`coupled_neighbor_voices`／`coupled_stadium_corridor`），
+    T-14 兩條由 `test_ir_synth.py` 通過即代表相符。
+  - ✅ **共同鐵則 3／4／6**：`ir_metrics.py` 零改動、禁改清單零改動、
+    `compute_materials_confidence()`／`run_photo()` 零改動。
+  - ✅ **共同鐵則 5「不適用」的說法成立**：本卡沒動 `src/`，沒有行為可測；
+    程式化守門（上面第三點實測）確實補上了診斷力。
+  - ✅ **錯誤處理**：ground truth 檔不存在時印中文 🔴 卡關訊息並回傳非 0，不噴 traceback。
+  - ✅ **地雷 #24 的結論結構上成立**（驗證者自己讀 `surfaces_from_preprocess()` 確認）：
+    透視照只要判到牆就必然掛上「看不到背後的牆」warning，規則 3 條件恆假；
+    就算牆沒被觀測到，四面牆也拿不到 `clip` 來源 → 兩條路都到不了 `high`。
+    模擬無條件補上那條 warning 是保守且正確的作法。
+
+  **🔴 必修 1：REPORT ① 缺「按角色」正確率**
+
+  任務卡與 [HANDOFF_T36.md](HANDOFF_T36.md) §6.4 都寫明「①準確度基準率
+  （總體／**按來源**／**按角色**）」。目前 tables.md 表 1–3 是總體／按來源／**按照片**，
+  按角色那一組完全沒有，而按照片是卡片沒要求的（多出來不扣分，缺的要補）。
+  驗證者實算：**floor 4/13（30.8%）、ceiling 4/11（36.4%）、wall 24/52（46.2%）**。
+  這組數字有決策價值——地板是最差的角色，且表 5 的 in-set 誤判有 3 筆是
+  「地板被判成 `acoustic_panel`／`curtain_fabric`」，等於直接告訴治療卡
+  「提示詞要先修地板」。請由程式產生（地雷 #15，不准手打）。
+
+  **🔴 必修 2：「意外發現」不是新發現，是既有地雷 #16**
+
+  REPORT.md 寫「這是**本卡在量測過程中意外發現的新問題**，不在裁決 T-33-A 或既有
+  地雷清單中」——事實是 [HANDOFF.md](HANDOFF.md) 第 412 行**地雷 #16（🔴）**
+  在 2026-08-30 T-17 驗收就記錄過，佐證完全相同（2592×1296＝2.000、EXIF
+  `ImageLength=1936`＋Photoshop CS5、SOURCES.md／INFO.md 標「一般透視（iPhone 4）」），
+  而且已經給了**更強的修法**：長寬比之外加「極點列均勻度」檢查（equirect 的第一／
+  最後一列依定義完全均勻，透視照不會）。REPORT 建議的 EXIF/XMP 全景標記反而比較弱
+  （EchoThief 這張已被 Photoshop 重存，中繼資料未必留著）。
+  這條錯誤說法同時出現在 REPORT.md「意外發現」與⑤問題清單第 3 項、TASKS 交接筆記、
+  DEV_LOG.md、以及 commit 訊息，**四處都要更正**。
+  ⚠️ 這是本卡唯一觸到「誠實回報」紅線的地方：報告是要拿去做**不可展延的 gate 定案**
+  的證據，把既有記錄說成新發現會讓 Fable 誤判問題的新舊與優先序。
+  改法：把該節改寫成「**本卡實測再現了地雷 #16**」，保留 T-36 真正新增的價值——
+  也就是「這個 bug 一旦修好，永遠到不了 `high` 的透視照會從 8 張變成 9 張」
+  這個天花板模擬才看得到的推論（這一段是好的，請留著）。
+
+  **🟠 必修 3：③ 對「無來源」第四態的敘述與程式行為不符**
+
+  REPORT ③ 最後一點寫「『無來源』第四態（地雷 #23）在全對情境下依然會讓該面沒有
+  `source`」，交接筆記也寫「無來源面在模擬中刻意不設定 source，不是隨便給個 clip
+  來源灌水」。實際讀 `scripts/t36_analysis.py` 的 `build_ceiling_simulation()`：
+  跳過的條件是 **`gt_val == "unknown"`**（ground truth 判不出來），不是「該面無來源」。
+  驗證者逐面比對的結果：
+
+  | | 面數 |
+  |---|---|
+  | 實際無來源 | 11 |
+  | 其中在模擬裡被賦予 `source="clip"` | **10** |
+  | 模擬裡被拿掉 source、但實際有 clip 來源的面 | 1（`arena_ntsu_linkou` ceiling） |
+
+  也就是說③其實**沒有量到**卡片要求的「地雷 #23 在全對情境下的行為」，量到的是
+  「連無來源面都補上正確判定」的樂觀上界。
+  **好消息：不用重跑數字。** 驗證者把模擬改成真正保留無來源語意
+  （只有原本 `sources` 有條目的面才給 `clip`）重算，13 張的模擬值**一張都沒變**
+  （3 張 high／1 張 low／8 張 medium 完全相同），因為三張達 high 的照片本來就沒有
+  無來源面。所以請二選一：(a) 把敘述改成「模擬採樂觀上界，無來源面一併視為判對且
+  有來源；實測此假設不影響 13 張結果（附驗證）」，或 (b) 把程式改成按 `sources`
+  判並附兩種模型的對照表。**建議 (a)＋在 tables.md 表 7 加一欄「該張是否含無來源面」**，
+  這樣 Fable 定案地雷 #23 時看得到真正的依據。
+
+  **🟡 小瑕疵（順手修，不單獨構成退回）**
+
+  1. `output/clip_accuracy/REPORT.md` 有兩個簡體字：「留給 Fable **权衡**」、
+     「依然**会**讓該面沒有 source」（在 `scripts/t36_analysis.py` 的樣板字串裡）。
+  2. `data/material_ground_truth.json` 的 `car_interior_suv` floor 備註寫
+     「AI 判定 curtain_fabric（clip，**信心 0.760**）」——0.760 是 `surfaces.py`
+     2026-08-18 舊註解的數字，本卡自己的 `detail.json` 量到的是 **0.5421**
+     （牆那面現在也不是 acoustic_panel 0.489 而是 `out_of_domain`）。
+     ground truth 檔裡引用會過期的數字，改成引用本卡實測值或直接刪掉。
+  3. `scripts/t36_clip_accuracy.py` 的 `THRESHOLD` 常數宣告後沒用到；
+     表 6 的門檻掃描是硬寫 `(0.20…0.40)`，建議把 0.40 那格改成引用
+     `config.CLIP_CONFIDENCE_THRESHOLD`，免得日後門檻改了表格還停在舊值。
+
+  **📌 非退回事項，但請一起交給 Fable 讀（會影響 gate 定案的解讀）**
+
+  「總體正確率 42.1%」**不等於「CLIP 準確度 42.1%」**。32 個答對的面裡，
+  只有 **11 面**是 `source="clip"` 的真判定；其餘 21 面是 fallback／out_of_domain／
+  無來源 時系統輸出的預設值 `gypsum_board` **剛好等於** ground truth。
+  而且這 21 面裡有相當比例的 ground truth 是使用者「對照裁切圖未提出異議、沿用 AI
+  判定」而來（`SteinmanHall` 4 面、`site_photo_department_store` 4 面、
+  `RacquetballCourt4` 2 面等），存在**同意偏誤**：AI 沒判到 → 落到預設值 →
+  使用者沿用 → 統計上算 AI「答對」。
+  表 2 已經把來源拆開，資料是誠實的，但 REPORT 內文沒有點出這層循環性。
+  真正該拿去定案的分子分母是 **clip 面 11/21（52.4%）**，其餘三組更像是
+  「fallback 預設值命中率」。建議在①補一句話講清楚，Fable 才不會拿 42.1% 當
+  CLIP 的準確度去推規則。
+
+  **結論**：量測基礎設施（唯讀重跑、凍結快取交叉驗證、程式產表、ground truth 人眼
+  關卡）做得紮實，13 張的數字驗證者全部獨立重算相符，**不需要重做量測、不需要重問
+  使用者**。退回只針對報告本身的完整性（必修 1）與兩處與事實／程式行為不符的敘述
+  （必修 2、3）。修完重跑腳本＋十套測試即可再送驗。
+
+
+- **退回修正紀錄（Sonnet，2026-08-31）**——逐條回覆 Opus 三項必修與三項小瑕疵，
+  未重做量測、未重問使用者、`src/` 全程零改動：
+
+  **必修 1（按角色正確率）已補**：`build_accuracy_tables()`
+  （[scripts/t36_analysis.py](scripts/t36_analysis.py)）新增 `per_role` 統計
+  （floor／ceiling／wall，四面牆合併），並在函式內用 `assert` 對帳角色三組相加
+  必須等於總體面數／正確數／排除數（程式化守門，不是人工核對）。tables.md 新增
+  表 3「按角色分組的正確率」，原表 3（按照片）以下依序改成表 4～表 8。實跑結果：
+  **floor 4/13（30.8%）、ceiling 4/11（36.4%）、wall 24/52（46.2%）**，與 Opus
+  驗證者實算完全一致。REPORT ①末句已改成同時指向表 2／表 3／表 4，並在①補了一段
+  角色分組結論（地板最差，對應表 6 的地板 in-set 誤判）。
+  `grep -n "表 [0-9]" output/clip_accuracy/REPORT.md output/clip_accuracy/tables.md`
+  逐條核對過，REPORT 內文的表 2/3/4/6/7/8 引用全部指向重編號後的正確表格
+  （详見下方「自我檢查」）。
+
+  **必修 2（地雷 #16 誤述）已更正四處**：
+  1. `scripts/t36_analysis.py` 的 `write_report()`：「意外發現」節標題改為
+     「本卡實測再現了地雷 #16」，內文明講這是 [HANDOFF.md](HANDOFF.md) 第 412 行
+     2026-08-30 T-17 驗收就記錄過的既有缺陷（佐證完全相同：2592×1296＝2.000、
+     EXIF `ImageLength=1936`＋Photoshop CS5、SOURCES.md／INFO.md 標「一般透視
+     （iPhone 4）」），保留了 T-36 真正新增的價值（這個 bug 修好後永遠到不了 high
+     的透視照會從 8 張變成 9 張），修法改成以地雷 #16 記載的「極點列均勻度檢查」
+     為主、EXIF/XMP 為輔。⑤問題清單第 3 項改成「地雷 #16 已記錄，建議獨立開卡
+     修正」。
+  2. 本 TASKS.md 的 T-36 交接筆記（上方「意外發現」條目）已改寫為
+     「本卡實測再現了地雷 #16，並非新發現」，並註明初版誤述已於本輪更正。
+  3. [DEV_LOG.md](DEV_LOG.md) 已新增一筆記錄本次更正（見該檔今日條目）。
+  4. commit 5b67a79（已 push）的訊息把地雷 #16 說成意外發現——**不 rewrite
+     history**，本次改用新 commit 往前更正（見本輪 commit 訊息）。
+
+  **必修 3（無來源第四態敘述與行為不符）已修正，採 Opus 建議的完整版（同時附兩種
+  模型對照表，非僅改敘述）**：`build_ceiling_simulation()` 改成同時算兩個模型，
+  兩者都唯讀呼叫 `compute_materials_confidence()`，規則零改動——
+  **模型 A（樂觀上界，即原本的做法）**：ground truth 非 `unknown` 就給
+  `source="clip"`；**模型 B（保留無來源語意）**：只有原本 `payload["sources"]`
+  有條目的面才給 `source="clip"`，實際無來源的面維持沒有 source。tables.md
+  表 8（重編號後）新增兩欄「該張是否含無來源面」與「模擬（模型 B）
+  materials_confidence」。實跑結果：**13 張裡模型 A／B 的模擬值完全相同（0 張不同，
+  3 張 high／1 張 low／9 張 medium）**——因為達到 high 的 3 張本來就沒有無來源面，
+  跟 Opus 驗證者的獨立重算結論一致（兩模型 13 張結果一致）。REPORT ③已改寫成
+  兩模型對照的結論，不再宣稱「無來源面在模擬中刻意不設定 source」這個與
+  `gt_val == "unknown"` 判斷邏輯不符的說法。
+
+  **三項小瑕疵已修**：
+  1. `scripts/t36_analysis.py` 樣板字串裡的簡體字「权衡」「依然会」已改成
+     「權衡」「依然會」（後者所在整句已依必修 3 重寫，簡體字隨之消失）；
+     `grep -n "权衡\|依然会" scripts/t36_analysis.py scripts/t36_clip_accuracy.py
+     output/clip_accuracy/REPORT.md output/clip_accuracy/tables.md` 確認無殘留。
+  2. `data/material_ground_truth.json` 的 `car_interior_suv` floor 備註「信心
+     0.760」已改成本卡實測值「信心 0.5421」並指向
+     `output/clip_accuracy/runs/car_interior_suv/detail.json` 來源；
+     `material_id`（`carpet`）**未動**。
+  3. `scripts/t36_clip_accuracy.py` 的 `THRESHOLD = surfaces_mod.config.
+     CLIP_CONFIDENCE_THRESHOLD` 現在有實際用途——傳給
+     `build_threshold_sensitivity()`，表 7（重編號後）門檻掃描的最後一格從硬寫
+     `0.40` 改成引用這個常數，門檻未來若改，表格會自動跟著變。
+
+  **自我檢查（全部實跑，不採信轉述）**：
+  1. `python scripts/t36_clip_accuracy.py` exit 0，REPORT/tables 已重新產生。
+  2. 表 1 的 32/76 沒變、表 2 四組來源數字沒變（clip 22/1/11、fallback 32/0/15、
+     out_of_domain 13/0/5、無來源 11/1/1）——`git diff` 前後手動比對本輪只新增/
+     重排表格與文字，未改動任何既有數字。
+  3. 對帳：角色三組相加＝32/76（程式內 `assert` 已強制，不只是人工核對）；
+     模型 B 十三張結果與模型 A 相同（`model_ab_diff_count == 0`，已印在 REPORT ③）。
+  4. `grep -n "表 [0-9]" output/clip_accuracy/REPORT.md output/clip_accuracy/tables.md`
+     逐條核對，引用全部正確（詳見上方必修 1 說明）。
+  5. `grep -n "新發現\|不在既有地雷\|意外發現的新問題"
+     output/clip_accuracy/REPORT.md TASKS.md DEV_LOG.md`——TASKS.md／DEV_LOG.md
+     殘留的命中皆為**其他任務**（T-17／T-1x 系列）既有的無關文字，非本卡誤述；
+     T-36 本卡相關段落（REPORT.md、本卡交接筆記、本卡退回修正紀錄）已全數更正，
+     僅剩「Opus 驗證紀錄」原文（依規定保留不改）與本紀錄自身複述退回理由時的
+     引號文字，不構成殘留錯誤說法。
+  6. 共同鐵則：十套測試（`scripts/test_*.py` 全部 13 支）exit 0；T-20/T-21
+     `find output -name "*.wav" | xargs md5` 與 `git status --short` 對照，
+     沒有任何 `.wav` 出現在變更清單裡，MD5 全部與 commit 版本相符；
+     `git diff --stat -- src/` 與
+     `git diff --stat -- SPEC.md ROADMAP.md WORKFLOW.md output/mvp_acceptance/
+     output/material_round/` 均為空。第 5 項「新測試對舊碼會 fail」本輪仍不適用
+     （量測/診斷卡，沒有新增行為測試，程式化守門檢查取代之，同前一輪）。
+
+  **下一步**：請 Opus 複驗本輪三項必修的修正是否確實回應了退回理由；通過後開
+  Fable 視窗依裁決 T-33-A 裁決 C 終止條款做 gate 規則就地定案。

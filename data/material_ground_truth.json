@@ -163,7 +163,7 @@
         "material_id": "carpet",
         "confirmed_by": "user",
         "date": "2026-08-31",
-        "note": "AI 判定 curtain_fabric（clip，信心 0.760）——這正是 surfaces.py 程式碼註解記載的 2026-08-18 經典誤判案例。畫面實際是黑色車內地毯地墊，使用者確認材質應為 carpet"
+        "note": "AI 判定 curtain_fabric（clip，信心 0.5421，見 T-36 本卡 output/clip_accuracy/runs/car_interior_suv/detail.json 實測）——這正是 surfaces.py 程式碼註解記載的 2026-08-18 經典誤判案例。畫面實際是黑色車內地毯地墊，使用者確認材質應為 carpet"
       },
       "ceiling": {
         "material_id": "curtain_fabric",

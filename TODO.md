@@ -141,12 +141,14 @@
       `--no-furnishings` 的 `ir_mono.wav` MD5 逐位元相同＝沒有偷套用；【D】對舊碼
       實測 fail。附一則交 T-36 帶走的提醒：`t33_material_round_tables.py` 的套用組
       要改成顯式 `--furnishings`）→
-      **T-36 🔵 待驗證**（Sonnet 自檢 2026-08-31；13 張×六面使用者逐面確認完成，
-      `data/material_ground_truth.json` 78 面，47 面（60%）人工覆寫 AI 原判定、
-      2 面標 unknown；`scripts/t36_clip_accuracy.py` 唯讀量測，總體正確率
-      32/76（42.1%）；意外發現 `TunnelToHell.jpg` 因長寬比巧合 2.0 被
-      `is_equirect()` 誤判成環景；十套測試 exit 0、六條 IR MD5 全相符、`src/`
-      零改動。全文見 `output/clip_accuracy/REPORT.md`）→ **下一步：Opus 驗證，
+      **T-36 🔵 待驗證**（Opus 驗證 2026-08-31 三項必修退回，Sonnet 已修正並自檢；
+      13 張×六面使用者逐面確認完成，`data/material_ground_truth.json` 78 面，
+      47 面（60%）人工覆寫 AI 原判定、2 面標 unknown；`scripts/t36_clip_accuracy.py`
+      唯讀量測，總體正確率 32/76（42.1%，按角色 floor 30.8%／ceiling 36.4%／
+      wall 46.2%）；本卡實測再現地雷 #16——`TunnelToHell.jpg` 因長寬比巧合 2.0 被
+      `is_equirect()` 誤判成環景（非新發現，2026-08-30 T-17 驗收已記錄）；
+      十套測試 exit 0、六條 IR MD5 全相符、`src/` 零改動。全文見
+      `output/clip_accuracy/REPORT.md`）→ **下一步：Opus 複驗退回修正，
       通過後回 Fable 做 gate 規則就地定案**。
       共同紅線：gate 判定規則零改動、六條交付 IR MD5 不變、陳設資料不得餵進信心軸。
 - [ ] **🔮 Fable 複評裁決 T-33-A ✅ 已裁決（2026-08-31，全文在 TASKS.md T-33 卡尾）

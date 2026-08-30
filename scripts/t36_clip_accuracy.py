@@ -204,7 +204,7 @@ def main() -> int:
 
     accuracy = build_accuracy_tables(GATE_ITEMS, all_data, gt_photos)
     error_types = build_error_type_tables(GATE_ITEMS, all_data, gt_photos, OOD_PREFIX)
-    sensitivity = build_threshold_sensitivity(GATE_ITEMS, all_data, gt_photos, OOD_PREFIX)
+    sensitivity = build_threshold_sensitivity(GATE_ITEMS, all_data, gt_photos, OOD_PREFIX, THRESHOLD)
     simulation = build_ceiling_simulation(GATE_ITEMS, all_data, gt_photos, surfaces_mod, EXPECTED_GATE)
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)

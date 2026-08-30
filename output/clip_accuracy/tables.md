@@ -20,7 +20,16 @@
 | 無來源 | 11 | 1 | 1/10（10.0%） |
 
 
-## 表 3：按照片分組的正確率
+## 表 3：按角色分組的正確率
+
+| 角色 | 面數 | 排除數 | 正確率 |
+|---|---|---|---|
+| floor | 13 | 0 | 4/13（30.8%） |
+| ceiling | 13 | 2 | 4/11（36.4%） |
+| wall | 52 | 0 | 24/52（46.2%） |
+
+
+## 表 4：按照片分組的正確率
 
 | 照片 | 面數 | 排除數 | 正確率 |
 |---|---|---|---|
@@ -39,7 +48,7 @@
 | TunnelToHell | 6 | 0 | 1/6（16.7%） |
 
 
-## 表 4：錯誤型態份額
+## 表 5：錯誤型態份額
 
 | 錯誤型態 | 面數 |
 |---|---|
@@ -51,7 +60,7 @@
 | 無法判斷（無來源或缺 top3 明細） | 10 |
 
 
-## 表 5：地雷 #18 型 in-set 誤判明細
+## 表 6：地雷 #18 型 in-set 誤判明細
 
 | 照片 | 面 | AI 判定 | ground truth |
 |---|---|---|---|
@@ -67,7 +76,7 @@
 | TunnelToHell | east | gypsum_board | concrete |
 
 
-## 表 6：fallback 門檻（0.4）敏感度分析
+## 表 7：fallback 門檻（0.4）敏感度分析
 
 | 候選門檻 | 會被放行到 clip 的面數 | 放行後答對 | 放行後答錯 |
 |---|---|---|---|
@@ -116,20 +125,20 @@
 | TunnelToHell | west | gypsum_board | 0.273 | concrete | ✗ |
 
 
-## 表 7：判定全對天花板模擬
+## 表 8：判定全對天花板模擬（模型 A／模型 B 對照）
 
-| 照片 | 型態 | 實際 materials_confidence | 模擬（全對）materials_confidence | 模擬結果六面同材質 | 模擬後達到 high | 備註 |
-|---|---|---|---|---|---|---|
-| bathroom_tiled | perspective | low | medium | 否 | 否 |  |
-| bedroom_ai_generated | perspective | low | medium | 否 | 否 |  |
-| stairwell_tiled | perspective | low | medium | 否 | 否 |  |
-| arena_ntsu_linkou | perspective | low | medium | 否 | 否 |  |
-| car_interior_suv | perspective | low | medium | 否 | 否 | 🔺 舊架構限制未反映 |
-| CathedralRoom | equirect | low | low | 是 | 否 |  |
-| DivorceBeach | equirect | medium | medium | 否 | 否 |  |
-| site_photo_department_store | perspective | low | medium | 否 | 否 |  |
-| site_photo_gym | perspective | low | medium | 否 | 否 |  |
-| site_photo_restaurant | perspective | low | medium | 否 | 否 |  |
-| RacquetballCourt4 | equirect | low | high | 否 | 是 |  |
-| SteinmanHall | equirect | low | high | 否 | 是 |  |
-| TunnelToHell | equirect | low | high | 否 | 是 |  |
+| 照片 | 型態 | 實際 materials_confidence | 模擬（模型 A：樂觀上界）materials_confidence | 該張是否含無來源面 | 模擬（模型 B：保留無來源語意）materials_confidence | 模擬結果六面同材質 | 模擬後達到 high | 備註 |
+|---|---|---|---|---|---|---|---|---|
+| bathroom_tiled | perspective | low | medium | 是 | medium | 否 | 否 |  |
+| bedroom_ai_generated | perspective | low | medium | 是 | medium | 否 | 否 |  |
+| stairwell_tiled | perspective | low | medium | 否 | medium | 否 | 否 |  |
+| arena_ntsu_linkou | perspective | low | medium | 是 | medium | 否 | 否 |  |
+| car_interior_suv | perspective | low | medium | 是 | medium | 否 | 否 | 🔺 舊架構限制未反映 |
+| CathedralRoom | equirect | low | low | 否 | low | 是 | 否 |  |
+| DivorceBeach | equirect | medium | medium | 是 | medium | 否 | 否 |  |
+| site_photo_department_store | perspective | low | medium | 否 | medium | 否 | 否 |  |
+| site_photo_gym | perspective | low | medium | 是 | medium | 否 | 否 |  |
+| site_photo_restaurant | perspective | low | medium | 是 | medium | 否 | 否 |  |
+| RacquetballCourt4 | equirect | low | high | 否 | high | 否 | 是 |  |
+| SteinmanHall | equirect | low | high | 否 | high | 否 | 是 |  |
+| TunnelToHell | equirect | low | high | 否 | high | 否 | 是 |  |
