@@ -1,5 +1,30 @@
 # Dev Log
 
+## 2026-08-31 (71)
+
+- **T-35 陳設等效吸音改預設觀測模式：✅ Opus 驗證通過**。所有指令由驗證者在乾淨
+  工作區自己重跑，未採信自檢轉述。共同鐵則 1–6 全過：十套測試 EXIT=0；六條交付
+  IR MD5 重生比對全部逐位元相同；`ir_metrics.py`／`acoustics.py`／`surfaces.py`／
+  `furnishings.py`／SPEC／ROADMAP／WORKFLOW／`output/` 既有交付 diff 全空；
+  `pipeline.py` 的改動全部落在 T-26 gate 判定之後。
+- **最關鍵的一項（紅旗「預設路徑偷套用」）不成立**：`bedroom_ai_generated.png`
+  三態實跑——預設與 `--no-furnishings` 的 `ir_mono.wav` MD5 逐位元相同
+  （`989b9f354df926fea376ff94c2099526`，比卡片只要求 RT60 相同更嚴格），
+  `--furnishings` 為 `0cdeb64c2761c92a82a2d54ae3dfad7c`；兩組 RT60 分別等於
+  T-33 的 `--no-furnishings` 組與預設組。`bathroom_tiled.png` 三態 MD5 全同
+  （防濫殺對照）。
+- 其餘紅旗全不成立：`applied` 由【D】的參數捕捉樁證明非造假；未套用時陳設三條
+  訊息全走 notes（預設組 warnings 與 `--no-furnishings` 組逐項相同）；
+  `--no-furnishings` 語義未變。診斷力驗證者自己用 `git worktree add --detach
+  HEAD~1` 開舊碼重跑新測試 → EXIT=1（(i) 三項斷言失敗、(ii) `TypeError`）。
+- 交接筆記主動揭露的「`_NOTE_MARKERS` 沒補條目」偏離，驗證者追資料流確認理由
+  成立（那三條字串在 split 之後才 append，不經 marker 判斷），屬誠實揭露差異。
+- **附一則非退回事項交 T-36 帶走**：`scripts/t33_material_round_tables.py` 的
+  「套用組」靠舊預設，本卡之後會跑成觀測模式並在讀 `A_by_band` 時 `KeyError`；
+  T-33 已結案不影響本卡驗收，T-36 若沿用該腳本樣式，套用組須顯式加 `--furnishings`。
+- 下一步：開 Sonnet 視窗執行 T-36（CLIP 材質判定準確度診斷，**需使用者參與**
+  ground truth 逐面確認）。
+
 ## 2026-08-31 (70)
 
 - **T-35 陳設等效吸音改預設觀測模式：🔵 待驗證**（裁決 T-33-A 裁決 A 執行卡；

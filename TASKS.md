@@ -4635,7 +4635,7 @@ T-34 與 T-35 都動 `pipeline.py`／`cli.py`，依序做避免衝突；T-36 是
    scene_cues 那段也不許動。
 
 ### T-35 陳設等效吸音改預設觀測模式（裁決 T-33-A 裁決 A 執行卡）
-- **狀態**：🔵 待驗證（Sonnet 已完成，2026-08-31）
+- **狀態**：✅ 通過（Opus 驗證，2026-08-31）
 - **前置**：T-34（同動 `pipeline.py`／`cli.py`，避免衝突）
 - **背景（一句）**：T-33 實測陳設套用對 §7-2 式達標率淨效果為負（自動組 22%→10%、
   手動組 20%→12%，Steinman Hall 4/5→1/5），失效模式見 REPORT §4.2；裁決 T-33-A
@@ -4719,6 +4719,81 @@ T-34 與 T-35 都動 `pipeline.py`／`cli.py`，依序做避免衝突；T-36 是
     `output/stadium_corridor` 全部已刪除，非交付產物。
   - **下一步**：請 Opus 驗證本卡；通過後開 T-36（CLIP 材質判定準確度診斷，
     需使用者參與 ground truth 逐面確認）。
+- **Opus 驗證紀錄（2026-08-31）**：所有指令由驗證者在乾淨工作區（`git status --porcelain`
+  為空、`git worktree list` 只有主樹）自己重跑，未採信自檢貼上來的輸出。
+  - ✅ **共同鐵則 1（十套測試）全部 EXIT=0**：`test_ir_synth`／`test_output_gate`／
+    `test_confidence_axes`／`test_material_fallback`／`test_surface_trusted_scope`／
+    `test_t30_low_combined`／`test_scene_text`／`test_coupled`／`test_acoustics`／
+    `test_furnishings`（末者含新增的【D】四小項，全部 ✅）。
+  - ✅ **共同鐵則 2（六條交付 IR MD5）驗證者自己重生比對，全部逐位元相同**：T-14 兩條由
+    `test_ir_synth.py`【6】內建比對（`f3a763bed13cf4d6f49dbacddee6313f` small_surf_carpet、
+    `f24353b5dbecf0f6073ca65a7be44ad3` hall）；T-20 兩條重跑 `gen_ir_from_text.py
+    "浴室"／"大教堂"` 得 `2adbaa75eb698772a8c9aa693179ec47`／
+    `2dd19b6e6d351d713887636fe45cd67e`；T-21 兩條重跑 `gen_ir_coupled.py
+    neighbor_voices.json／stadium_corridor.json` 得 `9a94ffdf5d8295aee7889729c39c9cd8`／
+    `a1c21bcc3fd9aa3480df203a89c8cd05`。驗證用的 `chk_*_opus35.*` 與
+    `listen_chk_*_opus35.wav` 已刪除，`output/` 無殘留。
+  - ✅ **共同鐵則 3／4**：`git diff HEAD~1 HEAD -- src/image_reverb/ir_metrics.py
+    acoustics.py surfaces.py furnishings.py SPEC.md ROADMAP.md WORKFLOW.md output/`
+    輸出 0 行——`ir_metrics.py` 一行未動，`acoustics.py`／`surfaces.py`／
+    `furnishings.py` 零改動（交接筆記所述屬實），SPEC／ROADMAP／WORKFLOW／
+    `output/` 底下既有交付全未動。本次 commit 只碰 `cli.py`／`pipeline.py`／
+    `test_furnishings.py` ＋四份文件。
+  - ✅ **共同鐵則 5（診斷力，驗證者自己實測）**：用 `git worktree add --detach HEAD~1`
+    開舊碼工作樹、只把新版 `scripts/test_furnishings.py` 覆蓋進去實跑 → EXIT=1，
+    (i) 三項斷言失敗（`compute_acoustics` 收到 `FurnishingEstimate(...)` 而非 `None`、
+    `applied` 鍵不存在、payload 含 `A_by_band`），(ii) 直接
+    `TypeError: run_photo() got an unexpected keyword argument 'furnishings'`。
+    【D】確實是對舊碼會 fail 的真測試，不是補覆蓋率的空測試。驗證用的 worktree 已移除。
+  - ✅ **共同鐵則 6（gate 零改動）**：`pipeline.py` 的 diff hunk 全部落在
+    `run_photo()` 簽章（+1 參數）與 gate 判定段**之後**（`compute_acoustics()` 呼叫點
+    起算）；`compute_materials_confidence()`／`surfaces.py`／scene_cues 段一行未動；
+    陳設資料未進任何信心軸（觀測模式的偵測結果只寫進 `analysis.json` 欄位）。
+  - ✅ **紅旗一（預設路徑偷套用）不成立**——這是本卡最關鍵的一項，驗證者實跑三態：
+    `bedroom_ai_generated.png --force-low-confidence --no-viz`
+    → 預設 `rt60=[1.016, 2.5562, 3.8388, 3.5526, 2.285, 1.6554]`＝
+    `--no-furnishings` **逐位元相同**，且兩者 `ir_mono.wav` MD5 也相同
+    （`989b9f354df926fea376ff94c2099526`，比卡片要求的「RT60 相同」更嚴格——
+    整條合成鏈都相同）；`--furnishings` `rt60=[0.6334, 0.6686, 0.5703, 0.4682,
+    0.4253, 0.408]`＝T-33 預設組，MD5 `0cdeb64c2761c92a82a2d54ae3dfad7c` 不同。
+    兩組數字與 T-33 記錄的 `--no-furnishings` 組／預設組完全吻合。
+  - ✅ **防濫殺對照**：`bathroom_tiled.png` 三態 `ir_mono.wav` MD5 全同
+    （`f667b41502c8cb9a87a8c7858a8f218f`）——該照片偵測不到陳設，三態無差異，
+    符合預期。
+  - ✅ **紅旗二（`applied` 造假）不成立**：【D】的樁直接捕捉 `compute_acoustics()`
+    實收參數，(i) `furnishings=None`＋`applied=False`、(ii) 非 `None`＋`applied=True`
+    對得起來，`applied` 不是寫死的字面值。觀測模式 payload 實測不含 `A_by_band`／
+    `absorption_extra_m2_by_band`（符合地雷 #15 精神）；`ratio`／`total_ratio` 的
+    `round(...,5)` 與 `acoustics.py` 完全一致，兩態數字可直接互比（T-36 會用到）。
+  - ✅ **紅旗三（未套用時 cap 訊息進 warnings）不成立**：bedroom 預設組的
+    `warnings` 與 `--no-furnishings` 組逐項相同（4 條，全無陳設字樣），陳設相關
+    三條字串（偵測摘要、視角平均說明、cap 訊息）全部落在 `notes`。
+  - ✅ **紅旗四／五不成立**：`acoustics.py` diff 為空；`--no-furnishings` 語義未變
+    （仍是「連偵測都跳過」，`furnishings` 鍵為 `null`，聲學數字＝T-17/T-33 基準）。
+  - ✅ **第一層（能跑）**：預設模式 `ir_mono.wav` `check_audio.py` → 48000 Hz、
+    4.899 s、RMS 0.009018（遠高於 0.0001 靜音門檻）、峰值 0.708，非靜音；
+    連跑兩次 MD5 相同（決定性）。RT60 全數落在 0.1–12 s 合理區間。
+  - ✅ **錯誤處理**：`--furnishings --no-furnishings` 並用 → exit 2＋點名兩旗；
+    `--text "浴室" --furnishings` → exit 2＋「只能搭配照片輸入使用」；
+    `--furnishings` 配不存在的檔案 → exit 2＋「找不到檔案」，皆無 traceback。
+    `--help` 兩旗說明文字都已更新（預設是觀測模式、為什麼、指路 REPORT §4.2）。
+  - ✅ **偏離揭露誠實**：交接筆記主動記錄「`_NOTE_MARKERS` 沒有補條目」與理由。
+    驗證者實地追過資料流確認理由成立——觀測模式那三條字串是在
+    `_split_notes_and_warnings()` **之後**直接 append 進 `notes`，因為 `furn` 沒有
+    傳進 `compute_acoustics()`，`ac.warnings`／`mono_payload["warnings"]` 裡本來
+    就不會出現它們，沒有字串需要靠 marker 辨識。符合 WORKFLOW §5 的誠實要求
+    （照實揭露差異，不是改寫驗收條件）。
+  - 📌 **非退回事項，交 Fable 併入 T-36 規劃考量**：`scripts/t33_material_round_tables.py`
+    因本卡改了預設語義而**失效**——它第 226 行只在對照組加 `--no-furnishings`，
+    「套用組」靠的是舊預設；本卡之後那一組跑出來是觀測模式，第 331／340 行讀
+    `v["A_by_band"]`／`furn["proportion_of_absorption_1khz"]` 會 `KeyError`。
+    T-33 已結案、`output/material_round/` 凍結，所以**不影響本卡驗收**；但 T-36
+    若沿用這支腳本的樣式，要記得套用組必須顯式加 `--furnishings`。全庫掃過，
+    這是唯一一個讀 `analysis["furnishings"]` 的下游消費端（`visualize.py` 不讀）。
+  - 📌 **小提醒（不需修）**：觀測模式的 payload 沒有帶 `disclaimer` 欄位
+    （套用模式有）；`note` 欄位已涵蓋「未套用＋如何啟用＋為什麼」，符合卡片
+    步驟 3 的字面要求，僅記錄差異供 T-36 讀 JSON 時知悉。
+
 
 ### T-36 CLIP 材質判定準確度診斷（裁決 T-33-A 裁決 B 執行卡 1/n；量測卡）
 - **狀態**：⬜ 未開始

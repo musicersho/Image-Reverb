@@ -130,14 +130,17 @@
       `surfaces.py`〕零改動。診斷力：【E】對舊碼實測 fail〔死路重現〕、【F】是補
       覆蓋率〔對舊碼本來就過〕，驗證者另用突變測試證明 F 非空測試。十套測試全
       exit 0、六條交付 IR MD5 驗證者重生比對全相符）→
-      **T-35 🔵 待驗證**（Sonnet 完成 2026-08-31；陳設改預設觀測模式——`cli.py`
+      **T-35 ✅ 通過**（Opus 驗證 2026-08-31；陳設改預設觀測模式——`cli.py`
       新增 `--furnishings` 旗標＋互斥檢查，`pipeline.run_photo()` 三態接線，
       預設與 `--no-furnishings` 對 `compute_acoustics()` 都傳 `furnishings=None`
       逐位元等價，`--furnishings` 才套用；`analysis.json` 的 `furnishings` 鍵
       三態對應三種 dict。改動全在 gate 判定之後，`acoustics.py`／`surfaces.py`／
       `furnishings.py` 零改動。新增測試【D】四小項，對舊碼實測 fail。十套測試
-      exit 0、六條 IR MD5 全相符，bedroom/bathroom 實跑數字與 T-33 記錄相符）→
-      下一步請 Opus 驗證 T-35。
+      exit 0、六條 IR MD5 全相符，bedroom/bathroom 實跑數字與 T-33 記錄相符。
+      Opus 驗證：十套測試＋六條 MD5＋三態實跑全部驗證者自己重跑；預設與
+      `--no-furnishings` 的 `ir_mono.wav` MD5 逐位元相同＝沒有偷套用；【D】對舊碼
+      實測 fail。附一則交 T-36 帶走的提醒：`t33_material_round_tables.py` 的套用組
+      要改成顯式 `--furnishings`）→ **下一步 T-36（需使用者參與標註）**。
       共同紅線：gate 判定規則零改動、六條交付 IR MD5 不變、陳設資料不得餵進信心軸。
 - [ ] **🔮 Fable 複評裁決 T-33-A ✅ 已裁決（2026-08-31，全文在 TASKS.md T-33 卡尾）
       → 開 Phase 1.8 輪（陳設觀測化與 CLIP 準確度診斷，卡片在 TASKS.md 檔尾）**：

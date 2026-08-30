@@ -1,10 +1,10 @@
 # 交接文件 — 給下一個視窗
 
-> 最後更新：2026-08-31（Sonnet 視窗：**T-35 已完成，待 Opus 驗證**——陳設改
-> 預設觀測模式，裁決 T-33-A 裁決 A 執行卡；下一步請 Opus 驗證本卡）
+> 最後更新：2026-08-31（Opus 視窗：**T-35 ✅ 驗證通過**——陳設改預設觀測模式，
+> 裁決 T-33-A 裁決 A 執行卡；下一步開 Sonnet 視窗執行 T-36，需使用者參與標註）
 > **新視窗請先讀 [CLAUDE.md](CLAUDE.md) 知道自己的角色，再讀本檔知道現在的狀況。**
 >
-> 驗證本檔是否過期：看 [DEV_LOG.md](DEV_LOG.md) 最上面一筆是不是 `2026-08-31 (68)`；
+> 驗證本檔是否過期：看 [DEV_LOG.md](DEV_LOG.md) 最上面一筆是不是 `2026-08-31 (71)`；
 > 若已有更新的紀錄，以 DEV_LOG 為準。
 
 ---
@@ -24,7 +24,8 @@ Phase 1.6 修正輪（T-23~T-26）✅ 四張全過（2026-08-30）。**
 **gate 規則不動、修出口（T-30）、材質準確度先行**（全文見 TASKS.md T-28 卡尾）。
 文字（`--text`）與複合場景（`--scene`）兩條管線不受 gate 影響，端到端可用。
 
-🎯 **現在該做的：T-35 已由 Sonnet 完成（2026-08-31，🔵 待驗證）→ 開 Opus 視窗驗證**。
+🎯 **現在該做的：T-35 已由 Opus 驗證通過（2026-08-31，✅）→ 開 Sonnet 視窗執行 T-36**
+（CLIP 材質判定準確度診斷；**需使用者參與** ground truth 逐面確認，約 13 張 × 6 面）。
 Phase 1.7 三張執行卡（T-31／T-32／T-33）已全部 ✅ 通過；T-33 量出陳設機制
 淨效果為負（自動組 22%→10%、手動組 20%→12%，Steinman Hall 4/5→1/5），
 Fable 已於 2026-08-31 作出**裁決 T-33-A**（全文在 TASKS.md T-33 卡尾）並開
@@ -156,8 +157,8 @@ T-21 ✅（四輪迭代）｜T-17 §7-4 ✅ 已執行（無鐵筒子 artifact；
 | T-33 | 材質輪基準率複測（量測卡） | ✅ **通過**（Opus 驗證 2026-08-31；量測結論：陳設機制淨效果為負）｜文件修正已補（2026-08-31） |
 | — | 🔮 裁決 T-33-A（T-33 複評＋Phase 1.8 規劃） | ✅ **已裁決**（Fable 2026-08-31：陳設改觀測模式、開 CLIP 診斷輪、gate 依據改寫；全文 TASKS.md T-33 卡尾） |
 | T-34 | gate 訊息補洞（規則 2 死路＋測試覆蓋） | ✅ **通過**（Opus 驗證 2026-08-31；gate 判定條件零改動，只補訊息與測試；附兩則文件修正建議） |
-| T-35 | 陳設改預設觀測模式（裁決 T-33-A 裁決 A） | 🔵 **待驗證**（Sonnet 已完成，2026-08-31；**下一步請 Opus 驗證**） |
-| T-36 | CLIP 材質判定準確度診斷（量測卡，需使用者標註） | ⬜ 未開始（T-35 驗證通過後；交回時 gate 規則就地定案） |
+| T-35 | 陳設改預設觀測模式（裁決 T-33-A 裁決 A） | ✅ **通過**（Opus 驗證，2026-08-31） |
+| T-36 | CLIP 材質判定準確度診斷（量測卡，需使用者標註） | ⬜ **未開始（下一張，需使用者參與標註）**；交回時 gate 規則就地定案 |
 | T-29 | 三管線 analysis.json schema 一致性 | ⬜ 未裁決（不進 Phase 1.8） |
 
 逐卡的詳細交接筆記在 [TASKS.md](TASKS.md) 每張卡的「交接筆記」欄，本檔不重複。
@@ -564,7 +565,7 @@ python scripts/convolve.py assets/dry/clap_synth.wav output/ir_room_small_carpet
   附兩則文件修正建議（TODO 措辭已就地修正；共同鐵則 5 措辭請 Fable 後續調整）。
   詳見 TASKS.md T-34 卡「Opus 驗證紀錄」。
 
-【已完成 — T-35 🔵 待驗證】（Sonnet 執行，2026-08-31）
+【已完成 — T-35 ✅ 通過】（Sonnet 執行、Opus 驗證，2026-08-31）
   陳設改預設觀測模式（裁決 T-33-A 裁決 A 執行卡）：`cli.py` 新增 `--furnishings`
   旗標（與 `--no-furnishings` 互斥）；`pipeline.run_photo()` 改三態——預設偵測
   照跑但不套用（`compute_acoustics(..., furnishings=None)`，與 `--no-furnishings`
@@ -576,12 +577,19 @@ python scripts/convolve.py assets/dry/clap_synth.wav output/ir_room_small_carpet
   T-20/T-21 手動重生比對）；新測試【D】對 `git stash` 出的舊碼實測 fail；
   bedroom_ai_generated 三態實跑核對 T-33 記錄的兩組 RT60 數字逐位元相同；
   bathroom_tiled 三態防濫殺對照聲學全同。詳見 TASKS.md T-35 卡「交接筆記」。
+  Opus 驗證通過（2026-08-31，全部指令驗證者自己重跑）：十套測試 EXIT=0、六條
+  交付 IR MD5 重生比對全相符、`acoustics.py`／`surfaces.py`／`furnishings.py`／
+  `ir_metrics.py` 零 diff、gate 段零改動；**最關鍵的一項**——bedroom 預設模式與
+  `--no-furnishings` 的 `ir_mono.wav` MD5 逐位元相同（`989b9f35…`，比卡片要求的
+  RT60 相同更嚴格），`--furnishings` 為 `0cdeb64c…`＝T-33 預設組；bathroom_tiled
+  三態 MD5 全同；未套用時陳設訊息全走 notes 不走 warnings；【D】對舊碼實測 fail
+  （驗證者用 `git worktree` 開舊碼重現）。詳見 TASKS.md T-35 卡「Opus 驗證紀錄」。
+  ⚠️ 驗證者附一則**交 T-36 帶走的提醒**：`scripts/t33_material_round_tables.py`
+  的「套用組」靠舊預設，本卡之後那一組會跑成觀測模式並在讀 `A_by_band` 時
+  `KeyError`；T-33 已結案不影響驗收，但 T-36 若沿用該腳本樣式，套用組要顯式加
+  `--furnishings`。
 
-【現在該做的 — 開 Opus 視窗驗證 T-35】
-  貼 WORKFLOW §2.2 的驗證 Prompt（模型選 Opus），驗證重點見 TASKS.md T-35 卡
-  「Opus 驗證重點」。
-
-【T-35 通過後 — 開 Sonnet 視窗執行 T-36（CLIP 準確度診斷，量測卡）】（模型選 Sonnet）
+【現在該做的 — 開 Sonnet 視窗執行 T-36（CLIP 準確度診斷，量測卡）】（模型選 Sonnet）
   需要使用者參與：Sonnet 先產出 13 張×六面的標註輔助材料，**使用者逐面確認**
   材質 ground truth 後才能量測。量測期間 src/ 一行不許改。
 
