@@ -55,6 +55,10 @@
       （且計分用全圖比例，補個 if 就啟用會引入新錯誤）、pipeline 無輸出 gate、
       fallback 四處說法不一致、我自己的 `t17_blind_test.py` 可接受舊產物（**已修並實測**）。
       → HANDOFF 地雷 #19–#22、REPORT §2.6
+- [ ] **Phase 1.6 修正輪（T-23→T-24→T-25→T-26 依序，Opus 2026-08-30 規劃）**：
+      **T-23 🔵 待驗證（2026-08-30）**——fallback 材質單一事實來源，`materials.json`
+      的 `fallback_id` 改成 `gypsum_board`（現行實際行為）、`config.py` 改成動態讀取、
+      新增 `test_material_fallback.py`。T-24/T-25/T-26 未開始。
 - [ ] **← 現在該做的（Fable）**：§7-1＋§7-2 皆未達標，要不要加修正輪。
       ⚠️ **範圍要先定清楚：只打材質不足以修好 §7-1 的 sample_1（幾何量程）與
       sample_2（域外輸入）**——這是本報告首版概括過頭、現已更正的地方。

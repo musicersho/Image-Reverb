@@ -164,8 +164,9 @@ def classify_region_material(
 ) -> tuple[str, float, list[tuple[str, float]], str]:
     """對一個表面區域跑 CLIP zero-shot，回傳 (材質 id, 信心, top3, 方法)。
 
-    信心 gating：top-1 機率低於 threshold → fallback `generic_wall`，
-    呼叫端要把警示寫進輸出 JSON（不能安靜地當成量到的結果）。
+    信心 gating：top-1 機率低於 threshold → fallback `config.DEFAULT_WALL_MATERIAL`
+    （現行值 `gypsum_board`，單一事實來源是 data/materials.json 的 fallback_id，
+    見 T-23），呼叫端要把警示寫進輸出 JSON（不能安靜地當成量到的結果）。
     """
     import torch
 

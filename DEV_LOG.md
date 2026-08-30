@@ -1,5 +1,24 @@
 # Dev Log
 
+## 2026-08-30 (46)
+
+- 🔵 **T-23 完成（Phase 1.6 四張卡第一張）：fallback 材質單一事實來源**
+  （REPORT §2.6 缺陷 F／地雷 #21）。`data/materials.json` 的 `fallback_id` 由
+  `"generic_wall"` 改成 `"gypsum_board"`（Opus 裁決：這是現行實際行為，改文件不改值）；
+  `config.py` 的 `DEFAULT_WALL_MATERIAL` 改成**從 materials.json 動態讀取**，不再是
+  寫死字面值；`config.py:103`、`surfaces.py` docstring 的 `generic_wall` 說法一併改成
+  `gypsum_board`。**只改文件與讀取方式，`classify_region_material()` 三個 return 出口
+  的邏輯完全沒動。**
+- 新增 `scripts/test_material_fallback.py`：斷言 config 常數與 JSON 值一致、id 存在於
+  材質表、現行值確實是 `gypsum_board`。**診斷力已實測**：暫時把 fallback_id 改回
+  `generic_wall`，新測試 exit 1（❌ fallback_id == 'gypsum_board'：實際值
+  'generic_wall'），確認不是空測試，跑完用 `git checkout` 還原乾淨。
+- **鐵則全過**：五套既有測試 exit 0；六條交付 IR 的 MD5 全部不變（浴室/大教堂/
+  neighbor_voices/stadium_corridor）；`ir_metrics.py` 的 `git diff` 為 0 行；
+  未動 SPEC/ROADMAP/WORKFLOW/output/mvp_acceptance。
+- 下一步：Opus 驗證 T-23 → 通過後接 T-24（ADE 可信材質分支計分修正，鐵則要求
+  T-23→T-24→T-25→T-26 依序做，避免 `surfaces.py`/`pipeline.py` 併行衝突）。
+
 ## 2026-08-30 (45)
 
 - **收到外部 bug 診斷，Opus 逐條查證後確認五條全部屬實**（未採信轉述，讀碼＋執行期重現）：

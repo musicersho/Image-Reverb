@@ -2495,7 +2495,7 @@
    自我檢查要附上「在舊碼上跑會 fail」的實測輸出
 
 ### T-23 fallback 材質的單一事實來源（REPORT §2.6 缺陷 F）
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證
 - **前置**：無（最安全的一張，先做）
 - **問題**：fallback 材質四處說法不一致——`data/materials.json:10` 說 `generic_wall`、
   `src/image_reverb/config.py:95` 實際是 `gypsum_board`、`config.py:103` 註解說
@@ -2519,6 +2519,67 @@
   `generic_wall`，確認新測試會 fail（exit 1），再改回來**——證明測試有診斷力
 - **Opus 驗證重點**：紅旗：偷偷把行為改成 `generic_wall`（六條 MD5 會變，一驗就知道）；
   紅旗：新測試在舊的不一致狀態下也能過（＝空測試）
+- **交接筆記（Sonnet 執行，2026-08-30）**：
+  - 改了 3 個檔＋新增 1 個檔：
+    1. `data/materials.json`：`"fallback_id"` 由 `"generic_wall"` 改成 `"gypsum_board"`
+       （單一行改動，其餘格式不動）。
+    2. `src/image_reverb/config.py`：新增 `import json`＋私有函式
+       `_load_fallback_wall_material(path)`，直接讀 `MATERIALS_PATH` 取
+       `data["fallback_id"]`；`DEFAULT_WALL_MATERIAL` 改成呼叫它（不再是字面值
+       `"gypsum_board"`）。**沒有** import `materials.py` 的 `load_materials()`——
+       那樣會造成循環 import（`materials.py` 本身就 `from . import config`），
+       所以在 config.py 內另寫一個不依賴 materials.py 的最小讀取邏輯，讀不到/
+       格式不對就直接拋錯，不做靜默 fallback。另外把 `:103` 附近那行提到
+       `generic_wall` 的註解改成講 `gypsum_board`。
+    3. `src/image_reverb/surfaces.py`：`classify_region_material()` 的 docstring
+       （原 `:167` 附近）把「fallback \`generic_wall\`」改成「fallback
+       \`config.DEFAULT_WALL_MATERIAL\`（現行值 \`gypsum_board\`，單一事實來源是
+       materials.json 的 fallback_id）」。沒有動任何函式邏輯／回傳值。
+    4. 新增 `scripts/test_material_fallback.py`：3 項斷言——
+       ①`config.DEFAULT_WALL_MATERIAL == json 原始讀出的 fallback_id`
+       （測試自己直接 `json.load`，不透過 config，避免跟被測程式共用同一條讀取路徑
+       而失去診斷力）；②該 id 存在於 `materials.json` 的 materials 清單；
+       ③現行值確實是 `gypsum_board`（對應 REPORT §2.6 缺陷 F 的裁決，不是舊誤植的
+       `generic_wall`）。
+  - **診斷力實測（鐵則 5）**：把 `materials.json` 的 `fallback_id` 暫時改回
+    `generic_wall`（僅改這一行 JSON 值，`config.py`/`surfaces.py` 邏輯完全不動），
+    重跑 `python scripts/test_material_fallback.py`：
+    ```
+    【3】現行實際行為值（REPORT §2.6 缺陷 F 的裁決）
+      ❌ fallback_id == 'gypsum_board'（不是曾誤寫的 'generic_wall'）：實際值 'generic_wall'
+    ❌ 1 項失敗：fallback_id == 'gypsum_board'（不是曾誤寫的 'generic_wall'）
+    EXIT=1
+    ```
+    確認新測試在「改回舊的不一致狀態」下會 fail，不是空測試。跑完立刻用
+    `git checkout -- data/materials.json` 還原、再重新套用 `fallback_id` 的單行改動
+    （第一次直接用 `json.dump` 改會把整份檔案重新格式化、多出換行差異，已用
+    `git checkout` 清乾淨改回單行 Edit，`git diff data/materials.json` 現在只有
+    這一行的改動——**這是唯一一個踩到的坑**）。
+  - **共同鐵則 1（五套測試）全部 exit 0**：`test_material_fallback.py`（新，3 項）、
+    `test_ir_synth.py`（23 項）、`test_scene_text.py`、`test_coupled.py`、
+    `test_acoustics.py`、`test_t30_low_combined.py`，逐一實跑確認。
+  - **共同鐵則 2（六條 MD5）全部不變**（浴室/大教堂/neighbor_voices/
+    stadium_corridor，跑完立刻刪掉 `output/ir_synth/chk_*` 暫存檔；
+    coupled_* 兩個檔案在 `output/` 底下，`output/**` 已在 `.gitignore`，
+    不會進版控）：
+    - `chk_bath.wav` = `2adbaa75eb698772a8c9aa693179ec47` ✅
+    - `chk_church.wav` = `2dd19b6e6d351d713887636fe45cd67e` ✅
+    - `coupled_neighbor_voices.wav` = `9a94ffdf5d8295aee7889729c39c9cd8` ✅
+    - `coupled_stadium_corridor.wav` = `a1c21bcc3fd9aa3480df203a89c8cd05` ✅
+    - T-14 兩條由 `test_ir_synth.py`【6】硬編碼比對，隨鐵則 1 一起過。
+  - **共同鐵則 3**：`git diff -- src/image_reverb/ir_metrics.py` 輸出 0 行（未動）。
+  - **共同鐵則 4**：`git status --porcelain` 只有 `data/materials.json`、
+    `src/image_reverb/config.py`、`src/image_reverb/surfaces.py`、新檔
+    `scripts/test_material_fallback.py`，未動 SPEC.md/ROADMAP.md/WORKFLOW.md/
+    `output/mvp_acceptance/`。
+  - **`materials.py:91` 的 docstring**（「未指定的面預設 `DEFAULT_WALL_MATERIAL`
+    （石膏板類牆面）」）本來就沒說 `generic_wall`，卡片沒點名要改，維持原樣。
+  - **範圍確認**：沒有動 `classify_region_material()` 三個 `return` 出口的邏輯
+    ／回傳值，只改了它們用到的常數是怎麼算出來的（現在從 JSON 讀，不是字面值）；
+    行為完全沒變，六條 MD5 全部驗證過相同即為證據。
+  - 下一步：Opus 驗證本卡 → 通過後 T-24 依鐵則 0 前置要求接續執行
+    （T-24 卡片提到「本卡計分改成角色 mask 內比例」，跟本卡的常數讀取方式互不相關，
+    不會有檔案內容衝突，只有前置順序上的相依）。
 
 ### T-24 ADE 可信材質分支：修好計分錯誤、清掉死碼與誤導性註解（REPORT §2.6 缺陷 D）
 - **狀態**：⬜ 未開始

@@ -7,7 +7,7 @@
     "medium": "數值隨安裝方式/厚度變化明顯，此處取典型構造的代表值",
     "low": "數值高度依實際情況而定（種類、含水量、密度、座椅型式），僅供起始估計"
   },
-  "fallback_id": "generic_wall",
+  "fallback_id": "gypsum_board",
   "materials": [
     {
       "id": "concrete",

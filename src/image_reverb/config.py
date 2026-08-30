@@ -4,6 +4,7 @@
 不要把數字散落在 preprocess.py 裡。
 """
 
+import json
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -91,8 +92,23 @@ GEOMETRY_OUTPUT_DIR = PROJECT_ROOT / "output" / "geometry"
 # ------------------------------------------------------------
 MATERIALS_PATH = PROJECT_ROOT / "data" / "materials.json"
 
-# 未指定的面用這個材質，**不是**複製地板材質（真實房間的牆不會跟地板同材質）
-DEFAULT_WALL_MATERIAL = "gypsum_board"
+
+def _load_fallback_wall_material(path: Path) -> str:
+    """從 materials.json 讀 `fallback_id`（T-23：單一事實來源，不要在別處寫死字面值）。
+
+    這裡不重複 materials.py `load_materials()` 的完整錯誤訊息設計（避免循環 import：
+    materials.py 要 `from . import config`），只在讀不到/格式不對時如實拋錯，
+    不做靜默 fallback——設定檔本身壞掉不該被吞掉。
+    """
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return data["fallback_id"]
+
+
+# 未指定的面用這個材質，**不是**複製地板材質（真實房間的牆不會跟地板同材質）。
+# 單一事實來源是 data/materials.json 的 "fallback_id"（T-23）；現行值是
+# gypsum_board——這是實際行為，不是舊文件曾誤寫的 generic_wall。
+DEFAULT_WALL_MATERIAL = _load_fallback_wall_material(MATERIALS_PATH)
 
 # 二階材質分類：ADE20K 只給幾何角色，材質標籤交給 CLIP zero-shot
 # （T-06 實證：滿鋪地毯只有 29.6% 被判成 rug、70.4% 判成 floor，
@@ -100,7 +116,7 @@ DEFAULT_WALL_MATERIAL = "gypsum_board"
 SEGMENTATION_MODEL_ID = "nvidia/segformer-b4-finetuned-ade-512-512"
 CLIP_MODEL_ID = "openai/clip-vit-base-patch32"
 
-# 信心 gating：top-1 機率低於此值就 fallback generic_wall 並記 warnings
+# 信心 gating：top-1 機率低於此值就 fallback gypsum_board（DEFAULT_WALL_MATERIAL）並記 warnings
 CLIP_CONFIDENCE_THRESHOLD = 0.4
 
 # 表面區域太小就不送去分類（像素佔比），避免拿一小撮雜點決定整面牆的材質
