@@ -4494,7 +4494,7 @@
     卡片在 Phase 1.8 節（本檔尾）。
 
 ### T-34 gate 訊息補洞：規則 2 死路出口＋兩處測試覆蓋（Opus T-30 後續建議執行卡）
-- **狀態**：🔵 待驗證（2026-08-31，Sonnet 執行完成）
+- **狀態**：✅ 通過（Opus 驗證，2026-08-31）
 - **前置**：T-32 ✅（同動 `pipeline.py`，避免衝突所以排在後；與 T-33 無依賴）
 - **🔮 裁決 T-33-A 確認（2026-08-31）**：裁決 C 規則不調 → 本卡範圍與訊息文案
   **零調整**，照原卡逐字執行。執行順序改為：T-33 文件修正 → **T-34** → T-35 → T-36
@@ -4543,6 +4543,65 @@
     `concrete` → exit 3、stderr 出現規則 2 導引與六面 `--override-material` 骨架、
     未建立輸出目錄，與卡片描述逐字相符。
   - 下一步：T-35（陳設改預設觀測模式）。
+- **Opus 驗證紀錄（2026-08-31）**：所有指令由驗證者在乾淨工作區（`git status --porcelain`
+  為空）自己重跑，未採信自檢貼上來的輸出。
+  - ✅ **共同鐵則 1（十套測試）全部 EXIT=0**：`test_ir_synth`／`test_output_gate`／
+    `test_confidence_axes`／`test_material_fallback`／`test_surface_trusted_scope`／
+    `test_t30_low_combined`／`test_scene_text`／`test_coupled`／`test_acoustics`／
+    `test_furnishings`。
+  - ✅ **共同鐵則 2（六條交付 IR MD5）驗證者自己重生比對，全部相符**：T-14 兩條由
+    `test_ir_synth.py`【6】內建比對（exit 0 已含）；T-20 兩條重跑
+    `gen_ir_from_text.py "浴室"／"大教堂" -o chk_a/chk_b --no-listen` 得
+    `2adbaa75eb698772a8c9aa693179ec47`／`2dd19b6e6d351d713887636fe45cd67e`；
+    T-21 兩條重跑 `gen_ir_coupled.py neighbor_voices.json／stadium_corridor.json
+    --no-listen` 得 `9a94ffdf5d8295aee7889729c39c9cd8`／
+    `a1c21bcc3fd9aa3480df203a89c8cd05`。`chk_*` 比對後已刪除。
+  - ✅ **共同鐵則 3／4**：`git diff 93877b5 4687f39 -- src/image_reverb/ir_metrics.py`
+    為 0 行；`SPEC.md`／`ROADMAP.md`／`WORKFLOW.md`／`output/mvp_acceptance/`／
+    `output/material_round/` 皆未列入本次變更（`--name-only` 無輸出）。本次
+    commit 只動六個檔：`DEV_LOG.md`／`HANDOFF.md`／`TASKS.md`／`TODO.md`／
+    `scripts/test_output_gate.py`／`src/image_reverb/pipeline.py`。
+  - ✅ **共同鐵則 6（gate 判定規則零改動）＋兩面紅旗都不成立**：
+    `git diff -- src/image_reverb/surfaces.py` 為 0 行（規則 2 判斷邏輯**沒有**被
+    寫進 `surfaces.py`，紅旗二不成立）；`pipeline.py` 的 diff 是**純新增 21 行、
+    零刪除**，新增段落整段落在 `if overall_confidence == "low":` →
+    `if not force_low_confidence:` 這個**已經判定完**的區塊裡，只多印一段訊息，
+    `compute_materials_confidence()`／`_overall_confidence()`／scene_cues 段
+    一行未動（紅旗一不成立）。
+  - ✅ **共同鐵則 5（診斷力）驗證者用 `git worktree` 拉出 93877b5 舊碼、只換上新測試
+    檔自己實測**，非採信 Sonnet 貼的輸出：
+    - 【E】對舊碼 **確實 fail**，且 fail 的正是兩條關鍵斷言（「stderr 含規則 2 導引
+      文字」「stderr 含 --override-material 骨架」）。舊碼在此分支的 stderr 實測
+      只有 `1) 仍要照樣輸出 → 加 --force-low-confidence` 一條——**死路確認為真，
+      不是假陽性**。
+    - 【F】對舊碼**本來就會過**（geometry=low 分支舊碼就存在），與 Sonnet 交接筆記
+      的自陳一致，也與卡片執行步驟 3「補無覆蓋分支」的定義一致。驗證者另做
+      **突變測試**確認 F 不是空測試：把 `pipeline.py:285` 的
+      `if est.confidence == "low":` 改成 `if False:` → `test_output_gate.py`
+      EXIT=1 且**唯一**失敗項就是 F 的 `--override-dims` 斷言。F 具備真實的
+      回歸診斷力，只是診斷對象是未來而非過去。
+  - ✅ **真實輸入複現（自我檢查指定案例）驗證者自己跑**：
+    `python -m src.image_reverb assets/photos/bathroom_tiled.png
+    --override-material floor=concrete --override-material walls=concrete
+    --override-material ceiling=concrete` → **EXIT=3**，stderr 出現
+    `1) 六面材質被判成完全相同（退化規則）…` 與六面 `--override-material` 骨架、
+    `2) 仍要照樣輸出 → 加 --force-low-confidence`；跑完 `output/bathroom_tiled/`
+    **不存在**、`git status --short` 仍為空（gate 確實擋在寫檔之前）。
+  - ✅ **死路是否真的補完（驗證者額外推導）**：`_overall_confidence()` 取兩軸較低者，
+    故 `overall == low` ⟺ `geometry == low` 或 `materials == low`；
+    `materials == low` 只可能來自規則 1（有 fallback/out_of_domain 面 → 既有分支）
+    或規則 2（`is_uniform()` → 本卡新分支）。**三條路徑現在都有可行動出口**，
+    「只剩 --force-low-confidence」的分支已不存在。
+  - ⚠️ **文件修正（不影響通過，比照 T-31「先通過、文件修正另補」模式）**：
+    1. `TODO.md` 的 T-34 條目寫「新增測試對舊碼實測會 fail」，對【F】而言不成立
+       （F 對舊碼本來就過）。`DEV_LOG.md` 與本卡交接筆記都寫對了，只有 TODO
+       這句過度概括，請補成「【E】對舊碼 fail、【F】為補覆蓋率」。
+    2. 卡片「自我檢查」寫「診斷力（【E】【F】對改動前程式實測會 fail）」與同卡
+       執行步驟 3「【F】…補 T-30 驗證者點名的**無覆蓋分支**」自相矛盾——補覆蓋率的
+       測試在定義上不可能對舊碼 fail。這是**卡片文案的瑕疵、不是執行瑕疵**
+       （Sonnet 沒有改寫驗收條件，而是照實揭露差異，符合 WORKFLOW §5 的誠實要求）。
+       請 Fable 在後續卡片把共同鐵則 5 的措辭改成「修 bug 的測試必須對舊碼 fail；
+       純補覆蓋率的測試改用突變測試證明非空測試」。
 
 ## Phase 1.8 — 陳設觀測化與 CLIP 準確度診斷輪（Fable 規劃 2026-08-31；依裁決 T-33-A）
 

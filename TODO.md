@@ -123,12 +123,13 @@
       （原本最接近達標的場地）被拖成最差之一，根因是像素佔比×總表面積公式對
       「遠景大量重複小物件」系統性高估。gate 基準率不變是鐵則 6 設計上的必然
       結果，非本卡缺陷。全文見 `output/material_round/REPORT.md`）→
-      **T-34 🔵 待驗證**（2026-08-31，Sonnet 完成；gate 訊息補洞——規則 2〔六面全同
+      **T-34 ✅ 通過**（Opus 驗證 2026-08-31；gate 訊息補洞——規則 2〔六面全同
       退化規則〕觸發且無 fallback/out_of_domain 面時，補印專屬導引＋六面
       `--override-material` 骨架，先前只剩 `--force-low-confidence` 一條路；另補
       geometry=low 分支測試覆蓋。gate 判定條件〔`compute_materials_confidence()`／
-      `surfaces.py`〕零改動，新增測試對舊碼實測會 fail。十套測試全 exit 0。
-      待 Opus 驗證）→ 下一步 T-35。
+      `surfaces.py`〕零改動。診斷力：【E】對舊碼實測 fail〔死路重現〕、【F】是補
+      覆蓋率〔對舊碼本來就過〕，驗證者另用突變測試證明 F 非空測試。十套測試全
+      exit 0、六條交付 IR MD5 驗證者重生比對全相符）→ 下一步 T-35。
       共同紅線：gate 判定規則零改動、六條交付 IR MD5 不變、陳設資料不得餵進信心軸。
 - [ ] **🔮 Fable 複評裁決 T-33-A ✅ 已裁決（2026-08-31，全文在 TASKS.md T-33 卡尾）
       → 開 Phase 1.8 輪（陳設觀測化與 CLIP 準確度診斷，卡片在 TASKS.md 檔尾）**：

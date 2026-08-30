@@ -1,5 +1,24 @@
 # Dev Log
 
+## 2026-08-31 (69)
+
+- **T-34 Opus 驗證：✅ 通過**。所有指令由驗證者在乾淨工作區自己重跑：十套測試
+  EXIT 全部 = 0；六條交付 IR MD5 重生比對全部相符（T-20 `2adbaa75…`／`2dd19b6e…`、
+  T-21 `9a94ffdf…`／`a1c21bcc…`、T-14 兩條由 `test_ir_synth`【6】內建比對）；
+  `ir_metrics.py`／`surfaces.py`／SPEC／ROADMAP／WORKFLOW／`output/mvp_acceptance/`／
+  `output/material_round/` 全部零 diff；`pipeline.py` 是**純新增 21 行、零刪除**，
+  整段落在 gate 判定完成後的訊息區塊裡 → 兩面紅旗（動 gate 判定條件、規則 2 邏輯
+  寫進 `surfaces.py`）都不成立。診斷力用 `git worktree` 拉舊碼實測：【E】確實
+  fail（舊碼此分支 stderr 只剩 `--force-low-confidence`，死路為真）；【F】對舊碼
+  本來就過（補覆蓋率），驗證者改用**突變測試**（`if est.confidence == "low":`
+  改 `if False:`）證明 F 非空測試——唯一失敗項正是 F。真實輸入複現
+  `bathroom_tiled.png` 三面覆寫 concrete → EXIT=3、規則 2 導引出現、不留輸出目錄。
+  另推導確認死路已補完：`overall == low` ⟺ geometry low 或 materials low，而
+  materials low 只可能來自規則 1 或規則 2，三條路徑現在都有可行動出口。
+  附兩則文件修正：①TODO「新增測試對舊碼實測會 fail」過度概括（已就地改正）；
+  ②卡片自我檢查與執行步驟 3 自相矛盾（補覆蓋率的測試不可能對舊碼 fail），
+  請 Fable 後續把共同鐵則 5 的措辭分成「修 bug」與「補覆蓋率」兩類。下一步：T-35。
+
 ## 2026-08-31 (68)
 
 - **T-34 gate 訊息補洞：規則 2 死路出口＋兩處測試覆蓋**（Opus 驗證 T-30 時開出的
