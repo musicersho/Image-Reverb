@@ -285,7 +285,7 @@ def surfaces_from_preprocess(
     clip = _load_clip()
 
     surfaces = SurfaceMaterials()
-    detail: dict[str, Any] = {"mode": None, "views": {}, "warnings": []}
+    detail: dict[str, Any] = {"mode": None, "views": {}, "warnings": [], "class_ratios": {}}
 
     if preprocess_summary.get("is_equirect"):
         detail["mode"] = "equirect_6views"
@@ -296,6 +296,7 @@ def surfaces_from_preprocess(
             img = Image.open(view_meta["path"]).convert("RGB")
             res = analyse_image(img, seg, clip, threshold)
             detail["warnings"].extend(f"[{view_name}] {w}" for w in res["warnings"])
+            detail["class_ratios"][view_name] = res["class_ratios"]
 
             # 這個視角對應的面，優先採用同角色的觀測；沒有就退回牆面觀測
             role = "floor" if surface == "floor" else ("ceiling" if surface == "ceiling" else "wall")
@@ -318,6 +319,7 @@ def surfaces_from_preprocess(
         img = Image.open(preprocess_summary["cropped"]).convert("RGB")
         res = analyse_image(img, seg, clip, threshold)
         detail["warnings"].extend(res["warnings"])
+        detail["class_ratios"]["single"] = res["class_ratios"]
 
         for role, obs in res["observations"].items():
             if role == "wall":

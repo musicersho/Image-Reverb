@@ -1,9 +1,10 @@
 # 交接文件 — 給下一個視窗
 
-> 最後更新：2026-08-30（Fable 視窗：裁決 T-27-A＋開 Phase 1.7 材質修正輪 T-31~T-34）
+> 最後更新：2026-08-30（Sonnet 視窗：完成 T-31 陳設等效吸音資料表＋偵測模組，
+> 自檢通過待 Opus 驗證）
 > **新視窗請先讀 [CLAUDE.md](CLAUDE.md) 知道自己的角色，再讀本檔知道現在的狀況。**
 >
-> 驗證本檔是否過期：看 [DEV_LOG.md](DEV_LOG.md) 最上面一筆是不是 `2026-08-30 (58)`；
+> 驗證本檔是否過期：看 [DEV_LOG.md](DEV_LOG.md) 最上面一筆是不是 `2026-08-30 (59)`；
 > 若已有更新的紀錄，以 DEV_LOG 為準。
 
 ---
@@ -23,13 +24,18 @@ Phase 1.6 修正輪（T-23~T-26）✅ 四張全過（2026-08-30）。**
 **gate 規則不動、修出口（T-30）、材質準確度先行**（全文見 TASKS.md T-28 卡尾）。
 文字（`--text`）與複合場景（`--scene`）兩條管線不受 gate 影響，端到端可用。
 
-🎯 **現在該做的：Sonnet 執行 T-31（陳設等效吸音：資料表＋偵測模組）**——
-Phase 1.7 材質修正輪第一張：新增 `data/furnishings.json`（α 起始值裁決已指定，
-逐字轉錄）＋`furnishings.py` 偵測模組＋`test_furnishings.py`；`surfaces.py` 只加
-一處 `class_ratios` 轉存。**紅線：gate 判定規則一行不動、六條交付 IR MD5 不變、
-陳設資料不得餵進任何信心軸。** 卡片在 TASKS.md 檔尾 Phase 1.7 節。
-輪次：T-31 → T-32（聲學整合）→ T-33（13 張基準率複測）→ T-34（gate 訊息補洞），
-每張做完都過 Opus；T-33 通過後回 Fable 複評 gate 規則（裁決 T-28-A 裁決三）。
+🎯 **現在該做的：Opus 驗證 T-31（陳設等效吸音：資料表＋偵測模組）**——
+Sonnet 已完成並自檢通過：新增 `data/furnishings.json`（9 類別、α 逐字轉錄裁決
+指定值、`ade_id` 已用 `SegformerConfig.id2label` 實測核對全部相符）、
+`src/image_reverb/furnishings.py`（`load_furnishings()`／`estimate_furnishings()`）、
+`scripts/test_furnishings.py`（含對舊碼會 fail 的診斷力實測）；`surfaces.py`
+只加三行轉存 `class_ratios`。十套測試 exit 0、六條交付 IR MD5 零回歸、
+gate 判定規則零改動（端到端驗證過）。細節見 TASKS.md T-31 卡「交接筆記」。
+**紅線（給 Opus 覆核）：gate 判定規則一行不動、六條交付 IR MD5 不變、
+陳設資料不得餵進任何信心軸。**
+輪次：T-31（✅ 待驗證）→ T-32（聲學整合）→ T-33（13 張基準率複測）→
+T-34（gate 訊息補洞），每張做完都過 Opus；T-33 通過後回 Fable 複評 gate 規則
+（裁決 T-28-A 裁決三）。
 
 ⚠️ **排隊中**：T-29（三條管線 `analysis.json` schema 不一致：三軸信心只在照片管線，
 `--text` 只有 `confidence`、`--scene` 連 `confidence` 都沒有；未裁決）。
@@ -135,7 +141,7 @@ T-21 ✅（四輪迭代）｜T-17 §7-4 ✅ 已執行（無鐵筒子 artifact；
 | T-28 | gate 基準率（13/13 被擋的兩難） | 🔮 **已裁決 T-28-A**（Fable 2026-08-30：規則不動、修出口、準確度先行；含三處數據更正） |
 | T-30 | gate 出口導引（裁決 T-28-A 執行卡） | ✅ **通過**（Opus 驗證 2026-08-30；附兩則後續建議 → 已開 T-34） |
 | T-27 | 室內陳設吸音表示 | 🔮 **已裁決 T-27-A**（Fable 2026-08-30：逐頻段等效吸音面積，不採 occupancy；執行卡 T-31~T-33） |
-| T-31 | 陳設等效吸音：資料表＋偵測模組 | ⬜ **未開始 ← 現在做這張**（Sonnet） |
+| T-31 | 陳設等效吸音：資料表＋偵測模組 | 🔵 **待驗證 ← 現在做這張**（Sonnet 自檢通過 2026-08-30，等 Opus） |
 | T-32 | 等效吸音面積入聲學計算與照片管線 | ⬜ 未開始（T-31 後） |
 | T-33 | 材質輪基準率複測（量測卡） | ⬜ 未開始（T-32 後；通過後回 Fable 複評 gate 規則） |
 | T-34 | gate 訊息補洞（規則 2 死路＋測試覆蓋） | ⬜ 未開始（T-32 後，排最後避免 pipeline.py 衝突） |
@@ -514,8 +520,11 @@ python scripts/convolve.py assets/dry/clap_synth.wav output/ir_room_small_carpet
 【結束舊視窗】
   貼：「執行 WORKFLOW.md 第 4 節收工程序」
 
-【現在該做的 — 開 Sonnet 視窗執行 T-31】（模型選 Sonnet）
-  貼 WORKFLOW §2.1 標準 Prompt，任務編號 T-31。
+【現在該做的 — 開 Opus 視窗驗證 T-31】（模型選 Opus）
+  貼 WORKFLOW §2.2 驗證 Prompt，任務編號 T-31。
+
+【T-31 通過後 — 開 Sonnet 視窗執行 T-32】（模型選 Sonnet）
+  貼 WORKFLOW §2.1 標準 Prompt，任務編號 T-32。
 
 【每張卡完成後 — 開 Opus 視窗驗證】（模型選 Opus）
   貼 WORKFLOW §2.2 驗證 Prompt。輪次順序固定：T-31 → T-32 → T-33 → T-34。

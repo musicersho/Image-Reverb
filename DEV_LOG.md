@@ -1,5 +1,23 @@
 # Dev Log
 
+## 2026-08-30 (59)
+
+- ✅ **T-31 Sonnet 執行完成，自檢通過（待 Opus 驗證）**：陳設等效吸音資料表＋
+  偵測模組（裁決 T-27-A 執行卡 1/3）。新增 `data/furnishings.json`（9 類別，
+  α 逐字轉錄裁決指定值，`ade_id` 已用 `SegformerConfig` 的 `id2label` 實測核對
+  全部相符）、`src/image_reverb/furnishings.py`（`load_furnishings()` 載入時就擋
+  id 相交／頻段不一致／α 越界，`estimate_furnishings(detail)` 從
+  `class_ratios` 算逐類別比例＋cap 壓回）、`scripts/test_furnishings.py`
+  （【A】【B】【C】三段，含對舊碼會 fail 的診斷力實測）。`surfaces.py` 只加三行
+  轉存 `class_ratios` 進 `detail`（`git diff` 逐行核對過，無其他改動）；
+  `config.py` 加三個新常數。
+- 十套測試全 exit 0；六條交付 IR MD5（T-14×2／T-20×2／T-21×2）逐一重生比對
+  逐位元相同；`ir_metrics.py`／`pipeline.py`／SPEC／ROADMAP／WORKFLOW／
+  `output/mvp_acceptance/` 均未觸碰；gate 判定規則零改動（端到端跑
+  `bathroom_tiled.png --force-low-confidence` 行為與 T-30 時一致）。
+  細節見 TASKS.md T-31 卡「交接筆記」。
+- 下一步：Opus 驗證 T-31；通過後 Sonnet 接著做 T-32（等效吸音入聲學計算）。
+
 ## 2026-08-30 (58)
 
 - 🔮 **Fable 裁決 T-27-A（室內陳設吸音表示）**：採「逐頻段等效吸音面積」——

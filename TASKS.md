@@ -3847,7 +3847,7 @@
    它影響 geometry confidence，動了就等於動 gate。
 
 ### T-31 陳設等效吸音：資料表＋偵測模組（裁決 T-27-A 執行卡 1/3）
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-08-30）
 - **前置**：T-30 ✅、裁決 T-27-A（見 T-27 卡）
 - **目標**：把「照片裡有哪些陳設、佔多少像素」變成可供聲學計算使用的結構化資料。
   本卡**只做偵測與資料**，不動聲學計算、不動 pipeline 輸出（那是 T-32）。
@@ -3906,6 +3906,58 @@
   「規劃者代表值」的誠實標注是合格的，假出處不是）；紅旗：動了 `surfaces.py`
   轉存以外的任何邏輯（`git diff` 逐行看）；紅旗：【C】被 skip 或吞錯誤；
   紅旗：不相交檢查只在測試裡、載入時不擋。
+- **交接筆記（Sonnet，2026-08-30）**：
+  - 產出四項：`data/furnishings.json`（9 類別，α 逐字轉錄裁決 T-27-A 表格）、
+    `src/image_reverb/furnishings.py`（`load_furnishings()`／`estimate_furnishings()`／
+    `FurnishingEstimate`）、`scripts/test_furnishings.py`（【A】【B】【C】三段）、
+    `config.py` 新增三個常數（`FURNISHINGS_PATH`／`FURNISHING_MIN_CLASS_RATIO=0.005`／
+    `FURNISHING_TOTAL_RATIO_CAP=0.5`）。`surfaces.py` 只加三行（初始化
+    `detail["class_ratios"]={}` ＋equirect／perspective 各一行賦值），`git diff`
+    已核對逐行無其他改動。
+  - `ade_id` 全數以 `SegformerConfig.from_pretrained()` 讀 `id2label` 實測核對，
+    9 個 id 全部**完全相符**（無需修正 json，含 `bed`/`bed ` 的尾隨空白差異，
+    `in` 判斷已涵蓋）。
+  - `curtain`／`seat` 兩類 source 標「建築聲學教科書通用吸音係數表」（值取自
+    Egan/Vér & Beranek 一類材料表的經典數字），其餘 7 類 source 誠實標「規劃者
+    代表值……非查表逐字引用」，未假造精確出處。
+  - **自我檢查已跑且截圖式紀錄**：
+    - `test_furnishings.py` exit 0（【A】9 類別×6 頻段全過、【B】5 個情境
+      全過、【C】9 個 id2label 全過）
+    - 診斷力實測：把 json 內 `person` 的 `ade_id` 暫改成 3（floor），
+      重跑 `test_furnishings.py` → 不相交測試如預期 `❌`（`重疊清單 = [('person', 3)]`），
+      exit 1；改回後 `git diff data/furnishings.json` 為空，確認乾淨還原。
+      另外單獨呼叫 `load_furnishings()`（不透過測試）也在同一壞輸入上直接
+      `raise ValueError`，證實不相交檢查是在載入時擋，不是只靠測試斷言。
+    - 十套既有測試（`test_ir_synth`／`test_output_gate`／`test_confidence_axes`／
+      `test_material_fallback`／`test_surface_trusted_scope`／`test_t30_low_combined`／
+      `test_scene_text`／`test_coupled`／`test_acoustics`／`test_furnishings`）
+      全部 exit 0。
+    - 六條交付 IR MD5 逐一重生比對，**全部逐位元相同**：T-14 兩條由
+      `test_ir_synth.py`【6】內建核對（exit 0 已含）；T-20 兩條
+      `gen_ir_from_text.py "浴室"/"大教堂" -o chk_a/chk_b --no-listen` 得
+      `2adbaa75eb698772a8c9aa693179ec47`／`2dd19b6e6d351d713887636fe45cd67e`；
+      T-21 兩條 `gen_ir_coupled.py assets/scenes/neighbor_voices.json`／
+      `stadium_corridor.json --no-listen` 得
+      `9a94ffdf5d8295aee7889729c39c9cd8`／`a1c21bcc3fd9aa3480df203a89c8cd05`。
+    - `git diff --stat src/image_reverb/ir_metrics.py` 為空；`pipeline.py`／
+      `SPEC.md`／`ROADMAP.md`／`WORKFLOW.md`／`output/mvp_acceptance/` 皆未列入
+      本次變更（`git status --short` 只有 `config.py`／`surfaces.py` 被改、
+      三個新檔）。
+    - 端到端跑 `python -m src.image_reverb assets/photos/bathroom_tiled.png
+      --force-low-confidence`：gate 行為與訊息與 T-30 一致（geometry=medium,
+      materials=low, overall=low，強制輸出），`analysis.json` 內容未變（本卡
+      未接 `estimate_furnishings()` 進 `run_photo()`，那是 T-32 的事）；
+      確認 `surfaces_from_preprocess()` 回傳的 `detail` 內已有
+      `class_ratios["single"]`，可供 T-32 直接呼叫
+      `estimate_furnishings(detail)` 使用。
+  - **給 T-32 的交接重點**：`estimate_furnishings(detail)` 吃的是
+    `surfaces_from_preprocess()` 回傳的**第二個回傳值**（`detail`），不是
+    `save_detail()` 存到磁碟後重新讀回的 JSON——目前 `pipeline.py` 沒有把
+    `class_ratios` 寫進 `analysis.json`（本卡沒有理由去改 `pipeline.py`），
+    T-32 若要在報告裡呈現陳設資訊，要自己決定要不要另外輸出。
+    `FurnishingEstimate.categories` 的 key 是 `ade_name`（英文，如
+    `"curtain"`），不是 `name_zh`；`ratio` 已套用 cap（若觸發），`alpha` 已是
+    六頻段 `list[float]`，可以直接乘 `S_total` 換算 m²。
 
 ### T-32 等效吸音面積入聲學計算與照片管線（裁決 T-27-A 執行卡 2/3）
 - **狀態**：⬜ 未開始
