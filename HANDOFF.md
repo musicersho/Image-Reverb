@@ -1,10 +1,10 @@
 # 交接文件 — 給下一個視窗
 
-> 最後更新：2026-08-30（Sonnet 視窗：完成 T-31 陳設等效吸音資料表＋偵測模組，
-> 自檢通過待 Opus 驗證）
+> 最後更新：2026-08-30（Sonnet 視窗：完成 T-33 材質輪基準率複測，
+> 自檢通過待 Opus 驗證；主要發現——陳設機制淨效果為負，見 `output/material_round/REPORT.md`）
 > **新視窗請先讀 [CLAUDE.md](CLAUDE.md) 知道自己的角色，再讀本檔知道現在的狀況。**
 >
-> 驗證本檔是否過期：看 [DEV_LOG.md](DEV_LOG.md) 最上面一筆是不是 `2026-08-30 (59)`；
+> 驗證本檔是否過期：看 [DEV_LOG.md](DEV_LOG.md) 最上面一筆是不是 `2026-08-30 (63)`；
 > 若已有更新的紀錄，以 DEV_LOG 為準。
 
 ---
@@ -24,18 +24,29 @@ Phase 1.6 修正輪（T-23~T-26）✅ 四張全過（2026-08-30）。**
 **gate 規則不動、修出口（T-30）、材質準確度先行**（全文見 TASKS.md T-28 卡尾）。
 文字（`--text`）與複合場景（`--scene`）兩條管線不受 gate 影響，端到端可用。
 
-🎯 **現在該做的：Opus 驗證 T-31（陳設等效吸音：資料表＋偵測模組）**——
-Sonnet 已完成並自檢通過：新增 `data/furnishings.json`（9 類別、α 逐字轉錄裁決
-指定值、`ade_id` 已用 `SegformerConfig.id2label` 實測核對全部相符）、
-`src/image_reverb/furnishings.py`（`load_furnishings()`／`estimate_furnishings()`）、
-`scripts/test_furnishings.py`（含對舊碼會 fail 的診斷力實測）；`surfaces.py`
-只加三行轉存 `class_ratios`。十套測試 exit 0、六條交付 IR MD5 零回歸、
-gate 判定規則零改動（端到端驗證過）。細節見 TASKS.md T-31 卡「交接筆記」。
+🎯 **現在該做的：Opus 驗證 T-33（材質輪基準率複測，量測卡）**——
+Sonnet 已完成並自檢通過：新增 `scripts/t33_material_round_tables.py`（量測驅動程式，
+可重跑）、`output/material_round/REPORT.md`／`tables.md`（程式產生表格）、
+兩個試聽檔（臥室 with/without furnishings，等使用者試聽）。`src/` 零改動。
+13 張照片的三軸 confidence 與裁決 T-28-A 複驗基準**逐張完全相同**（含
+`--no-furnishings` 交叉檢查），gate 判定規則零改動已驗證。十套測試 exit 0、
+六條交付 IR MD5 零回歸。細節見 TASKS.md T-33 卡「交接筆記」。
+
+**⚠️ T-33 的主要發現（給 Opus 覆核，也是給 Fable 的下一步輸入）**：
+陳設等效吸音機制在本次 13 個對照場地×組別的達標率上**淨效果是負的**
+（自動組 22%→10%、手動組 20%→12%）——Steinman Hall（原本 8 場地最接近達標
+的案例）被拖成最差之一（4/5→1/5），根因是「像素佔比×總表面積」公式對「遠景
+大量重複小物件」（禮堂座椅）系統性高估，與臥室（近景少量大型物件，方向正確）
+情境相反。另外，gate 基準率 13/13 不變是鐵則 6 設計上的必然結果——
+materials_confidence 12/13 low 完全沒被本輪動到，裁決 T-28-A 裁決三「材質輪後
+基準率自然下降」的期待若指的是本輪，架構上就不會發生，需要修 CLIP 本身才行。
+全文見 `output/material_round/REPORT.md`。
+
 **紅線（給 Opus 覆核）：gate 判定規則一行不動、六條交付 IR MD5 不變、
 陳設資料不得餵進任何信心軸。**
-輪次：T-31（✅ 待驗證）→ T-32（聲學整合）→ T-33（13 張基準率複測）→
-T-34（gate 訊息補洞），每張做完都過 Opus；T-33 通過後回 Fable 複評 gate 規則
-（裁決 T-28-A 裁決三）。
+輪次：T-31（✅ 通過）→ T-32（✅ 通過）→ T-33（🔵 待驗證）→ T-34（gate 訊息補洞）。
+T-33 通過後回 Fable，帶著 REPORT 複評 gate 規則（裁決 T-28-A 裁決三）＋決定要不要
+開 CLIP 準確度輪＋決定陳設機制預設值要不要改（目前預設開啟但淨效果為負）。
 
 ⚠️ **排隊中**：T-29（三條管線 `analysis.json` schema 不一致：三軸信心只在照片管線，
 `--text` 只有 `confidence`、`--scene` 連 `confidence` 都沒有；未裁決）。
@@ -141,9 +152,9 @@ T-21 ✅（四輪迭代）｜T-17 §7-4 ✅ 已執行（無鐵筒子 artifact；
 | T-28 | gate 基準率（13/13 被擋的兩難） | 🔮 **已裁決 T-28-A**（Fable 2026-08-30：規則不動、修出口、準確度先行；含三處數據更正） |
 | T-30 | gate 出口導引（裁決 T-28-A 執行卡） | ✅ **通過**（Opus 驗證 2026-08-30；附兩則後續建議 → 已開 T-34） |
 | T-27 | 室內陳設吸音表示 | 🔮 **已裁決 T-27-A**（Fable 2026-08-30：逐頻段等效吸音面積，不採 occupancy；執行卡 T-31~T-33） |
-| T-31 | 陳設等效吸音：資料表＋偵測模組 | 🔵 **待驗證 ← 現在做這張**（Sonnet 自檢通過 2026-08-30，等 Opus） |
-| T-32 | 等效吸音面積入聲學計算與照片管線 | ⬜ 未開始（T-31 後） |
-| T-33 | 材質輪基準率複測（量測卡） | ⬜ 未開始（T-32 後；通過後回 Fable 複評 gate 規則） |
+| T-31 | 陳設等效吸音：資料表＋偵測模組 | ✅ **通過**（Opus 驗證 2026-08-30） |
+| T-32 | 等效吸音面積入聲學計算與照片管線 | ✅ **通過**（Opus 驗證 2026-08-30） |
+| T-33 | 材質輪基準率複測（量測卡） | 🔵 **待驗證 ← 現在做這張**（Sonnet 自檢通過 2026-08-30，等 Opus；主要發現：陳設機制淨效果為負，見 `output/material_round/REPORT.md`） |
 | T-34 | gate 訊息補洞（規則 2 死路＋測試覆蓋） | ⬜ 未開始（T-32 後，排最後避免 pipeline.py 衝突） |
 | T-29 | 三管線 analysis.json schema 一致性 | ⬜ 未裁決 |
 
@@ -520,19 +531,20 @@ python scripts/convolve.py assets/dry/clap_synth.wav output/ir_room_small_carpet
 【結束舊視窗】
   貼：「執行 WORKFLOW.md 第 4 節收工程序」
 
-【現在該做的 — 開 Opus 視窗驗證 T-31】（模型選 Opus）
-  貼 WORKFLOW §2.2 驗證 Prompt，任務編號 T-31。
-
-【T-31 通過後 — 開 Sonnet 視窗執行 T-32】（模型選 Sonnet）
-  貼 WORKFLOW §2.1 標準 Prompt，任務編號 T-32。
-
-【每張卡完成後 — 開 Opus 視窗驗證】（模型選 Opus）
-  貼 WORKFLOW §2.2 驗證 Prompt。輪次順序固定：T-31 → T-32 → T-33 → T-34。
+【現在該做的 — 開 Opus 視窗驗證 T-33】（模型選 Opus）
+  貼 WORKFLOW §2.2 驗證 Prompt，任務編號 T-33。**注意**：T-33 是量測卡，
+  驗證重點除了三層標準外，還要抽查報告數字（自己重跑 2–3 個場地比對）、
+  確認達標率沒有合併計算、確認陳設造成的負面結果沒有被淡化。
 
 【T-33 通過後 — 回 Fable 複評 gate 規則】（模型選 Fable）
   帶著 output/material_round/REPORT.md 依裁決 T-28-A 裁決三做 gate 規則複評
-  （含規則 3「透視照 high 不可達」＝地雷 #24 一併檢討），
-  並決定要不要開 CLIP 準確度輪（地雷 #18 的 in-set 誤判本輪明確不治）。
+  （含規則 3「透視照 high 不可達」＝地雷 #24 一併檢討），並決定：
+  ① 要不要開 CLIP 準確度輪（地雷 #18 的 in-set 誤判本輪明確不治）、
+  ② 陳設機制預設值要不要改（本輪淨效果為負，見 REPORT §5）。
+
+【Fable 裁決後 — 開 Sonnet 視窗執行後續卡】（模型選 Sonnet）
+  貼 WORKFLOW §2.1 標準 Prompt，任務編號依 Fable 裁決結果而定
+  （原訂 T-34，視 Fable 裁決可能調整範圍）。
 ```
 
 ### ⚠️ 給下一個視窗的提醒
@@ -549,7 +561,14 @@ python scripts/convolve.py assets/dry/clap_synth.wav output/ir_room_small_carpet
   None 時 `as_dict()` 輸出必須與現行逐位元相同——這就是六條 MD5 不變的機制。
 - **重生照片 IR 要知道 gate**（REPORT §7 已註記）：2026-08-30 後重跑要加
   `--force-low-confidence`，或依第 5 節用 `--override-material` 走正規出口。
-- **任何再調 gate 門檻的提案**：依裁決 T-28-A，必須等 T-33 的新基準率出來並附實測，
-  否則就是 WORKFLOW §5 紅旗 3；臥室那筆必須仍被擋住。
+- **任何再調 gate 門檻的提案**：T-33 的新基準率已出來（見
+  `output/material_round/REPORT.md`）——**13/13 gate 基準率與裁決 T-28-A 複驗
+  完全沒變**（架構上必然，鐵則 6），materials_confidence 12/13 low 一個都沒改善，
+  所以現在也還沒有實證支持調鬆門檻；臥室那筆必須仍被擋住。
+- **T-33 的意外發現**：陳設等效吸音機制目前預設開啟，但對 §7-2 式達標率是
+  **淨負面**（自動組 22%→10%、手動組 20%→12%），根因是像素佔比×總表面積公式
+  對「遠景大量重複小物件」（Steinman Hall 的排排座椅）系統性高估，把原本
+  8 場地裡最接近達標的案例拖成最差之一。這是 Fable 下一輪要裁決的優先項——
+  詳見 REPORT §4/§5，不要在不知情的狀況下維持陳設預設開啟。
 - 新增 zero-shot 分類的地方必讀地雷 **#13**（softmax 無法表達「以上皆非」）；
   任何「目標 vs 量測」並列的輸出必讀地雷 **#15**；動信心規則必讀地雷 **#23／#24**。

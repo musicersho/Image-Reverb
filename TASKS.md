@@ -4199,7 +4199,7 @@
     「陳設吸音佔比 vs RT60 準確度」，這兩個欄位是現成入口。
 
 ### T-33 材質輪基準率複測：13 張重跑＋量測報告（裁決 T-27-A 執行卡 3/3；量測卡）
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-08-30）
 - **前置**：T-31、T-32 皆 ✅（程式定稿後才能量；量測期間 `src/` 一行不許改）
 - **目標**：產出裁決 T-28-A 裁決三要的「新基準率」，交 Fable 複評 gate 規則。
   本卡是量測卡：**只寫 `scripts/` 的量測腳本與 `output/` 的報告，`src/` 零改動**。
@@ -4232,6 +4232,48 @@
   與 T-28-A 複驗基線不同卻沒觸發 🔴。
 - **T-33 通過後 → 回 Fable**：帶著 REPORT 做 gate 規則複評（裁決 T-28-A 裁決三）
   ＋決定要不要開 CLIP 準確度輪。
+- **交接筆記（Sonnet，2026-08-30）**：
+  - 產出：`scripts/t33_material_round_tables.py`（量測驅動程式，可重跑，已產生的
+    run 會快取、加 `--fresh` 強制重跑）、`output/material_round/REPORT.md`／
+    `tables.md`（程式產生表格，無手打）、兩個試聽檔（臥室 with/without furnishings）。
+    `src/` 零改動（`git status --short` 只有新增的腳本與 `output/material_round/`）。
+  - **鐵則 1**：十套測試全部 exit 0（`test_ir_synth`／`test_output_gate`／
+    `test_confidence_axes`／`test_material_fallback`／`test_surface_trusted_scope`／
+    `test_t30_low_combined`／`test_scene_text`／`test_coupled`／`test_furnishings`／
+    `test_acoustics`）。
+  - **鐵則 2**：六條交付 IR 逐條重生比對，MD5 全部相同——T-14 兩條由
+    `test_ir_synth`【6】內建比對（exit 0 已含）；T-20 兩條重生得
+    `2adbaa75eb698772a8c9aa693179ec47`／`2dd19b6e6d351d713887636fe45cd67e`；
+    T-21 兩條重生得 `9a94ffdf5d8295aee7889729c39c9cd8`／
+    `a1c21bcc3fd9aa3480df203a89c8cd05`——與 T-31／T-32 驗證紀錄逐字相同。
+  - **鐵則 3／4**：`git diff --stat -- src/image_reverb/ir_metrics.py SPEC.md
+    ROADMAP.md WORKFLOW.md output/mvp_acceptance/` 輸出為空。
+  - **鐵則 5**：本卡是量測卡，未新增測試檔，此項不適用（十套既有測試維持鐵則 1）。
+  - **鐵則 6（gate 零改動，本卡最重要的自檢項）**：13 張照片的
+    `geometry_confidence`／`materials_confidence` 與裁決 T-28-A 複驗基準
+    **逐張完全相同**（13/13），且「預設（含陳設）」與 `--no-furnishings` 兩組
+    量到的 confidence 軸**也逐張相同**——腳本內建交叉檢查，若有任何一張不符
+    會直接 `sys.exit(1)` 不寫 `data.json`／`tables.md`（本次實跑無觸發）。
+  - **`git status` 確認 `src/` 乾淨**：僅 `output/material_round/`（`.gitignore`
+    已限定只有 `*.md` 進版控，`runs/` 與試聽 wav 不進 git，與既有慣例一致）與
+    `scripts/t33_material_round_tables.py` 兩項新增。
+  - **REPORT 裡目標／量測數字比對來源**：全部走 `ir_metrics.band_t30()`／
+    `t30_low_combined()`，透過 `import scripts/t17_rt60_table.py` 重用其
+    `measure_file()`／`real_reference()`／`error_vs_reference()`，未重新實作比對
+    邏輯（`--no-furnishings` 組的逐場地數字經確認與 T-17 原始 `tables.md` 逐位元
+    相同，是量測管線正確性的獨立佐證，細節見 REPORT §2.1）。
+  - **⚠️ 主要發現（給 Fable，非本卡瑕疵，是量測結果）**：陳設等效吸音機制在
+    本次 13 個對照場地×組別的達標率上**淨效果是負的**（自動組 22%→10%、手動組
+    20%→12%），主因是 Steinman Hall（原本 8 場地最接近達標的案例）被拖成
+    最差之一（4/5→1/5）。根因隔離到「像素佔比×總表面積」公式對「遠景大量重複
+    小物件」（禮堂座椅）系統性高估，與臥室（近景少量大型物件）方向相反。
+    另外，gate 基準率 13/13 不變是鐵則 6 設計上的必然結果——materials_confidence
+    12/13 low 完全沒被本輪動到，裁決 T-28-A 裁決三「材質輪後基準率自然下降」
+    的期待若指的是本輪，架構上就不會發生，需要的是修 CLIP 本身。全文見
+    `output/material_round/REPORT.md` §0/§4/§5。
+  - **給 Fable 的建議行動**：帶著這份 REPORT 複評（1）陳設機制預設值要不要改、
+    （2）要不要開 CLIP 準確度輪、（3）gate 規則是否要調——本卡建議不調（materials
+    軸的病因沒被本輪觸及）。
 
 ### T-34 gate 訊息補洞：規則 2 死路出口＋兩處測試覆蓋（Opus T-30 後續建議執行卡）
 - **狀態**：⬜ 未開始
