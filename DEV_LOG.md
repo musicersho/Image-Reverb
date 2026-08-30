@@ -1,5 +1,32 @@
 # Dev Log
 
+## 2026-08-30 (50)
+
+- **T-24 依裁決 T-24-A 重做完成，🔵 待驗證**：`ADE_TRUSTED_MATERIAL` 整張表、
+  迴圈裡不可達的 `trusted_hits`/`best_trusted` 計分區塊、依附其上的 note 字串，
+  全部從 `src/image_reverb/surfaces.py` 刪除；三處誤導性註解（module docstring、
+  常數上方、迴圈內）改寫成描述現況（這段計分在現行架構下不可能觸發，原因是
+  角色 id 與可信 id 構造上不相交），順手也清了 `SurfaceObservation.confidence`
+  欄位一句同類殘留描述。`classify_region_material` 呼叫與 `material_id` 來源
+  邏輯一字未動。`scripts/test_surface_trusted_scope.py` 改寫成移除後的不變量
+  測試：斷言 `surfaces` 模組不再有 `ADE_TRUSTED_MATERIAL` 屬性、`analyse_image`
+  輸出不再出現「語意可信」字樣的 note。
+- **診斷力實測**：`git stash` 只暫存 `surfaces.py`（新測試檔留著）重跑新測試，
+  斷言①（`hasattr` 檢查）在舊碼上確實 `EXIT=1`，證明測試有抓到死碼還在的能力；
+  還原後 working tree 乾淨。
+- **共同鐵則全過**：六套測試（含新的 `test_surface_trusted_scope.py`）全部
+  `EXIT=0`；六條交付 IR MD5 重新生成比對全部相符
+  （`chk_bath`/`chk_church`/`coupled_neighbor_voices`/`coupled_stadium_corridor`
+  四條逐一複驗，T-14 兩條由 `test_ir_synth.py`【6】硬編碼比對）；
+  `ir_metrics.py` diff 0 行；SPEC/ROADMAP/WORKFLOW/`output/mvp_acceptance/`
+  零改動；本輪只動了 `surfaces.py` 與 `test_surface_trusted_scope.py` 兩個檔。
+- **自我檢查的一個誠實例外**：卡片寫「`grep -rn ADE_TRUSTED_MATERIAL src scripts`
+  無任何輸出」，`src/` 確實乾淨，但 `scripts/test_surface_trusted_scope.py`
+  裡有 8 行——因為新測試本身就是要斷言「這個屬性不存在」，沒辦法在不寫出這個
+  識別字的情況下測試它的缺席。已在 TASKS.md T-24 交接筆記把完整 grep 輸出
+  逐行列出，讓 Opus 判斷這是合理的例外還是不合格。
+- 下一步：Opus 驗證 T-24 → 通過後接 T-25（confidence 拆三軸）。
+
 ## 2026-08-30 (49)
 
 - **修正輪 workflow 第一批結果**：T-23 ✅ 通過、T-24 🟠 退回（卡在需要裁決）、

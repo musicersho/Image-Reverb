@@ -9,11 +9,15 @@ ADE20K 的 `floor`／`wall` 類別語意在本專案**不可信**——滿鋪地
   第一階段 ADE20K → **只回答「這塊像素是地板／天花板／牆」這個幾何角色**
   第二階段 CLIP  → **回答「這塊表面是什麼材質」**（候選標籤＝materials.json 的 12 種材質）
 
-語意可信的類別（mirror、windowpane、curtain 等 REPORT §4 的 🟢 級）**目前只用於
-在 note 裡加註提示**，不影響最終材質判定——每個角色仍會照樣呼叫 CLIP，
-`material_id` 一律來自 CLIP 的結果。「可信類別直接映射材質」是新功能，
-要用等效吸音面積還是 occupancy 表示是 SPEC 層設計決策，待 T-27 交 Fable 定案，
-本階段不實作（REPORT §2.6 缺陷 D）。
+曾經有一段「語意可信類別」（mirror、windowpane、curtain 等 REPORT §4 的 🟢 級）
+計分邏輯，想在角色 mask 內統計這些類別佔比、額外加註提示。已依裁決 T-24-A 移除：
+ADE20K 每個像素只有一個 label，可信類別的 id（windowpane/curtain/sofa 等）
+與六個幾何角色（floor/ceiling/wall）的 id **在構造上互不相交**，
+所以「這個角色 mask 內有多少像素屬於可信類別」在任何輸入下都恆為零——
+這不是還沒做，是問法本身就問不到東西，留著只會誤導讀者以為它有作用。
+這些類別真正該問的問題是「這個房間裡還有多少額外吸音」，屬於 T-27 的設計範圍
+（家具／織品的等效吸音面積或 occupancy 表示），不是本模組的面材質判定
+（REPORT §2.6 缺陷 D，裁決 T-24-A）。
 """
 
 from __future__ import annotations
@@ -37,20 +41,9 @@ ADE_FLOOR_IDS = {3: "floor", 28: "rug", 13: "earth", 46: "sand", 53: "path", 6: 
 ADE_CEILING_IDS = {5: "ceiling"}
 ADE_WALL_IDS = {0: "wall", 1: "building", 25: "house"}
 
-# 語意可信類別（REPORT §4 的 🟢 級）——目前只用來在 note 裡加註提示，
-# 不會指派 material_id（每個角色仍會照樣呼叫 CLIP）。
-# 「直接映射材質」待 T-27 設計 occupancy 機制後再做，見上方 module docstring。
-ADE_TRUSTED_MATERIAL = {
-    27: "glass",           # mirror → 玻璃
-    8: "glass",            # windowpane → 玻璃
-    147: "glass",          # glass
-    18: "curtain_fabric",  # curtain
-    31: "audience_seating",  # seat
-    30: "audience_seating",  # armchair
-    23: "audience_seating",  # sofa
-    9: "grass_soil",       # grass
-    12: "audience_seating",  # person（人是強吸音體，以座椅類近似）
-}
+# 曾有一張「語意可信類別」（mirror/windowpane/curtain 等）id → 材質的映射表，
+# 已依裁決 T-24-A 移除——這些 id 與上面三個角色 id 集合互不相交，在角色 mask 內
+# 恆量不到任何像素，是不可達死碼。清單與結構性理由已搬到 T-27（見 module docstring）。
 
 # 封閉空間不該出現的類別 → 觸發「模型在猜」全圖警示（T-06 防呆規則）
 ADE_OUTDOOR_IDS = {2: "sky"}
@@ -116,7 +109,7 @@ class SurfaceObservation:
     role: str                  # "floor" / "ceiling" / "wall"
     pixel_ratio: float         # 佔整張圖的像素比例
     material_id: str           # 二階分類的結果（或 fallback）
-    confidence: float          # top-1 機率（直接映射的類別記 1.0）
+    confidence: float          # CLIP top-1 機率（fallback / out_of_domain 記該次 top-1）
     method: str                # "clip" / "fallback" / "out_of_domain"
     top3: list[tuple[str, float]] = field(default_factory=list)
     note: str = ""
@@ -240,28 +233,6 @@ def analyse_image(
             # 區域太小就不判，免得拿一小撮雜點決定整面牆的材質
             continue
 
-        # 這個角色裡有沒有「語意可信」的類別佔多數？只用來產生提示性 note，
-        # 不影響 material_id（直接映射待 T-27 設計 occupancy 機制後再做）。
-        # 比例分母必須是「這個角色 mask 內」的像素數，不能用全圖的 ratios——
-        # 否則畫面別處（例如上半的窗）的可信類別會被誤算進這一面
-        # （REPORT §2.6 缺陷 D：windowpane 全在上半時，floor/ceiling 的 note
-        # 都宣稱自己有 40% 屬語意可信類別）。
-        role_labels = labelmap[mask]
-        role_pixel_count = int(role_labels.size)
-        if role_pixel_count > 0:
-            ids_in_role, counts_in_role = np.unique(role_labels, return_counts=True)
-            role_ratios = {
-                int(i): float(c) / role_pixel_count
-                for i, c in zip(ids_in_role, counts_in_role)
-            }
-        else:
-            role_ratios = {}
-        trusted_hits = {
-            mid: sum(role_ratios.get(cid, 0.0) for cid, m in ADE_TRUSTED_MATERIAL.items() if m == mid)
-            for mid in set(ADE_TRUSTED_MATERIAL.values())
-        }
-        best_trusted = max(trusted_hits.items(), key=lambda kv: kv[1], default=(None, 0.0))
-
         mid, conf, top3, method = classify_region_material(
             img, mask, clip_processor, clip_model, threshold
         )
@@ -280,12 +251,6 @@ def analyse_image(
                 f"改用 fallback '{config.DEFAULT_WALL_MATERIAL}'"
             )
             warnings.append(f"{role}：{note}")
-        if best_trusted[0] is not None and best_trusted[1] > 0.5:
-            note += (
-                f"（另註：此面內有 {best_trusted[1]*100:.1f}% 像素屬語意可信類別 "
-                f"→ {best_trusted[0]}，與 CLIP 判定 {mid} 併看；直接映射材質待 T-27 "
-                f"設計 occupancy 機制後再做）"
-            )
 
         observations[role] = SurfaceObservation(
             role=role, pixel_ratio=ratio, material_id=mid,

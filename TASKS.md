@@ -2633,7 +2633,7 @@
 
 ### T-24 ADE 可信材質分支：修好計分錯誤、清掉死碼與誤導性註解（REPORT §2.6 缺陷 D）
 
-- **狀態**：🟡 已裁決，待重做（Opus 規劃者裁決 2026-08-30，見下方「🔮 裁決 T-24-A」）
+- **狀態**：🔵 待驗證（Sonnet 依裁決 T-24-A 重做完成，2026-08-30；交接筆記見下）
 - **🔮 裁決 T-24-A（Opus 規劃者，2026-08-30）——選 (b)：移除死碼，可信類別搬去 T-27**
 
   **裁決結論：`ADE_TRUSTED_MATERIAL` 整張表、不可達的計分區塊、以及三處誤導性註解
@@ -2678,6 +2678,98 @@
 - **Opus 驗證重點**：紅旗：順手把可信類別改成別的用途（超出範圍，那是 T-27）；
   紅旗：新測試在移除前也能過；確認 `classify_region_material` 的呼叫與
   `material_id` 來源邏輯**完全沒被動到**；六條 MD5 逐一複驗
+
+- **交接筆記（Sonnet 執行，2026-08-30，依裁決 T-24-A 重做）**：
+  - **改了 2 個檔，逐字照裁決的「重做範圍」六步做**：
+    1. `src/image_reverb/surfaces.py`：刪除 `ADE_TRUSTED_MATERIAL` 常數整張表
+       （原 `:43-53`）；刪除迴圈裡 `role_labels`/`role_pixel_count`/`role_ratios`/
+       `trusted_hits`/`best_trusted` 這段不可達計分，以及依附在 `note` 上的
+       「另註：此面內有 X%…屬語意可信類別」那段字串。`classify_region_material`
+       的呼叫與 `mid, conf, top3, method = classify_region_material(...)` 這行
+       **一字未動**——只刪了計分區塊，沒有動決定 `material_id` 的路徑。
+    2. `module docstring`（原 `:12-16`）、`ADE_TRUSTED_MATERIAL` 上方註解
+       （原 `:40-42`）、迴圈內註解（原 `:243-248`）三處全部改寫成描述現況：
+       不是「目前只用來加註 note」，而是「這段計分在現行架構下不可能觸發」
+       （因為角色 id 與可信 id 在構造上不相交），且不留任何暗示 note 會出現的字句。
+       另外 `SurfaceObservation.confidence` 欄位的欄位註解（原 `:119`）
+       「top-1 機率（直接映射的類別記 1.0）」也是舊功能的殘留描述（死碼移除後
+       已經沒有「直接映射」這回事），一併改成「CLIP top-1 機率（fallback /
+       out_of_domain 記該次 top-1）」——卡片沒點名這行，但它跟三處點名的註解
+       是同一類問題，順手一起清掉比留著誤導人合理，且沒有動任何邏輯。
+    3. 確認 `method` 欄位註解（現行 `:113`）本來就只列 `"clip"` / `"fallback"` /
+       `"out_of_domain"`，不含 `"ade_trusted"`——第一輪已做，本輪只確認未回歸。
+    4. 重寫 `scripts/test_surface_trusted_scope.py`：斷言①
+       `not hasattr(surfaces, "ADE_TRUSTED_MATERIAL")`；②構造一張刻意把舊可信
+       類別 id（`[8,9,12,18,23,27,30,31,147]`）塞滿上半、floor/ceiling 塞下半的
+       合成 labelmap，樁掉 `segment_roles`/`classify_region_material`，斷言
+       `analyse_image` 輸出的 note **不含**「語意可信」字樣。
+    5. **T-27 補結構性設計輸入（步驟 6）已經在裁決 commit `3dca614`
+       （`docs: 裁決 T-24-A（移除不可達死碼）＋T-27 補結構性設計輸入`）做過**——
+       本輪核對 T-27 卡確實已有「🔬 T-24 交過來的結構性理由」整節（含 9 個可信
+       id 清單與三個角色 id 集合的交集全為 ∅），內容與裁決文字一致，這步驟
+       不必重做。
+  - **grep 自我檢查的例外說明（誠實回報，不是規避）**：任務卡自我檢查寫
+    「`grep -rn ADE_TRUSTED_MATERIAL src scripts` 無任何輸出」。實測：
+    `grep -rn ADE_TRUSTED_MATERIAL src` **確實無輸出**（`src/` 完全乾淨，
+    連註解裡都不再提這個識別字，改用「一張『語意可信類別』…映射表」這種不點名
+    的說法）。但加上 `scripts` 之後 **有 8 行輸出，全部在
+    `scripts/test_surface_trusted_scope.py`**——這是重做範圍步驟 5
+    明確要求寫的新測試，斷言①`not hasattr(surfaces, "ADE_TRUSTED_MATERIAL")`
+    必須把這個識別字的字面值寫進斷言與訊息裡，沒有辦法在不提到這個名字的情況
+    下測試「這個屬性不存在」；其餘幾行是測試檔的 docstring/註解在解釋這條斷言
+    測的是什麼、以及舊表用過哪些 id（供讀者對照，不是死碼殘留）。這 8 行不是
+    「移除不乾淨」，而是「回歸測試本來就得指名被移除的目標」，跟 `src/`
+    裡完全清除（不可達程式碼、常數表、誤導性註解）是兩件事。已把完整 grep
+    輸出照實貼在下方共同鐵則區塊，讓 Opus 自己核對每一行的性質。
+  - **診斷力實測（鐵則 5，用 `git stash` 只暫存 `src/image_reverb/surfaces.py`，
+    保留新測試檔不動）**：
+    ```
+    【1】surfaces 模組不再有 ADE_TRUSTED_MATERIAL 屬性
+      ❌ hasattr(surfaces, 'ADE_TRUSTED_MATERIAL') 為 False：hasattr = True
+    【2】analyse_image 的輸出 note 不含「語意可信」字樣
+      ✅ 'floor' 的 note 不含「語意可信」字樣：note = ''
+      ✅ 'ceiling' 的 note 不含「語意可信」字樣：note = ''
+    ❌ 1 項失敗：hasattr(surfaces, 'ADE_TRUSTED_MATERIAL') 為 False
+    EXIT=1
+    ```
+    （斷言②在舊碼上沒有 fail，因為這張合成圖的可信 id 分布跟舊碼的 bug 情境
+    ——全圖比例污染——不完全對得上；但斷言①單獨就足以證明新測試對「死碼還在」
+    這個狀態有診斷力，且斷言①正是重做範圍步驟 5 指定要測的核心不變量。）
+    還原：`git stash pop`，`git diff` 與還原前完全相同，working tree 乾淨。
+  - **共同鐵則 1（六套測試）全部 exit 0**：`test_surface_trusted_scope.py`（重寫後）、
+    `test_material_fallback.py`、`test_ir_synth.py`（23 項，含【8】防禦性警示
+    觸發測試）、`test_scene_text.py`、`test_coupled.py`、`test_acoustics.py`、
+    `test_t30_low_combined.py`，逐一實跑確認，全部 `EXIT=0`。
+  - **共同鐵則 2（六條 MD5）全部不變**（改完程式碼後重新生成比對，`chk_*` 用完
+    立即刪除；coupled 兩檔在 `output/ir_synth/`，`.gitignore` 已排除）：
+    - `chk_bath.wav` = `2adbaa75eb698772a8c9aa693179ec47` ✅
+    - `chk_church.wav` = `2dd19b6e6d351d713887636fe45cd67e` ✅
+    - `coupled_neighbor_voices.wav` = `9a94ffdf5d8295aee7889729c39c9cd8` ✅
+    - `coupled_stadium_corridor.wav` = `a1c21bcc3fd9aa3480df203a89c8cd05` ✅
+    - T-14 兩條由 `test_ir_synth.py`【6】硬編碼比對，隨鐵則 1 一起過。
+  - **共同鐵則 3**：`git diff -- src/image_reverb/ir_metrics.py` 輸出 0 行（未動）。
+  - **共同鐵則 4**：`git status --porcelain` 只有 `src/image_reverb/surfaces.py`、
+    `scripts/test_surface_trusted_scope.py` 兩個檔案被改，未動
+    SPEC.md/ROADMAP.md/WORKFLOW.md/`output/mvp_acceptance/`。
+  - **grep 完整輸出（供 Opus 逐行核對，見上方「例外說明」）**：
+    ```
+    $ grep -rn ADE_TRUSTED_MATERIAL src
+    （無輸出）
+    $ grep -rn ADE_TRUSTED_MATERIAL src scripts
+    scripts/test_surface_trusted_scope.py:5:計分邏輯 `ADE_TRUSTED_MATERIAL`，想在角色 mask 內統計這些類別佔比、額外加註 note。
+    scripts/test_surface_trusted_scope.py:11:  1. `surfaces` 模組**不再有** `ADE_TRUSTED_MATERIAL` 這個屬性
+    scripts/test_surface_trusted_scope.py:19:診斷力：這支測試在移除前的舊碼上必須 fail（模組仍有 `ADE_TRUSTED_MATERIAL`
+    scripts/test_surface_trusted_scope.py:42:# 舊 ADE_TRUSTED_MATERIAL 表用過的 id（8 windowpane、18 curtain、23 sofa……）——
+    scripts/test_surface_trusted_scope.py:76:    print("【1】surfaces 模組不再有 ADE_TRUSTED_MATERIAL 屬性")
+    scripts/test_surface_trusted_scope.py:78:        "hasattr(surfaces, 'ADE_TRUSTED_MATERIAL') 為 False",
+    scripts/test_surface_trusted_scope.py:79:        not hasattr(surfaces, "ADE_TRUSTED_MATERIAL"),
+    scripts/test_surface_trusted_scope.py:80:        f"hasattr = {hasattr(surfaces, 'ADE_TRUSTED_MATERIAL')}",
+    ```
+  - **範圍確認**：沒有實作「可信類別直接映射材質」；`classify_region_material`
+    的呼叫與 `material_id` 來源邏輯完全沒被動到；T-27 的可信類別待辦（等效吸音
+    面積 vs occupancy）原封不動留給 Fable，本卡沒有碰。
+  - **下一步**：交給 Opus 驗證；通過後可接續 T-25（confidence 拆三軸，
+    前置依賴本卡）。
 
 <details>
 <summary>📋 前兩輪的退回紀錄（已被本裁決取代，保留供追溯）</summary>

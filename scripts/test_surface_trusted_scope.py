@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
-"""T-24 迴歸測試：ADE 可信材質分支的計分範圍（REPORT §2.6 缺陷 D）。
+"""T-24 迴歸測試：ADE 可信材質死碼移除後的不變量（裁決 T-24-A，REPORT §2.6 缺陷 D）。
 
-背景：`surfaces.py` 的 `trusted_hits` 曾經拿 `segment_roles()` 回傳的**全圖**
-`ratios`（`count/total_pixels`）去跟每個角色比對，完全沒被角色 mask 限制。
-Opus 執行期重現過：windowpane（語意可信 → glass）全部集中在畫面上半時，
-`floor` 與 `ceiling`（都在下半、跟 windowpane 零重疊）的 note 卻雙雙宣稱
-「40% 屬語意可信類別」。
+背景：`surfaces.py` 曾有一段「語意可信類別」（mirror、windowpane、curtain 等）
+計分邏輯 `ADE_TRUSTED_MATERIAL`，想在角色 mask 內統計這些類別佔比、額外加註 note。
+規劃者裁決 T-24-A 認定它在構造上不可達——ADE20K 每個像素只有一個 label，
+可信類別 id 與 floor/ceiling/wall 三個角色的 id 集合**互不相交**，
+在角色 mask 內恆量不到任何像素——並裁定移除，可信類別清單搬去 T-27 當設計輸入。
 
-本測試構造一張合成 labelmap：上半全是 windowpane（id=8，語意可信類別），
-下半左邊是 floor（id=3）、右邊是 ceiling（id=5）——floor/ceiling 的 mask
-跟 windowpane 完全不重疊。斷言修好之後 floor 與 ceiling 的 note **不再**
-宣稱自己有語意可信類別。
-
-`segment_roles` 與 `classify_region_material` 都用樁（stub）換掉，不下載、
-不跑真正的模型，純測計分邏輯。
+本測試斷言移除後的兩個不變量：
+  1. `surfaces` 模組**不再有** `ADE_TRUSTED_MATERIAL` 這個屬性
+  2. `analyse_image` 的輸出 note **不含**「語意可信」字樣（樁掉 segmenter 與
+     `classify_region_material`，不下載、不跑真模型，構造一張刻意塞滿舊可信類別
+     id 的合成 labelmap，確認就算像素在圖上出現，也不會被算進任何角色的 note）
 
 跑法：`python scripts/test_surface_trusted_scope.py`；全部通過 exit 0，
 任一失敗 exit 1。
+
+診斷力：這支測試在移除前的舊碼上必須 fail（模組仍有 `ADE_TRUSTED_MATERIAL`
+屬性）——自我檢查已用 `git stash` 實測並附輸出。
 """
 
 import sys
@@ -38,14 +39,20 @@ def check(name: str, ok: bool, detail: str) -> None:
         FAILURES.append(name)
 
 
+# 舊 ADE_TRUSTED_MATERIAL 表用過的 id（8 windowpane、18 curtain、23 sofa……）——
+# 測試自己保留這份清單，不從 surfaces 模組匯入（模組移除後已經沒有這個常數了）。
+_OLD_TRUSTED_IDS = [8, 9, 12, 18, 23, 27, 30, 31, 147]
+
+
 def _build_synthetic_labelmap(size: int = 100) -> np.ndarray:
-    """上半（size//2 列）全是 windowpane（id=8，語意可信→glass）；
+    """上半塞滿舊可信類別 id（逐列輪流塞入 `_OLD_TRUSTED_IDS`）；
     下半左半是 floor（id=3），右半是 ceiling（id=5）。
-    floor / ceiling 的 mask 跟 windowpane 完全不重疊。
+    floor / ceiling 的 mask 跟這些舊可信類別 id 完全不重疊。
     """
     labelmap = np.zeros((size, size), dtype=np.int32)
     half = size // 2
-    labelmap[:half, :] = 8  # windowpane（全圖上半）
+    for row in range(half):
+        labelmap[row, :] = _OLD_TRUSTED_IDS[row % len(_OLD_TRUSTED_IDS)]
     labelmap[half:, :half] = 3  # floor（下半左邊）
     labelmap[half:, half:] = 5  # ceiling（下半右邊）
     return labelmap
@@ -61,12 +68,19 @@ def _fake_segment_roles(img, processor, model):
 
 def _fake_classify_region_material(img, mask, clip_processor, clip_model, threshold):
     # 固定回傳一個高信心 CLIP 結果，method="clip"，不觸發 fallback/out_of_domain
-    # 的 note，讓測試只看 trusted_hits 那段邏輯有沒有被角色 mask 限制住。
+    # 的 note，讓測試只看有沒有殘留可信類別相關的 note 文字。
     return "gypsum_board", 0.9, [("gypsum_board", 0.9)], "clip"
 
 
 def main() -> int:
-    print("【1】計分範圍修好之後：floor / ceiling 不該再宣稱有語意可信類別")
+    print("【1】surfaces 模組不再有 ADE_TRUSTED_MATERIAL 屬性")
+    check(
+        "hasattr(surfaces, 'ADE_TRUSTED_MATERIAL') 為 False",
+        not hasattr(surfaces, "ADE_TRUSTED_MATERIAL"),
+        f"hasattr = {hasattr(surfaces, 'ADE_TRUSTED_MATERIAL')}",
+    )
+
+    print("【2】analyse_image 的輸出 note 不含「語意可信」字樣")
 
     # 換掉會下載/跑真模型的兩個函式
     real_segment_roles = surfaces.segment_roles
@@ -94,26 +108,16 @@ def main() -> int:
             continue
         note = observations[role].note
         check(
-            f"'{role}' 的 note 不宣稱擁有語意可信類別（跟 windowpane 完全沒重疊）",
-            "語意可信類別" not in note,
+            f"'{role}' 的 note 不含「語意可信」字樣",
+            "語意可信" not in note,
             f"note = {note!r}",
         )
-
-    print("【2】windowpane 本身若被判成某個角色，才應該看到可信類別 note")
-    # windowpane 是 id=8，不在 ADE_FLOOR_IDS / ADE_CEILING_IDS / ADE_WALL_IDS
-    # 任何一個角色 id 集合裡，所以在這張合成圖裡它不會被判成任何角色——
-    # 這正是「floor/ceiling 不該被污染」的對照組，此處只需確認 wall 沒被誤判。
-    check(
-        "'wall' 沒有被判定出來（synthetic labelmap 裡沒有牆類別）",
-        "wall" not in observations,
-        f"observations keys = {list(observations.keys())}",
-    )
 
     print()
     if FAILURES:
         print(f"❌ {len(FAILURES)} 項失敗：{'、'.join(FAILURES)}")
         return 1
-    print("✅ T-24 ADE 可信材質計分範圍測試全部通過")
+    print("✅ T-24 死碼移除不變量測試全部通過")
     return 0
 
 
