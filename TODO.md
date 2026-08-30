@@ -44,18 +44,19 @@
       新發現三個缺陷（`is_equirect()` 把 2:1 透視照誤判成環景＝地雷 #16、
       `--override-dims` 一律給 `high`＝地雷 #17、戶外無拒絕出口）。
       報告：`output/mvp_acceptance/REPORT.md`
-- [ ] **← 現在該做的（使用者本人）：§7-1 盲聽 ＋ §7-3 載入 plugin ＋ §7-4 試聽**
-      **最快的方式：`open output/mvp_acceptance/播放頁.html`** —— 三項任務的檔案
-      集中在一頁，點播放鍵即聽，§7-1 可直接下拉作答並產生回報文字
-      - 聽 `output/mvp_acceptance/blind_test/sample_1~5.wav` → 填 `blind_test/作答表.md`
-        （**作答完前不要打開 `blind_test_ANSWERS.json`**）
-      - 把 `blind_test/sample_3_IR.wav` 載入 Logic Space Designer 或任一 convolution reverb
-      - 聽 `output/mvp_acceptance/listening/` 九個檔，**特別比較壁球場的
-        `racquetball_court_4__wet.wav` vs `DIAG_racquetball_...__wet.wav`**
-      - 📷 補齊 9 張照片來源網址（`assets/SOURCES.md` §2）——裁決 E 的結案前置
-- [ ] **接著（Fable）**：§7-2 未達標要不要加修正輪。
+- [x] **§7-1／§7-3／§7-4 使用者回饋已完成（2026-08-30）** — §7-1 **2/5 未達標**
+      （體育館聽成車內、臥室聽成教堂＝**管線把大小做反了**，使用者的耳朵每題都對）；
+      §7-3 **✅ 通過**（可載入、有殘響）；§7-4 **無鐵筒子 artifact**，壁球場材質
+      判錯 vs 改對「有差異」→ 耳朵獨立佐證病因診斷，聽感說還應再少 1–1.5 秒
+      （與量測 +0.71~+2.16s 同方向同量級）
+- [ ] **📷 補齊 9 張照片來源網址**（`assets/SOURCES.md` §2）——裁決 E 的結案前置，
+      補齊前 T-17 狀態不得改 ✅
+- [ ] **← 現在該做的（Fable）**：§7-1＋§7-2 皆未達標，要不要加修正輪。
       **T-17 數據建議打材質、不要打幾何**（手動組 20% 沒有比自動組 22% 好，
-      不支持優先換 Metric-Indoor-Large）
+      不支持優先換 Metric-Indoor-Large；且 §7-1 與 §7-2 兩條獨立證據鏈都指到材質）。
+      另有新議題：**`confidence: low` 要不要升級成「拒絕輸出／強制手動尺寸」**
+      ——體育館與車內的防呆都正確作動了，產品仍輸出聽起來是別的空間的 IR，
+      降信心不等於保護使用者
 
 ## ✅ T-11 路線決策結果（2026-08-25，Fable）
 
