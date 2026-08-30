@@ -1,5 +1,26 @@
 # Dev Log
 
+## 2026-08-31 (70)
+
+- **T-35 陳設等效吸音改預設觀測模式：🔵 待驗證**（裁決 T-33-A 裁決 A 執行卡；
+  T-33 實測陳設套用對 §7-2 達標率淨效果為負，裁決改 opt-in）。`cli.py` 新增
+  `--furnishings` 旗標（與 `--no-furnishings` 互斥，同給 exit 2）；
+  `pipeline.run_photo()` 改三態：偵測維持都跑（除非 `--no-furnishings`），但
+  只有 `--furnishings` 才把偵測結果傳進 `compute_acoustics()`——預設與
+  `--no-furnishings` 都傳 `None`，兩者對聲學計算逐位元等價。`analysis.json`
+  的 `furnishings` 鍵三態：預設＝偵測資訊＋`applied:false`（不含 `A_by_band`
+  等聲學換算欄位）、`--furnishings`＝現行完整結構＋`applied:true`、
+  `--no-furnishings`＝`null`。改動全部在 T-26 gate 判定**之後**；`acoustics.py`／
+  `surfaces.py`／`furnishings.py` 零改動。`scripts/test_furnishings.py` 新增
+  【D】pipeline 層四小項測試（樁法比照 `test_output_gate.py`），對 `git stash`
+  出的舊碼實測會 fail。自我檢查：十套測試 EXIT=0；T-14 兩條 MD5（自動）＋
+  T-20/T-21 四條 MD5（手動重生）全部逐位元相同；`bedroom_ai_generated.png`
+  三態實跑核對——預設 `rt60=[1.016, 2.5562, 3.8388, 3.5526, 2.285, 1.6554]`
+  與 `--no-furnishings` 逐位元相同（＝T-33 `--no-furnishings` 基準），
+  `--furnishings` 的 `rt60=[0.6334, 0.6686, 0.5703, 0.4682, 0.4253, 0.408]`
+  與 T-33 預設組相同；`bathroom_tiled.png` 三態聲學全同（防濫殺對照，
+  該照無陳設可偵測）。下一步：請 Opus 驗證 T-35。
+
 ## 2026-08-31 (69)
 
 - **T-34 Opus 驗證：✅ 通過**。所有指令由驗證者在乾淨工作區自己重跑：十套測試

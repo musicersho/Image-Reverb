@@ -129,7 +129,15 @@
       geometry=low 分支測試覆蓋。gate 判定條件〔`compute_materials_confidence()`／
       `surfaces.py`〕零改動。診斷力：【E】對舊碼實測 fail〔死路重現〕、【F】是補
       覆蓋率〔對舊碼本來就過〕，驗證者另用突變測試證明 F 非空測試。十套測試全
-      exit 0、六條交付 IR MD5 驗證者重生比對全相符）→ 下一步 T-35。
+      exit 0、六條交付 IR MD5 驗證者重生比對全相符）→
+      **T-35 🔵 待驗證**（Sonnet 完成 2026-08-31；陳設改預設觀測模式——`cli.py`
+      新增 `--furnishings` 旗標＋互斥檢查，`pipeline.run_photo()` 三態接線，
+      預設與 `--no-furnishings` 對 `compute_acoustics()` 都傳 `furnishings=None`
+      逐位元等價，`--furnishings` 才套用；`analysis.json` 的 `furnishings` 鍵
+      三態對應三種 dict。改動全在 gate 判定之後，`acoustics.py`／`surfaces.py`／
+      `furnishings.py` 零改動。新增測試【D】四小項，對舊碼實測 fail。十套測試
+      exit 0、六條 IR MD5 全相符，bedroom/bathroom 實跑數字與 T-33 記錄相符）→
+      下一步請 Opus 驗證 T-35。
       共同紅線：gate 判定規則零改動、六條交付 IR MD5 不變、陳設資料不得餵進信心軸。
 - [ ] **🔮 Fable 複評裁決 T-33-A ✅ 已裁決（2026-08-31，全文在 TASKS.md T-33 卡尾）
       → 開 Phase 1.8 輪（陳設觀測化與 CLIP 準確度診斷，卡片在 TASKS.md 檔尾）**：

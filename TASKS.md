@@ -4635,7 +4635,7 @@ T-34 與 T-35 都動 `pipeline.py`／`cli.py`，依序做避免衝突；T-36 是
    scene_cues 那段也不許動。
 
 ### T-35 陳設等效吸音改預設觀測模式（裁決 T-33-A 裁決 A 執行卡）
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證（Sonnet 已完成，2026-08-31）
 - **前置**：T-34（同動 `pipeline.py`／`cli.py`，避免衝突）
 - **背景（一句）**：T-33 實測陳設套用對 §7-2 式達標率淨效果為負（自動組 22%→10%、
   手動組 20%→12%，Steinman Hall 4/5→1/5），失效模式見 REPORT §4.2；裁決 T-33-A
@@ -4684,6 +4684,41 @@ T-34 與 T-35 都動 `pipeline.py`／`cli.py`，依序做避免衝突；T-36 是
   （＝還在偷套用）；紅旗：`applied` 欄位造假（【D】樁的參數捕捉會抓）；紅旗：
   未套用時 cap 訊息仍進 warnings；紅旗：動了 `acoustics.py` 或 gate 判定段；
   紅旗：`--no-furnishings` 行為被改（它是 T-33 量測的對照組語義，不許動）。
+
+- **交接筆記（Sonnet，2026-08-31）**：
+  - **改了哪些檔案**：`src/image_reverb/cli.py`（新增 `--furnishings` 旗標＋互斥檢查＋
+    兩旗 help 文字更新）、`src/image_reverb/pipeline.py`（`run_photo()` 三態接線，
+    全部改動都在 T-26 gate 判定**之後**）、`scripts/test_furnishings.py`（新增
+    【D】pipeline 層三態接線測試，四小項）。**`acoustics.py`／`surfaces.py`／
+    `furnishings.py` 零改動**（`git diff --stat` 確認）。
+  - **實作方式**：`furn = None if no_furnishings else estimate_furnishings(detail)`
+    偵測維持三態都跑；`compute_acoustics(..., furnishings=(furn if furnishings else None))`
+    ——只有 `--furnishings` 才把偵測結果餵進聲學計算，預設與 `--no-furnishings`
+    傳的都是 `None`，兩者對 `compute_acoustics()` 逐位元等價，這是 RT60 位元相同
+    保證的機制來源。`analysis.json` 的 `furnishings` 鍵在 `pipeline.py` 層依三態組
+    三種不同 dict（不經 `AcousticsResult`），觀測模式的版本只含 `categories.ratio`／
+    `total_ratio`／`cap_applied`／`applied`／`note`，不含 `A_by_band` 等聲學換算欄位。
+  - **`_NOTE_MARKERS` 沒有補條目（與執行步驟 4 字面描述不同，記錄偏離理由）**：
+    觀測模式的「未套用」提示與 cap 訊息是**直接 append 進已經分流完的 `notes` 清單**，
+    從未流經 `_split_notes_and_warnings()`（因為 `furn` 沒有傳進
+    `compute_acoustics()`，`ac.warnings` 裡本來就不會有這些字串）——所以沒有字串
+    需要靠 marker 辨識成 note。若之後要重構成統一走 split 函式，才需要補 marker。
+  - **自我檢查實測紀錄**：十套測試全 exit 0；`git diff --stat` 確認
+    `ir_metrics.py`／`acoustics.py`／`surfaces.py`／`furnishings.py`／SPEC/ROADMAP/
+    WORKFLOW/output 底下的既有交付都零改動；T-14 兩條 MD5（`test_ir_synth.py`
+    自動驗證）＋T-20/T-21 四條 MD5（手動重生比對）全部逐位元相同；【D】對
+    `git stash` 出來的舊碼實測會 fail（`TypeError: run_photo() got an unexpected
+    keyword argument 'furnishings'`，且 (i) 三項斷言全部落空）；bedroom 三態
+    實跑——預設 `rt60=[1.016, 2.5562, 3.8388, 3.5526, 2.285, 1.6554]` 與
+    `--no-furnishings` 逐位元相同，`furnishings.applied=false`、`categories` 含
+    bed/curtain；`--furnishings` 的 `rt60=[0.6334, 0.6686, 0.5703, 0.4682, 0.4253,
+    0.408]` 與 T-33 預設組相同；bathroom_tiled 三態 RT60 全同
+    `[1.0786, 2.5522, 3.5093, 3.0478, 2.0199, 1.4811]`（防濫殺對照，該照片沒偵測
+    到陳設，三態自然無差異）。跑完的 `output/bedroom_ai_generated*`／
+    `output/bathroom_tiled*`／`output/text_*`／`output/neighbor_voices`／
+    `output/stadium_corridor` 全部已刪除，非交付產物。
+  - **下一步**：請 Opus 驗證本卡；通過後開 T-36（CLIP 材質判定準確度診斷，
+    需使用者參與 ground truth 逐面確認）。
 
 ### T-36 CLIP 材質判定準確度診斷（裁決 T-33-A 裁決 B 執行卡 1/n；量測卡）
 - **狀態**：⬜ 未開始

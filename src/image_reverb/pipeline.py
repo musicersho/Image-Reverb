@@ -166,6 +166,7 @@ def run_photo(
     override_materials: list[str] | None = None,
     no_viz: bool = False,
     force_low_confidence: bool = False,
+    furnishings: bool = False,
     no_furnishings: bool = False,
 ) -> int:
     from .preprocess import preprocess_image
@@ -347,14 +348,19 @@ def run_photo(
 
         # T-32（裁決 T-27-A 執行卡 2/3）：陳設偵測放在 gate 之後、compute_acoustics()
         # 之前——結構上保證陳設資料不可能影響 gate 判定（Phase 1.7 共同鐵則 6）。
+        # T-35（裁決 T-33-A 裁決 A）：偵測維持三態都跑（除非 --no-furnishings），
+        # 但只有 --furnishings 才把偵測結果傳給 compute_acoustics()——預設觀測模式
+        # 傳 None，讓 compute_acoustics() 的行為與 --no-furnishings 逐位元相同。
         furn = None if no_furnishings else estimate_furnishings(detail)
 
         print("--- T-13 聲學參數 ---")
-        ac = compute_acoustics(est, surf, materials_data, furnishings=furn)
+        ac = compute_acoustics(
+            est, surf, materials_data, furnishings=(furn if furnishings else None)
+        )
         print(f"  Sabine 目標 RT60：{[round(v, 2) for v in ac.rt60_bands_sabine]} s")
-        if ac.furnishings is not None and ac.furnishings["categories"]:
+        if furnishings and ac.furnishings is not None and ac.furnishings["categories"]:
             idx_1k = ac.band_center_freqs_hz.index(1000)
-            print("  陳設偵測（等效吸音面積，裁決 T-27-A）：")
+            print("  陳設偵測（等效吸音面積，裁決 T-27-A；已套用 --furnishings）：")
             for name, cat in ac.furnishings["categories"].items():
                 print(
                     f"    {name:<10} 佔比 {cat['ratio'] * 100:5.1f}%　"
@@ -364,6 +370,10 @@ def run_photo(
                 "    佔 1kHz 總吸音比例："
                 f"{ac.furnishings['proportion_of_absorption_1khz'] * 100:.1f}%"
             )
+        elif not furnishings and not no_furnishings and furn is not None and furn.categories:
+            print("  陳設偵測（預設觀測模式，未套用；--furnishings 可啟用）：")
+            for name, cat in furn.categories.items():
+                print(f"    {name:<10} 佔比 {cat['ratio'] * 100:5.1f}%")
 
         print("--- T-14 IR 合成 ---")
         mono = ir_synth.synthesize_ir(ac, materials_data)
@@ -379,15 +389,52 @@ def run_photo(
 
     mono_payload = json.loads(mono_json.read_text(encoding="utf-8"))
     notes, warnings = _split_notes_and_warnings(mono_payload["warnings"])
-    if ac.furnishings is not None and ac.furnishings["categories"]:
+
+    # T-35：陳設三態組 analysis.json 的 "furnishings" 鍵。
+    #   --no-furnishings → None（現行為，ac.furnishings 本來就是 None）。
+    #   --furnishings     → ac.furnishings（現行完整結構）＋ applied=True。
+    #   預設（觀測模式）  → 偵測資訊（ratio/total_ratio/cap），不含聲學換算欄位
+    #                       （A_by_band／absorption_extra_m2_by_band，地雷 #15 精神），
+    #                       applied=False；cap 訊息（若有）走 notes 不走 warnings。
+    furnishings_payload: dict[str, Any] | None = None
+    if no_furnishings:
+        furnishings_payload = None
+    elif furnishings:
+        if ac.furnishings is not None:
+            furnishings_payload = dict(ac.furnishings)
+            furnishings_payload["applied"] = True
+            detected = "、".join(
+                f"{name} {cat['ratio'] * 100:.1f}%"
+                for name, cat in ac.furnishings["categories"].items()
+            )
+            if detected:
+                notes.append(
+                    f"陳設偵測：{detected}（佔 1kHz 總吸音 "
+                    f"{ac.furnishings['proportion_of_absorption_1khz'] * 100:.1f}%）"
+                )
+    elif furn is not None:
+        furnishings_payload = {
+            "categories": {
+                name: {"ratio": round(cat["ratio"], 5)} for name, cat in furn.categories.items()
+            },
+            "total_ratio": round(furn.total_ratio, 5),
+            "cap_applied": bool(furn.warnings),
+            "applied": False,
+            "note": (
+                "陳設偵測結果未套用聲學計算（預設觀測模式）——T-33 實測套用對 "
+                "§7-2 達標率淨效果為負，見 output/material_round/REPORT.md §4.2"
+                "（裁決 T-33-A）。加 --furnishings 可啟用套用。"
+            ),
+        }
         detected = "、".join(
-            f"{name} {cat['ratio'] * 100:.1f}%"
-            for name, cat in ac.furnishings["categories"].items()
+            f"{name} {cat['ratio'] * 100:.1f}%" for name, cat in furn.categories.items()
         )
-        notes.append(
-            f"陳設偵測：{detected}（佔 1kHz 總吸音 "
-            f"{ac.furnishings['proportion_of_absorption_1khz'] * 100:.1f}%）"
-        )
+        if detected:
+            notes.append(f"陳設偵測：{detected}（未套用，預設觀測模式，--furnishings 可啟用）")
+        # furn.notes（視角平均說明）＋furn.warnings（cap 訊息，若有）都走 notes，
+        # 不走 warnings——沒套用的估計值發警報會誤導（地雷 #15 精神）。
+        notes.extend(furn.notes + furn.warnings)
+
     if forced_low_confidence:
         # T-26 步驟 2：帶 --force-low-confidence 越過 gate 時，JSON 要留下明確標記與
         # 一條進 warnings 的說明，不能讓「這筆結果本來會被擋下」的事實只留在 CLI 輸出裡。
@@ -414,7 +461,7 @@ def run_photo(
         "override_materials_used": override_specs_used,
         "band_center_freqs_hz": ac.band_center_freqs_hz,
         "rt60_bands_target_sabine": [round(v, 4) for v in ac.rt60_bands_sabine],
-        "furnishings": ac.furnishings,
+        "furnishings": furnishings_payload,
         "closed_loop": mono_payload["closed_loop"],
         "ir_mono": {"path": str(mono_wav)},
         "ir_stereo": {
