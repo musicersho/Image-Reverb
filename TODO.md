@@ -45,6 +45,8 @@
       `--override-dims` 一律給 `high`＝地雷 #17、戶外無拒絕出口）。
       報告：`output/mvp_acceptance/REPORT.md`
 - [ ] **← 現在該做的（使用者本人）：§7-1 盲聽 ＋ §7-3 載入 plugin ＋ §7-4 試聽**
+      **最快的方式：`open output/mvp_acceptance/播放頁.html`** —— 三項任務的檔案
+      集中在一頁，點播放鍵即聽，§7-1 可直接下拉作答並產生回報文字
       - 聽 `output/mvp_acceptance/blind_test/sample_1~5.wav` → 填 `blind_test/作答表.md`
         （**作答完前不要打開 `blind_test_ANSWERS.json`**）
       - 把 `blind_test/sample_3_IR.wav` 載入 Logic Space Designer 或任一 convolution reverb

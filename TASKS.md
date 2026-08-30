@@ -1779,9 +1779,21 @@
     （**那張照片只拍到一個卡座，室內尺寸根本不可見**）——手動組 20% **不應被當成
     「給定正確幾何後的真實表現」**；③ §7-1/§7-3/§7-4 三項只有待辦沒有結果，
     不得讀成已通過。
+- **🎧 一頁式試聽頁（2026-08-30 補）**：`output/mvp_acceptance/播放頁.html`
+  ——三項使用者任務的檔案全部集中在一頁，點播放鍵即聽，§7-1 有下拉作答＋
+  「產生回報文字」按鈕。開啟：`open output/mvp_acceptance/播放頁.html`
+  - 由 `scripts/t17_make_player.py` 產生，一併輸出 `_play/`（16-bit 播放副本）：
+    `<audio>` 對 **24-bit** WAV 的支援因瀏覽器而異（Chromium 實測可播，Safari 不保證），
+    16-bit 才是穩的。**原始 24-bit 檔一個都沒動**，§7-3 要載進 plugin 的仍是原檔。
+  - **盲性維持**：頁面與其 HTML 原始碼皆不含答案；實測 5 個空間選項各出現 10 次
+    （5 個下拉 ×（value＋文字））**完全對稱**，view source 也推不出 sample↔空間 的對應。
+  - **實測驗證（非假設）**：本機 HTTP 起站後用瀏覽器實跑，15 個 `<audio>`
+    **全部載入成功、零錯誤**，時長總計 85.1s 與原檔一致；「產生回報文字」按鈕
+    輸出格式已實測。
 - **⏳ 等使用者做的三件事**（做完回報給下一個視窗補進 REPORT）：
   1. **§7-1 盲聽**：聽 `output/mvp_acceptance/blind_test/sample_1~5.wav`，
-     填 `blind_test/作答表.md`。**作答完成前不要打開 `blind_test_ANSWERS.json`。**
+     填 `blind_test/作答表.md`（或直接用播放頁作答）。
+     **作答完成前不要打開 `blind_test_ANSWERS.json`。**
   2. **§7-3 外部相容**：把 `blind_test/sample_3_IR.wav` 載入 Logic Space Designer
      或任一 convolution reverb，確認能載入／有殘響／長度正常。
      （格式已由 Opus 驗證：48kHz / 24-bit PCM / RIFF WAV，mono＋stereo 皆有）
