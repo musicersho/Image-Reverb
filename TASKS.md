@@ -3638,7 +3638,7 @@
   還是明確文件化「三軸只適用照片管線」並讓 schema 差異變成有意的設計？
 
 ### T-30 gate 出口導引：把「怎麼繼續」從死路改成可走的路（裁決 T-28-A 執行卡）
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證（Sonnet 2026-08-30 完成，自我檢查通過，待 Opus 驗證）
 - **前置**：T-26 ✅（gate 本體）；裁決 T-28-A（見 T-28 卡尾，2026-08-30）
 - **⚠️ 命名註記**：本卡是任務編號 T-30，與聲學量 T30（`t30_low_combined()`）無關。
 - **問題**：gate 擋下時印的「怎麼繼續」兩條建議，Fable 2026-08-30 實測：
@@ -3682,3 +3682,47 @@
   （六條 MD5＋既有【A】【B】【C】案例會抓）；紅旗：替使用者自動選材質；
   紅旗：把無來源面列進覆寫建議；紅旗：geometry=medium 的照片仍印
   `--override-dims` 建議。
+
+- **交接筆記（Sonnet，2026-08-30）**：
+  - **改了什麼**：只動 `src/image_reverb/pipeline.py` 的 `run_photo()`
+    低信心分支裡「怎麼繼續」那段訊息（gate 觸發條件 `if overall_confidence ==
+    "low": if not force_low_confidence:` 與 `return 3` 本身逐行未動，`git diff`
+    可見改動範圍只在訊息文字與新增的 `low_conf_faces` 列表計算）。新增
+    `from .materials import SURFACE_NAMES`（唯一新 import）。
+    邏輯：`low_conf_faces` 只收 `surf.sources.get(name) in
+    ("fallback","out_of_domain")` 的面（無來源／clip 都不收）；
+    `--override-dims` 建議只在 `est.confidence == "low"` 才印；
+    `--override-material` 建議只在 `materials_confidence == "low" and
+    low_conf_faces` 才印，內容是逐面 `--override-material 面=<材質id>` 的
+    可直接複製指令（含完整 `python -m src.image_reverb <photo>` 前綴），
+    附查表提示與規則 2 退化警語；`--force-low-confidence` 維持列在最後一步，
+    文案改成明確標「不建議當常規路徑」。步驟編號依實際印出的建議動態算
+    （`step` 計數器），不是寫死 1/2/3。
+  - **測試擴充**：`scripts/test_output_gate.py` 新增 `_make_mixed_surf()`
+    （floor=fallback、四牆=clip、ceiling 無來源，複現 `bathroom_tiled` 真實分佈）
+    與 `_fake_estimate_room_medium()`；案例【A】改用這個 fixture 並用
+    `contextlib.redirect_stderr` 擷取 stderr，新增四項斷言（點名 floor+fallback+
+    材質 id、出現 `--override-material floor=`、不出現 `ceiling`、不出現四面牆
+    face name）；新增案例【D】（materials=low、geometry=medium 用
+    `pipeline.estimate_room` 打樁），斷言 stderr **不**含 `--override-dims`
+    但**有** `--override-material floor=`。既有【0】【A】【B】【C】原始斷言全部保留。
+  - **驗證結果**：九套測試（`test_ir_synth`／`test_output_gate`／
+    `test_confidence_axes`／`test_material_fallback`／`test_surface_trusted_scope`／
+    `test_t30_low_combined`／`test_scene_text`／`test_coupled`／`test_acoustics`）
+    全 exit 0。六條交付 IR MD5 逐一重生比對：T-14 兩條由 `test_ir_synth.py`【6】
+    內建比對（已在上述 exit 0 裡）；T-20 `2adbaa75…`／`2dd19b6e…`（分別對應
+    `gen_ir_from_text.py "浴室"`／`"大教堂"` -o chk_a/chk_b --no-listen）**逐位元
+    相同**；T-21 `9a94ffdf…`／`a1c21bcc…`（`gen_ir_coupled.py
+    neighbor_voices.json`／`stadium_corridor.json`）**逐位元相同**。
+    `git diff -- src/image_reverb/ir_metrics.py` 空。SPEC/ROADMAP/WORKFLOW/
+    `output/mvp_acceptance/` 皆未觸碰（`git status --short` 只列
+    `pipeline.py`／`test_output_gate.py` 兩檔）。
+  - **實跑 `bathroom_tiled.png` 自我檢查**：不帶旗標 → exit 3，stderr 只點名
+    `floor：目前推測 gypsum_board（來源：fallback）`＋
+    `--override-material floor=<材質id>` 指令骨架，**未**點名 `ceiling`（無來源）
+    與四面牆（clip），**無** `--override-dims` 建議（該張 geometry=medium）；
+    加 `--override-material floor=marble --no-viz` 重跑 → exit 0，
+    `analysis.json` 的 `materials_confidence: "medium"`、`confidence: "medium"`
+    （已刪除 `output/bathroom_tiled/`，非交付產物）。
+  - **下一步**：Opus 驗證 T-30。通過後回 Fable 裁決 T-27（室內陳設吸音，
+    材質修正輪前置）。

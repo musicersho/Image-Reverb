@@ -1,5 +1,26 @@
 # Dev Log
 
+## 2026-08-30 (56)
+
+- 🔵 **T-30 完成，待驗證**：gate 出口導引（裁決 T-28-A 執行卡）。只改
+  `pipeline.run_photo()` 低信心分支印的訊息，gate 判定條件（`compute_materials_
+  confidence()`／`run_photo()` 觸發放行邏輯）逐行未動。新訊息逐面點名
+  `fallback`／`out_of_domain` 面（無來源面／clip 面不列，避免誤導——地雷 #23）、
+  依軸分開給建議（`geometry=low` 才印 `--override-dims`；`materials=low` 才印
+  可直接複製的 `--override-material 面=<材質id>` 指令骨架＋查表提示＋規則 2
+  退化警語）、`--force-low-confidence` 文案標明不建議當常規路徑。
+- `scripts/test_output_gate.py` 新增案例【D】（materials=low、geometry=medium
+  → 斷言 stderr 不含 `--override-dims` 但含 `--override-material`），案例【A】
+  加四項 stderr 內容斷言（改用 floor=fallback／ceiling 無來源／四牆 clip 的
+  混合 fixture，複現 `bathroom_tiled` 真實分佈）。
+- 驗證：九套測試全 exit 0；六條交付 IR MD5 逐一重生比對（T-14 由
+  `test_ir_synth.py`【6】內建；T-20 `2adbaa75…`／`2dd19b6e…`、T-21
+  `9a94ffdf…`／`a1c21bcc…`手動重生）全部逐位元相同；`ir_metrics.py` diff 空；
+  SPEC/ROADMAP/WORKFLOW/`output/mvp_acceptance/` 未觸碰。實跑
+  `bathroom_tiled.png`：不帶旗標 exit 3 且訊息只點名 floor，加
+  `--override-material floor=marble` 後 exit 0 且 `materials_confidence=medium`。
+- 下一步：Opus 驗證 T-30；通過後回 Fable 裁決 T-27（室內陳設吸音）。
+
 ## 2026-08-30 (55)
 
 - 📋 **HANDOFF.md 全面更新到現況**（先前停在 (41)，落後 12 筆——上一輪零信用

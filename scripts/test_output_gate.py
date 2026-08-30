@@ -15,14 +15,21 @@ preview，完全不檢查 overall confidence——T-17 §7-1 的體育館／車�
 T-13 聲學計算、T-14 IR 合成／匯出、wet preview 全部走**真實程式碼**，只是不下載
 影像模型——gate 本身以及 gate 後續的檔案寫出流程都是真實路徑，不是空跑。
 
-本測試分四部分：
+本測試分五部分：
   0. CLI 參數接線（subprocess，不跑模型）：`--force-low-confidence` 存在，且
      跟 `--override-dims`/`--override-material` 一樣被限定只能搭配照片輸入
   A. overall=low、不帶旗標 → exit 3，且完全沒有建立輸出目錄（不只是沒有 wav——
-     連 `_make_out_dir()` 都不該被呼叫，證明 gate 擋在寫檔**與**合成之前）
+     連 `_make_out_dir()` 都不該被呼叫，證明 gate 擋在寫檔**與**合成之前）。
+     T-30：另外斷言 stderr 逐面點名觸發面（`floor`=fallback）與 `--override-material`
+     字樣，且**不**點名無來源的 `ceiling` 與 clip 來源的四面牆——只有
+     fallback/out_of_domain 才觸發 `compute_materials_confidence()` 規則 1，
+     列出其他面會誤導使用者以為覆寫它們能解 gate（地雷 #23）。
   B. overall=low、帶 `--force-low-confidence` → exit 0，wav 產生，
      `analysis.json` 有 `forced_low_confidence: true`
   C. overall=medium（沒有觸發 gate）→ exit 0，wav 產生，行為不受影響
+  D. materials=low 且 geometry=medium（T-30）→ exit 3，stderr **不**出現
+     `--override-dims` 建議（幾何不是 low，這條建議救不了 gate），但仍有
+     `--override-material` 建議——驗證建議是依軸分開給的，不是無條件全列
   （C 額外用 `ir_synth.synthesize_ir` 呼叫次數佐證：A 呼叫 0 次、B/C 呼叫 1 次——
   gate 確實擋在合成之前，不是算完才丟棄結果）
 
@@ -36,6 +43,8 @@ exit 0）——自我檢查已用 `git stash` 實測並附輸出。
 
 from __future__ import annotations
 
+import contextlib
+import io
 import shutil
 import subprocess
 import sys
@@ -48,6 +57,7 @@ from src.image_reverb import config, ir_synth  # noqa: E402
 from src.image_reverb import pipeline  # noqa: E402
 from src.image_reverb import preprocess as preprocess_mod  # noqa: E402
 from src.image_reverb import surfaces as surfaces_mod  # noqa: E402
+from src.image_reverb.geometry import RoomEstimate  # noqa: E402
 from src.image_reverb.materials import SURFACE_NAMES, SurfaceMaterials  # noqa: E402
 
 PROJECT_ROOT = config.PROJECT_ROOT
@@ -75,6 +85,26 @@ def _make_surf(source_for_all: str) -> SurfaceMaterials:
     for name in SURFACE_NAMES:
         surf.sources[name] = source_for_all
     return surf
+
+
+def _make_mixed_surf() -> SurfaceMaterials:
+    """T-30：floor=fallback、四面牆=clip、ceiling **不設定來源**（模擬地雷 #23
+    的「無來源」狀態——`bathroom_tiled` 的真實分佈：floor fallback、ceiling 無來源、
+    四面牆 clip）。用來驗證 gate 訊息只點名 fallback/out_of_domain 的面。
+    """
+    surf = SurfaceMaterials(**_DISTINCT)
+    surf.sources["floor"] = "fallback"
+    for name in ("west", "east", "south", "north"):
+        surf.sources[name] = "clip"
+    return surf
+
+
+def _fake_estimate_room_medium(summary, override_dims=None, scene_cues=None):
+    """T-30 案例 D 用：geometry=medium，不觸發 --override-dims 建議。"""
+    return RoomEstimate(
+        length_m=4.0, width_m=3.0, height_m=2.5,
+        confidence="medium", dims_source="metric_depth",
+    )
 
 
 def _install_stubs(surf: SurfaceMaterials):
@@ -142,10 +172,14 @@ def main() -> int:
         low_photo = Path(tmp) / "_test_t26_gate_low.png"
         low_forced_photo = Path(tmp) / "_test_t26_gate_low_forced.png"
         medium_photo = Path(tmp) / "_test_t26_gate_medium.png"
-        for p in (low_photo, low_forced_photo, medium_photo):
+        mixed_geom_photo = Path(tmp) / "_test_t30_gate_mixed_geom.png"
+        for p in (low_photo, low_forced_photo, medium_photo, mixed_geom_photo):
             p.write_bytes(b"")
 
-        out_dirs = [OUTPUT_ROOT / p.stem for p in (low_photo, low_forced_photo, medium_photo)]
+        out_dirs = [
+            OUTPUT_ROOT / p.stem
+            for p in (low_photo, low_forced_photo, medium_photo, mixed_geom_photo)
+        ]
         for d in out_dirs:
             if d.exists():
                 shutil.rmtree(d)
@@ -155,16 +189,40 @@ def main() -> int:
             # --- 案例 A：overall=low，不帶旗標 -----------------------------
             print("【A】overall=low，不帶 --force-low-confidence")
             low_surf = _make_surf("fallback")  # 任一面 fallback → materials_confidence=low
-            orig = _install_stubs(low_surf)
+            mixed_surf = _make_mixed_surf()  # T-30：floor fallback／ceiling 無來源／四牆 clip
+            orig = _install_stubs(mixed_surf)
             n_before = call_count["n"]
+            stderr_buf_a = io.StringIO()
             try:
-                rc = pipeline.run_photo(
-                    str(low_photo), override_dims="4x3x2.5", no_viz=True
-                )
+                with contextlib.redirect_stderr(stderr_buf_a):
+                    rc = pipeline.run_photo(
+                        str(low_photo), override_dims="4x3x2.5", no_viz=True
+                    )
             finally:
                 _restore_stubs(*orig)
+            stderr_a = stderr_buf_a.getvalue()
 
             check("exit code == 3", rc == 3, f"rc={rc}")
+            check(
+                "stderr 點名觸發面 floor（fallback）＋目前材質 id",
+                "floor" in stderr_a and "fallback" in stderr_a and "carpet" in stderr_a,
+                f"stderr={stderr_a!r}",
+            )
+            check(
+                "stderr 出現 --override-material 覆寫骨架",
+                "--override-material floor=" in stderr_a,
+                f"stderr={stderr_a!r}",
+            )
+            check(
+                "stderr 不點名無來源的 ceiling（地雷 #23：不觸發規則 1，列了會誤導）",
+                "ceiling" not in stderr_a,
+                f"stderr={stderr_a!r}",
+            )
+            check(
+                "stderr 不點名 clip 來源的四面牆（只列 fallback/out_of_domain）",
+                not any(w in stderr_a for w in ("west", "east", "south", "north")),
+                f"stderr={stderr_a!r}",
+            )
             out_dir_a = OUTPUT_ROOT / low_photo.stem
             check(
                 "完全沒有建立輸出目錄（gate 擋在 _make_out_dir() 之前）",
@@ -249,6 +307,37 @@ def main() -> int:
                 "analysis.json: forced_low_confidence == false（旗標沒給、也不需要）",
                 analysis_c.get("forced_low_confidence") is False,
                 f"forced_low_confidence={analysis_c.get('forced_low_confidence')!r}",
+            )
+
+            # --- 案例 D（T-30）：materials=low 且 geometry=medium ----------------
+            print("【D】materials=low 且 geometry=medium → stderr 不出現 --override-dims 建議")
+            mixed_surf_d = _make_mixed_surf()
+            orig_stubs_d = _install_stubs(mixed_surf_d)
+            orig_estimate_room = pipeline.estimate_room
+            pipeline.estimate_room = _fake_estimate_room_medium
+            stderr_buf_d = io.StringIO()
+            try:
+                with contextlib.redirect_stderr(stderr_buf_d):
+                    rc = pipeline.run_photo(str(mixed_geom_photo), no_viz=True)
+            finally:
+                _restore_stubs(*orig_stubs_d)
+                pipeline.estimate_room = orig_estimate_room
+            stderr_d = stderr_buf_d.getvalue()
+
+            check(
+                "exit code == 3（materials=low → overall=low，即使 geometry=medium）",
+                rc == 3,
+                f"rc={rc}",
+            )
+            check(
+                "stderr 不出現 --override-dims 建議（geometry=medium，不是 low）",
+                "--override-dims" not in stderr_d,
+                f"stderr={stderr_d!r}",
+            )
+            check(
+                "stderr 仍有 --override-material 建議（materials=low 才是觸發原因）",
+                "--override-material floor=" in stderr_d,
+                f"stderr={stderr_d!r}",
             )
         finally:
             ir_synth.synthesize_ir = real_synthesize_ir

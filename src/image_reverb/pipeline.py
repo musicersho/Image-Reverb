@@ -26,7 +26,7 @@ from PIL import UnidentifiedImageError
 from . import config, coupled, ir_synth, scene_text, visualize
 from .acoustics import compute_acoustics
 from .geometry import estimate_room, parse_override_dims
-from .materials import apply_overrides, load_materials
+from .materials import SURFACE_NAMES, apply_overrides, load_materials
 from .surfaces import compute_materials_confidence
 
 PROJECT_ROOT = config.PROJECT_ROOT
@@ -261,16 +261,55 @@ def run_photo(
                     "——幾何和/或材質推測很可能不可信，直接輸出容易讓使用者盲聽配錯空間。",
                     file=sys.stderr,
                 )
+                # T-30（裁決 T-28-A 執行卡）：只點名 fallback／out_of_domain 的面——
+                # 這兩種來源才會觸發 compute_materials_confidence() 規則 1。無來源的面
+                # （地雷 #23）不觸發規則 1，列了會誤導使用者以為覆寫它能解 gate。
+                low_conf_faces = [
+                    name
+                    for name in SURFACE_NAMES
+                    if surf.sources.get(name) in ("fallback", "out_of_domain")
+                ]
+                if low_conf_faces:
+                    print("  低信心面：", file=sys.stderr)
+                    for name in low_conf_faces:
+                        print(
+                            f"    {name}：目前推測 {getattr(surf, name)}"
+                            f"（來源：{surf.sources.get(name)}）",
+                            file=sys.stderr,
+                        )
                 print("  怎麼繼續：", file=sys.stderr)
+                step = 1
+                if est.confidence == "low":
+                    print(
+                        f"    {step}) 幾何不可信 → 用 --override-dims 手動指定房間尺寸"
+                        "（公尺），例如 4x3x2.5",
+                        file=sys.stderr,
+                    )
+                    step += 1
+                if materials_confidence == "low" and low_conf_faces:
+                    skeleton = " ".join(
+                        f"--override-material {name}=<材質id>" for name in low_conf_faces
+                    )
+                    print(
+                        f"    {step}) 材質不可信 → 人工確認上列面的實際材質後覆寫，"
+                        f"例如：python -m src.image_reverb {photo_path} {skeleton}",
+                        file=sys.stderr,
+                    )
+                    print(
+                        "       <材質id> 請自行判斷並用 "
+                        "`python scripts/gen_ir_manual.py --list-materials` 查表填入"
+                        "——這是人工確認的出口，不要用另一層自動猜測取代 CLIP。",
+                        file=sys.stderr,
+                    )
+                    print(
+                        "       注意：覆寫後若六面材質變成完全相同，仍會落入退化規則"
+                        "（規則 2）判定為 low。",
+                        file=sys.stderr,
+                    )
+                    step += 1
                 print(
-                    "    1) 幾何不可信 → 用 --override-dims 手動指定房間尺寸"
-                    "（公尺），例如 4x3x2.5",
-                    file=sys.stderr,
-                )
-                print(
-                    "    2) 仍要照樣輸出 → 加 --force-low-confidence"
-                    "（會在結果中留下警告標記，責任自負；--override-dims"
-                    " 不會自動解除這道關卡，因為材質仍可能是 low）",
+                    f"    {step}) 仍要照樣輸出 → 加 --force-low-confidence"
+                    "（結果會標記 forced_low_confidence=true，不建議當常規路徑）",
                     file=sys.stderr,
                 )
                 return 3

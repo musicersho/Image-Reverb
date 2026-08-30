@@ -96,9 +96,15 @@
       基準率複測再談調規則）。另記 HANDOFF 地雷 #23/#24（無來源第四狀態；
       透視照 materials high 結構性不可達）。全文見 TASKS.md T-28 卡尾。
 - [ ] **🔮 待 Fable 裁決（一張）**：**T-27 室內陳設吸音表示** —— 等效吸音面積 vs occupancy
-- [ ] **T-30 gate 出口導引**（裁決 T-28-A 執行卡，Sonnet 可做）：只改 gate 擋下後
-      印什麼——逐面點名 fallback/ood 面、依軸給建議、附可複製的覆寫指令骨架；
-      **gate 判定規則一行都不許動**，六條 MD5 不變。卡片見 TASKS.md T-30
+- [x] **T-30 gate 出口導引 🔵 待驗證（Sonnet 2026-08-30 完成，自我檢查通過）**：
+      只改 `pipeline.run_photo()` gate 觸發後印的訊息——逐面點名 fallback/ood
+      面（無來源面／clip 面不列）、依軸分開給建議（geometry=low 才印
+      `--override-dims`；materials=low 才印可直接複製的 `--override-material`
+      指令骨架）、`--force-low-confidence` 文案標明不建議當常規路徑。
+      gate 判定條件（`compute_materials_confidence()`／`run_photo()` 觸發放行
+      邏輯）逐行未動；九套測試全 exit 0；六條交付 IR MD5 逐一重生比對逐位元
+      相同；實跑 `bathroom_tiled.png` 驗證訊息內容與 gate 解除路徑皆符合預期。
+      新增 `test_output_gate.py` 案例【D】。卡片見 TASKS.md T-30，下一步 Opus 驗證。
 - [ ] **T-29**：三軸信心只加在 `run_photo()`，`--text` 只有 `confidence`、
       `--scene` 連 `confidence` 都沒有；三條管線 schema 不一致要有意識地決定
 - [ ] **← 之後（Fable）**：§7-1＋§7-2 皆未達標，要不要再加一輪。
