@@ -26,6 +26,7 @@ from typing import Any
 import pyroomacoustics as pra
 
 from . import config
+from .furnishings import FurnishingEstimate
 from .geometry import RoomEstimate
 from .materials import SurfaceMaterials, load_materials
 
@@ -34,6 +35,13 @@ RT60_DISCLAIMER = (
     "已實證：吸音係數高（>0.3）時低頻公式值與量測 IR 的 T30 可差到 2 倍以上"
     "（逐表面 floor=carpet 的 125Hz：Sabine 0.348s vs 實測 0.748s）。"
     "最終聽感以 T-14 生成的 IR 實測 T30 為準，不可直接引用本欄位當作實際殘響時間。"
+)
+
+FURNISHINGS_DISCLAIMER = (
+    "furnishings 是室內陳設（床/沙發/窗簾等）依 ADE20K 分割像素佔比換算的"
+    "逐頻段等效吸音面積估計值，不是實測值；多數類別的 α 是規劃者代表值而非"
+    "逐一查表所得（見 data/furnishings.json 各類別 source），實際吸音量可能有"
+    "顯著誤差，僅供估算晚期殘響尾巴縮短的方向與量級參考（裁決 T-27-A）。"
 )
 
 
@@ -149,9 +157,10 @@ class AcousticsResult:
     predelay_ms: float
     confidence: str
     warnings: list[str] = field(default_factory=list)
+    furnishings: dict[str, Any] | None = None
 
     def as_dict(self) -> dict[str, Any]:
-        return {
+        d = {
             "dims": {
                 "length_m": round(self.length_m, 3),
                 "width_m": round(self.width_m, 3),
@@ -171,14 +180,25 @@ class AcousticsResult:
             "confidence": self.confidence,
             "warnings": list(self.warnings),
         }
+        if self.furnishings is not None:
+            d["furnishings"] = self.furnishings
+        return d
 
 
 def compute_acoustics(
     estimate: RoomEstimate,
     surfaces: SurfaceMaterials,
     materials_data: dict[str, Any] | None = None,
+    furnishings: FurnishingEstimate | None = None,
 ) -> AcousticsResult:
-    """主入口：吃 T-11 的 `RoomEstimate` ＋ T-12 的 `SurfaceMaterials` → 聲學參數。"""
+    """主入口：吃 T-11 的 `RoomEstimate` ＋ T-12 的 `SurfaceMaterials` → 聲學參數。
+
+    `furnishings`（T-31 `estimate_furnishings()` 的回傳值，可為 None）是裁決
+    T-27-A 的執行部分：逐頻段等效吸音面積 `A_extra[band] = Σ_c ratio_c × S_total
+    × α_c[band]` 加進 Sabine 的 `total_absorption` 與 Eyring 的 ā 分子——兩者共用
+    同一個逐頻段 `total_absorption` 變數，因此一定同時受影響，不存在「只加一邊」
+    的風險。`furnishings=None`（預設）時行為與加這個參數前逐位元相同。
+    """
     # T-15 技術債收斂（步驟 5）：零/負尺寸在這裡硬擋，不管呼叫端是哪條管線。
     # 三條輸入管線各自的入口本來就有自己的零/負尺寸檢查（--override-dims 的
     # parse_override_dims()、scene_text 的顯式尺寸正則、coupled 的 resolve_room()），
@@ -202,20 +222,66 @@ def compute_acoustics(
     total_surface_m2 = sum(areas.values())
     air_terms = air_absorption_per_m(band_freqs)
 
+    # 陳設等效吸音面積（裁決 T-27-A）：逐頻段先算好，下面的迴圈直接併入
+    # total_absorption——furnishings=None 時全部是 0.0，行為與加這個參數前一致。
+    furnishings_absorption_by_band = [0.0] * len(band_freqs)
+    if furnishings is not None:
+        for cat in furnishings.categories.values():
+            for band_idx in range(len(band_freqs)):
+                furnishings_absorption_by_band[band_idx] += (
+                    cat["ratio"] * total_surface_m2 * cat["alpha"][band_idx]
+                )
+
     rt60_sabine: list[float] = []
     rt60_eyring: list[float] = []
+    surfaces_absorption_by_band: list[float] = []
     for band_idx in range(len(band_freqs)):
         # 逐面面積加權加總——這是唯一允許的「跨表面合併」方式（約束 A/B 都要求）
-        total_absorption = sum(
+        surfaces_absorption = sum(
             areas[name] * alpha_table[name][band_idx] for name in areas
         )
+        surfaces_absorption_by_band.append(surfaces_absorption)
+        total_absorption = surfaces_absorption + furnishings_absorption_by_band[band_idx]
         air_term = 4.0 * air_terms[band_idx] * volume_m3
         rt60_sabine.append(rt60_sabine_band(volume_m3, total_absorption, air_term))
         rt60_eyring.append(
             rt60_eyring_band(volume_m3, total_absorption, total_surface_m2, air_term)
         )
 
-    warnings = list(estimate.notes) + list(surfaces.warnings)
+    furnishings_payload: dict[str, Any] | None = None
+    furnishings_notes_and_warnings: list[str] = []
+    if furnishings is not None:
+        idx_1k = band_freqs.index(1000)
+        total_absorption_1k = (
+            surfaces_absorption_by_band[idx_1k] + furnishings_absorption_by_band[idx_1k]
+        )
+        proportion_1k = (
+            furnishings_absorption_by_band[idx_1k] / total_absorption_1k
+            if total_absorption_1k > 0
+            else 0.0
+        )
+        furnishings_payload = {
+            "categories": {
+                name: {
+                    "ratio": round(cat["ratio"], 5),
+                    "A_by_band": [
+                        round(cat["ratio"] * total_surface_m2 * cat["alpha"][i], 4)
+                        for i in range(len(band_freqs))
+                    ],
+                }
+                for name, cat in furnishings.categories.items()
+            },
+            "absorption_extra_m2_by_band": [
+                round(v, 4) for v in furnishings_absorption_by_band
+            ],
+            "proportion_of_absorption_1khz": round(proportion_1k, 4),
+            "total_ratio": round(furnishings.total_ratio, 5),
+            "cap_applied": bool(furnishings.warnings),
+            "disclaimer": FURNISHINGS_DISCLAIMER,
+        }
+        furnishings_notes_and_warnings = list(furnishings.notes) + list(furnishings.warnings)
+
+    warnings = list(estimate.notes) + list(surfaces.warnings) + furnishings_notes_and_warnings
 
     return AcousticsResult(
         length_m=length_m,
@@ -232,6 +298,7 @@ def compute_acoustics(
         predelay_ms=compute_predelay_ms(length_m, width_m, height_m),
         confidence=estimate.confidence,
         warnings=warnings,
+        furnishings=furnishings_payload,
     )
 
 

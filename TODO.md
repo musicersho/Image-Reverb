@@ -103,11 +103,14 @@
 - [ ] **Phase 1.7 材質修正輪（Fable 規劃 2026-08-30，卡片在 TASKS.md 檔尾）**：
       **T-31 🔵 待驗證**（陳設資料表＋偵測模組，Sonnet 自檢通過 2026-08-30；
       九個類別 α 值逐字轉錄、`ade_id` 已用 `id2label` 實測核對相符、十套測試
-      exit 0、六條交付 IR MD5 零回歸、gate 判定零改動）→ T-32 ⬜（等效吸音入
-      聲學計算，`--no-furnishings` 旗標）→ T-33 ⬜（13 張基準率複測量測卡，
-      通過後回 Fable 複評 gate 規則）→ T-34 ⬜（gate 訊息規則 2 死路出口＋
-      測試補洞）。共同紅線：gate 判定規則零改動、六條交付 IR MD5 不變、
-      陳設資料不得餵進信心軸。
+      exit 0、六條交付 IR MD5 零回歸、gate 判定零改動）→ **T-32 🔵 待驗證**
+      （等效吸音入聲學計算，Sonnet 自檢通過 2026-08-30；`compute_acoustics()`
+      加 `furnishings` 參數＋`--no-furnishings` 旗標，furnishings=None 時逐位元
+      不變；十套測試 exit 0（新增 F1–F4）、六條交付 IR MD5 零回歸、gate 判定
+      零改動、`bedroom_ai_generated.png` 實測代表殘響 ~3.7s→~0.52s）→
+      T-33 ⬜（13 張基準率複測量測卡，通過後回 Fable 複評 gate 規則）→
+      T-34 ⬜（gate 訊息規則 2 死路出口＋測試補洞）。共同紅線：gate 判定規則
+      零改動、六條交付 IR MD5 不變、陳設資料不得餵進信心軸。
 - [x] **T-30 gate 出口導引 ✅ 通過（Opus 驗證 2026-08-30）**：
       只改 `pipeline.run_photo()` gate 觸發後印的訊息——逐面點名 fallback/ood
       面（無來源面／clip 面不列）、依軸分開給建議（geometry=low 才印

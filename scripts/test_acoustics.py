@@ -12,7 +12,17 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.image_reverb.acoustics import compute_acoustics  # noqa: E402
+from src.image_reverb.acoustics import (  # noqa: E402
+    air_absorption_per_m,
+    compute_acoustics,
+    rt60_sabine_band,
+    surface_areas_m2,
+)
+from src.image_reverb.furnishings import (  # noqa: E402
+    FurnishingEstimate,
+    estimate_furnishings,
+    load_furnishings,
+)
 from src.image_reverb.geometry import RoomEstimate  # noqa: E402
 from src.image_reverb.materials import (  # noqa: E402
     load_materials,
@@ -126,12 +136,124 @@ def test_not_hardcoded():
           f"predelay={hall.predelay_ms:.2f}ms　[OK，數字隨輸入變動]")
 
 
+def _synthetic_furnishings(categories: dict) -> FurnishingEstimate:
+    total_ratio = sum(v["ratio"] for v in categories.values())
+    return FurnishingEstimate(categories=categories, total_ratio=total_ratio, warnings=[], notes=[])
+
+
+def test_f1_none_identical():
+    print("[F1] furnishings=None 與不帶參數呼叫完全相等，as_dict() 無 furnishings 鍵...")
+    data = load_materials()
+    surfaces = uniform_surfaces("carpet", data)
+    est = small_room_estimate()
+    result_default = compute_acoustics(est, surfaces, data)
+    result_explicit_none = compute_acoustics(est, surfaces, data, furnishings=None)
+    if result_default.as_dict() != result_explicit_none.as_dict():
+        die("furnishings=None 與不帶參數呼叫的結果不相等")
+    if "furnishings" in result_default.as_dict():
+        die("furnishings=None 時 as_dict() 不應該有 'furnishings' 鍵")
+    print("    OK")
+
+
+def test_f2_hand_calc():
+    print("[F2] 手算對照：加入陳設後 rt60_bands_sabine 應等於手算值（誤差 <1e-9）...")
+    data = load_materials()
+    surfaces = uniform_surfaces("carpet", data)
+    est = small_room_estimate()
+
+    band_freqs, alpha_table = surfaces.alpha_table(data)
+    areas = surface_areas_m2(est.length_m, est.width_m, est.height_m)
+    total_surface = sum(areas.values())
+    air_terms = air_absorption_per_m(band_freqs)
+
+    bed_alpha = [0.30, 0.50, 0.65, 0.75, 0.80, 0.80]  # 裁決 T-27-A 表格的 bed 值
+    bed_ratio = 0.12
+    furnishings = _synthetic_furnishings({"bed": {"ratio": bed_ratio, "alpha": bed_alpha}})
+
+    result = compute_acoustics(est, surfaces, data, furnishings=furnishings)
+
+    for i, freq in enumerate(band_freqs):
+        surfaces_absorption = sum(areas[name] * alpha_table[name][i] for name in areas)
+        a_extra = bed_ratio * total_surface * bed_alpha[i]
+        air_term = 4.0 * air_terms[i] * est.volume_m3
+        expected = rt60_sabine_band(est.volume_m3, surfaces_absorption + a_extra, air_term)
+        actual = result.rt60_bands_sabine[i]
+        err = abs(actual - expected)
+        print(f"    {freq}Hz：手算 {expected:.6f}s　實得 {actual:.6f}s　差 {err:.2e}")
+        if err > 1e-9:
+            die(f"{freq}Hz 手算與 compute_acoustics() 不符（差 {err:.2e} > 1e-9）")
+    print("    OK")
+
+
+def test_f3_monotonic():
+    print("[F3] 加入陳設後六頻段 Sabine／Eyring RT60 全部嚴格下降...")
+    data = load_materials()
+    surfaces = uniform_surfaces("carpet", data)
+    est = small_room_estimate()
+    furnishings = _synthetic_furnishings(
+        {
+            "sofa": {"ratio": 0.08, "alpha": [0.35, 0.50, 0.60, 0.70, 0.70, 0.65]},
+            "curtain": {"ratio": 0.05, "alpha": [0.07, 0.31, 0.49, 0.75, 0.70, 0.60]},
+        }
+    )
+    without = compute_acoustics(est, surfaces, data)
+    with_furn = compute_acoustics(est, surfaces, data, furnishings=furnishings)
+    for i, freq in enumerate(without.band_center_freqs_hz):
+        if not (with_furn.rt60_bands_sabine[i] < without.rt60_bands_sabine[i]):
+            die(f"{freq}Hz Sabine RT60 加陳設後沒有下降")
+        if not (with_furn.rt60_bands_eyring[i] < without.rt60_bands_eyring[i]):
+            die(f"{freq}Hz Eyring RT60 加陳設後沒有下降")
+    print("    OK（六頻段 Sabine／Eyring 全部嚴格下降）")
+
+
+def test_f4_cap_scales_down():
+    print("[F4] cap 壓回後 A_extra 對應縮小（真實 estimate_furnishings() 整合測試）...")
+    data = load_materials()
+    surfaces = uniform_surfaces("carpet", data)
+    est = small_room_estimate()
+    furn_data = load_furnishings()
+
+    # bed(7)=0.30 + sofa(23)=0.30 + curtain(18)=0.20 = 0.80，超過 cap 0.5
+    raw_ratios = {7: 0.30, 23: 0.30, 18: 0.20}
+    detail = {"class_ratios": {"single": dict(raw_ratios)}}
+    furn = estimate_furnishings(detail, furn_data)
+    if furn is None:
+        die("estimate_furnishings() 不應該回傳 None")
+    if abs(furn.total_ratio - 0.5) > 1e-9:
+        die(f"cap 應把 total_ratio 壓到 0.5，實得 {furn.total_ratio}")
+    if not furn.warnings:
+        die("cap 觸發時 FurnishingEstimate.warnings 應該非空")
+
+    result = compute_acoustics(est, surfaces, data, furnishings=furn)
+    if result.furnishings is None:
+        die("compute_acoustics() 的 furnishings 欄位不應該是 None")
+    if not result.furnishings["cap_applied"]:
+        die("furnishings['cap_applied'] 應該是 True")
+
+    scale = 0.5 / sum(raw_ratios.values())
+    for item in furn_data["furnishings"]:
+        if item["ade_id"] not in raw_ratios:
+            continue
+        expected_ratio = raw_ratios[item["ade_id"]] * scale
+        actual_ratio = furn.categories[item["ade_name"]]["ratio"]
+        if abs(actual_ratio - expected_ratio) > 1e-9:
+            die(
+                f"{item['ade_name']} 壓回後 ratio 不符：期望 {expected_ratio}，"
+                f"實得 {actual_ratio}"
+            )
+    print("    OK（總比例 0.80 → 壓回 0.50，cap_applied=True，逐類別 ratio 等比縮小）")
+
+
 def main():
     test_a_uniform_carpet()
     test_b_floor_carpet_rest_gypsum()
     test_output_shape()
     test_eyring_vs_sabine()
     test_not_hardcoded()
+    test_f1_none_identical()
+    test_f2_hand_calc()
+    test_f3_monotonic()
+    test_f4_cap_scales_down()
     print("\n全部通過。")
     return 0
 

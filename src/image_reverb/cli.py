@@ -64,6 +64,13 @@ def main(argv: list[str] | None = None) -> int:
         "加這個旗標可強制照樣輸出，結果會在 analysis.json 標記"
         "forced_low_confidence=true 並留下警告",
     )
+    parser.add_argument(
+        "--no-furnishings",
+        action="store_true",
+        help="（僅照片輸入）預設會把偵測到的室內陳設（床/沙發/窗簾等）換算成"
+        "等效吸音面積算進聲學計算（T-32，裁決 T-27-A），加這個旗標可關閉，"
+        "用於 A/B 對照或陳設偵測結果有問題時的退路",
+    )
     args = parser.parse_args(argv)
 
     error = pipeline.check_mutual_exclusion(args.photo, args.text, args.scene)
@@ -76,11 +83,12 @@ def main(argv: list[str] | None = None) -> int:
         args.override_dims is not None
         or args.override_material is not None
         or args.force_low_confidence
+        or args.no_furnishings
     )
     if photo_only_flags_used and args.photo is None:
         print(
-            "錯誤：--override-dims/--override-material/--force-low-confidence "
-            "只能搭配照片輸入使用",
+            "錯誤：--override-dims/--override-material/--force-low-confidence/"
+            "--no-furnishings 只能搭配照片輸入使用",
             file=sys.stderr,
         )
         return 2
@@ -92,6 +100,7 @@ def main(argv: list[str] | None = None) -> int:
             args.override_material,
             no_viz=args.no_viz,
             force_low_confidence=args.force_low_confidence,
+            no_furnishings=args.no_furnishings,
         )
     if args.text is not None:
         return pipeline.run_text(args.text, no_viz=args.no_viz)

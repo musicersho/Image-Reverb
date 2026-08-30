@@ -3847,7 +3847,52 @@
    它影響 geometry confidence，動了就等於動 gate。
 
 ### T-31 陳設等效吸音：資料表＋偵測模組（裁決 T-27-A 執行卡 1/3）
-- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-08-30）
+- **狀態**：✅ 通過（Opus 驗證，2026-08-30）——附一項須併入「驗證通過」commit 的文件修正，見下方「Opus 驗證紀錄」
+- **Opus 驗證紀錄（2026-08-30）**：全部驗證指令由驗證者在乾淨工作區實際重跑，非採信自檢宣稱。
+  - **鐵則 1**：十套測試全部 exit 0（`test_ir_synth`／`test_output_gate`／`test_confidence_axes`／
+    `test_material_fallback`／`test_surface_trusted_scope`／`test_t30_low_combined`／
+    `test_scene_text`／`test_coupled`／`test_acoustics`／`test_furnishings`）。
+  - **鐵則 2**：六條交付 IR 逐條重生比對，MD5 全部相同——T-14 兩條由 `test_ir_synth`【6】內建
+    比對（exit 0）；T-20 得 `2adbaa75…`／`2dd19b6e…`；T-21 得 `9a94ffdf…`／`a1c21bcc…`。
+  - **鐵則 3／4**：`git diff 64ec163..8d1c646 -- ir_metrics.py pipeline.py SPEC.md ROADMAP.md
+    WORKFLOW.md output/mvp_acceptance/` 輸出 0 行，全部未觸碰。
+  - **鐵則 5（診斷力實測）**：把 `person` 的 `ade_id` 改成 3 → 【A】不相交測試 `❌`
+    （`重疊清單 = [('person', 3)]`），整體 exit 1；`git checkout` 還原後 exit 0。
+    另跑 11 組負向探針（撞 floor 3／ceiling 5／wall 0／rug 28、頻段不一致、α>1、α<0、
+    source 空白、缺頻段、空清單、缺欄位），`load_furnishings()` **全部在載入時拋 ValueError**
+    ——不相交檢查確實擋在載入時，不是只靠測試斷言。
+  - **鐵則 6**：`surfaces.py` 逐行 diff 只有三行（`detail` 初始化加 `class_ratios` 鍵、
+    equirect 與 perspective 各一行賦值），`compute_materials_confidence()`／
+    `classify_region_material()`／warnings 邏輯零改動；`pipeline.py` 完全未動（含 scene_cues
+    202-220）。端到端 `python -m src.image_reverb assets/photos/bathroom_tiled.png` 仍
+    geometry=medium／materials=low／overall=low、exit 3、T-30 出口導引訊息完整，與 T-30 一致。
+    `grep` 確認 `furnishings.py` 未被 `pipeline.py`／`acoustics.py` import（本卡範圍正確，留給 T-32）。
+  - **資料表逐格核對**：9 類別 × (ade_id + 六頻段 α + confidence) 以程式對照 T-27-A 表格，
+    **零筆不符**；【C】id2label 九項為精確相符（`'person'`／`'bed '`／`'sofa'`／`'armchair'`／
+    `'seat'`／`'chair'`／`'curtain'`／`'cushion'`／`'pillow'`），非子字串僥倖。
+  - **非假實作（真實照片實測，補足測試只有合成夾具的不足）**：
+    `bedroom_ai_generated` → bed 21.2%／curtain 9.0%／person 3.2%／pillow 0.5%；
+    `livehouse_riverside_ximen` → person 35.7%／curtain 14.3%，總計 50.4% **真的觸發 cap**
+    並等比壓回＋警告；`bathroom_tiled`（無陳設）→ `categories={}`、`total_ratio=0`，無誤報。
+  - **錯誤處理**：不存在檔案 → `FileNotFoundError`；壞 JSON／非 UTF-8 二進位／JSON 是 list
+    → 皆 `ValueError` 且訊息清楚，無 crash、無吞錯。
+  - **⚠️ 須併入「T-31: 驗證通過」commit 的文件修正（唯一一項，不影響任何數值）**：
+    `data/furnishings.json` 的 `curtain.source` 把 0.07/0.31/0.49/0.75/0.70/0.60 描述成
+    「重質天鵝絨窗簾（heavy velour drape）」。通行吸音係數表裡這一列對應的是
+    **中量級（14 oz/yd²）天鵝絨、摺疊至半面積**；heavy（18 oz/yd²）那一列的通行值是
+    0.14/0.35/0.55/0.72/0.70/0.65。α 數值本身是裁決 T-27-A 指定值、轉錄無誤，要改的只有描述字串。
+    同時 `curtain`／`seat` 兩筆的 source 把卡片要求的「建築聲學教科書經典列」升級成點名
+    Egan《Architectural Acoustics》與 Vér & Beranek《Noise and Vibration Control Engineering》
+    ——書是真的、也確實收錄材料表，未達「假造出處」，但這是 Sonnet 無從查證的精確出處，
+    建議退回卡片原本要求的通用寫法（或保留書名但註明「未逐頁查證」）。
+  - **給 T-32 的提醒（非缺陷，Sonnet 已於交接筆記載明，驗證者確認屬實）**：
+    `save_detail()` 現在會把 `class_ratios` 寫進磁碟 JSON，但 JSON 的 key 一律是**字串**；
+    `estimate_furnishings()` 用 **int** key 查表。T-32 必須吃
+    `surfaces_from_preprocess()` 的記憶體內 `detail`，不可從磁碟讀回的 JSON 餵進去，
+    否則會安靜地全部查不到、回傳空 `categories`。
+  - **次要觀察（不阻擋，記錄備查）**：【C】用 `ade_name in label` 子字串斷言，理論上
+    `chair`(19) 若誤指到 `armchair`(30) 會假通過；實測九項皆精確相符故無影響，
+    T-32 若再擴類別可考慮改精確比對。環景六視角路徑無實體素材可測，僅由【B2】合成夾具覆蓋。
 - **前置**：T-30 ✅、裁決 T-27-A（見 T-27 卡）
 - **目標**：把「照片裡有哪些陳設、佔多少像素」變成可供聲學計算使用的結構化資料。
   本卡**只做偵測與資料**，不動聲學計算、不動 pipeline 輸出（那是 T-32）。
@@ -3960,7 +4005,7 @@
     六頻段 `list[float]`，可以直接乘 `S_total` 換算 m²。
 
 ### T-32 等效吸音面積入聲學計算與照片管線（裁決 T-27-A 執行卡 2/3）
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-08-30，等 Opus）
 - **前置**：T-31
 - **目標**：`A_extra_c[band] = ratio_c × S_total × α_c[band]` 進 Sabine／Eyring，
   經 `rt60_bands_sabine` 流進 IR 晚期尾巴；照片管線預設啟用、可用旗標關閉。
@@ -4005,6 +4050,66 @@
   `as_dict()` 輸出有任何位元變化（拿 T-20／T-21 交付 JSON 重生 diff）；
   紅旗：只改 Sabine 不改 Eyring；紅旗：把縮短尾巴的邏輯塞進 `ir_synth.py`
   （本卡 `ir_synth.py` 應零改動）。
+- **交接筆記（Sonnet，2026-08-30）**：
+  - 產出：`acoustics.py` 的 `compute_acoustics()` 加第四參數
+    `furnishings: FurnishingEstimate | None = None`；`AcousticsResult` 加
+    `furnishings: dict | None = None` 欄位＋`as_dict()` 只在非 None 時輸出該鍵；
+    新增 `FURNISHINGS_DISCLAIMER` 常數。`pipeline.py`：`run_photo()` 在 gate 之後、
+    `compute_acoustics()` 之前呼叫 `estimate_furnishings(detail)`（可用
+    `--no-furnishings` 關閉）；`analysis.json` 新增 `furnishings` 鍵；CLI 在
+    T-13 段印偵測結果；`_NOTE_MARKERS` 加一條「陳設比例取自」讓視角平均說明歸
+    notes、cap 觸發訊息維持預設路徑進 warnings。`cli.py` 加 `--no-furnishings`
+    （歸進 `photo_only_flags_used`）。`run_text`／`run_scene`／`ir_synth.py`／
+    `coupled.py`／`surfaces.py` **零改動**。
+  - **實作細節**：Sabine 的 `total_absorption` 與 Eyring 的 ā 分子共用同一個
+    逐頻段變數，陳設吸音量在迴圈外先算好、迴圈內併入這一個變數——結構上不可能
+    「只加一邊」（不是靠自我提醒，是變數只有一份）。
+  - **共同鐵則 1（十套測試）全部 exit 0**：`test_ir_synth`／`test_output_gate`／
+    `test_confidence_axes`／`test_material_fallback`／`test_surface_trusted_scope`／
+    `test_t30_low_combined`／`test_scene_text`／`test_coupled`／`test_furnishings`／
+    `test_acoustics`（新增 F1–F4，共 9 項斷言）。
+  - **共同鐵則 2（六條交付 IR MD5）全部不變**：T-14 兩條由 `test_ir_synth.py`
+    【6】內建比對（exit 0 已含）；T-20 兩條重生得
+    `2adbaa75eb698772a8c9aa693179ec47`／`2dd19b6e6d351d713887636fe45cd67e`；
+    T-21 兩條重生得 `9a94ffdf5d8295aee7889729c39c9cd8`／
+    `a1c21bcc3fd9aa3480df203a89c8cd05`——與 T-31 驗證紀錄逐字相同。
+  - **共同鐵則 3／4**：`git diff -- src/image_reverb/ir_metrics.py SPEC.md
+    ROADMAP.md WORKFLOW.md output/mvp_acceptance/` 輸出 0 行。
+  - **共同鐵則 5（診斷力）**：把 T-32 改動（`acoustics.py`／`pipeline.py`／
+    `cli.py`）`git stash` 回 T-31 版本，只留新測試，重跑 `test_acoustics.py`：
+    【F1】在呼叫 `compute_acoustics(..., furnishings=None)` 時
+    `TypeError: compute_acoustics() got an unexpected keyword argument
+    'furnishings'` 直接讓程式崩潰（舊版函式簽章沒有這個參數）；`git stash pop`
+    還原後十套測試全部重新跑過確認 exit 0。
+  - **共同鐵則 6（gate 零改動）**：`git diff pipeline.py` 逐行核對，陳設呼叫
+    （`furn = None if no_furnishings else estimate_furnishings(detail)`）插入點
+    在 gate 的 `if overall_confidence == "low":` 區塊**之後**，gate 判定本身
+    （`_overall_confidence()`、`compute_materials_confidence()`、scene_cues 段
+    202-220）一行未動；`surfaces.py` 零改動（無 diff）。
+  - **實跑三張對照**（`assets/photos/bedroom_ai_generated.png
+    --force-low-confidence --no-viz`）：
+    - 加陳設：偵測到 person 3.2%／bed 21.2%／curtain 9.0%／pillow 0.5%，佔
+      1kHz 總吸音 87.8%；`rt60_bands_target_sabine`＝
+      `[0.6334, 0.6686, 0.5703, 0.4682, 0.4253, 0.408]` s（500/1kHz 平均
+      rt60_mid_sabine ≈ 0.519s）。
+    - `--no-furnishings`：`furnishings` 鍵為 `null`，
+      `rt60_bands_target_sabine`＝`[1.016, 2.5562, 3.8388, 3.5526, 2.285,
+      1.6554]` s（rt60_mid_sabine ≈ 3.696s）。
+    - 兩者對比：加陳設後 500Hz/1kHz 代表殘響從 ~3.7s 降到 ~0.52s（7 倍），
+      方向與地雷 #22（臥室六面模型測不到床/棉被/窗簾吸音、盲聽被聽成教堂）
+      完全吻合——這正是本卡要解決的問題。**不設通過門檻，量化驗收在 T-33。**
+    - `bathroom_tiled.png`（無陳設場景，防濫殺對照）：加/不加 `--no-furnishings`
+      的 `rt60_bands_target_sabine` 完全相同 `[1.08, 2.55, 3.51, 3.05, 2.02,
+      1.48]` s；`furnishings.categories={}`、`absorption_extra_m2_by_band`
+      六個 0.0——無誤報。
+    - 任一張（bedroom，不帶 `--no-viz`）完整跑過：`analysis.png` 正常產生
+      （393KB），`ir_mono.wav` `check_audio.py` 量得 RMS=0.0149（非靜音）。
+    - 跑完的 `output/bedroom_ai_generated/`、`output/bathroom_tiled/` 已刪除
+      （非交付產物；`output/ir_synth/` 的 T-20/T-21 重生檔沿用既有機制不特別清）。
+  - **給 T-33 的提醒**：`analysis.json` 的 `furnishings.categories` key 是
+    `ade_name`（英文），`furnishings.total_ratio`/`cap_applied` 可直接用來判斷
+    某張照片的陳設偵測是否觸發過壓回上限；13 張基準率複測時若要交叉比對
+    「陳設吸音佔比 vs RT60 準確度」，這兩個欄位是現成入口。
 
 ### T-33 材質輪基準率複測：13 張重跑＋量測報告（裁決 T-27-A 執行卡 3/3；量測卡）
 - **狀態**：⬜ 未開始

@@ -1,5 +1,29 @@
 # Dev Log
 
+## 2026-08-30 (60)
+
+- ✅ **T-32 Sonnet 執行完成，自檢通過（待 Opus 驗證）**：等效吸音面積入聲學計算與
+  照片管線（裁決 T-27-A 執行卡 2/3）。`acoustics.py` 的 `compute_acoustics()`
+  加第四參數 `furnishings`（預設 None＝行為與加這參數前逐位元相同）：非 None 時
+  逐頻段算 `A_extra[band] = Σ_c ratio_c × S_total × α_c[band]`，**同時**併入
+  Sabine 的 `total_absorption` 與 Eyring 的 ā 分子（兩者共用同一個逐頻段變數，
+  結構上不可能只加一邊）；`AcousticsResult` 新增 `furnishings` 欄位，`as_dict()`
+  只在非 None 時輸出。`pipeline.run_photo()` 在 gate 之後、`compute_acoustics()`
+  之前呼叫 `estimate_furnishings(detail)`（新旗標 `--no-furnishings` 可關），
+  CLI 印偵測結果、`analysis.json` 新增 `furnishings` 鍵。`run_text`／`run_scene`／
+  `ir_synth.py`／`coupled.py`／`surfaces.py` 零改動。
+- 十套測試全 exit 0（新增 `test_acoustics.py` F1–F4 共 9 項斷言）；六條交付 IR
+  MD5 逐一重生比對逐位元相同；`ir_metrics.py`／`pipeline.py` 的 gate 判定段／
+  SPEC／ROADMAP／WORKFLOW／`output/mvp_acceptance/` 均未觸碰；診斷力實測——
+  把改動 `git stash` 回 T-31 版本只留新測試，`test_acoustics.py` 對舊
+  `compute_acoustics()` 呼叫 `furnishings=` 直接 `TypeError` 崩潰，還原後全部
+  重新跑過確認 exit 0。實跑 `bedroom_ai_generated.png`：加陳設後偵測到
+  person/bed/curtain/pillow（佔 1kHz 總吸音 87.8%），500/1kHz 代表殘響從
+  ~3.7s 降到 ~0.52s，方向與地雷 #22（臥室六面模型測不到床/棉被/窗簾吸音）
+  完全吻合；`bathroom_tiled.png`（無陳設）防濫殺對照確認 RT60 完全不變。
+  細節見 TASKS.md T-32 卡「交接筆記」。
+- 下一步：Opus 驗證 T-32；通過後 Sonnet 接著做 T-33（13 張基準率複測，量測卡）。
+
 ## 2026-08-30 (59)
 
 - ✅ **T-31 Sonnet 執行完成，自檢通過（待 Opus 驗證）**：陳設等效吸音資料表＋

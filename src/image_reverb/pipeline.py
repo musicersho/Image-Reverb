@@ -25,6 +25,7 @@ from PIL import UnidentifiedImageError
 
 from . import config, coupled, ir_synth, scene_text, visualize
 from .acoustics import compute_acoustics
+from .furnishings import estimate_furnishings
 from .geometry import estimate_room, parse_override_dims
 from .materials import SURFACE_NAMES, apply_overrides, load_materials
 from .surfaces import compute_materials_confidence
@@ -61,6 +62,7 @@ _NOTE_MARKERS = (
     "尺度校驗通過：",
     "環景沒有「視野外」問題",
     "沒有足夠大的門，跳過尺度校驗",
+    "陳設比例取自",  # T-32：furnishings.notes 的視角平均說明，不是警示
 )
 
 
@@ -164,6 +166,7 @@ def run_photo(
     override_materials: list[str] | None = None,
     no_viz: bool = False,
     force_low_confidence: bool = False,
+    no_furnishings: bool = False,
 ) -> int:
     from .preprocess import preprocess_image
     from .surfaces import surfaces_from_preprocess, _load_segmenter, segment_roles
@@ -321,9 +324,25 @@ def run_photo(
                 file=sys.stderr,
             )
 
+        # T-32（裁決 T-27-A 執行卡 2/3）：陳設偵測放在 gate 之後、compute_acoustics()
+        # 之前——結構上保證陳設資料不可能影響 gate 判定（Phase 1.7 共同鐵則 6）。
+        furn = None if no_furnishings else estimate_furnishings(detail)
+
         print("--- T-13 聲學參數 ---")
-        ac = compute_acoustics(est, surf, materials_data)
+        ac = compute_acoustics(est, surf, materials_data, furnishings=furn)
         print(f"  Sabine 目標 RT60：{[round(v, 2) for v in ac.rt60_bands_sabine]} s")
+        if ac.furnishings is not None and ac.furnishings["categories"]:
+            idx_1k = ac.band_center_freqs_hz.index(1000)
+            print("  陳設偵測（等效吸音面積，裁決 T-27-A）：")
+            for name, cat in ac.furnishings["categories"].items():
+                print(
+                    f"    {name:<10} 佔比 {cat['ratio'] * 100:5.1f}%　"
+                    f"A_extra@1kHz {cat['A_by_band'][idx_1k]:.3f} m²"
+                )
+            print(
+                "    佔 1kHz 總吸音比例："
+                f"{ac.furnishings['proportion_of_absorption_1khz'] * 100:.1f}%"
+            )
 
         print("--- T-14 IR 合成 ---")
         mono = ir_synth.synthesize_ir(ac, materials_data)
@@ -339,6 +358,15 @@ def run_photo(
 
     mono_payload = json.loads(mono_json.read_text(encoding="utf-8"))
     notes, warnings = _split_notes_and_warnings(mono_payload["warnings"])
+    if ac.furnishings is not None and ac.furnishings["categories"]:
+        detected = "、".join(
+            f"{name} {cat['ratio'] * 100:.1f}%"
+            for name, cat in ac.furnishings["categories"].items()
+        )
+        notes.append(
+            f"陳設偵測：{detected}（佔 1kHz 總吸音 "
+            f"{ac.furnishings['proportion_of_absorption_1khz'] * 100:.1f}%）"
+        )
     if forced_low_confidence:
         # T-26 步驟 2：帶 --force-low-confidence 越過 gate 時，JSON 要留下明確標記與
         # 一條進 warnings 的說明，不能讓「這筆結果本來會被擋下」的事實只留在 CLI 輸出裡。
@@ -365,6 +393,7 @@ def run_photo(
         "override_materials_used": override_specs_used,
         "band_center_freqs_hz": ac.band_center_freqs_hz,
         "rt60_bands_target_sabine": [round(v, 4) for v in ac.rt60_bands_sabine],
+        "furnishings": ac.furnishings,
         "closed_loop": mono_payload["closed_loop"],
         "ir_mono": {"path": str(mono_wav)},
         "ir_stereo": {
