@@ -165,6 +165,18 @@
       `model_ab_diff_count` 推導、TASKS.md 簡體字修正）；重跑後 REPORT 只有
       對應文字變動、tables.md bit-identical，十三套測試與六條 IR MD5 全綠。
       **下一步：T-37（地雷 #16 修正）**。
+- [ ] **🔮 Phase 1.9 插卡（Fable 規劃 2026-08-31）：產物可信度修正輪
+      T-40～T-43（卡片與裁決全文在 TASKS.md「Phase 1.9 插卡」節）**——
+      外部掃描五項缺陷逐項對碼核實屬實後插卡：**T-40**（評測快取指紋與
+      自動失效＋T-36 凍結基線 `FREEZE_MANIFEST.md`；零 `src/`）、**T-41**
+      （透視照 SegFormer 去重——現況一張透視照載入／推論兩次；13 張基線
+      逐值不變是核心驗收）、**T-42**（gate 交易式輸出：staging＋archive-first
+      可回復隔離＋成功才原子發布；gate 判定條件零改動）、**T-43**
+      （`analysis.json` 加 provenance 生成指紋＋`t17_blind_test.py` 溯源驗證，
+      MANIFEST 不得再拿打包當下 HEAD 冒充來源 revision）。
+      執行順序更新：**T-37 → T-40 → T-41 → T-38 → T-39 → T-42 → T-43 →
+      收尾複評**；**任何新的正式盲聽必須在 T-42＋T-43 之後**（現存盲測素材
+      是 `d958b3c` 產的，舊 §7-1 的 2/5 不能宣稱屬於現行碼）。
 - [ ] **🔮 Fable 複評裁決 T-33-A ✅ 已裁決（2026-08-31，全文在 TASKS.md T-33 卡尾）
       → 開 Phase 1.8 輪（陳設觀測化與 CLIP 準確度診斷，卡片在 TASKS.md 檔尾）**：
       **裁決 A**——陳設機制改**預設觀測模式**（偵測照跑、進 `analysis.json` 標

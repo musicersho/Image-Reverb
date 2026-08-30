@@ -5285,10 +5285,17 @@ T-34 與 T-35 都動 `pipeline.py`／`cli.py`，依序做避免衝突；T-36 是
 
 ## Phase 1.9 — CLIP 治療輪（Fable 規劃 2026-08-31；依裁決 T-36-A）
 
-**執行順序固定：T-36 文件修正 → T-37 → T-38 → T-39 → 回 Fable 收尾複評**。
+**執行順序固定（2026-08-31 插卡後更新）：T-36 文件修正 ✅ → T-37 → T-40 →
+T-41 → T-38 → T-39 → T-42 → T-43 → 回 Fable 收尾複評**。
 T-36 文件修正是純文件小卡（不另開卡號，範圍見下）；T-37 動 `preprocess.py`、
 T-38 動 `surfaces.py` 提示詞字典、T-39 動 `data/materials.json`＋提示詞字典
 ＋ground truth 重對映（需使用者小輪參與），依序做避免衝突。
+T-40～T-43 是 2026-08-31 依外部掃描報告插入的**產物可信度修正輪**（背景與
+順序裁決全文見下方「Phase 1.9 插卡」節）：T-40（評測快取指紋）與 T-41
+（SegFormer 去重）排在 T-38 前——治療輪每輪都要重跑 13 張量測，先保證
+「量到的是新碼」並把單張模型成本砍半；T-42（gate 交易式輸出）與 T-43
+（T-17 產物溯源）排在 T-39 後、收尾複評前——兩者不影響治療量測的正確性，
+但**任何新的正式盲聽（T-17 複驗）必須在 T-42＋T-43 ✅ 之後**。
 
 **T-36 文件修正（第一步，純文件）**：照 T-36 卡「Opus 複驗紀錄」非退回事項
 逐字執行——①交接筆記漏改句已由驗證者就地標註更正，不必再動；②REPORT ①
@@ -5356,6 +5363,11 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
 8. **基線變化表**：每張卡重跑 13 張、由程式產出三軸 confidence 與 gate 結果
    的 before/after 對照（地雷 #15：不得手打），漂移必須逐張給原因；
    非本卡預期範圍的漂移＝🔴 停
+   - **補充細則（Fable 2026-08-31 插卡輪）**：對零 `src/`＋零 `data/` 改動的
+     純 harness 卡（本輪僅 T-40），鐵則 8 准以「`git diff src/ data/` 為空＋
+     六條交付 IR MD5 逐條比對」代替 13 張重跑——鐵則 8 的目的在抓非預期
+     漂移，零 `src/` 卡的漂移在機制上不可能，重跑純燒時間。動 `src/` 的卡
+     （T-41／T-42／T-43）一律照原文重跑 13 張產表。
 
 ### T-37 地雷 #16 修正：`is_equirect()` 加極點列均勻度檢查（裁決 T-36-A 執行卡 1/3）
 - **狀態**：⬜ 未開始
@@ -5392,10 +5404,20 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
 - **Opus 驗證重點**：紅旗：門檻剛好只救 TunnelToHell 卻讓任一張真環景掉出
   （4 張必須全 True，餘裕看步驟 1 的統計表）；紅旗：動了 `is_equirect()`
   以外的前處理邏輯；紅旗：12 張基線有任何漂移；紅旗：新測試對舊碼不 fail。
+- **⚠️ Fable 補充（2026-08-31 插卡輪）**：步驟 4 的再基線**必須全量重跑、
+  不得沿用任何既有 `detail.json` 快取**（含 T-36 的 `output/clip_accuracy/runs/`
+  ——那是凍結基線，本來就不許碰；也含自己目錄下的殘留快取）。理由：快取
+  指紋機制是排在本卡之後的 T-40 才建，本卡時點的快取無從辨識新舊碼，靜默
+  沿用舊快取會讓再基線量到修正前的碼（外部掃描 P2 的失效模式）。重跑指令
+  與快取策略寫進 `output/equirect_fix/REPORT.md`；本卡產生的快取日後由 T-40
+  接上指紋，本卡不必自己實作指紋。
 
 ### T-38 CLIP 提示詞治療：地板優先＋in-set 混淆對（裁決 T-36-A 執行卡 2/3）
 - **狀態**：⬜ 未開始
 - **前置**：T-37 ✅（TunnelToHell 修正後，它的六面才是真的透視裁切，量測才乾淨）
+  ＋T-40 ✅（評測快取指紋——本卡是「改提示詞→重量 78 面」的迭代輪，每輪
+  量測必須保證量到新提示詞，不得靠操作者記得 `--fresh`）＋T-41 ✅
+  （SegFormer 去重——降低本卡與 T-39 反覆重跑 13 張的時間與記憶體成本）
 - **目標**：只動提示詞字串，提升 CLIP 真判定準確率。**驗收基線＝T-37 的
   再基線表**（`output/equirect_fix/REPORT.md`；T-36 原始數字並列供追溯——
   clip 面 11/21＝52.4%、非 proxy 31/60＝51.7%、floor 4/13＝30.8%、in-set
@@ -5455,11 +5477,321 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
   重對映沒有使用者確認紀錄（查 `confirmed_by` 與對話）；紅旗：既有 12 材質
   α 漂移；紅旗：門檻敏感度沒重跑。
 
+### Phase 1.9 插卡 —— 產物可信度修正輪（Fable 規劃 2026-08-31）
+
+**背景**：外部（Codex）對 HEAD `2664a56` 的唯讀掃描報告
+（`/Users/musicersho/Documents/Codex/2026-08-30/users-musicersho-image-reverb/outputs/T36_postscan_bug_report.md`）
+提出五項缺陷；Fable 逐項對照程式核實**全部屬實**：
+1. 地雷 #16（2:1 透視照誤判環景）——已排定 T-37，非新事項；
+2. **P0**：gate 之前 `preprocess_image()` 已無條件寫 `output/preprocess/<stem>/`
+   （PNG＋`meta.json`），gate 訊息「不會寫出任何 WAV／JSON」不實；gate 擋下
+   後同 stem 舊成功輸出仍留在 `output/<stem>/` 冒充本次結果 → **T-42**；
+3. **P1**：`t17_blind_test.py` 可把舊碼產的 IR 認證成目前 HEAD（MANIFEST 蓋
+   的是打包當下的章，不是生成當下）→ **T-43**；
+4. **P1**：一張透視照載入 SegFormer 兩次、完整推論兩次 → **T-41**；
+5. **P2**：T-36 評測快取無任何指紋，「舊快取對舊凍結基線」的交叉守門照樣
+   通過，改碼後可能靜默量到舊結果 → **T-40**。
+
+（報告另證實一件要記住的事：現存盲測素材 `blind_test/MANIFEST.json` 明載
+`git_revision: d958b3c`——**舊的 §7-1 盲聽 2/5 不能宣稱屬於現行碼**；新盲聽
+分數必須等素材以現行碼＋溯源重生後才算數。）
+
+**順序裁決（T-37 → T-38 → T-39 治療因果鏈不動，插四張卡）**：
+- **T-37 維持第一**：它修正錯誤影像基線，其後所有量測（含本輪四卡的基線
+  變化表）都以修正後的影像為準。T-37 卡已補一則 Fable 補充（再基線必須
+  全量重跑——指紋機制當時尚不存在，靜默舊快取會讓再基線量到修正前的碼）。
+- **T-40 → T-41 插在 T-37 與 T-38 之間**：T-38／T-39 是「改碼→重量 13 張」
+  的迭代輪——T-40 先保證每輪量到的是新碼（否則 P2 的靜默舊快取會讓治療輪
+  整輪白做），T-41 把每張的模型成本砍半。T-40 排在 T-41 前：T-41 動
+  `pipeline.py`，其後量測需要指紋機制作證「量到的是去重後的碼」。
+- **T-42 → T-43 插在 T-39 之後、收尾複評之前**：兩者不影響治療量測的正確性
+  （評測 harness 直接走 `surfaces_from_preprocess()`，不經 gate 輸出段），但
+  **任何新的正式盲聽必須在兩者 ✅ 之後**——沒有交易式輸出與溯源，重生的盲測
+  素材無法自證「是現行碼產的、沒有混入舊檔」。T-42 排在 T-43 前：兩卡同動
+  `pipeline.py` 須依序，且 T-43 溯源要依賴的「正式位置＝最近一次成功輸出」
+  不變量由 T-42 建立。**例外條款**：若 T-39 因等使用者（16 個 proxy 面重對映）
+  停滯，T-42 可提前執行（檔案範圍與 T-38／T-39 不相交），提前時交接筆記註明；
+  T-43 仍須在 T-42 之後。
+
+**本插卡輪不做**：gate 判定規則任何調整（裁決 T-36-A 已定案關閉）；
+`--text`／`--scene` 管線的交易化與 provenance（三管線 schema 議題併 T-29
+排隊）；快取／輸出機制以外的任何「順手重構」。
+
+### T-40 評測快取指紋與自動失效（插卡 1/4；純 harness 卡，零 `src/` 改動）
+
+- **狀態**：⬜ 未開始
+- **前置**：T-37 ✅（先修錯誤影像基線，指紋機制才不會把污染基線「保鮮」）
+- **問題**（外部掃描 P2，已對碼核實）：`run_or_load()`
+  （`scripts/t36_clip_accuracy.py:110-116`）只要 `detail.json` 存在且未加
+  `--fresh` 就直接讀快取；快取內**沒有任何指紋**（無 code hash、無提示詞
+  hash、無模型 id、無門檻、無來源圖片 hash）。交叉守門
+  `cross_check_against_frozen_baseline()`（`:137-174`）又是拿這份舊快取對
+  T-33 舊凍結快取——**「舊對舊」照樣通過**。後果：改了分類程式（正是
+  T-38／T-39 要做的事）之後用預設指令重跑，報告看似成功卻完全沒量到新碼，
+  只靠操作者記得 `--fresh`。這是「安靜地輸出看似合理的錯誤結果」的新亞型
+  （第七例）：量測結果可能根本不是本次程式產的。
+- **範圍**：僅 `scripts/`——抽一個可重用的快取指紋模組（建議
+  `scripts/eval_cache.py`，實際定名記進交接筆記），`t36_clip_accuracy.py`
+  接上；T-37 的 `t37_rebaseline.py` 若有自己的快取也接上；T-38 的評測
+  harness 直接繼承（已寫進 T-38 前置）。
+- **禁止修改**：零 `src/` 改動、零 `data/` 改動；`output/clip_accuracy/`
+  既有檔案一個 bit 不許變（唯一允許的新增見下）；共同鐵則 1–8 照適用。
+- **指紋內容（至少含以下全部，一項都不可少）**：
+  1. 來源圖片檔 bytes 的 sha256；
+  2. `src/image_reverb/preprocess.py`／`surfaces.py`／`config.py` 三檔**內容**
+     hash（檔案內容 hash 而非 git HEAD——才抓得到 dirty 工作樹的改動）；
+  3. `data/materials.json` 與 `data/material_ground_truth.json` 內容 hash；
+  4. 模型 id：`config.SEGMENTATION_MODEL_ID`＋`config.CLIP_MODEL_ID`；
+  5. CLIP 門檻 `config.CLIP_CONFIDENCE_THRESHOLD`；
+  6. 評測模式（預設／治療等；T-38 接上時擴充）。
+- **失效行為（兩態，不得有第三態）**：
+  - 指向**非凍結**輸出目錄（新增 `--out-dir` 參數，或 T-37／T-38 自己的
+    目錄）：指紋不符（含快取無指紋欄位的舊格式）→ **自動重跑**並印明確
+    原因（逐項列出哪個指紋變了）；
+  - 指向 **T-36 凍結基線** `output/clip_accuracy/`：指紋不符 → **hard fail**
+    （exit 非 0，訊息指明「凍結基線不可重產；治療評測請用 --out-dir 指新
+    目錄」）——絕不允許自動重跑覆寫凍結基線（鐵則 4）；
+  - 任何情況下都**不得**「舊快取＋新碼」靜默印成功。
+- **T-36 凍結基線可追溯化**：以指令產出
+  `output/clip_accuracy/FREEZE_MANIFEST.md`——`output/clip_accuracy/` 下所有
+  既有檔案的 sha256 清單＋產生指令原文（`.md` 進版控，從此凍結基線可驗證
+  未被覆寫）。**Fable 裁決：這是鐵則 4 的唯一允許例外——純新增一個
+  manifest 檔，既有檔案一個 bit 都不許變。**
+- **產出**：快取指紋模組＋改造後 `t36_clip_accuracy.py`（含 `--out-dir`）＋
+  `scripts/test_eval_cache.py`＋`output/clip_accuracy/FREEZE_MANIFEST.md`。
+- **執行步驟**：
+  1. 先產 FREEZE_MANIFEST.md（動 harness 前先鎖定凍結基線現況）；
+  2. 實作指紋模組（純函式：算指紋／比指紋／load-or-run），用合成小圖＋樁
+     runner 寫 `test_eval_cache.py`：**逐項擾動六類指紋 → 每一項都必須觸發
+     失效**；舊格式（無指紋欄）→ 視同不符；凍結目錄 → hard fail；非凍結
+     目錄 → 自動重跑並印原因；
+  3. `t36_clip_accuracy.py` 接上：預設輸出目錄不變（指向凍結基線）→ 依上述
+     hard fail 行為；加 `--out-dir`；`--fresh` 語義保留（全量重跑）；
+  4. 舊碼最小重現（見下）實測，輸出貼進交接筆記。
+- **舊碼必須 fail 的最小重現**：用 `git worktree` 開本卡前舊碼——把
+  `output/clip_accuracy/runs/<某張>/detail.json` 換成另一張圖的內容（模擬
+  「快取內容與本次程式／輸入不符」）跑預設指令：**舊碼 exit 0 且報告印成功**
+  （量到假資料）；新碼同情境 hard fail 並點名指紋不符項。（重現用的竄改在
+  複本目錄做，凍結基線本體不動。）
+- **自我檢查**：全部 `scripts/test_*.py`（含新增）exit 0；六條交付 IR MD5
+  逐條比對全中（鐵則 2）；`git diff src/ data/` 為空；FREEZE_MANIFEST 與
+  凍結基線實檔逐項相符；逐項擾動測試六類全覆蓋；舊碼最小重現實測輸出已附。
+- **六條 IR MD5／13 張基線適用規則**：六條 IR MD5 照鐵則 2 比對（必不變）；
+  基線變化表依鐵則 8 補充細則以「`git diff src/ data/` 為空＋六條 MD5」代替
+  13 張重跑（本卡零 `src/`）。
+- **Opus 驗證重點**：紅旗：指紋漏項（逐項擾動測試少一類＝退回）；紅旗：
+  凍結基線既有檔案 hash 與 FREEZE_MANIFEST 不符；紅旗：存在任何「指紋不符
+  仍印成功」的路徑（含 `--fresh` 以外的旁路）；紅旗：`src/` 或 `data/` 出現
+  diff；紅旗：舊碼最小重現沒附實測輸出。
+
+### T-41 透視照 SegFormer 重複載入去重（插卡 2/4）
+
+- **狀態**：⬜ 未開始
+- **前置**：T-40 ✅（先有快取指紋，本卡改 `pipeline.py` 後的量測才保證量到新碼）
+- **問題**（外部掃描 P1，已對碼核實）：`run_photo()` 對一張透視照會**載入
+  SegFormer 兩次、完整推論兩次**——`surfaces_from_preprocess()`
+  （`surfaces.py:284`）已 `_load_segmenter()`＋`segment_roles()`，並把全圖
+  class 比例存進 `detail["class_ratios"]["single"]`（`surfaces.py:322`，即
+  `segment_roles()` 回傳的 `{class_id: 像素比例}` 原 dict）；
+  `pipeline.py:207-223` 又對**同一張** `summary["cropped"]` 重新
+  `_load_segmenter()`＋`segment_roles()`，只為取 `ratios` 建 scene_cues。
+  `_load_segmenter()` 無 cache（`surfaces.py:118-125`），第二次是完整
+  from_pretrained 載入＋完整推論——時間與記憶體峰值雙倍付費，威脅 SPEC
+  60 秒時限；治療輪每輪重跑 13 張，成本也跟著雙倍。
+- **修法**：scene_cues 段直接重用 `detail["class_ratios"]["single"]`（行程內
+  live dict，鍵是 int class id，與第二次 `segment_roles()` 回傳值的定義完全
+  相同——同一張圖、同一模型、同一函式），刪除第二次
+  `_load_segmenter()`／`segment_roles()` 與重複的 `Image.open()`。
+  `floor_pixel_ratio`（id 3＋28）／`person_pixel_ratio`（id 12）／
+  `out_of_domain` 兩鍵的計算式與鍵名一個字不改。
+- **範圍／禁止修改**：只動 `src/image_reverb/pipeline.py` 的 scene_cues 段；
+  **`surfaces.py`／`geometry.py` 零 diff**；gate 段、
+  `compute_materials_confidence()`、scene_cues 的語義與數值定義一行不動
+  （鐵則 6）；equirect 路徑本來就不算 scene_cues，不得順手改。
+- **產出**：`pipeline.py` diff＋`scripts/test_pipeline_dedup.py`＋
+  `output/pipeline_dedup/REPORT.md`（基線變化表＋單張耗時對照）。
+- **執行步驟**：
+  1. 改 scene_cues 段（如上）；
+  2. 新測試 `test_pipeline_dedup.py`（**修 bug 類**）：樁計數
+     `surfaces.py` 的 `_load_segmenter` 呼叫次數，讓一張透視照走完
+     `run_photo()` 的材質＋scene_cues 段，斷言全程**恰好一次**（樁化手法
+     參考 `test_output_gate.py` 的區域 import 置換；注意不得樁掉
+     `segment_roles` 本體導致計不到真呼叫）；
+  3. 對一張真實透視照實測 before/after wall-clock（附指令與原始輸出進
+     REPORT；只允許改善，不設定量門檻）；
+  4. 基線變化表（鐵則 8）：沿用 T-37 的基線表機制（或 T-33 的 13 張重跑
+     手法）重跑 13 張——三軸 confidence、gate 結果、六面材質、scene_cues
+     三鍵數值**全部逐值不變**（任何一格漂移＝🔴 停；本卡是純去重，沒有
+     任何數值允許動）。
+- **舊碼必須 fail 的最小重現**：`test_pipeline_dedup.py` 對 `git worktree`
+  舊碼實測——舊碼計到 2 次載入 → fail；新碼 1 次 → pass。輸出貼交接筆記。
+- **自我檢查**：全部 `scripts/test_*.py`（含新增）exit 0；六條交付 IR MD5
+  全中；13 張基線變化表零漂移（含臥室紅旗——bedroom 的 gate 結果不變）；
+  `git diff` 限縮在 `pipeline.py`；耗時對照已附原始輸出；舊碼重現 fail 已附。
+- **六條 IR MD5／13 張基線適用規則**：六條 IR MD5 必不變（文字／複合管線
+  不經此路，照鐵則 2 比對）；13 張基線**逐值零漂移是本卡的核心驗收**。
+- **Opus 驗證重點**：紅旗：任何一張基線漂移（本卡零容忍，沒有「預期內
+  漂移」）；紅旗：`surfaces.py` 出現 diff；紅旗：scene_cues 鍵名／計算式被
+  「順手優化」；紅旗：計數測試樁掉了推論本體（測試要能分辨「真的只跑一次
+  推論」）；紅旗：耗時對照數字是手打的（要附指令與原始輸出）。
+
+### T-42 low-confidence gate 交易式輸出與舊產物隔離（插卡 3/4）
+
+- **狀態**：⬜ 未開始
+- **前置**：T-39 ✅（治療輪主線先走完；例外條款見插卡裁決——T-39 等使用者
+  期間可提前，交接筆記註明）
+- **問題**（外部掃描 P0，已逐行核實）：三個洞——
+  1. `run_photo()` 在 `pipeline.py:193` 先呼叫 `preprocess_image()`，後者
+     （`preprocess.py:127-178`）**無條件**寫 `output/preprocess/<stem>/`
+     （裁切／視角 PNG＋`meta.json`）；gate 在 `pipeline.py:257` 之後才判。
+     gate 訊息「不會寫出任何 WAV／JSON」**不實**——`meta.json` 就是 JSON；
+  2. gate `return 3`（或模型階段例外）時，同 stem **舊的成功輸出**
+     `output/<stem>/`（`analysis.json`／IR WAV／wet preview）原封不動留在
+     正式位置——使用者或下游腳本重跑一張「現在會被擋」的照片後，看到的是
+     舊檔冒充本次結果；
+  3. 成功路徑的寫檔（`pipeline.py:385` 起）不是原子的：`_make_out_dir()`
+     之後逐檔寫入且已在 try 區塊之外，中途失敗會在正式位置留下新舊混合的
+     半套。
+  現有 `scripts/test_output_gate.py` 樁掉整段前處理（`:138-156`）且每案例前
+  先刪正式輸出目錄（`:212-221`），所以「沒有建立輸出目錄」斷言（`:262-267`）
+  看不到以上任何一個真實副作用。
+- **交易政策（Fable 已定調，執行者不得自行變更政策本體）**：
+  - **staging**：輸入驗證通過、真正開始 preprocess 起，本次所有產物
+    （preprocess 產物＋IR／analysis／viz／wet preview）一律先寫
+    `output/.staging/<stem>/`（內分 `preprocess/` 與 `final/` 兩子樹）；
+    啟動時若 staging 殘留（上次中止）→ 清掉並印 note。
+  - **舊輸出隔離（archive-first，可回復）**：開始 preprocess **之前**，把
+    既有 `output/preprocess/<stem>/` 與 `output/<stem>/` **移動**（不刪除）
+    到 `output/.archive/<stem>/<時間戳>/`，訊息印出 archive 位置與回復方式。
+    輸入驗證失敗的早退（exit 2，尚未開始 preprocess）**不**隔離舊檔。
+    archive 全保留，清理策略未來另議——**不許永久刪除使用者舊檔**。
+  - **成功才發布**：合成＋寫檔全部在 staging 完成後，把兩個子樹 rename 到
+    正式位置（同一檔案系統內的原子 rename）；`analysis.json`／`meta.json`
+    內的路徑字串一律寫**正式位置**路徑（⚠️ 生成期間檔案實體在 staging、
+    JSON 字串寫未來位置——執行時「讀寫用 staging 路徑、記錄用正式路徑」要
+    分清楚，這是本卡最容易寫錯的點）。
+  - **gate 擋下／例外中止**：刪 staging；正式位置保持乾淨不存在（舊檔已在
+    archive）；gate 訊息文案改為真話——本次中間產物已清理、舊輸出已隔離至
+    `<archive 路徑>`（附回復方式），「不會寫出任何 WAV／JSON」這句改寫。
+    exit code 語義不變（2／3／0）。
+- **範圍／禁止修改**：只動 `run_photo()` 的輸出編排段與 gate **訊息字串**；
+  **gate 判定條件（`overall_confidence == "low"` 與 force 分支的觸發／放行）
+  一行不動**（鐵則 6，裁決 T-36-A 已定案）；`compute_materials_confidence()`
+  ／scene_cues 段／門檻 0.4 零改動；`preprocess_image()` 本體不改（它已有
+  `output_dir` 參數，`run_photo()` 傳 staging 進去即可）；`--text`／`--scene`
+  管線不動（交易化併 T-29 排隊）；`ir_metrics.py` 零 diff（鐵則 3）。
+- **產出**：`pipeline.py` diff＋`test_output_gate.py` 新案例（含真實
+  preprocess）＋`output/transactional_output/REPORT.md`（基線變化表＋政策
+  落地說明）。
+- **執行步驟**：
+  1. 依政策改 `run_photo()`；
+  2. `test_output_gate.py` 新增三個案例（**修 bug 類，對舊碼必須實測 fail**）：
+     【G】真實 preprocess（用程式合成的小張非環景圖——preprocess 不需要
+     模型；surfaces／geometry 照既有手法樁掉讓 gate 觸發）→ 斷言 gate 後
+     `output/preprocess/<stem>/` 與 `output/<stem>/` 都無本次殘留；
+     【H】預先放假的舊 `analysis.json`＋舊 WAV 進兩個正式位置 → 跑被 gate
+     擋的 run → 斷言舊檔已不在正式位置、已完整出現在 archive 且 bytes 相同
+     （可回復性）；
+     【I】成功 run（樁到底）→ 斷言發布後正式位置完整（`analysis.json` 內
+     路徑字串指向正式位置且檔案實存）、staging 已不存在；
+  3. 既有案例 A–F 全部照跑（gate 判定行為不變的回歸證據）；
+  4. 基線變化表（鐵則 8）：重跑 13 張——三軸 confidence 與 gate 結果
+     **逐值不變**（本卡不動判定）；臥室紅旗照查。
+- **舊碼必須 fail 的最小重現**：案例【G】【H】對 `git worktree` 舊碼實測——
+  舊碼：exit 3 但 `output/preprocess/<stem>/meta.json` 存在、預放的舊
+  `analysis.json`／WAV 仍在正式位置；新碼：exit 3 且正式位置乾淨、舊檔在
+  archive。輸出貼交接筆記。
+- **自我檢查**：全部 `scripts/test_*.py` exit 0；六條交付 IR MD5 全中；
+  13 張基線零漂移＋臥室紅旗；`git diff` 限縮在 `pipeline.py`＋
+  `test_output_gate.py`；【G】【H】舊碼 fail 實測已附；抽查 3 張照片以相同
+  出口指令（`--override-material` 或 `--force-low-confidence`）本卡前後各
+  重生一次，IR bytes MD5 相同（交易化只改「寫到哪、何時發布」，不改內容）。
+- **六條 IR MD5／13 張基線適用規則**：六條交付 IR 屬 T-14／T-20／T-21
+  管線，不經 `run_photo()` 輸出段——照鐵則 2 逐條比對必不變；13 張基線
+  逐值不變；照片管線 IR bytes 也不許變（見自我檢查的抽查）。
+- **Opus 驗證重點**：紅旗：gate 判定條件出現任何 diff（逐行比對
+  `run_photo()` gate 段）；紅旗：舊輸出被**刪除**而非 archive（政策是可
+  回復隔離）；紅旗：【G】【H】對舊碼沒有實測 fail 證據；紅旗：
+  `analysis.json` 路徑字串仍指 staging（發布後讀 JSON 逐欄驗證檔案實存）；
+  紅旗：「不會寫出任何 WAV／JSON」文案還在；紅旗：`--text`／`--scene`
+  被順手交易化（範圍蔓延）。
+
+### T-43 T-17 產物溯源：analysis.json 生成指紋＋盲測驗證（插卡 4/4）
+
+- **狀態**：⬜ 未開始
+- **前置**：T-42 ✅（同動 `pipeline.py`，依序避免衝突；且本卡溯源依賴 T-42
+  建立的「正式位置＝最近一次成功輸出」不變量）
+- **問題**（外部掃描 P1，已核實；T-17 卡註解宣稱的 P2 修正實際沒有擋住
+  「舊產物驗收新程式」）：
+  1. `analysis.json` 沒記錄「生成這筆 IR 時」的程式／設定指紋——事後無法
+     判斷一筆產物是哪個 revision 產的；
+  2. `scripts/t17_blind_test.py:86-104` 的來源查核只看檔名對應、analysis 是
+     否比照片新（mtime）、檔案 hash 存在性——**擋不住**「v1 碼產的 IR 拿去
+     驗收 v2 碼」；
+  3. `:140-149` 寫進 MANIFEST 的 `_git_rev()` 是**執行盲測複製腳本當下**的
+     HEAD，不是產生來源 IR 當下的 HEAD——舊產物被蓋上新 HEAD 的章。現存
+     `blind_test/MANIFEST.json` 記 `d958b3c` 是歷史素材的誠實標記
+     （**不得回頭改寫**），但它證明舊盲測分數不能宣稱屬於現行碼。
+- **修法**：
+  1. `run_photo()` 的 `analysis` payload 加 `provenance` 區塊（照片管線
+     限定；`--text`／`--scene` 併 T-29 排隊）：`git_revision`＋dirty 標記
+     （範圍 `src`＋`data`，沿用 `t17_blind_test._git_rev()` 手法搬進共用處）、
+     `input_sha256`（來源照片 bytes）、`materials_json_sha256`、
+     `segmentation_model_id`／`clip_model_id`／`clip_confidence_threshold`
+     （一律讀 `config`，不得手打）、CLI 有效參數（override_dims／
+     override_materials／force_low_confidence／furnishings 三態）、生成時戳；
+  2. `t17_blind_test.py` 改為**溯源驗證**：來源 `analysis.json` 必須有
+     `provenance` 且 (a) `git_revision` == 盲測當下 HEAD 且非 dirty、
+     (b) `input_sha256` 與 `assets/photos/` 實檔一致、(c) 模型 id／門檻／
+     materials hash 與當前 `config` 一致——任一不符 → exit 非 0 並指示重生；
+     缺 `provenance`（舊產物）同樣 fail。既有 mtime 檢查**降級為輔助警示**，
+     不再是主證據；
+  3. MANIFEST **逐項複製來源 provenance**（每筆 sample 帶
+     `source_provenance` 原文）；打包當下 HEAD 另存誠實命名的獨立欄位
+     （如 `packaging_git_revision`），兩者不得混用同一個鍵名。
+- **範圍／禁止修改**：`pipeline.py`（只加 payload 欄位與必要 helper）＋
+  `scripts/t17_blind_test.py`＋新測試；**gate 段零改動**（鐵則 6）、
+  `ir_metrics.py` 零 diff（鐵則 3）、`output/mvp_acceptance/` 與既有
+  `blind_test/`／`MANIFEST.json` 歷史檔一個字不改（歷史驗收紀錄不得改寫）；
+  盲測的抽樣／`SHUFFLE_SEED`／作答流程／mtime 對齊手法不動。
+- **產出**：`pipeline.py` diff＋`t17_blind_test.py` diff＋
+  `scripts/test_t17_provenance.py`＋`output/provenance/REPORT.md`
+  （基線變化表）。
+- **執行步驟**：
+  1. 加 `provenance` 區塊（欄位如上，逐欄有單一來源——地雷 #15 精神）；
+  2. 改 `t17_blind_test.py` 溯源驗證與 MANIFEST 複製；
+  3. 新測試 `test_t17_provenance.py`（**修 bug 類**）：在 scratchpad 隔離
+     git repo 重現外部報告的 v1→v2 情境（樁 analysis／IR，不跑模型）——
+     v1 產物＋v2 HEAD：斷言盲測腳本 exit 非 0 且訊息點名 provenance 不符；
+     provenance 齊全且相符：exit 0，且 MANIFEST 的 `source_provenance` 與
+     來源逐項相同、`packaging_git_revision` 為當下 HEAD；
+  4. 基線變化表（鐵則 8）：重跑 13 張——三軸與 gate 結果逐值不變
+     （provenance 是純新增欄位，不進任何判定）。
+- **舊碼必須 fail 的最小重現**：隔離 repo 的 v1→v2 重現對 `git worktree`
+  舊碼實測——舊碼 exit 0、MANIFEST 標成 v2 HEAD（舊產物被認證）；新碼
+  exit 非 0 點名不符項。輸出貼交接筆記。
+- **自我檢查**：全部 `scripts/test_*.py` exit 0；六條交付 IR MD5 全中；
+  13 張基線零漂移；隔離 repo 重現對舊碼 fail 已附；
+  `output/mvp_acceptance/`／既有 `blind_test/` 零 diff。
+- **六條 IR MD5／13 張基線適用規則**：provenance 只進 `analysis.json`
+  （JSON），**不碰 WAV 內容**——六條 IR MD5 照鐵則 2 比對必不變；13 張
+  基線逐值不變；照片管線 IR bytes 不變（同 T-42 抽查手法）。
+- **Opus 驗證重點**：紅旗：provenance 欄位有手打常數（模型 id／門檻必須讀
+  `config`）；紅旗：`git_revision` 記的是「讀取時」而非「生成時」（用
+  「生成後改 HEAD 再驗」的情境實測）；紅旗：MANIFEST 用同一個鍵混記兩種
+  revision；紅旗：mtime 仍被當主證據（provenance 缺失但 mtime 通過就放行
+  ＝退回）；紅旗：歷史 `blind_test/` 素材或 `output/mvp_acceptance/` 被改。
+
 ### Phase 1.9 收尾（回 Fable 複評，不開卡）
-帶著 T-37／T-38／T-39 的 REPORT 與基線變化表回 Fable，一次議決：
+帶著 T-37／T-38／T-39 的 REPORT 與基線變化表、以及插卡輪 T-40～T-43 的
+REPORT 回 Fable，一次議決：
 1. 治療效果總結：clip 準確率動了多少、materials 軸 12/13 low 動了沒、
    gate 放行率對理論上限 7/13（裁決 T-33-A 效益上限聲明）兌現多少；
 2. 要不要開 MINC/DMS 材質專用模型卡（涵蓋率若仍是天花板）；
 3. 要不要開陳設換算公式修正輪（裁決 T-36-A 裁決三的重啟評估點；驗收條件
    維持裁決 T-33-A 裁決 A 終止條件原文）；
-4. 主線復位：T-17 複驗（§7-2 兩組達標率重測＋照片來源網址結案前置）的時機。
+4. 主線復位：T-17 複驗（§7-2 兩組達標率重測＋照片來源網址結案前置）的
+   時機。**硬性前置（插卡裁決 2026-08-31）：任何新的正式盲聽必須在
+   T-42＋T-43 ✅ 之後**——現存盲測素材是 `d958b3c` 產的（MANIFEST 明載），
+   舊 §7-1 的 2/5 不能宣稱屬於現行碼；重生素材前必須先有交易式輸出
+   （T-42，保證正式位置不混舊檔）與產物溯源（T-43，素材自證生成 revision）。
