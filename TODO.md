@@ -63,22 +63,32 @@
       整張表與不可達的計分區塊已從 `surfaces.py` 刪除，三處誤導性註解改寫成
       描述現況，`test_surface_trusted_scope.py` 改成斷言「屬性不存在＋note 不再
       提語意可信」的不變量測試；七套測試全過、六條 MD5 零回歸。
-      **T-25 🔵 待驗證（2026-08-30）**——`analysis.json` 的 `confidence` 拆成
+      **T-25 ✅ 通過**——`analysis.json` 的 `confidence` 拆成
       `geometry_confidence`／`materials_confidence`／`confidence`(overall＝取
       較低者) 三軸，只動照片管線 `run_photo()`；臥室實測 confidence 由
       medium→low（材質是 fallback，舊行為看不出來）、`--override-dims` 不再
       整體誤標 high；`ir_mono.wav` MD5 改動前後相同。新增
-      `test_confidence_axes.py`（11 項）。T-26 未開始。
+      `test_confidence_axes.py`（11 項）。
+      **T-26 🔵 待驗證（2026-08-30）**——`run_photo()` 在 T-13 聲學計算之前加
+      gate：overall confidence 為 `low` 就擋下（不寫任何 WAV／JSON，exit 3），
+      新旗標 `--force-low-confidence` 是唯一出口（帶了照樣輸出，JSON 標記
+      `forced_low_confidence: true`）；`--override-dims` 不會自動解除 gate。
+      實測發現現行 9 張 `assets/photos/` 全部 overall=low（素材庫現實限制，
+      非本卡回歸），已用 override 組合人工建構真正的 medium 案例佐證該路徑
+      MD5 不受影響。新增 `test_output_gate.py`。
 - [x] **T-23 fallback 單一事實來源 ✅ 通過**（Opus 驗證，六條 MD5 全數不變）
 - [x] **T-24 ADE 可信材質分支清理 ✅ 通過**（Opus 驗證第三輪，六條 MD5 全數不變）
-- [ ] **修正輪進行中**：T-25 待驗證 → T-26
+- [x] **T-25 confidence 拆三軸 ✅ 通過**（Opus 驗證，六條 MD5 全數不變）
+- [ ] **修正輪進行中**：T-26 待驗證（四張卡最後一張，通過後修正輪結案）
       - T-24 已依裁決 T-24-A 移除不可達死碼：可信類別 id 與角色 id **交集為 ∅**，
         該功能在 ADE20K 一像素一 label 的前提下**永遠不可達**，非漏寫，
         整段程式碼＋常數表已刪除，清單搬去 T-27 當設計輸入
       - T-27 已補上這個設計輸入，仍待 Fable 裁決（等效吸音面積 vs occupancy）
       - T-25 只拆了照片管線的信心三軸，`run_text()`/`run_scene()` 的
-        `confidence` 還是舊語義（純幾何/preset 信心）——T-26 要用信心 gate
-        時記得先確認它鎖定哪些輸入類型，這個落差是否要一併處理
+        `confidence` 還是舊語義（純幾何/preset 信心）——T-26 沿用同樣的範圍
+        收斂，gate 只加在照片管線，這個落差仍未處理
+      - T-26 之後 T-17 §7-2 的 low 場地（DivorceBeach／gym／restaurant／
+        SteinmanHall）重跑驗收要加 `--force-low-confidence`，否則會被擋下
 - [ ] **← 之後（Fable）**：§7-1＋§7-2 皆未達標，要不要再加一輪。
       ⚠️ **範圍要先定清楚：只打材質不足以修好 §7-1 的 sample_1（幾何量程）與
       sample_2（域外輸入）**——這是本報告首版概括過頭、現已更正的地方。

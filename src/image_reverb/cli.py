@@ -57,6 +57,13 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="不產生 analysis.png（T-16；預設會產生）",
     )
+    parser.add_argument(
+        "--force-low-confidence",
+        action="store_true",
+        help="（僅照片輸入）overall confidence 為 low 時預設會擋下輸出（T-26），"
+        "加這個旗標可強制照樣輸出，結果會在 analysis.json 標記"
+        "forced_low_confidence=true 並留下警告",
+    )
     args = parser.parse_args(argv)
 
     error = pipeline.check_mutual_exclusion(args.photo, args.text, args.scene)
@@ -65,14 +72,26 @@ def main(argv: list[str] | None = None) -> int:
         print(f"錯誤：{error}", file=sys.stderr)
         return 2
 
-    photo_only_flags_used = args.override_dims is not None or args.override_material is not None
+    photo_only_flags_used = (
+        args.override_dims is not None
+        or args.override_material is not None
+        or args.force_low_confidence
+    )
     if photo_only_flags_used and args.photo is None:
-        print("錯誤：--override-dims/--override-material 只能搭配照片輸入使用", file=sys.stderr)
+        print(
+            "錯誤：--override-dims/--override-material/--force-low-confidence "
+            "只能搭配照片輸入使用",
+            file=sys.stderr,
+        )
         return 2
 
     if args.photo is not None:
         return pipeline.run_photo(
-            args.photo, args.override_dims, args.override_material, no_viz=args.no_viz
+            args.photo,
+            args.override_dims,
+            args.override_material,
+            no_viz=args.no_viz,
+            force_low_confidence=args.force_low_confidence,
         )
     if args.text is not None:
         return pipeline.run_text(args.text, no_viz=args.no_viz)

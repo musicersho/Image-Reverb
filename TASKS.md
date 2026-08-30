@@ -3282,7 +3282,7 @@
     要先補齊這個落差。Sonnet 已在交接筆記主動揭露此事，沒有隱瞞。
 
 ### T-26 低信心／域外輸入的輸出 gate（REPORT §2.6 缺陷 E）
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-08-30）
 - **前置**：**T-25（要用 overall confidence 當判準）**
 - **問題**：`pipeline.py:225-239` 從幾何直接進聲學→合成→`export_ir()`→wet preview，
   **沒有任何一行檢查 `est.confidence` 或域外狀態**。T-17 §7-1 的實際後果：
@@ -3312,6 +3312,153 @@
 - **Opus 驗證重點**：紅旗：gate 加在合成**之後**（等於還是算了才擋，浪費且可能已寫檔）；
   紅旗：`--force-low-confidence` 沒有真的把標記寫進 JSON；
   紅旗：medium/high 的路徑被波及（六條 MD5 會變）
+
+- **交接筆記（Sonnet 執行，2026-08-30）**：
+  - **改了 2 個檔＋新增 1 個檔，只動照片管線（`run_photo()`），跟 T-25 的範圍收斂
+    一致**：`run_text()`/`run_scene()` 完全沒動（沿用 T-25 交接筆記留下的觀察：
+    這兩條管線的 `confidence` 還是舊的純幾何/preset 語義，本卡沒有把 gate
+    擴大到它們——卡片執行步驟 1–3 逐字只提到 `pipeline.run_photo()`
+    與「僅照片輸入」的 CLI 旗標，沒有要求涵蓋另外兩條管線，範圍不擴大）。
+    1. `src/image_reverb/pipeline.py`：`run_photo()` 新增 `force_low_confidence:
+       bool = False` 參數。gate 加在**印出三軸 confidence 之後、T-13 聲學計算
+       之前**（比「合成之前」更早，連 T-13/T-14 的運算都一起省了，不只是省
+       寫檔）：`overall_confidence == "low"` 且未帶旗標 → 印繁中錯誤說明
+       （原因＋兩條可行的下一步：`--override-dims` 或 `--force-low-confidence`）
+       到 stderr、`return 3`，函式在這裡就結束，`_make_out_dir()`／
+       `export_ir()`／`_write_stereo()`／`_run_wet_preview()` 全部不會被呼叫到，
+       不可能已經寫出任何檔案才被擋下。帶旗標且 low → 印顯著 CLI 警告、
+       設定區域變數 `forced_low_confidence = True`，繼續往下跑。
+       `analysis` dict 新增 `"forced_low_confidence"` 鍵（未觸發 gate 時恆為
+       `False`，只有「overall 是 low 且使用者帶了旗標」才是 `True`）；
+       帶旗標越過 gate 時額外把一條說明字串 append 進 `warnings`（在
+       `_split_notes_and_warnings()` 之後才 append，不會被白名單誤分流進
+       `notes`）。
+    2. `src/image_reverb/cli.py`：新增 `--force-low-confidence`（`store_true`），
+       併入既有的 `photo_only_flags_used` 判斷（跟 `--override-dims`／
+       `--override-material` 同組限制，非照片輸入帶了就報錯 exit 2），
+       呼叫 `pipeline.run_photo()` 時把它透傳進去。
+    3. 新增 `scripts/test_output_gate.py`：因為要控制 overall confidence
+       落在特定等級，若真的跑深度模型＋CLIP＋分割模型會很慢（且不是本卡
+       改動範圍），所以樁掉 `preprocess.preprocess_image()`（回傳
+       `{"is_equirect": True}`，跳過非環景才會走的 segment_roles 那段）與
+       `surfaces.surfaces_from_preprocess()`（直接回傳指定好
+       `sources` 的 `SurfaceMaterials`），搭配 `--override-dims` 讓
+       `estimate_room()` 走既有的手動分支（不是新樁，是本來就不跑模型的
+       路徑）——`compute_materials_confidence()`（T-25 已驗證的真實函式）、
+       T-13 聲學計算、T-14 合成／匯出、wet preview **全部走真實程式碼**。
+       四部分：【0】CLI 接線（subprocess 跑 `--text X --force-low-confidence`，
+       在 `check_mutual_exclusion` 之後、任何模型呼叫之前就報錯，不跑模型，
+       確認 exit 2 且訊息點名新旗標）；【A】overall=low 不帶旗標 → exit 3、
+       輸出目錄完全沒被建立、`ir_synth.synthesize_ir` 呼叫次數 delta=0；
+       【B】overall=low 帶旗標 → exit 0、wav 產生、JSON 裡
+       `forced_low_confidence: true`、warnings 有 force 說明、
+       `synthesize_ir` 呼叫 delta=3（mono 1 次＋stereo 內部呼叫 2 次）；
+       【C】overall=medium（六面材質互不相同、來源全設成 `"manual"`——不觸發
+       fallback/退化規則，符合 T-25 裁決的「其餘→medium」）→ 不受 gate 影響，
+       exit 0、wav 產生、`synthesize_ir` 呼叫 delta 一樣是 3（額外佐證：
+       B 和 C 呼叫次數相同，不是 gate 讓 medium 走了什麼特殊省略路徑）。
+  - **⚠️ 執行中發現一個跟卡片假設不符的事實，如實回報，沒有為了湊過自我檢查而
+    悄悄調整判準**：卡片自我檢查寫「`bathroom_tiled.png`（medium）→ exit 0」，
+    但實測**現行 9 張 `assets/photos/` 全部 overall=low**（逐一實跑確認，
+    見下方證據），`bathroom_tiled.png` 也不例外（`floor` 來源是 `fallback`，
+    材質信心被 T-25 的規則①壓到 low）。這不是本卡造成的回歸——用
+    `git stash` 還原到 T-26 之前的程式碼，同一張照片印出的 confidence 值
+    （尚未加 gate 只是印出來，不影響輸出）就已經是
+    `geometry=medium, materials=low, overall=low`；T-26 只是第一次真的去讀這個
+    值並據此擋下輸出。實測證據（逐一實跑 9 張，全部 low）：
+    ```
+    arena_ntsu_linkou      geometry=low,    materials=low → low
+    bathroom_tiled         geometry=medium, materials=low → low（floor: fallback）
+    bedroom_ai_generated   geometry=medium, materials=low → low（T-25 卡已記錄）
+    car_interior_suv       geometry=low,    materials=low → low（域外＋fallback）
+    cgi_cave_lab_sophy     geometry=medium, materials=low → low（floor: fallback）
+    cgi_cavern_crowd_sophy geometry=low,    materials=low → low
+    corridor_hotel_carpet  geometry=low,    materials=low → low
+    livehouse_riverside_ximen geometry=low, materials=low → low
+    stairwell_tiled        geometry=medium, materials=low → low（floor: fallback）
+    ```
+    原因：這批素材全是單張透視照，四面牆共用同一判定值＋`floor` 常常因為 CLIP
+    信心不到門檻而 `fallback`，T-25 規則①（任一面 fallback → low）幾乎必中。
+    **這是素材庫的現實限制，不是本卡的判準有問題**——`test_output_gate.py`
+    的【C】案例已經證明「真正的 medium」路徑存在且不受 gate 影響，只是現有
+    9 張照片素材剛好沒有一張落在這裡。
+  - **卡片自我檢查逐項照跑，發現落差就在此如實記錄，並補一組能反映卡片原意
+    的替代驗證**：
+    1. `arena_ntsu_linkou.png`（low）不帶旗標 → **exit 3**，`output/
+       arena_ntsu_linkou/` 完全沒被建立。
+    2. 同一張加 `--force-low-confidence` → **exit 0**，`ir_mono.wav` 產生，
+       `analysis.json`：`confidence=low`、`forced_low_confidence=true`。
+    3. `bathroom_tiled.png` 不帶旗標（卡片原文假設 medium，實測是 low）→
+       **exit 3**，跟 arena 一樣被擋（gate 邏輯正確，只是這張素材的信心
+       比卡片規劃時假設的更低，不是 medium）。
+    4. **替代驗證（原意是「medium 輸入不受影響、MD5 相同」）**：用
+       `bathroom_tiled.png` 搭配 `--override-dims 4x3x2.5` ＋三個
+       `--override-material`（`floor=carpet`／`ceiling=gypsum_board`／
+       `walls=brick`，三種材質互不相同、來源變成 `manual`，不觸發 fallback/
+       退化規則）人工建構出**真正的** `overall=medium`
+       （`geometry=high, materials=medium`），用同一組指令分別在
+       T-26 修改前（`git stash`）與修改後各跑一次：兩邊 `exit=0`，
+       `ir_mono.wav`／`ir_stereo.wav` MD5 逐位元相同
+       （`a2076e037f181e655e64fbb87350274a` /
+       `9a28fafa96fa2e34152fb69d789a0154`）——medium 路徑確實完全不受
+       gate 新增影響。
+    5. 額外驗證卡片步驟 3（`--override-dims` 不自動解除 gate）：
+       `bathroom_tiled.png --override-dims 4x3x2.5`（不帶 `--override-material`）
+       → `geometry=high, materials=low, overall=low` → **exit 3，仍被擋**，
+       證明手動尺寸只墊高幾何信心，材質信心（來自 floor fallback）沒有連帶
+       被解除。
+  - **診斷力實測（鐵則 5，`git stash` 只暫存 `pipeline.py`／`cli.py`，
+    新測試檔留在工作區）**：
+    ```
+    【0】CLI 接線
+      ✅ exit 2（但訊息變成 argparse 的 unrecognized arguments，不是
+         本卡新寫的訊息——因為舊 cli.py 根本沒有這個旗標）
+    【A】overall=low，不帶旗標（舊碼真的照樣跑到底）
+      ❌ exit code == 3：rc=0
+      ❌ 完全沒有建立輸出目錄：exists=True
+      ❌ synthesize_ir 完全沒被呼叫：delta=3
+    【B】overall=low，帶旗標
+      TypeError: run_photo() got an unexpected keyword argument
+      'force_low_confidence'
+    EXIT=1
+    ```
+    案例 A 的三項斷言在舊碼上全部真實失敗（低信心輸入照樣算完、照樣寫出
+    wav、`synthesize_ir` 確實被呼叫了 3 次）——不是介面錯誤造成的假失敗，
+    是舊碼真的沒有 gate 這個行為。`git stash pop` 還原，`git diff` 與還原前
+    完全相同，working tree 乾淨。
+  - **共同鐵則 1（九套測試）全部 `EXIT=0`**：`test_material_fallback.py`、
+    `test_surface_trusted_scope.py`、`test_confidence_axes.py`、
+    `test_output_gate.py`（新，含【0】CLI 接線＋【A】【B】【C】三案例）、
+    `test_ir_synth.py`（23 項）、`test_scene_text.py`、`test_coupled.py`、
+    `test_acoustics.py`、`test_t30_low_combined.py`，逐一實跑確認。
+  - **共同鐵則 2（六條 MD5 全部不變）**：
+    - `chk_bath.wav` = `2adbaa75eb698772a8c9aa693179ec47` ✅
+    - `chk_church.wav` = `2dd19b6e6d351d713887636fe45cd67e` ✅
+    - `coupled_neighbor_voices.wav` = `9a94ffdf5d8295aee7889729c39c9cd8` ✅
+    - `coupled_stadium_corridor.wav` = `a1c21bcc3fd9aa3480df203a89c8cd05` ✅
+    - T-14 兩條由 `test_ir_synth.py`【6】硬編碼比對，隨鐵則 1 一起過。
+    - 驗完 `chk_bath.*`／`chk_church.*` 已刪除；coupled 兩檔在
+      `output/ir_synth/`，`.gitignore` 已排除，不進版控。
+  - **共同鐵則 3**：`git diff -- src/image_reverb/ir_metrics.py` 0 行。
+  - **共同鐵則 4**：`git status --porcelain` 只有 `src/image_reverb/pipeline.py`
+    （modified）／`src/image_reverb/cli.py`（modified）／
+    `scripts/test_output_gate.py`（新增，untracked），未動
+    SPEC.md/ROADMAP.md/WORKFLOW.md/`output/mvp_acceptance/`。
+  - **⚠️ 已知連帶影響（卡片已預告，如實記錄，非本卡範圍）**：T-17 §7-2 有
+    數個場地是 `low`（`DivorceBeach`／`gym`／`restaurant`／`SteinmanHall`），
+    本卡之後**重跑驗收必須加 `--force-low-confidence`**，否則會被 gate 擋下
+    （exit 3、無輸出）。`scripts/t17_rt60_table.py` 等腳本本身不用改，
+    但重跑指令要更新；REPORT 補一行說明留給 T-17 重跑時處理，本卡沒有動
+    `output/mvp_acceptance/` 或 REPORT 本身。
+  - **範圍確認**：沒有動 `run_text()`／`run_scene()`／`compute_acoustics()`／
+    `ir_synth.py`／`geometry.py`／`surfaces.py`（`compute_materials_confidence`
+    整個函式邏輯延用 T-25，一行沒動）；gate 只讀已經算好的
+    `overall_confidence` 字串，不影響傳給合成的任何數值——medium/high
+    路徑的六條 MD5、以及新增替代驗證的 medium MD5，全部逐位元相同就是證據。
+  - 下一步：交給 Opus 驗證。**Phase 1.6 四張修正卡（T-23→T-24→T-25→T-26）
+    全部進到 🔵/✅，T-26 驗證通過後這一輪修正輪就結案**，回頭處理
+    TODO.md 記錄的「§7-1＋§7-2 皆未達標，要不要再加一輪」（含 T-17 重跑要
+    加 `--force-low-confidence` 這件事）與 T-27（Fable 裁決）。
 
 ### T-27（🔮 Fable 裁決用，Sonnet 不要做）室內陳設的吸音表示
 - **狀態**：⬜ 未開始（**需要 Fable 做 SPEC 層決策，不是 bug 修正**）

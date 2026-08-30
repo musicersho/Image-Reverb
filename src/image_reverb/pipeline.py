@@ -163,6 +163,7 @@ def run_photo(
     override_dims: str | None = None,
     override_materials: list[str] | None = None,
     no_viz: bool = False,
+    force_low_confidence: bool = False,
 ) -> int:
     from .preprocess import preprocess_image
     from .surfaces import surfaces_from_preprocess, _load_segmenter, segment_roles
@@ -244,6 +245,43 @@ def run_photo(
             f"overall={overall_confidence}"
         )
 
+        # T-26（REPORT §2.6 缺陷 E）：overall confidence 為 low 時擋下輸出——
+        # 降信心不等於保護使用者，之前 low + 明確警示照樣輸出到底，使用者盲聽當然配錯。
+        # 擋在合成（T-13/T-14）之前，不是擋在寫檔之前：不浪費運算，也絕不可能已經
+        # 寫出任何 WAV／JSON 才被擋下（紅旗：擋在合成之後＝算了才擋）。
+        forced_low_confidence = False
+        if overall_confidence == "low":
+            if not force_low_confidence:
+                print(
+                    "錯誤：overall confidence 為 low，已擋下輸出（不會寫出任何 WAV／JSON）。",
+                    file=sys.stderr,
+                )
+                print(
+                    f"  原因：geometry={est.confidence}, materials={materials_confidence}"
+                    "——幾何和/或材質推測很可能不可信，直接輸出容易讓使用者盲聽配錯空間。",
+                    file=sys.stderr,
+                )
+                print("  怎麼繼續：", file=sys.stderr)
+                print(
+                    "    1) 幾何不可信 → 用 --override-dims 手動指定房間尺寸"
+                    "（公尺），例如 4x3x2.5",
+                    file=sys.stderr,
+                )
+                print(
+                    "    2) 仍要照樣輸出 → 加 --force-low-confidence"
+                    "（會在結果中留下警告標記，責任自負；--override-dims"
+                    " 不會自動解除這道關卡，因為材質仍可能是 low）",
+                    file=sys.stderr,
+                )
+                return 3
+            forced_low_confidence = True
+            print(
+                "⚠️  已指定 --force-low-confidence：overall confidence 為 low"
+                f"（geometry={est.confidence}, materials={materials_confidence}），"
+                "仍強制輸出，結果可信度未知，請自行評估。",
+                file=sys.stderr,
+            )
+
         print("--- T-13 聲學參數 ---")
         ac = compute_acoustics(est, surf, materials_data)
         print(f"  Sabine 目標 RT60：{[round(v, 2) for v in ac.rt60_bands_sabine]} s")
@@ -262,6 +300,14 @@ def run_photo(
 
     mono_payload = json.loads(mono_json.read_text(encoding="utf-8"))
     notes, warnings = _split_notes_and_warnings(mono_payload["warnings"])
+    if forced_low_confidence:
+        # T-26 步驟 2：帶 --force-low-confidence 越過 gate 時，JSON 要留下明確標記與
+        # 一條進 warnings 的說明，不能讓「這筆結果本來會被擋下」的事實只留在 CLI 輸出裡。
+        warnings.append(
+            "已指定 --force-low-confidence：overall confidence 為 low"
+            f"（geometry={est.confidence}, materials={materials_confidence}），"
+            "使用者強制輸出，結果可信度未知。"
+        )
 
     analysis: dict[str, Any] = {
         "input_type": "photo",
@@ -271,6 +317,7 @@ def run_photo(
         "confidence": overall_confidence,
         "geometry_confidence": est.confidence,
         "materials_confidence": materials_confidence,
+        "forced_low_confidence": forced_low_confidence,
         "dims_m": {"length": est.length_m, "width": est.width_m, "height": est.height_m},
         "volume_m3": round(est.volume_m3, 2),
         "surfaces": surf.as_dict(),

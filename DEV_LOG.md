@@ -1,5 +1,45 @@
 # Dev Log
 
+## 2026-08-30 (52)
+
+- **T-26 完成，🔵 待驗證**：`pipeline.run_photo()` 加輸出 gate——overall
+  confidence 為 `low` 時，在 T-13 聲學計算**之前**就擋下（不只是擋在寫檔前，
+  連合成運算都省了），不寫任何 WAV／JSON，印繁中錯誤說明＋兩條可行的下一步，
+  `return 3`。唯一明確出口是新 CLI 旗標 `--force-low-confidence`（併入
+  `--override-dims`／`--override-material` 那組「僅照片輸入」限制）：帶了就
+  照樣輸出，但 `analysis.json` 留下 `forced_low_confidence: true` 與一條
+  warnings 說明，CLI 也印顯著警告。`--override-dims` 不會自動解除 gate——
+  幾何信心墊高了，材質信心（常見成因：`floor` CLIP 信心不足 fallback）沒有
+  連帶被解除，overall 仍取兩者較低者。只動照片管線，`run_text()`/`run_scene()`
+  沿用 T-25 已記錄的觀察，維持舊語義不變。
+- **執行中發現卡片自我檢查的一個假設過期了**：卡片寫「`bathroom_tiled.png`
+  （medium）」，但實測**現行 9 張 `assets/photos/` 全部是 overall=low**
+  （單張透視照的通病：四面牆共用同一判定值＋`floor` 常 fallback，T-25 規則①
+  幾乎必中）。已如實記錄、用 `git stash` 證明這不是本卡造成的回歸（改動前
+  這張照片印出的信心值本來就是 low，只是舊碼沒有讀它），並用
+  `--override-dims`＋三個互不相同的 `--override-material` 人工建構出真正的
+  `overall=medium` 案例，改動前後 MD5 逐位元相同，佐證 medium 路徑確實
+  不受 gate 影響。
+- **新增 `scripts/test_output_gate.py`**：樁掉 `preprocess_image()`／
+  `surfaces_from_preprocess()`（避免每次都要跑深度/CLIP/分割模型），配合
+  `--override-dims` 走既有的手動幾何分支，`compute_materials_confidence()`
+  以降的 T-13/T-14/wet preview 全走真實程式碼。四部分：CLI 接線
+  （subprocess，非照片輸入帶旗標要報錯）／low 不帶旗標（exit 3、無輸出目錄、
+  `synthesize_ir` 呼叫次數 delta=0）／low 帶旗標（exit 0、JSON 標記、
+  `synthesize_ir` delta=3）／medium（不受影響、delta 同樣是 3）。`git stash`
+  還原到修改前重跑：三項斷言真實失敗（低信心輸入照樣算完、照樣寫出 wav），
+  證明非空測試。
+- **共同鐵則全過**：九套測試（含 T-23/T-24/T-25 新增的三支）全部 `EXIT=0`；
+  六條交付 IR MD5 全部相符；`ir_metrics.py` diff 0 行；SPEC/ROADMAP/WORKFLOW/
+  `output/mvp_acceptance/` 零改動；本輪只動 `pipeline.py`／`cli.py` 兩個檔
+  ＋新測試檔。
+- **⚠️ 已知連帶影響（卡片已預告）**：T-17 §7-2 有數個場地是 `low`
+  （DivorceBeach／gym／restaurant／SteinmanHall），之後重跑驗收要加
+  `--force-low-confidence`，否則會被擋下。REPORT 補說明留給 T-17 重跑時處理，
+  本卡沒有動 REPORT 或 `output/mvp_acceptance/`。
+- 下一步：Opus 驗證 T-26 → 通過後 Phase 1.6 四張修正卡全部結案，回頭處理
+  TODO.md 的「§7-1＋§7-2 要不要再加一輪」與 T-27（Fable 裁決）。
+
 ## 2026-08-30 (51)
 
 - **T-25 完成，🔵 待驗證**：`analysis.json` 的 `confidence` 從「直接等於
