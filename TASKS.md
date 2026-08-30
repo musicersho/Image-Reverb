@@ -4199,7 +4199,8 @@
     「陳設吸音佔比 vs RT60 準確度」，這兩個欄位是現成入口。
 
 ### T-33 材質輪基準率複測：13 張重跑＋量測報告（裁決 T-27-A 執行卡 3/3；量測卡）
-- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-08-30）
+- **狀態**：✅ 通過（Opus 驗證，2026-08-31；三層標準全過。附兩則**必須補**的文件修正，
+  不影響本卡結論與 Fable 決策，見下方「Opus 驗證紀錄」§修正事項）
 - **前置**：T-31、T-32 皆 ✅（程式定稿後才能量；量測期間 `src/` 一行不許改）
 - **目標**：產出裁決 T-28-A 裁決三要的「新基準率」，交 Fable 複評 gate 規則。
   本卡是量測卡：**只寫 `scripts/` 的量測腳本與 `output/` 的報告，`src/` 零改動**。
@@ -4281,6 +4282,86 @@
     衰減時間」（−30~−45dB）得到 0.3–0.8 秒，與使用者回報吻合。不影響 RT60
     量測本身的正確性，但提醒 Fable 未來調陳設效果強度時該用什麼指標交叉檢查。
     全文與數據見 `output/material_round/REPORT.md` §6.1。
+
+- **Opus 驗證紀錄（2026-08-31）**：全部驗證指令由驗證者在乾淨工作區實際重跑，
+  **不採信自檢貼上來的任何輸出**。
+  - **鐵則 1**：十套測試驗證者自己重跑，**EXIT 全部 = 0**（`test_ir_synth`／
+    `test_output_gate`／`test_confidence_axes`／`test_material_fallback`／
+    `test_surface_trusted_scope`／`test_t30_low_combined`／`test_scene_text`／
+    `test_coupled`／`test_furnishings`／`test_acoustics`）。
+  - **鐵則 2**：六條交付 IR 驗證者自己重生比對——T-20 得
+    `2adbaa75eb698772a8c9aa693179ec47`／`2dd19b6e6d351d713887636fe45cd67e`；
+    T-21 得 `9a94ffdf5d8295aee7889729c39c9cd8`／`a1c21bcc3fd9aa3480df203a89c8cd05`；
+    T-14 兩條由 `test_ir_synth`【6】內建硬編碼比對（該套 exit 0）。**全部相符**。
+  - **鐵則 3／4**：`git diff b29e077..HEAD -- src/ SPEC.md ROADMAP.md WORKFLOW.md
+    output/mvp_acceptance/` 輸出 **0 行**。本卡兩個 commit 只動 `DEV_LOG`／`HANDOFF`／
+    `TASKS`／`TODO`／`output/material_round/*.md`／`scripts/t33_material_round_tables.py`——
+    **量測期間 `src/` 確實零改動**（Opus 驗證重點紅旗一：未發生）。
+  - **鐵則 6 的守門機制有真正診斷力（不是空檢查）**：驗證者複製腳本、把
+    `EXPECTED_GATE["RacquetballCourt4"]` 故意改成 `("high","high")` 實跑 →
+    **exit 1**、stderr 印出具體不符項，且 `data.json`／`tables.md` **皆未被改寫**
+    （與備份 `diff -q` 相同）。證明「基線不符就 🔴 停」是真的會擋，
+    不是 try/except 吞掉（WORKFLOW §5 紅旗 4：未發生）。
+  - **第一層（能跑）**：兩個試聽檔非靜音——`check_audio.py`：48 kHz／2.937 s／
+    RMS **0.040673**、48 kHz／6.899 s／RMS **0.035732**，皆遠高於 0.0001 門檻。
+  - **第二層（做對）——抽 3 張自己重跑，逐位元比對（Opus 驗證重點紅旗二）**：
+    驗證者獨立重跑 `SteinmanHall`／`bedroom_ai_generated`／`RacquetballCourt4`
+    （`--force-low-confidence --no-viz`），與 `runs/` 快取比對：**`ir_mono.wav`
+    MD5 三張全同**（`741d3a98…`／`0cdeb64c…`／`21dec7be…`），`analysis.json`
+    除 `elapsed_s` 與 `input` 路徑寫法外**完全相同**。→ 快取是真跑出來的，非捏造。
+  - **第二層——基線表對得上裁決 T-28-A**：腳本 `EXPECTED_GATE` 13 筆與 T-28 卡
+    「三處更正」逐筆核對相符（geometry=medium＋materials=low **7 張**、
+    DivorceBeach 唯一 `low/medium` **1 張**、兩軸皆 low **5 張**；materials=low
+    **12/13**）。紅旗四（基線不同卻沒觸發 🔴）：未發生。
+  - **第二層——達標率驗證者自己重算**：由 `data.json` 逐項重數 `within_tolerance`，
+    得自動組 `--no-furnishings` **9/40**、預設 **4/40**；手動組 **5/25**／**3/25**，
+    與 `tables.md` 存檔值**完全一致**；全達標皆 0。**自動組與手動組分開列**
+    （紅旗三「合併計算不分組」：未發生）。另確認**無任何 run 因加陳設而通過數上升**。
+  - **第二層——Steinman Hall 頭條發現獨立重算**：驗證者用**自己重跑的** IR 對
+    `assets/reference_irs/steinman_hall/SteinmanHall.wav` 重算，得含陳設
+    −29%／−44%／−43%／−32%／−13% = **1/5**、`--no-furnishings` +16%／+6%／−3%／
+    +9%／+30% = **4/5**，與報告 §4.2 逐格相同。**「4/5→1/5」成立**。
+  - **第二層——§2.1「與 T-17 逐位元相同」的宣稱屬實**：比對
+    `output/mvp_acceptance/tables.md`，`--no-furnishings` 組的 Gym
+    −43/−43/−44/−27/−20、Restaurant +26/+23/+20/+10/−4、Racquetball
+    −50/−41/−46/−47/−50、Steinman +16/+6/−3/+9/+30、Tunnel +54/+144/+95/+100/+0
+    與小計 **9/40（22%）／5/25（20%）** 全部逐字相同。這條交叉印證量測管線正確。
+  - **第二層——§6.1（docs commit 追加的試聽查核）數字屬實**：驗證者重建方法
+    （20 ms 窗、門檻相對各檔**峰值取樣**、取最後一個超過門檻之窗的起始時間）
+    **完全重現報告 8 個數字**（有陳設 1.36／1.44／1.50／1.54；無陳設
+    1.44／1.74／2.14／2.34），差距 0.08／0.30／0.64／0.80 s 亦相符。
+    另查核同節的 Schroeder 宣稱：實測廣頻曲線跌到 −60 dB 為 **0.528 s／3.104 s**
+    → 報告寫「0.53 s／3.10 s，相差 2.6 s」**正確**。使用者「頂多 0.5 秒」的
+    回報與量測一致，該節結論成立。
+  - **第三層（做好）**：`t33_material_round_tables.py` 全程只呼叫 CLI 與既有
+    `ir_metrics`／`t17_rt60_table`，**無 hardcode 假結果、無空函式**；CLI 失敗
+    raise `RuntimeError` 並附 stdout/stderr 末 40 行、convolve 用 `check=True`，
+    **沒有吞錯**；`tables.md` 全表由 `write_tables_md()` 產生（地雷 #15 遵守）。
+    `git status` 乾淨；`.gitignore` 行為與宣稱一致（`git ls-files output/material_round/`
+    只有 `REPORT.md`／`tables.md`，`runs/`、`data.json`、試聽 wav 未進版控）。
+  - **⚠️ 修正事項一（必補，文件錯字級）**：REPORT §2.2 與 §4.3 的
+    **「8/13 場地×組別不受影響」應為「9/13」**。受影響的是 4 個 run
+    （Steinman 自動＋手動、Restaurant 自動＋手動），13 − 4 = **9**；
+    驗證者由 `data.json` 逐 run 比對兩組 `error_pct` 得**逐位元相同者 9 個**
+    （自動 6：Cathedral／DivorceBeach／DeptStore／Gym／Racquetball／Tunnel；
+    手動 3：DeptStore／Gym／Racquetball）。§4.3 句中自己列舉的項目數也是 9，
+    與同句的「共 8 組」自相矛盾。**不影響任何結論**（頭條數字 22%→10%、
+    20%→12%、4/5→1/5 全部經獨立重算無誤），純計數筆誤。
+  - **⚠️ 修正事項二（必補，來源可追溯性）**：**§6.1 的門檻衰減表沒有程式來源**——
+    `t33_material_round_tables.py` 裡沒有任何包絡線／門檻計算，`data.json` 也
+    查無這些數字（該表是 `docs:` commit 中臨時算出後手打，臨時腳本未進版控）。
+    這與 REPORT §7 自己寫的「本檔與 `tables.md` 的每一個數字都由上述指令產生；
+    `data.json` 是唯一的原始數字來源」**衝突**，也踩到地雷 #15 的精神。
+    **數字本身經驗證者完全重現、確認正確**，所以是可追溯性瑕疵而非造假。
+    建議二擇一：①把該計算補進腳本並讓它寫入 `data.json`／`tables.md`；
+    ②在 §6.1 與 §7 明確標注「本表為一次性人工查核，非腳本產物」並附上計算方法
+    （20 ms 窗、相對峰值取樣、最後超過門檻之窗起始時間），讓後人能複現。
+  - **結論**：兩則修正皆為文件層級、不影響本卡任何量測結論與交給 Fable 的決策輸入，
+    故**通過**（比照 T-31 先通過、文件修正另補的處理方式）。
+    **T-33 通過後 → 回 Fable**：帶 REPORT 做 gate 規則複評（裁決 T-28-A 裁決三）
+    ＋決定要不要開 CLIP 準確度輪。驗證者對報告 §5 的三個裁決項無異議：
+    本輪確實在架構上不可能改變 gate 基準率（鐵則 6 的必然結果，已由
+    `--no-furnishings` 交叉檢查證實），要動 materials 軸的 12/13 low 只能修 CLIP 本身。
 
 ### T-34 gate 訊息補洞：規則 2 死路出口＋兩處測試覆蓋（Opus T-30 後續建議執行卡）
 - **狀態**：⬜ 未開始
