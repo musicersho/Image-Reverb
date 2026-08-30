@@ -2632,10 +2632,63 @@
     （非本卡範圍，屬 T-27 議題），記得【3】會擋，要一併更新。
 
 ### T-24 ADE 可信材質分支：修好計分錯誤、清掉死碼與誤導性註解（REPORT §2.6 缺陷 D）
-- **狀態**：🔴 卡關（Sonnet，2026-08-30）——需要使用者開 Fable 視窗裁決
-  「(a) 保留不可達佔位 vs (b) 移除搬去 T-27 待辦」，詳見下方「退回修正紀錄」
+- **狀態**：🟠 退回（Opus 複驗 2026-08-30，第二輪）——**本輪沒有任何程式碼被修正**，
+  退回理由 1／2／4 原封不動仍然成立，因此不能改成 ✅ 通過。
+  **但阻塞點不是 Sonnet 偷懶**：本卡自己加粗寫了兩次「哪一個都必須先問 Fable 裁決」，
+  Sonnet 停下來是照卡片＋CLAUDE.md 卡關規則做的，程序上正確。
+  **👉 使用者下一步：開一個 Fable 視窗做「(a) 保留不可達佔位 vs (b) 移除搬去 T-27
+  待辦」的裁決**，拿到裁決後再回 Sonnet 續做。詳見下方「Opus 複驗紀錄（第二輪）」。
 
-  **Opus 驗證紀錄（全部由驗證者自己實跑，不採信轉述）**
+  **Opus 複驗紀錄（第二輪，2026-08-30；每一條都由驗證者自己實跑，不採信轉述）**
+  - **本輪 diff 範圍**：`git diff --name-only 23c289f HEAD` = `DEV_LOG.md`／`TASKS.md`／
+    `TODO.md`，`git status --short` 為空。`src/` 與 `scripts/` **一個字都沒改**，
+    確認 Sonnet 自述「維持退回時原狀」屬實。
+  - ❌ **退回理由 1（可信類別分支 100% 不可達）仍然成立**。驗證者自己重跑集合核對：
+    ```
+    trusted ids  = [8, 9, 12, 18, 23, 27, 30, 31, 147]
+    floor    ids = [3, 6, 13, 28, 46, 53]  ∩ trusted = []
+    ceiling  ids = [5]                     ∩ trusted = []
+    wall     ids = [0, 1, 25]              ∩ trusted = []
+    聯集交集 = []
+    隨機 fuzz 3000 張 labelmap（刻意塞滿可信類別）→ 出現可信類別 note 的次數 = 0
+    ```
+    `ADE_TRUSTED_MATERIAL` 全專案只在 `surfaces.py:43`（定義）與 `:260-261`（這段
+    不可達計分）被引用，死碼原樣還在。
+  - ❌ **退回理由 2（註解描述不可能發生的行為）仍然成立**。三處原文未動：
+    `surfaces.py:12`「目前只用於在 note 裡加註提示」、`:40`「目前只用來在 note 裡
+    加註提示」、`:243`「只用來產生提示性 note」；`:285-289` 那段含「直接映射材質待
+    T-27…」的 note 字串仍是永遠印不出來的字串。
+  - ❌ **退回理由 4（測試對未來沒有診斷力）仍然成立**：
+    `test_surface_trusted_scope.py`【1】兩條斷言未新增、未改寫。
+  - ✅ **退回理由 3（交接筆記寫錯結論）已修正**：TASKS.md「退回修正紀錄」與
+    DEV_LOG 第 48 筆都明白承認「只影響 note」前半句不成立、實際是完全不可達，
+    也承認上一輪測試註解已寫到關鍵線索卻沒推廣成通用結論。這條可以結案。
+  - ✅ 共同鐵則 A（五支測試）**驗證者自己重跑，EXIT 全部 = 0**：`test_ir_synth.py`／
+    `test_scene_text.py`／`test_coupled.py`／`test_acoustics.py`／`test_t30_low_combined.py`。
+  - ✅ 共同鐵則 B（六條交付 IR MD5）**自己重跑，全部相符**：
+    `chk_bath`=`2adbaa75eb698772a8c9aa693179ec47`、
+    `chk_church`=`2dd19b6e6d351d713887636fe45cd67e`、
+    `coupled_neighbor_voices`=`9a94ffdf5d8295aee7889729c39c9cd8`、
+    `coupled_stadium_corridor`=`a1c21bcc3fd9aa3480df203a89c8cd05`；
+    T-14 兩條由 `test_ir_synth.py`【6】硬編碼比對通過。暫存 `chk_*.wav` 已刪除。
+  - ✅ 共同鐵則 C：`git diff 23c289f HEAD -- src/image_reverb/ir_metrics.py` 與
+    working tree diff **皆為空**。
+  - ✅ 共同鐵則 D：`SPEC.md`／`ROADMAP.md`／`WORKFLOW.md`／`output/mvp_acceptance/`
+    本輪零改動。
+  - ✅ 共同鐵則 E：驗證者自己把 `surfaces.py` 還原成修改前的 `56eab61` 版再跑新測試，
+    **EXIT=1**（floor／ceiling 兩項 ❌，note = 「分割結果有 50.0% 像素屬語意可信
+    類別 → glass…」）；還原回來後 `diff` 與還原前完全相同、working tree 乾淨。
+    新測試在現行碼上 EXIT=0。
+  - ✅ 任務卡三面紅旗再走一次，均未發生：沒有順手實作「可信類別直接映射」；
+    `mid, conf, top3, method = classify_region_material(...)` 一字未改；
+    新測試在舊碼上確實 fail；`"ade_trusted"` 字面值全專案 grep 無殘留。
+  - 📝 附註（給下一輪，不構成額外要求）：Sonnet 主張理由 4 的測試也得等裁決才能寫，
+    驗證者同意——選 (b) 會把 `ADE_TRUSTED_MATERIAL` 整張表移走，屆時「角色 id ∩
+    可信 id = ∅」這條不變量斷言就沒有對象可斷言，寫法確實跟選 (a) 完全不同。
+  - 📝 本輪 commit 訊息用 `docs: T-24 卡關紀錄`，符合 WORKFLOW §4「程式跑不動／
+    自檢沒過 → 只 commit 文件」的規定，這點沒有問題。
+
+  **Opus 驗證紀錄（第一輪，2026-08-30；全部由驗證者自己實跑，不採信轉述）**
   - ✅ 共同鐵則 1：五支測試自己重跑，`test_ir_synth.py` / `test_scene_text.py` /
     `test_coupled.py` / `test_acoustics.py` / `test_t30_low_combined.py` **EXIT 全部 = 0**。
   - ✅ 共同鐵則 2：六條 IR MD5 自己重跑複驗，全部相符——
