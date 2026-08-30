@@ -3282,7 +3282,7 @@
     要先補齊這個落差。Sonnet 已在交接筆記主動揭露此事，沒有隱瞞。
 
 ### T-26 低信心／域外輸入的輸出 gate（REPORT §2.6 缺陷 E）
-- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-08-30）
+- **狀態**：✅ 通過（Opus 驗證 2026-08-30）
 - **前置**：**T-25（要用 overall confidence 當判準）**
 - **問題**：`pipeline.py:225-239` 從幾何直接進聲學→合成→`export_ir()`→wet preview，
   **沒有任何一行檢查 `est.confidence` 或域外狀態**。T-17 §7-1 的實際後果：
@@ -3459,6 +3459,62 @@
     全部進到 🔵/✅，T-26 驗證通過後這一輪修正輪就結案**，回頭處理
     TODO.md 記錄的「§7-1＋§7-2 皆未達標，要不要再加一輪」（含 T-17 重跑要
     加 `--force-low-confidence` 這件事）與 T-27（Fable 裁決）。
+
+- **Opus 驗證紀錄（2026-08-30，全部由驗證者自己實跑，不採信轉述）**：
+  - **共同鐵則 1**：九套測試自己跑一遍，全部 `EXIT=0`——`test_ir_synth`（23 項）、
+    `test_scene_text`、`test_coupled`、`test_acoustics`、`test_t30_low_combined`、
+    `test_material_fallback`、`test_surface_trusted_scope`、`test_confidence_axes`、
+    `test_output_gate`（新）。
+  - **共同鐵則 2**：六條交付 IR 的 MD5 自己重跑比對，一條都沒變——
+    `chk_bath`=`2adbaa75eb698772a8c9aa693179ec47`、
+    `chk_church`=`2dd19b6e6d351d713887636fe45cd67e`、
+    `coupled_neighbor_voices`=`9a94ffdf5d8295aee7889729c39c9cd8`、
+    `coupled_stadium_corridor`=`a1c21bcc3fd9aa3480df203a89c8cd05`；
+    T-14 兩條隨 `test_ir_synth`【6】硬編碼比對通過。`chk_*` 已刪除。
+  - **共同鐵則 3／4**：`git diff -- src/image_reverb/ir_metrics.py` 0 行；
+    `git show --name-status HEAD` 只有 `DEV_LOG.md`／`TASKS.md`／`TODO.md`／
+    `scripts/test_output_gate.py`（新增）／`cli.py`／`pipeline.py`，
+    未動 SPEC/ROADMAP/WORKFLOW/`output/mvp_acceptance/`。
+    另查 `git diff HEAD~1 HEAD -- TASKS.md` 的刪除行**只有一行狀態列**，
+    驗收條件／自我檢查一字未改（排除「把驗收標準改寬鬆」的紅旗）。
+  - **共同鐵則 5（診斷力，驗證者自己還原舊碼實測，非採信貼上來的輸出）**：
+    `git checkout HEAD~1 -- pipeline.py cli.py` 後跑 `test_output_gate.py`，
+    案例 A 三項斷言**真的全部失敗**：`rc=0`（非 3）、`exists=True`（輸出目錄
+    被建立）、`delta=3`（`synthesize_ir` 真的被呼叫了 3 次），且舊碼確實把
+    `ir_mono.wav`／`ir_stereo.wav`／`analysis.json`／`wet_preview.wav` 全寫了出來；
+    案例 B 因舊 `run_photo()` 無 `force_low_confidence` 參數而 `TypeError`。
+    非空測試，確認有診斷力。已 `git checkout HEAD --` 還原，工作區乾淨。
+  - **Opus 驗證重點逐面紅旗**：
+    1. 「gate 加在合成之後」→ **排除**。實測 `arena_ntsu_linkou.png` 不帶旗標
+       `EXIT=3`，`output/arena_ntsu_linkou/` **根本沒被建立**（`ls` 確認不存在），
+       且測試以 `synthesize_ir` 呼叫次數 `delta=0` 佐證連合成都沒跑到。
+       讀碼確認 gate 位於 T-13 `compute_acoustics()` 之前、`_make_out_dir()` 之前。
+    2. 「`--force-low-confidence` 沒真的把標記寫進 JSON」→ **排除**。同一張加旗標
+       `EXIT=0`，實讀 `analysis.json`：`confidence=low`、
+       `forced_low_confidence=True`、`warnings` 內有 force 說明字串各一條。
+       CLI 也印了顯著警告。IR 非靜音：`check_audio.py` RMS=`0.014162`、峰值 0.708。
+    3. 「medium/high 路徑被波及」→ **排除**。除六條 MD5 外，另用
+       `bathroom_tiled.png --override-dims 4x3x2.5` ＋三個 `--override-material`
+       建構真正的 `overall=medium`，**由驗證者自己在新舊碼各跑一次**，
+       `ir_mono`／`ir_stereo` MD5 逐位元相同
+       （`a2076e037f181e655e64fbb87350274a`／`9a28fafa96fa2e34152fb69d789a0154`）。
+  - **卡片步驟 3 另行實測**：`bathroom_tiled.png --override-dims 4x3x2.5`
+    （不帶 material override）→ `geometry=high, materials=low, overall=low`
+    → **`EXIT=3` 仍被擋、無輸出目錄**，確認手動尺寸不會自動解除 gate。
+  - **關於卡片自我檢查第 3 條與事實不符（`bathroom_tiled.png` 假設為 medium）**：
+    驗證者獨立確認 Sonnet 的回報屬實且**不是本卡造成的回歸**——把
+    `pipeline.py`／`cli.py` 還原到 T-26 之前跑同一張照片，舊碼印出的就已經是
+    `geometry=medium, materials=low, overall=low`（差別只在舊碼 `EXIT=0` 照樣
+    寫出全部檔案，正是缺陷 E 本身）。**卡片規劃時的素材假設有誤，不是實作偷改判準**；
+    Sonnet 如實回報並補上可驗證的替代驗證（上述第 3 面紅旗），做法正確，
+    不構成退回理由。
+  - **錯誤處理（WORKFLOW §5 第三層）**：不存在的檔案／非圖片（`README.md`）／
+    非照片輸入帶 `--force-low-confidence` → 皆 `EXIT=2` ＋清楚繁中訊息，無 crash。
+  - **非阻斷小瑕疵（不影響通過，留待日後順手修）**：
+    `scripts/test_output_gate.py` docstring 第 26–27 行寫「A 呼叫 0 次、B/C 呼叫
+    1 次」，但實際斷言是 3 次（mono 1 ＋ stereo 內部 2）。**斷言是對的，只有註解
+    的數字沒同步**，不影響測試效力。
+  - **結論：✅ 通過**。Phase 1.6 修正輪（T-23→T-24→T-25→T-26）四張卡全部結案。
 
 ### T-27（🔮 Fable 裁決用，Sonnet 不要做）室內陳設的吸音表示
 - **狀態**：⬜ 未開始（**需要 Fable 做 SPEC 層決策，不是 bug 修正**）
