@@ -1,5 +1,36 @@
 # Dev Log
 
+## 2026-08-30 (45)
+
+- **收到外部 bug 診斷，Opus 逐條查證後確認五條全部屬實**（未採信轉述，讀碼＋執行期重現）：
+  - **🔴 缺陷 D：ADE20K 語意可信材質分支是 dead behavior**。註解兩處寫「不必問 CLIP」，
+    程式每次都問；`best_trusted` 只拿去串 note 字串；`"ade_trusted"` 全專案只存在於
+    記錄 method 可能值的註解裡，**從未被指派**。執行期重現：windowpane 佔 40% 時，
+    三個角色 `material_id` 全是 CLIP 的 concrete。
+    **附帶發現（比原診斷更嚴重）**：`trusted_hits` 用全圖 ratios、未被角色 mask 限制，
+    重現中 windowpane 全在畫面上半，floor/ceiling 的 note 卻都宣稱 40% 屬可信類別
+    → **補個 if 就啟用會引入新錯誤**。→ 地雷 #19
+  - **🔴 缺陷 E：pipeline 已判定不可信仍無條件輸出 WAV**（`pipeline.py:225-239` 無 gate）
+    → 地雷 #20。與本報告 §1.2 從產品面記錄的是同一問題的兩個視角。
+  - **🟠 缺陷 F：fallback 材質四處說法不一致**（materials.json `generic_wall`
+    vs config 實際 `gypsum_board` vs 兩處註解）→ 地雷 #21。
+  - **🟠 缺陷 G（我自己的交付物）：`t17_blind_test.py` 只檢查檔案存在**，
+    等於允許拿舊產物驗收新程式。**已當場修好並實測護欄會觸發**（情境 A 照片比產物新
+    → exit 1；情境 B 記錄來源對不上 → exit 1；情境 C 正常 → exit 0，
+    五個盲聽檔 MD5 未變）。新增 `blind_test/MANIFEST.json`（git revision＋sha256）。
+- **📝 據實更正本報告的過度延伸**：首版在 §0 與 §6 把 §7-1 概括成「與 §7-2 撞出同一個
+  病因（材質）」。**這個概括不精確**——§1.2 的逐案歸因本身是對的（幾何／域外／材質各一），
+  但摘要層把三個不同根因壓成一個。**修正輪若只打材質，sample_1／sample_2 不會被修好。**
+- **📝 據實更正 §1.3 的標註錯誤**：首版把 `generic_wall` 標成 fallback。
+  查 `surfaces_sources` 後確認臥室四面牆是 `clip` 不是 `fallback`，`generic_wall`
+  是 CLIP 的正常候選（提示詞 "a plain smooth plastered wall"）。
+  **會標錯正是因為缺陷 F**——資料檔與註解都說 fallback 是 generic_wall。
+  連帶更正 sample_4 的歸因：牆判得沒錯，錯在**床/窗簾/地毯在六面模型裡無處可放**
+  ——模型結構限制，不是辨識準確度問題（地雷 #22）。
+- **未動 `src/`**：缺陷 D/E/F 屬引擎程式，是 Fable 修正輪的裁決範圍，
+  本卡只查證與記錄，`git diff -- src/` 為空。
+- 下一步：交 Fable 裁決修正輪範圍（**只打材質不足以修好 §7-1 的兩題**）。
+
 ## 2026-08-30 (44)
 
 - 🔵 **T-17 四項驗收標準全部有結果**（使用者回饋已補進 REPORT）：

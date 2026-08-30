@@ -11,6 +11,11 @@
    照原順序改名等於沒打亂，`sample_1` 永遠是浴室。
 3. 檔案的 mtime 全部對齊，避免用「檔案建立時間 = 生成順序」反推答案。
 
+**產物來源查核（T-17 診斷 P2 修正）**：舊版只檢查 `wet_preview.wav` 存在就複製，
+等於允許「拿舊產物驗收新程式」。現在會核對 `analysis.json` 記錄的來源照片是否就是
+本次要用的那張、比對產物與照片的 mtime 先後，並把 git revision（含 `src/`、`data/`
+是否 dirty）與三個檔的 sha256 寫進 `blind_test/MANIFEST.json`。
+
 **已知限制（REPORT 必須寫）**：乾聲目前只有 `assets/dry/clap_synth.wav`（numpy 合成
 拍手）。真實說話乾聲是 HANDOFF §4「等使用者的事」的待補項；用拍手做空間類型配對
 比用人聲難，這會讓 §7-1 的分數偏保守（低估），不會偏樂觀。
@@ -18,9 +23,11 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import random
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -39,20 +46,70 @@ SPACES = [
 ]
 
 
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _git_rev() -> str:
+    """記錄產生素材時的 git revision，讓「舊產物驗收新程式」事後查得出來。"""
+    try:
+        rev = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            cwd=REPO_ROOT, capture_output=True, text=True, timeout=10,
+        ).stdout.strip() or "unknown"
+        dirty = subprocess.run(
+            ["git", "status", "--porcelain", "--", "src", "data"],
+            cwd=REPO_ROOT, capture_output=True, text=True, timeout=10,
+        ).stdout.strip()
+        return rev + ("+dirty(src/data)" if dirty else "")
+    except Exception:
+        return "unknown"
+
+
 def main() -> int:
     if OUT_DIR.exists():
         shutil.rmtree(OUT_DIR)
     OUT_DIR.mkdir(parents=True)
 
     items = []
+    stale: list[str] = []
     for space_type, run in SPACES:
         wet = REPO_ROOT / "output" / run / "wet_preview.wav"
         ir = REPO_ROOT / "output" / run / "ir_mono.wav"
-        if not wet.exists() or not ir.exists():
+        aj = REPO_ROOT / "output" / run / "analysis.json"
+        photo = REPO_ROOT / "assets" / "photos" / f"{run}.png"
+        if not wet.exists() or not ir.exists() or not aj.exists():
             print(f"❌ 缺少 output/{run}/（請先跑 `python -m src.image_reverb "
                   f"assets/photos/{run}.png`）", file=sys.stderr)
             return 1
-        items.append({"space_type": space_type, "run": run, "wet": wet, "ir": ir})
+
+        # 產物來源查核（T-17 診斷 P2）：只檢查存在性會讓舊產物被拿去驗收新程式
+        meta = json.loads(aj.read_text(encoding="utf-8"))
+        if Path(meta.get("input", "")).name != photo.name:
+            stale.append(
+                f"{run}：analysis.json 記錄來源是 "
+                f"{Path(meta.get('input','')).name}，不是 {photo.name}"
+            )
+        if not photo.exists():
+            stale.append(f"{run}：找不到來源照片 {photo}")
+        elif aj.stat().st_mtime < photo.stat().st_mtime:
+            stale.append(f"{run}：analysis.json 比來源照片舊，產物過期")
+
+        items.append({
+            "space_type": space_type, "run": run, "wet": wet, "ir": ir,
+            "photo_sha256": _sha256(photo) if photo.exists() else None,
+            "ir_sha256": _sha256(ir), "wet_sha256": _sha256(wet),
+            "dims_source": meta.get("dims_source"),
+            "confidence": meta.get("confidence"),
+        })
+
+    if stale:
+        print("❌ 產物來源查核失敗（可能拿舊產物驗收新程式）：", file=sys.stderr)
+        for m in stale:
+            print(f"   - {m}", file=sys.stderr)
+        print("   請先重跑 `python -m src.image_reverb assets/photos/<name>.png`",
+              file=sys.stderr)
+        return 1
 
     order = list(range(len(items)))
     random.Random(SHUFFLE_SEED).shuffle(order)
@@ -79,6 +136,17 @@ def main() -> int:
         import os
 
         os.utime(p, (1000000000, 1000000000))
+
+    (OUT_DIR / "MANIFEST.json").write_text(
+        json.dumps({
+            "git_revision": _git_rev(),
+            "shuffle_seed": SHUFFLE_SEED,
+            "generated_from": [
+                {k: it[k] for k in ("run", "photo_sha256", "ir_sha256",
+                                    "wet_sha256", "dims_source", "confidence")}
+                for it in items
+            ],
+        }, ensure_ascii=False, indent=2), encoding="utf-8")
 
     key_path = OUT_DIR.parent / "blind_test_ANSWERS.json"
     key_path.write_text(

@@ -405,6 +405,48 @@ python scripts/convolve.py assets/dry/clap_synth.wav output/ir_room_small_carpet
      T-17 數據**不支持**優先做「換 Metric-Indoor-Large 深度模型」：
      手動組（近似正確幾何）達標率 20%，並沒有比自動組 22% 好。
 
+19. **🔴 `surfaces.py` 的 ADE20K「語意可信材質」分支是 dead behavior（T-17 診斷確認）。**
+   `ADE_TRUSTED_MATERIAL`（`surfaces.py:37-48`）的註解寫「這些不必問 CLIP」、
+   迴圈註解（`:238`）再寫一次「有就直接映射，不必問 CLIP」——**但程式每次都問 CLIP**：
+   `:244` 無條件呼叫 `classify_region_material()`，`best_trusted` 只被拿去串
+   `:262-265` 的 `note` 字串，`:268` 的 `material_id=mid` 永遠是 CLIP 結果。
+   全專案 grep：`"ade_trusted"` **只出現在 `:115` 記錄 method 可能值的註解，從未被指派**。
+   **執行期重現**（樁掉 seg 與 CLIP，CLIP 固定回 concrete）：windowpane 佔 40% 時，
+   floor/ceiling/wall 三個角色的 `material_id` **全部是 concrete**。
+   ⚠️ **不要只補一個 `if` 就啟用**：`:239` 的 `trusted_hits` 用的是 `segment_roles()`
+   回傳的**全圖** `ratios`（`:154` = `count/total_pixels`），**沒有被角色 mask 限制**。
+   上述重現裡 windowpane 全在畫面上半，floor 與 ceiling 的 note 卻都宣稱
+   「40% 屬語意可信類別」。**現在的計分方式本身是錯的**，啟用等於引入新錯誤。
+   → 家具／人群應該當作等效吸音面積或 occupancy 處理，不是把整面牆改成 `audience_seating`。
+
+20. **🔴 pipeline 已判定不可信仍無條件輸出 WAV（T-17 §7-1 實證後果）。**
+   `geometry.py:187-207` 會把體育館降 `low`、把車內標成「不能用 ShoeBox 描述」，
+   但 `pipeline.py:225-239` **沒有任何一行檢查 `est.confidence` 或域外狀態**，
+   直接聲學→合成→`export_ir()`→wet preview，`:281` 還回傳成功。
+   T-17 盲聽的實際後果：體育館（估成 30.8 m³）被聽成車內、車內（估成 332 m³）
+   被聽成客廳——**兩筆的防呆規則都正確作動了，產品照樣出貨**。
+   → **降信心不等於保護使用者。** 警示只是 JSON 欄位，不是產品防護。
+
+21. **🟠 fallback 材質沒有單一事實來源，四處說法不一致（T-17 診斷確認）。**
+   | 位置 | 說法 |
+   |---|---|
+   | `data/materials.json:10` | `"fallback_id": "generic_wall"` |
+   | `config.py:95` | `DEFAULT_WALL_MATERIAL = "gypsum_board"` ← **實際執行值** |
+   | `config.py:103` 註解 | 「fallback generic_wall」 |
+   | `surfaces.py:167` docstring | 「fallback `generic_wall`」 |
+   `classify_region_material()` 三個 fallback 出口全回傳 `config.DEFAULT_WALL_MATERIAL`
+   ＝ **`gypsum_board`**。⚠️ 這已經害過人：T-17 REPORT §1.3 首版把 `generic_wall`
+   標成 fallback，就是被資料檔與註解誤導。**改的時候要加 invariant test。**
+   附帶：`generic_wall` 其實是 CLIP 的正常候選（提示詞 "a plain smooth plastered wall"），
+   看到它不代表分類失敗——要看 `surfaces_sources` 才知道是 `clip` 還是 `fallback`。
+
+22. **🟠 ShoeBox 六面模型表達不了室內陳設（T-17 §7-1 sample_4）。**
+   臥室被做成 3.56 秒殘響、盲聽被聽成教堂。但四面牆的 CLIP 判定是 `generic_wall`
+   且 `source: clip`——**視覺上判得沒錯**，一面臥室牆確實是「plain smooth plastered wall」。
+   錯在**床、棉被、窗簾、地毯（α 0.37–0.72）在六面模型裡無處可放**。
+   → 這是**模型結構限制，不是辨識準確度問題**，換更好的材質分類器救不到。
+   與地雷 #18（CLIP 把壁球場的牆判成 curtain_fabric）是**不同的病因**，不要混為一談。
+
 ### ⚠️ 數值驗證抓不到的錯誤
 
 地雷第 9 條是這一輪最值得記住的教訓：那個錯誤的 RT60（4.023 s）**通過了 WORKFLOW §5 的全部三層檢查**
