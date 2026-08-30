@@ -38,6 +38,9 @@ import sys
 import time
 from pathlib import Path
 
+import numpy as np
+import soundfile as sf
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
@@ -261,6 +264,25 @@ def measure_file_real(path: Path) -> dict:
     return t17.measure_file(path)
 
 
+DECAY_THRESHOLDS_DB = (-20, -30, -40, -45)
+
+
+def audible_decay_times(path: Path) -> dict:
+    """§6.1 使用者試聽查核方法：20ms 非重疊窗逐窗 RMS 包絡線，門檻相對整段訊號的
+    絕對值峰值（取樣，非包絡線峰值）取樣，對每個門檻取「最後一個超過門檻之窗」的
+    起始時間。輸入必須是卷積後的試聽檔，不是 ir_mono.wav。"""
+    x, sr = sf.read(str(path))
+    x = x.mean(axis=1) if x.ndim > 1 else x
+    w = int(0.020 * sr)
+    n = len(x) // w
+    env = np.array([np.sqrt(np.mean(x[i * w:(i + 1) * w] ** 2)) for i in range(n)])
+    ref = np.abs(x).max()
+    return {
+        str(th): float(np.where(env > ref * 10 ** (th / 20))[0][-1] * w / sr)
+        for th in DECAY_THRESHOLDS_DB
+    }
+
+
 def main() -> int:
     fresh = "--fresh" in sys.argv
     OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -435,6 +457,18 @@ def main() -> int:
         )
         print(f"  🎧 {out_path.relative_to(REPO_ROOT)}")
 
+    # ---------------- 步驟 4b：可聽門檻衰減時間（§6.1 試聽查核，補程式來源） ----------------
+    print("\n=== 步驟 4b：可聽門檻衰減時間（20ms 窗、相對峰值取樣） ===")
+    audible_decay = {}
+    for tag, out_name in (
+        ("with_furn", "listen_bedroom_with_furnishings.wav"),
+        ("no_furn", "listen_bedroom_without_furnishings.wav"),
+    ):
+        times = audible_decay_times(OUT_DIR / out_name)
+        audible_decay[tag] = times
+        print(f"  {out_name}: {times}")
+    data["audible_decay_bedroom"] = audible_decay
+
     # ---------------- 寫檔 ----------------
     (OUT_DIR / "data.json").write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"\n已寫入 {(OUT_DIR / 'data.json').relative_to(REPO_ROOT)}")
@@ -520,6 +554,20 @@ def write_tables_md(data: dict) -> None:
         f"| rt60_bands_target_sabine（`--no-furnishings`） | {bd['rt60_bands_no_furn']} | "
         f"{bt['rt60_bands_no_furn']} |"
     )
+
+    lines.append("\n## 表　臥室試聽檔可聽門檻衰減時間（§6.1 使用者試聽查核）\n")
+    lines.append(
+        "計算方法：20ms 非重疊窗逐窗 RMS 包絡線；門檻相對整段訊號的絕對值峰值"
+        "（取樣，非包絡線峰值）；對每個門檻取「最後一個超過門檻之窗」的**起始時間**。"
+        "輸入是卷積後的試聽檔（`assets/dry/clap_synth.wav` mix=0.6），不是 `ir_mono.wav`。\n"
+    )
+    lines.append("| 門檻 | 有陳設 (`listen_bedroom_with_furnishings.wav`) | 無陳設 (`listen_bedroom_without_furnishings.wav`) | 差距 |")
+    lines.append("|---|---|---|---|")
+    ad = data["audible_decay_bedroom"]
+    for th in DECAY_THRESHOLDS_DB:
+        w_t = ad["with_furn"][str(th)]
+        nf_t = ad["no_furn"][str(th)]
+        lines.append(f"| −{abs(th)}dB | {w_t:.2f}s | {nf_t:.2f}s | {nf_t - w_t:.2f}s |")
 
     (OUT_DIR / "tables.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 

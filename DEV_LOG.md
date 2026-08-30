@@ -1,5 +1,20 @@
 # Dev Log
 
+## 2026-08-31 (67)
+
+- **T-33 文件修正（純文件小步，Opus 驗證 2026-08-31 開出的兩則）**：
+  ①`output/material_round/REPORT.md` 三處「8/13」計數筆誤 → 「9/13」（§2.2、
+  §4.3 標題、§4.3「共 8 組」→「共 9 組」；列舉項目本身未動，只改計數）。
+  ②§6.1 門檻衰減表補程式來源（採方案①）：`scripts/t33_material_round_tables.py`
+  新增 `audible_decay_times()`，步驟 4b 呼叫並寫入 `data.json` 新 key
+  `audible_decay_bedroom`，`write_tables_md()` 新增對應表；REPORT §6.1 表格數字
+  不動，改附程式來源與 `tables.md` 連結。
+  重跑核對：8 個重現值逐位元相符（有陳設 1.36/1.44/1.50/1.54、無陳設
+  1.44/1.74/2.14/2.34）；`data.json` 既有四 key／`tables.md` 既有三表逐位元不變，
+  只各多一項；兩試聽檔 MD5 維持不變；十套測試全 exit 0；
+  `git diff -- src/ SPEC.md ROADMAP.md WORKFLOW.md output/mvp_acceptance/` 為空。
+  詳見 TASKS.md T-33 卡「文件修正紀錄」。下一步：T-34。
+
 ## 2026-08-31 (66)
 
 - 🔮 **Fable 複評裁決 T-33-A（gate 規則複評＋材質輪收尾，全文在 TASKS.md T-33 卡尾）**。

@@ -4215,7 +4215,8 @@
 
 ### T-33 材質輪基準率複測：13 張重跑＋量測報告（裁決 T-27-A 執行卡 3/3；量測卡）
 - **狀態**：✅ 通過（Opus 驗證，2026-08-31；三層標準全過。附兩則**必須補**的文件修正，
-  不影響本卡結論與 Fable 決策，見下方「Opus 驗證紀錄」§修正事項）
+  不影響本卡結論與 Fable 決策，見下方「Opus 驗證紀錄」§修正事項；**兩則已於
+  2026-08-31 補齊，見下方「文件修正紀錄」**）
 - **前置**：T-31、T-32 皆 ✅（程式定稿後才能量；量測期間 `src/` 一行不許改）
 - **目標**：產出裁決 T-28-A 裁決三要的「新基準率」，交 Fable 複評 gate 規則。
   本卡是量測卡：**只寫 `scripts/` 的量測腳本與 `output/` 的報告，`src/` 零改動**。
@@ -4377,6 +4378,29 @@
     ＋決定要不要開 CLIP 準確度輪。驗證者對報告 §5 的三個裁決項無異議：
     本輪確實在架構上不可能改變 gate 基準率（鐵則 6 的必然結果，已由
     `--no-furnishings` 交叉檢查證實），要動 materials 軸的 12/13 low 只能修 CLIP 本身。
+
+- **文件修正紀錄（Sonnet，2026-08-31）**：依 Opus 驗證紀錄「修正事項一／二」逐字執行。
+  - **修正一**：`output/material_round/REPORT.md` 三處「8/13」→「9/13」
+    （§2.2 內文、§4.3 標題、§4.3 內文「共 8 組」→「共 9 組」）。列舉本身
+    （Cathedral、DivorceBeach、DeptStore×2、Gym×2、Racquetball×2、Tunnel＝9 項）
+    未動，只改計數數字。頭條數字（22%→10%、20%→12%、Steinman 4/5→1/5）零變動。
+  - **修正二（採方案①：算進腳本）**：`scripts/t33_material_round_tables.py` 新增
+    `audible_decay_times()`，於步驟 4（試聽檔產生）後呼叫（步驟 4b），結果寫入
+    `data.json` 新 key `audible_decay_bedroom`；`write_tables_md()` 新增對應表格
+    （`tables.md` 表「臥室試聽檔可聽門檻衰減時間」）。REPORT §6.1 表格數字不動，
+    改為附上程式來源說明＋連結 `tables.md` 該表。
+  - **重跑驗證**（不加 `--fresh`，全數快取命中，僅步驟 4/4b 實際執行卷積與衰減時間計算）：
+    - 重現值與裁決要求的 8 個數字逐位元相符：有陳設 1.36/1.44/1.50/1.54、
+      無陳設 1.44/1.74/2.14/2.34。
+    - `data.json` 既有四個 key（`gate_baseline`／`auto_group`／`manual_group`／
+      `bedroom_vs_bathroom`）內容與備份逐位元相同，只多出新 key `audible_decay_bedroom`；
+      `tables.md` 既有三張表逐行相同，只多出新表——`diff` 均已核對。
+    - 兩個試聽檔 MD5 維持 `3ea98aa968f1107ce46b37d69b109cde`（with）／
+      `f217c43cddc578da8085edbb77747ec5`（without），與量測基礎一致。
+  - **自我檢查**：十套既有測試全數 exit 0；
+    `git diff --stat -- src/ SPEC.md ROADMAP.md WORKFLOW.md output/mvp_acceptance/`
+    輸出為空；`src/` 全程未改動。REPORT §7「每一個數字都由上述指令產生；
+    `data.json` 是唯一的原始數字來源」的宣稱重新成立（含 §6.1 在內）。
 
 - **🔮 Fable 複評裁決（2026-08-31，裁決 T-33-A）——陳設改預設觀測模式、開 CLIP
   準確度診斷輪、gate 規則本體不動但依據全文改寫**。決策輸入：本卡 REPORT 全文
