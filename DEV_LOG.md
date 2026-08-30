@@ -1,5 +1,37 @@
 # Dev Log
 
+## 2026-08-30 (51)
+
+- **T-25 完成，🔵 待驗證**：`analysis.json` 的 `confidence` 從「直接等於
+  `est.confidence`（只反映幾何）」拆成三軸——新增 `geometry_confidence`
+  （＝原本的 `est.confidence`）與 `materials_confidence`（新函式
+  `surfaces.compute_materials_confidence()`：任一面來源是 `fallback`/
+  `out_of_domain` → low；六面材質全部相同（退化）→ low；六面皆 `clip` 且
+  無警示 → high；其餘 → medium），`confidence` 改成 overall＝兩者取較低者
+  （`pipeline._overall_confidence()`）。只動 `run_photo()`（照片管線），
+  `run_text()`/`run_scene()` 未動——卡片描述的問題（T-17 §7-1 臥室、
+  `--override-dims` 一律 high）都是照片管線特有。
+- **臥室實測驗證修好了卡片描述的兩個 bug**：①`assets/photos/bedroom_ai_generated.png`
+  的 `confidence` 由 `medium`→`low`（地板是 fallback，舊行為看不出來）；
+  ②同一張照片加 `--override-dims 4x3x2.5`，geometry 拿到 `high` 但 overall
+  正確被材質壓到 `low`（舊行為會整體標成 `high`）。`ir_mono.wav` MD5 兩次都是
+  `989b9f354df926fea376ff94c2099526`，跟改動前逐位元相同——metadata 改動沒
+  動到音訊。
+- **新增 `scripts/test_confidence_axes.py`**（11 項，純資料不下載模型）：
+  卡片指定的三個案例＋兩個邊界案例（`_overall_confidence`）、
+  `compute_materials_confidence` 四條規則各自的正反案例。`git stash` 還原到
+  改動前重跑：`ImportError`（`_overall_confidence` 不存在）`EXIT=1`，證明非
+  空測試。
+- **共同鐵則全過**：八套測試（含 T-23/T-24 新增的兩支）全部 `EXIT=0`；六條
+  交付 IR MD5 全部相符（`chk_bath`/`chk_church`/`coupled_neighbor_voices`/
+  `coupled_stadium_corridor` 逐一複驗，T-14 兩條由 `test_ir_synth.py`【6】
+  硬編碼比對）；`ir_metrics.py` diff 0 行；SPEC/ROADMAP/WORKFLOW/
+  `output/mvp_acceptance/` 零改動；本輪只動 `pipeline.py`／`surfaces.py`
+  兩個檔＋新測試檔。
+- 下一步：Opus 驗證 T-25 → 通過後接 T-26（低信心／域外輸入的輸出 gate）。
+  留了個非本卡範圍的觀察給 T-26：`run_text()`/`run_scene()` 的 `confidence`
+  還是舊的純幾何語義，T-26 要用信心 gate 時記得確認它鎖定哪些輸入類型。
+
 ## 2026-08-30 (50)
 
 - **T-24 依裁決 T-24-A 重做完成，🔵 待驗證**：`ADE_TRUSTED_MATERIAL` 整張表、

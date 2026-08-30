@@ -31,7 +31,7 @@ import numpy as np
 from PIL import Image
 
 from . import config
-from .materials import SurfaceMaterials, load_materials
+from .materials import SURFACE_NAMES, SurfaceMaterials, load_materials
 
 # ------------------------------------------------------------
 # 第一階段：ADE20K 類別 → 幾何角色（只取角色，不取材質語意）
@@ -345,6 +345,34 @@ def surfaces_from_preprocess(
         )
 
     return surfaces, detail
+
+
+def compute_materials_confidence(surfaces: SurfaceMaterials) -> str:
+    """依六面材質的來源與是否退化，判定「材質」這一軸的信心（T-25，REPORT §2.5 缺陷 B）。
+
+    這是跟 `RoomEstimate.confidence`（幾何信心）**分開**的一軸——舊行為把
+    分析輸出的 `confidence` 直接設成幾何信心，材質是不是用猜的完全沒有訊號透出去，
+    T-17 §7-1 的臥室因此被標成 `medium`，但地板其實是 fallback（沒判到）。
+
+    規則（🔮 Opus 裁決 T-25，順序不可調換，由上而下第一個命中的就是結果）：
+      1. 六面中**任一面**的 `sources[name]` 是 `"fallback"` 或 `"out_of_domain"`
+         → `low`（CLIP 對這面沒把握，或這根本不是建築表面，是用猜的）
+      2. 六面材質**全部相同**（`is_uniform()`，約束 A 要避免的退化情況）→ `low`
+      3. 六面皆 `"clip"`（每一面都是模型自己判出來的）**且**沒有任何
+         `surfaces.warnings` → `high`
+      4. 其餘情況 → `medium`
+
+    只讀 `sources` / `warnings` / 六面材質 id，不碰任何聲學數值——本卡「只動
+    metadata，不得改變任何 IR 內容」。
+    """
+    face_sources = [surfaces.sources.get(name, "") for name in SURFACE_NAMES]
+    if any(s in ("fallback", "out_of_domain") for s in face_sources):
+        return "low"
+    if surfaces.is_uniform():
+        return "low"
+    if all(s == "clip" for s in face_sources) and not surfaces.warnings:
+        return "high"
+    return "medium"
 
 
 def save_detail(detail: dict[str, Any], surfaces: SurfaceMaterials, out_path: str | Path) -> Path:

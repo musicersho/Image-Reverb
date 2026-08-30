@@ -59,17 +59,26 @@
       **T-23 🔵 待驗證（2026-08-30）**——fallback 材質單一事實來源，`materials.json`
       的 `fallback_id` 改成 `gypsum_board`（現行實際行為）、`config.py` 改成動態讀取、
       新增 `test_material_fallback.py`。
-      **T-24 🔵 待驗證（2026-08-30，依裁決 T-24-A 重做完成）**——`ADE_TRUSTED_MATERIAL`
+      **T-24 ✅ 通過（Opus 驗證，第三輪）**——`ADE_TRUSTED_MATERIAL`
       整張表與不可達的計分區塊已從 `surfaces.py` 刪除，三處誤導性註解改寫成
       描述現況，`test_surface_trusted_scope.py` 改成斷言「屬性不存在＋note 不再
-      提語意可信」的不變量測試；六套測試全過、六條 MD5 零回歸。
-      T-25/T-26 未開始。
+      提語意可信」的不變量測試；七套測試全過、六條 MD5 零回歸。
+      **T-25 🔵 待驗證（2026-08-30）**——`analysis.json` 的 `confidence` 拆成
+      `geometry_confidence`／`materials_confidence`／`confidence`(overall＝取
+      較低者) 三軸，只動照片管線 `run_photo()`；臥室實測 confidence 由
+      medium→low（材質是 fallback，舊行為看不出來）、`--override-dims` 不再
+      整體誤標 high；`ir_mono.wav` MD5 改動前後相同。新增
+      `test_confidence_axes.py`（11 項）。T-26 未開始。
 - [x] **T-23 fallback 單一事實來源 ✅ 通過**（Opus 驗證，六條 MD5 全數不變）
-- [ ] **修正輪進行中**：T-24 待驗證 → T-25 → T-26
+- [x] **T-24 ADE 可信材質分支清理 ✅ 通過**（Opus 驗證第三輪，六條 MD5 全數不變）
+- [ ] **修正輪進行中**：T-25 待驗證 → T-26
       - T-24 已依裁決 T-24-A 移除不可達死碼：可信類別 id 與角色 id **交集為 ∅**，
         該功能在 ADE20K 一像素一 label 的前提下**永遠不可達**，非漏寫，
         整段程式碼＋常數表已刪除，清單搬去 T-27 當設計輸入
       - T-27 已補上這個設計輸入，仍待 Fable 裁決（等效吸音面積 vs occupancy）
+      - T-25 只拆了照片管線的信心三軸，`run_text()`/`run_scene()` 的
+        `confidence` 還是舊語義（純幾何/preset 信心）——T-26 要用信心 gate
+        時記得先確認它鎖定哪些輸入類型，這個落差是否要一併處理
 - [ ] **← 之後（Fable）**：§7-1＋§7-2 皆未達標，要不要再加一輪。
       ⚠️ **範圍要先定清楚：只打材質不足以修好 §7-1 的 sample_1（幾何量程）與
       sample_2（域外輸入）**——這是本報告首版概括過頭、現已更正的地方。

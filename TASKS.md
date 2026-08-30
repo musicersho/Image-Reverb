@@ -3100,7 +3100,7 @@
 </details>
 
 ### T-25 confidence 拆成幾何／材質／overall 三軸（REPORT §2.5 缺陷 B）
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證（Sonnet 完成自檢，2026-08-30）
 - **前置**：T-24
 - **問題**：`pipeline.py:248-253` 把輸出 `confidence` 直接設成 `est.confidence`
   ——只反映幾何。T-17 §7-1 的臥室因此拿到 `medium`：地板已 fallback、四面牆只判成
@@ -3125,6 +3125,111 @@
   且 `ir_mono.wav` 的 MD5 與本卡修改前相同（metadata 改動不得影響音訊）
 - **Opus 驗證重點**：紅旗：動到 IR 內容（比對臥室 IR 的 MD5 修改前後）；
   紅旗：`materials_confidence` 寫成永遠回傳 medium 的空實作
+
+- **交接筆記（Sonnet 執行，2026-08-30）**：
+  - 改了 2 個檔＋新增 1 個檔，**只動 `run_photo()`（照片管線）**——卡片指名的
+    `pipeline.py:248-253` 與 T-17 §7-1 的臥室案例、五個 `--override-dims` run
+    都是照片管線；文字場景（`run_text`）與複合場景（`run_scene`）的材質來自
+    preset／JSON（`source` 值是 `"text_preset:..."`／`"scene_json"` 這類字串，
+    從不是 `"clip"`/`"fallback"`/`"out_of_domain"`），不是卡片描述的問題場景，
+    **沒有動它們的 `confidence` 語義**，維持原樣（=est.confidence，未拆軸）。
+    1. `src/image_reverb/surfaces.py`：
+       - `from .materials import` 補上 `SURFACE_NAMES`（新函式要逐面掃描）。
+       - 新增 `compute_materials_confidence(surfaces: SurfaceMaterials) -> str`：
+         依卡片裁決的四條規則（順序不可調）——①任一面 `sources` 是
+         `fallback`/`out_of_domain` → `low`；②`is_uniform()`（六面材質全部相同，
+         沿用既有方法，沒有重寫退化判定邏輯）→ `low`；③六面皆 `clip` 且
+         `surfaces.warnings` 為空 → `high`；④其餘 → `medium`。只讀
+         `sources`/`warnings`/材質 id，不碰任何聲學數值。
+    2. `src/image_reverb/pipeline.py`：
+       - import `compute_materials_confidence`。
+       - 新增模組級 `_CONFIDENCE_RANK = {"low":0,"medium":1,"high":2}` 與
+         `_overall_confidence(geometry_confidence, materials_confidence)`：取
+         `_CONFIDENCE_RANK` 較小的那個（較不可信的那個），不是永遠回傳第一個
+         參數（有測試專門驗這點，見下）。
+       - `run_photo()`：`materials_confidence = compute_materials_confidence(surf)`
+         的呼叫點放在 `apply_overrides(surf, ...)` **之後**——材質信心要反映
+         最終真的拿去合成 IR 的六面材質，不是 override 之前的猜測值。放在
+         `est = estimate_room(...)` **之前**（不依賴 est，兩者互相獨立）。
+       - CLI 列印：原本 `房間尺寸：...（confidence=..., dims_source=...）`
+         拆成兩行——尺寸行只留 `dims_source`，新增一行
+         `confidence：geometry=..., materials=..., overall=...`。
+       - `analysis` dict：`"confidence"` 的值從 `est.confidence` 改成
+         `overall_confidence`；新增 `"geometry_confidence": est.confidence`
+         與 `"materials_confidence": materials_confidence` 兩個鍵。`surfaces`／
+         `surfaces_sources`／後面所有鍵完全沒動。
+    3. 新增 `scripts/test_confidence_axes.py`：兩部分共 11 項斷言——
+       【A】`_overall_confidence()` 5 項：卡片指定的三個案例（high+low→low、
+       medium+medium→medium、low+high→low）＋兩個邊界（high+high→high、
+       medium+high→medium，確認不是永遠回傳第一個參數）；
+       【B】`compute_materials_confidence()` 6 項：全 clip 無警示→high、
+       全 clip 有警示→medium（不是 high）、全 manual_override 材質互不相同
+       無警示→medium（非 clip 不給 high，非 fallback/退化不給 low）、
+       任一面 fallback→low、任一面 out_of_domain→low、六面全同（用
+       `SurfaceMaterials()` 預設值，未逐面指定）→low。
+  - **診斷力實測（鐵則 5）**：`git stash`（只暫存 `pipeline.py`/`surfaces.py`，
+    新測試檔留在工作區，因為 stash 預設不動 untracked 檔）後重跑
+    `python scripts/test_confidence_axes.py`：
+    ```
+    ImportError: cannot import name '_overall_confidence' from
+    'src.image_reverb.pipeline' (.../src/image_reverb/pipeline.py)
+    EXIT=1
+    ```
+    確認新測試在舊碼上會 fail（不是空測試）。`git stash pop` 還原，
+    `git status --porcelain` 確認只剩預期的兩個 tracked 修改＋新測試檔。
+  - **共同鐵則 1（八套測試，含 T-23/T-24 新增的兩支）全部 `EXIT=0`**：
+    `test_ir_synth.py`（23 項，含【8】防禦性警示）、`test_scene_text.py`、
+    `test_coupled.py`、`test_acoustics.py`、`test_t30_low_combined.py`、
+    `test_material_fallback.py`、`test_surface_trusted_scope.py`、
+    `test_confidence_axes.py`（新，11 項）逐一實跑確認。
+  - **共同鐵則 2（六條 MD5 全部不變）**：
+    - `chk_bath.wav` = `2adbaa75eb698772a8c9aa693179ec47` ✅
+    - `chk_church.wav` = `2dd19b6e6d351d713887636fe45cd67e` ✅
+    - `coupled_neighbor_voices.wav` = `9a94ffdf5d8295aee7889729c39c9cd8` ✅
+    - `coupled_stadium_corridor.wav` = `a1c21bcc3fd9aa3480df203a89c8cd05` ✅
+    - T-14 兩條由 `test_ir_synth.py`【6】硬編碼比對，隨鐵則 1 一起過。
+    - 驗完刪掉 `output/ir_synth/chk_bath.*`／`chk_church.*`（coupled_* 在
+      `output/` 底下，`output/**` 已在 `.gitignore`，不進版控，不用刪）。
+  - **共同鐵則 3**：`git diff -- src/image_reverb/ir_metrics.py` 0 行。
+  - **共同鐵則 4**：`git status --porcelain` 只有 `pipeline.py`／`surfaces.py`
+    （modified）＋ `scripts/test_confidence_axes.py`（新增，untracked），
+    未動 SPEC.md/ROADMAP.md/WORKFLOW.md/`output/mvp_acceptance/`。
+  - **卡片自我檢查（臥室實跑，2026-08-30）**：
+    `python -m src.image_reverb assets/photos/bedroom_ai_generated.png --no-viz`——
+    - **改動前**（`git stash` 暫存 `pipeline.py`/`surfaces.py` 後重跑）：
+      `confidence` = `medium`，`ir_mono.wav` MD5 = `989b9f354df926fea376ff94c2099526`。
+    - **改動後**（`git stash pop` 還原後重跑）：CLI 印出
+      `confidence：geometry=medium, materials=low, overall=low`；`analysis.json`
+      的 `confidence`＝`low`（`geometry_confidence`＝`medium`、`materials_confidence`
+      ＝`low`，命中規則①：`floor` 的 `source` 是 `fallback`）；`ir_mono.wav` MD5
+      仍是 `989b9f354df926fea376ff94c2099526`——**與改動前逐位元相同**，
+      metadata 改動沒有動到音訊。
+    - 額外複驗卡片描述的另一半 bug（`--override-dims` 一律 `high`）：
+      `--override-dims 4x3x2.5` 跑同一張照片，CLI 印出
+      `confidence：geometry=high, materials=low, overall=low`——geometry 因手動
+      指定尺寸拿到 `high`，但 overall 正確被材質壓到 `low`，不再像舊行為那樣
+      整體標成 `high`。
+    - 順手確認 `--no-viz` 拿掉（跑 T-16 視覺化路徑）不會炸：
+      `python -m src.image_reverb assets/photos/bedroom_ai_generated.png`
+      正常印出 `🖼️ 視覺化：analysis.png`，`ir_mono.wav` MD5 仍相同——
+      `visualize.py` 只讀 `analysis['confidence']`（沒讀新的兩個鍵），
+      新舊 schema 都能正常渲染。
+  - **範圍確認**：`git diff --stat` 只有 `src/image_reverb/pipeline.py`
+    （+22/-3）與 `src/image_reverb/surfaces.py`（+29/-1，含 import 改一行）；
+    `run_text()`／`run_scene()`／`ir_synth.py`／`acoustics.py`／`geometry.py`
+    一行都沒動；`compute_acoustics(est, surf, materials_data)` 呼叫用的仍是
+    override 後、跟合成用的同一個 `surf`，`materials_confidence` 只是多讀了
+    它的 `sources`/`warnings`，沒有改變傳給聲學計算的任何值。
+  - 下一步：Opus 驗證本卡 → 通過後接 T-26（低信心／域外輸入的輸出 gate，
+    依鐵則 0「T-26 依賴 T-25 建立的信心語義」，讀的應該是這裡新增的
+    `materials_confidence`／`confidence`(overall) 兩軸，不是舊的
+    `est.confidence`）。
+  - **給 T-26 的提醒（非本卡範圍，僅記錄觀察）**：目前只有 `run_photo()` 產出
+    三軸信心；`run_text()`/`run_scene()` 的 `confidence` 還是舊語義（純幾何/
+    preset 信心）。T-26 若要用「低信心 gate」擋輸出，要先確認它鎖定的輸入類型
+    ——如果只鎖照片管線（卡片沒提到文字/複合場景），這個落差不影響它；
+    如果要涵蓋全部三種輸入，這個落差要一併處理，但卡片裁決範圍不包含這個，
+    留給 Fable／T-26 卡自己判斷是否要擴大。
 
 ### T-26 低信心／域外輸入的輸出 gate（REPORT §2.6 缺陷 E）
 - **狀態**：⬜ 未開始

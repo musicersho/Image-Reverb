@@ -27,6 +27,7 @@ from . import config, coupled, ir_synth, scene_text, visualize
 from .acoustics import compute_acoustics
 from .geometry import estimate_room, parse_override_dims
 from .materials import apply_overrides, load_materials
+from .surfaces import compute_materials_confidence
 
 PROJECT_ROOT = config.PROJECT_ROOT
 OUTPUT_ROOT = PROJECT_ROOT / "output"
@@ -61,6 +62,18 @@ _NOTE_MARKERS = (
     "環景沒有「視野外」問題",
     "沒有足夠大的門，跳過尺度校驗",
 )
+
+
+# T-25（REPORT §2.5 缺陷 B）：confidence 三軸——幾何 / 材質 / overall。
+# overall 取兩者「較低者」，high > medium > low。
+_CONFIDENCE_RANK = {"low": 0, "medium": 1, "high": 2}
+
+
+def _overall_confidence(geometry_confidence: str, materials_confidence: str) -> str:
+    """overall confidence = 幾何與材質兩軸取較低者（不會比任一分量更可信）。"""
+    if _CONFIDENCE_RANK[materials_confidence] < _CONFIDENCE_RANK[geometry_confidence]:
+        return materials_confidence
+    return geometry_confidence
 
 
 def _split_notes_and_warnings(raw: list[str]) -> tuple[list[str], list[str]]:
@@ -213,13 +226,22 @@ def run_photo(
             override_specs_used = list(override_materials)
             print(f"  已套用 --override-material：{', '.join(override_specs_used)}")
 
+        # T-25：材質信心要在 surf 最終定案（override 套用完）之後算，
+        # 反映實際會拿去合成 IR 的六面材質，不是套 override 之前的猜測。
+        materials_confidence = compute_materials_confidence(surf)
+
         print("--- T-11 幾何估計 ---")
         if override is not None:
             print("（--override-dims 已指定，跳過深度模型）")
         est = estimate_room(summary, override_dims=override, scene_cues=scene_cues or None)
+        overall_confidence = _overall_confidence(est.confidence, materials_confidence)
         print(
             f"  房間尺寸：{est.length_m:.2f}×{est.width_m:.2f}×{est.height_m:.2f} m"
-            f"（confidence={est.confidence}, dims_source={est.dims_source}）"
+            f"（dims_source={est.dims_source}）"
+        )
+        print(
+            f"  confidence：geometry={est.confidence}, materials={materials_confidence}, "
+            f"overall={overall_confidence}"
         )
 
         print("--- T-13 聲學參數 ---")
@@ -246,7 +268,9 @@ def run_photo(
         "input": str(photo_path),
         "output_dir": str(out_dir),
         "dims_source": est.dims_source,
-        "confidence": est.confidence,
+        "confidence": overall_confidence,
+        "geometry_confidence": est.confidence,
+        "materials_confidence": materials_confidence,
         "dims_m": {"length": est.length_m, "width": est.width_m, "height": est.height_m},
         "volume_m3": round(est.volume_m3, 2),
         "surfaces": surf.as_dict(),
