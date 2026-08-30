@@ -58,7 +58,12 @@
 - [ ] **Phase 1.6 修正輪（T-23→T-24→T-25→T-26 依序，Opus 2026-08-30 規劃）**：
       **T-23 🔵 待驗證（2026-08-30）**——fallback 材質單一事實來源，`materials.json`
       的 `fallback_id` 改成 `gypsum_board`（現行實際行為）、`config.py` 改成動態讀取、
-      新增 `test_material_fallback.py`。T-24/T-25/T-26 未開始。
+      新增 `test_material_fallback.py`。
+      **T-24 🔵 待驗證（2026-08-30）**——ADE 可信材質分支計分修正：`trusted_hits`
+      改成只統計角色 mask 內的比例（原本用全圖比例，windowpane 全在上半時
+      floor/ceiling 也會誤宣稱有可信類別）；清掉「不必問 CLIP」的誤導性註解與
+      從未被指派的 `"ade_trusted"` method 值；`material_id` 邏輯未動；新增
+      `test_surface_trusted_scope.py`。T-25/T-26 未開始。
 - [ ] **← 現在該做的（Fable）**：§7-1＋§7-2 皆未達標，要不要加修正輪。
       ⚠️ **範圍要先定清楚：只打材質不足以修好 §7-1 的 sample_1（幾何量程）與
       sample_2（域外輸入）**——這是本報告首版概括過頭、現已更正的地方。

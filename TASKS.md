@@ -2632,7 +2632,7 @@
     （非本卡範圍，屬 T-27 議題），記得【3】會擋，要一併更新。
 
 ### T-24 ADE 可信材質分支：修好計分錯誤、清掉死碼與誤導性註解（REPORT §2.6 缺陷 D）
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-08-30）
 - **前置**：T-23
 - **問題**：`surfaces.py:37-48` 的 `ADE_TRUSTED_MATERIAL` 註解宣稱「這些不必問 CLIP」、
   `:238` 迴圈註解再宣稱一次，**但程式每次都問 CLIP**：`:244` 無條件呼叫
@@ -2662,6 +2662,54 @@
   （用 `git stash` 或暫時還原檔案跑一次，把輸出貼進交接筆記）
 - **Opus 驗證重點**：紅旗：順手把「直接映射」實作了（超出範圍，且計分基礎才剛改）；
   紅旗：新測試在舊碼上也能過；確認 `material_id` 的來源邏輯**完全沒被動到**
+- **交接筆記（Sonnet，2026-08-30）**：
+  - **改了什麼**：`src/image_reverb/surfaces.py`——
+    1. `trusted_hits` 的分母從 `segment_roles()` 回傳的全圖 `ratios` 改成
+       `labelmap[mask]`（該角色 mask 內）重算的 `role_ratios`，分母是該角色像素數，
+       不是全圖像素數。判定門檻同步從 `best_trusted[1] > ratio * 0.5`（`ratio` 是
+       該角色佔全圖比例，混用了兩種分母、數學上不對稱）改成
+       `best_trusted[1] > 0.5`（`role_ratios` 已經是角色內部比例，門檻直接比
+       50% 才對稱）。
+    2. note 措辭從「分割結果有 X% 像素屬語意可信類別」改成「此面內有 X%…」，
+       同步補一句「直接映射材質待 T-27 設計 occupancy 機制後再做」，避免使用者
+       誤以為程式已經在做直接映射。
+    3. module docstring（開頭）與 `ADE_TRUSTED_MATERIAL` 上方註解、`:37` 這兩處
+       「這些不必問 CLIP」的誤導性描述，改成描述現況：可信類別只影響 note，
+       不影響 `material_id`；`material_id` 一律來自 CLIP，未動。
+    4. `SurfaceObservation.method` 欄位註解移除從未被指派的 `"ade_trusted"`，
+       改列實際會出現的三個值 `"clip"` / `"fallback"` / `"out_of_domain"`
+       （全專案 grep 確認沒有其他地方引用過 `"ade_trusted"` 字面值）。
+    5. 新增 `scripts/test_surface_trusted_scope.py`：合成 100×100 labelmap，
+       上半全是 windowpane（id=8，可信類別→glass），下半左邊 floor（id=3）、
+       右邊 ceiling（id=5）——floor/ceiling 跟 windowpane 完全零重疊。樁掉
+       `surfaces.segment_roles` 與 `surfaces.classify_region_material`（不下載、
+       不跑真模型），斷言修好後 floor／ceiling 的 note 不再宣稱擁有語意可信類別。
+  - **`material_id` 來源邏輯完全沒動**：`classify_region_material(...)` 仍然
+    無條件被呼叫、`mid, conf, top3, method = classify_region_material(...)` 那行
+    一字未改，`git diff` 可自行核對——本卡只動了 `trusted_hits`/`best_trusted`
+    那段算 note 用的分數，跟決定 `material_id` 的路徑完全獨立。
+  - **舊碼上實測 fail 的證據**（`git stash push -- src/image_reverb/surfaces.py`
+    → 跑新測試 → `git stash pop`）：
+    ```
+    ❌ 'floor' 的 note 不宣稱擁有語意可信類別（跟 windowpane 完全沒重疊）：
+       note = '（另註：分割結果有 50.0% 像素屬語意可信類別 → glass，與 CLIP 判定 gypsum_board 併看）'
+    ❌ 'ceiling' 的 note 不宣稱擁有語意可信類別（跟 windowpane 完全沒重疊）：
+       note = '（另註：分割結果有 50.0% 像素屬語意可信類別 → glass，與 CLIP 判定 gypsum_board 併看）'
+    ❌ 2 項失敗 EXIT=1
+    ```
+    修好後同一支測試 EXIT=0，五支共同鐵則測試全部 exit 0，六條交付 IR MD5 全部
+    bit-identical（T-14 兩條由 test_ir_synth.py【6】硬編碼比對過；T-20 兩條
+    `2adbaa75eb698772a8c9aa693179ec47`／`2dd19b6e6d351d713887636fe45cd67e`；
+    T-21 兩條 `9a94ffdf5d8295aee7889729c39c9cd8`／`a1c21bcc3fd9aa3480df203a89c8cd05`
+    逐一重跑複驗全部相符），`ir_metrics.py` 的 `git diff` 為空，
+    SPEC/ROADMAP/WORKFLOW/output/mvp_acceptance 都沒有被動到。
+  - **有什麼坑**：舊碼裡 `best_trusted[1] > ratio * 0.5` 這行的 `ratio`（角色佔
+    全圖比例）跟 `trusted_hits`（全圖比例）雖然同單位，但比較邏輯本身就沒有
+    意義——即使不考慮 mask 污染問題，這個門檻算的是「可信類別的全圖佔比 > 該
+    角色全圖佔比的一半」，跟「這個角色裡面到底有沒有一半是可信類別」是兩件不
+    同的事。改成角色內部比例後語意才對得上「直接映射」原本想表達的意圖。
+  - **下一步**：交給 Opus 驗證；驗證通過後可進 T-25（confidence 拆三軸，
+    前置依賴本卡）。
 
 ### T-25 confidence 拆成幾何／材質／overall 三軸（REPORT §2.5 缺陷 B）
 - **狀態**：⬜ 未開始

@@ -9,8 +9,11 @@ ADE20K 的 `floor`／`wall` 類別語意在本專案**不可信**——滿鋪地
   第一階段 ADE20K → **只回答「這塊像素是地板／天花板／牆」這個幾何角色**
   第二階段 CLIP  → **回答「這塊表面是什麼材質」**（候選標籤＝materials.json 的 12 種材質）
 
-語意可信的類別（mirror、windowpane、curtain 等 REPORT §4 的 🟢 級）可直接映射，
-不必繞 CLIP。
+語意可信的類別（mirror、windowpane、curtain 等 REPORT §4 的 🟢 級）**目前只用於
+在 note 裡加註提示**，不影響最終材質判定——每個角色仍會照樣呼叫 CLIP，
+`material_id` 一律來自 CLIP 的結果。「可信類別直接映射材質」是新功能，
+要用等效吸音面積還是 occupancy 表示是 SPEC 層設計決策，待 T-27 交 Fable 定案，
+本階段不實作（REPORT §2.6 缺陷 D）。
 """
 
 from __future__ import annotations
@@ -34,7 +37,9 @@ ADE_FLOOR_IDS = {3: "floor", 28: "rug", 13: "earth", 46: "sand", 53: "path", 6: 
 ADE_CEILING_IDS = {5: "ceiling"}
 ADE_WALL_IDS = {0: "wall", 1: "building", 25: "house"}
 
-# 語意可信、可直接映射材質的類別（REPORT §4 的 🟢 級）——這些不必問 CLIP
+# 語意可信類別（REPORT §4 的 🟢 級）——目前只用來在 note 裡加註提示，
+# 不會指派 material_id（每個角色仍會照樣呼叫 CLIP）。
+# 「直接映射材質」待 T-27 設計 occupancy 機制後再做，見上方 module docstring。
 ADE_TRUSTED_MATERIAL = {
     27: "glass",           # mirror → 玻璃
     8: "glass",            # windowpane → 玻璃
@@ -112,7 +117,7 @@ class SurfaceObservation:
     pixel_ratio: float         # 佔整張圖的像素比例
     material_id: str           # 二階分類的結果（或 fallback）
     confidence: float          # top-1 機率（直接映射的類別記 1.0）
-    method: str                # "clip" / "ade_trusted" / "fallback"
+    method: str                # "clip" / "fallback" / "out_of_domain"
     top3: list[tuple[str, float]] = field(default_factory=list)
     note: str = ""
 
@@ -235,9 +240,24 @@ def analyse_image(
             # 區域太小就不判，免得拿一小撮雜點決定整面牆的材質
             continue
 
-        # 這個角色裡有沒有「語意可信」的類別佔多數？有就直接映射，不必問 CLIP
+        # 這個角色裡有沒有「語意可信」的類別佔多數？只用來產生提示性 note，
+        # 不影響 material_id（直接映射待 T-27 設計 occupancy 機制後再做）。
+        # 比例分母必須是「這個角色 mask 內」的像素數，不能用全圖的 ratios——
+        # 否則畫面別處（例如上半的窗）的可信類別會被誤算進這一面
+        # （REPORT §2.6 缺陷 D：windowpane 全在上半時，floor/ceiling 的 note
+        # 都宣稱自己有 40% 屬語意可信類別）。
+        role_labels = labelmap[mask]
+        role_pixel_count = int(role_labels.size)
+        if role_pixel_count > 0:
+            ids_in_role, counts_in_role = np.unique(role_labels, return_counts=True)
+            role_ratios = {
+                int(i): float(c) / role_pixel_count
+                for i, c in zip(ids_in_role, counts_in_role)
+            }
+        else:
+            role_ratios = {}
         trusted_hits = {
-            mid: sum(ratios.get(cid, 0.0) for cid, m in ADE_TRUSTED_MATERIAL.items() if m == mid)
+            mid: sum(role_ratios.get(cid, 0.0) for cid, m in ADE_TRUSTED_MATERIAL.items() if m == mid)
             for mid in set(ADE_TRUSTED_MATERIAL.values())
         }
         best_trusted = max(trusted_hits.items(), key=lambda kv: kv[1], default=(None, 0.0))
@@ -260,10 +280,11 @@ def analyse_image(
                 f"改用 fallback '{config.DEFAULT_WALL_MATERIAL}'"
             )
             warnings.append(f"{role}：{note}")
-        if best_trusted[0] is not None and best_trusted[1] > ratio * 0.5:
+        if best_trusted[0] is not None and best_trusted[1] > 0.5:
             note += (
-                f"（另註：分割結果有 {best_trusted[1]*100:.1f}% 像素屬語意可信類別 "
-                f"→ {best_trusted[0]}，與 CLIP 判定 {mid} 併看）"
+                f"（另註：此面內有 {best_trusted[1]*100:.1f}% 像素屬語意可信類別 "
+                f"→ {best_trusted[0]}，與 CLIP 判定 {mid} 併看；直接映射材質待 T-27 "
+                f"設計 occupancy 機制後再做）"
             )
 
         observations[role] = SurfaceObservation(

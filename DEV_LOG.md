@@ -1,5 +1,31 @@
 # Dev Log
 
+## 2026-08-30 (47)
+
+- 🔵 **T-24 完成（Phase 1.6 四張卡第二張）：ADE 可信材質分支計分錯誤與死碼**
+  （REPORT §2.6 缺陷 D）。`surfaces.py` 的 `trusted_hits` 曾用 `segment_roles()`
+  回傳的**全圖** `ratios` 去跟每個角色比對，完全沒被角色 mask 限制——windowpane
+  全在畫面上半時，`floor`／`ceiling`（在下半、跟 windowpane 零重疊）的 note 卻
+  雙雙宣稱「40% 屬語意可信類別」。改成用 `labelmap[mask]` 只算該角色 mask 內的
+  比例，門檻同步從 `ratio * 0.5`（混用兩種分母、邏輯不對稱）改成 `0.5`
+  （`role_ratios` 已是角色內部比例，對稱比較才對）。
+- 同時清掉誤導性註解：module docstring 與 `ADE_TRUSTED_MATERIAL` 上方兩處
+  「這些不必問 CLIP」改成描述現況（可信類別只影響 note，不影響 `material_id`，
+  直接映射待 T-27 設計）；`SurfaceObservation.method` 欄位註解移除從未被指派的
+  `"ade_trusted"`，只留實際會出現的 `"clip"` / `"fallback"` / `"out_of_domain"`。
+  **`material_id` 的來源邏輯（`classify_region_material()` 那條路徑）完全沒動。**
+- 新增 `scripts/test_surface_trusted_scope.py`：合成 labelmap（可信類別集中上半、
+  floor/ceiling 在下半且零重疊），樁掉 segmenter／CLIP，斷言 floor/ceiling 的
+  note 不再誤宣稱擁有可信類別。**診斷力已實測**：`git stash` 還原舊碼後跑同一支
+  測試 exit 1（floor/ceiling note 都宣稱「50.0% 屬語意可信類別」），確認不是
+  空測試，`git stash pop` 還原乾淨。
+- **鐵則全過**：五套既有測試 exit 0；六條交付 IR 的 MD5 全部不變（浴室/大教堂/
+  neighbor_voices/stadium_corridor，逐一重跑複驗，T-14 兩條由
+  `test_ir_synth.py`【6】硬編碼比對過）；`ir_metrics.py` 的 `git diff` 為 0 行；
+  未動 SPEC/ROADMAP/WORKFLOW/output/mvp_acceptance。
+- 下一步：Opus 驗證 T-24 → 通過後接 T-25（confidence 拆幾何／材質／overall 三軸，
+  前置依賴本卡）。
+
 ## 2026-08-30 (46)
 
 - 🔵 **T-23 完成（Phase 1.6 四張卡第一張）：fallback 材質單一事實來源**
