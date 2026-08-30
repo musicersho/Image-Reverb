@@ -2632,7 +2632,88 @@
     （非本卡範圍，屬 T-27 議題），記得【3】會擋，要一併更新。
 
 ### T-24 ADE 可信材質分支：修好計分錯誤、清掉死碼與誤導性註解（REPORT §2.6 缺陷 D）
-- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-08-30）
+- **狀態**：🟠 退回（Opus 驗證 2026-08-30）
+
+  **Opus 驗證紀錄（全部由驗證者自己實跑，不採信轉述）**
+  - ✅ 共同鐵則 1：五支測試自己重跑，`test_ir_synth.py` / `test_scene_text.py` /
+    `test_coupled.py` / `test_acoustics.py` / `test_t30_low_combined.py` **EXIT 全部 = 0**。
+  - ✅ 共同鐵則 2：六條 IR MD5 自己重跑複驗，全部相符——
+    T-20 `chk_bath`=`2adbaa75eb698772a8c9aa693179ec47`、
+    `chk_church`=`2dd19b6e6d351d713887636fe45cd67e`；
+    T-21 `coupled_neighbor_voices`=`9a94ffdf5d8295aee7889729c39c9cd8`、
+    `coupled_stadium_corridor`=`a1c21bcc3fd9aa3480df203a89c8cd05`；
+    T-14 兩條由 `test_ir_synth.py`【6】硬編碼比對通過（`f3a763be…`／`f24353b5…`）。
+    暫存的 `chk_*.wav` 已刪除。
+  - ✅ 共同鐵則 3：`git diff HEAD~1 HEAD -- src/image_reverb/ir_metrics.py` 輸出為空。
+  - ✅ 共同鐵則 4：`git diff --name-only HEAD~1 HEAD -- SPEC.md ROADMAP.md WORKFLOW.md
+    output/mvp_acceptance/` 輸出為空；本次 commit 只動了 5 個檔案，都在範圍內。
+  - ✅ 共同鐵則 5：驗證者自己把 `surfaces.py` 還原成 `HEAD~1` 版再跑新測試，
+    確實 **EXIT=1**（floor／ceiling 兩項 ❌，note 皆為
+    「分割結果有 50.0% 像素屬語意可信類別 → glass…」），還原後 working tree 乾淨。
+  - ✅ 「順手實作直接映射」紅旗：沒有發生。
+  - ✅ 「`material_id` 來源邏輯沒被動到」：diff 逐行核對，
+    `mid, conf, top3, method = classify_region_material(...)` 一字未改。
+  - ✅ `"ade_trusted"` 全專案 grep 無殘留。
+
+  **退回理由（本卡標題的兩個目標之一沒有達成）**
+
+  1. **改完之後整個可信類別分支變成「100% 不可能被執行」的死碼，比改之前更死。**
+     `mask = np.isin(labelmap, list(id_map.keys()))`，所以 `labelmap[mask]` 只可能
+     含有該角色自己的 class id。驗證者實跑核對集合：
+     ```
+     trusted ids       = [8, 9, 12, 18, 23, 27, 30, 31, 147]
+     floor    ids = [3, 6, 13, 28, 46, 53]  ∩ trusted = []
+     ceiling  ids = [5]                     ∩ trusted = []
+     wall     ids = [0, 1, 25]              ∩ trusted = []
+     ```
+     三個角色的 id 集合與 `ADE_TRUSTED_MATERIAL` 的 key **完全不相交**，
+     因此 `role_ratios` 永遠不含任何可信 id → `trusted_hits` 恆為 0.0 →
+     `best_trusted[1] > 0.5` **對任何輸入都是 False**。
+     驗證者另做隨機 fuzz 佐證（刻意只用「角色 id ＋ 可信 id」填滿 labelmap）：
+     ```
+     隨機 fuzz 3000 張 labelmap（刻意塞滿可信類別）→ 出現可信類別 note 的次數 = 0
+     ```
+     改之前這個分支至少還會（錯誤地）觸發；改之後 `role_ratios` 計算、
+     `trusted_hits`、`best_trusted`、note 分支、連同 `ADE_TRUSTED_MATERIAL` 這張表
+     （grep 確認只被這段用到）全部成為不可達碼。本卡標題就是
+     「修好計分錯誤、**清掉死碼**」，結果死碼反而變多。
+
+  2. **新寫的註解／docstring／note 字串描述的是「不可能發生的行為」，
+     等於把舊的誤導性註解換成新的誤導性註解。** 執行步驟 2 要求「改成**描述現況**」，
+     但下列三處寫的都不是現況：
+     - `surfaces.py:12`「**目前只用於在 note 裡加註提示**」
+     - `surfaces.py:40`「目前只用來在 note 裡加註提示」
+     - `surfaces.py:243`「只用來產生提示性 note」
+     現況是：**它連 note 都不會產生，一次都不會**。第 285 行那段 note 文字
+     （含新加的「直接映射材質待 T-27…」）是永遠印不出來的字串。
+     下一位讀 code 的人（含依賴本卡的 T-25）會被這三行帶到錯誤結論。
+
+  3. **交接筆記把同一個錯誤結論寫進文件**：「可信類別只影響 note，不影響
+     `material_id`」——前半句不成立。而 Sonnet 其實已經看到這個事實：
+     `scripts/test_surface_trusted_scope.py`【2】的註解自己寫了「windowpane 是 id=8，
+     不在 `ADE_FLOOR_IDS`／`ADE_CEILING_IDS`／`ADE_WALL_IDS` 任何一個角色 id 集合裡」，
+     卻只把它當成「在這張合成圖裡」的巧合，沒有推導出「對所有輸入都成立」，
+     也沒有在交接筆記或卡關欄回報這個矛盾。
+
+  4. （附帶，不單獨構成退回，但重做時要一併處理）
+     `test_surface_trusted_scope.py`【1】的兩條斷言往後**永遠不可能失敗**——
+     不論未來計分範圍再被改壞成什麼樣，只要角色 id 與可信 id 不相交，
+     note 就不會出現。它滿足了「對舊碼會 fail」的鐵則 5，但對**未來**沒有診斷力。
+
+  **重做方向（範圍仍然很小，不要擴大成實作直接映射）**
+  - 註解／docstring／交接筆記改成真正的現況：角色 mask 依定義只含角色自身的
+    ADE id，與可信類別 id 不相交，因此**這段計分在現行架構下不可能觸發**；
+    要讓可信類別真的起作用，必須先有 T-27 的 occupancy／等效吸音面積設計
+    （那才是決定「窗、人、座椅」怎麼進入角色統計的地方）。
+  - 二選一並在交接筆記說明選了哪個：(a) 保留這段程式碼但明白標註為
+    「等 T-27 接手前的佔位、目前不可達」；(b) 連同 `ADE_TRUSTED_MATERIAL` 一起
+    移到 T-27 的待辦，先從 `analyse_image()` 拿掉，真正做到「清掉死碼」。
+    **哪一個都必須先問 Fable 裁決**，不要自己決定刪表。
+  - 測試補一條有長期診斷力的斷言，例如直接斷言「角色 id 集合 ∩ 可信 id 集合」
+    這個不變量，或改成在角色 mask 內真的塞得進可信像素的情境再驗計分範圍。
+  - 已通過的部分（五支測試、六條 MD5、`ir_metrics.py` 零改動、`material_id`
+    路徑未動、`"ade_trusted"` 清除）驗證者已複驗無誤，重做時不必重來，
+    但改完仍要再跑一次共同鐵則 1–2。
 - **前置**：T-23
 - **問題**：`surfaces.py:37-48` 的 `ADE_TRUSTED_MATERIAL` 註解宣稱「這些不必問 CLIP」、
   `:238` 迴圈註解再宣稱一次，**但程式每次都問 CLIP**：`:244` 無條件呼叫
