@@ -96,7 +96,7 @@
       基準率複測再談調規則）。另記 HANDOFF 地雷 #23/#24（無來源第四狀態；
       透視照 materials high 結構性不可達）。全文見 TASKS.md T-28 卡尾。
 - [ ] **🔮 待 Fable 裁決（一張）**：**T-27 室內陳設吸音表示** —— 等效吸音面積 vs occupancy
-- [x] **T-30 gate 出口導引 🔵 待驗證（Sonnet 2026-08-30 完成，自我檢查通過）**：
+- [x] **T-30 gate 出口導引 ✅ 通過（Opus 驗證 2026-08-30）**：
       只改 `pipeline.run_photo()` gate 觸發後印的訊息——逐面點名 fallback/ood
       面（無來源面／clip 面不列）、依軸分開給建議（geometry=low 才印
       `--override-dims`；materials=low 才印可直接複製的 `--override-material`
@@ -104,7 +104,13 @@
       gate 判定條件（`compute_materials_confidence()`／`run_photo()` 觸發放行
       邏輯）逐行未動；九套測試全 exit 0；六條交付 IR MD5 逐一重生比對逐位元
       相同；實跑 `bathroom_tiled.png` 驗證訊息內容與 gate 解除路徑皆符合預期。
-      新增 `test_output_gate.py` 案例【D】。卡片見 TASKS.md T-30，下一步 Opus 驗證。
+      新增 `test_output_gate.py` 案例【D】。卡片見 TASKS.md T-30。
+      **Opus 驗證通過**（九套測試／四條 MD5／`bathroom_tiled` 自我檢查全部親跑複現，
+      新斷言在 HEAD~1 worktree 上實測 4 項失敗＝有診斷力）。附兩則後續建議：
+      ①「規則 2 退化（六面全同、無 fallback 面）＋geometry 非 low」時訊息仍只剩
+      `--force-low-confidence`，死路未被本卡覆蓋——屬卡片規格邊界，需 Fable 另開卡；
+      ② `geometry=low` 印 `--override-dims` 的分支無測試覆蓋（【A】是 high、【D】是 medium），
+      建議補正向案例。下一步：Fable 裁決 T-27（室內陳設吸音）。
 - [ ] **T-29**：三軸信心只加在 `run_photo()`，`--text` 只有 `confidence`、
       `--scene` 連 `confidence` 都沒有；三條管線 schema 不一致要有意識地決定
 - [ ] **← 之後（Fable）**：§7-1＋§7-2 皆未達標，要不要再加一輪。

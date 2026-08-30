@@ -1,5 +1,27 @@
 # Dev Log
 
+## 2026-08-30 (57)
+
+- ✅ **T-30 Opus 驗證通過**。所有指令由驗證者親自重跑，未採信 Sonnet 宣稱：
+  九套測試全 exit 0；T-20／T-21 四條交付 IR 重生後 MD5 逐位元相同
+  （`2adbaa75…`／`2dd19b6e…`／`9a94ffdf…`／`a1c21bcc…`），且重生後的
+  `output/neighbor_voices/`、`output/stadium_corridor/` 與備份 `diff -rq` 完全一致；
+  T-14 兩條由 `test_ir_synth`【6】內建比對。gate 判定條件確認零改動
+  （`surfaces.py`／`ir_metrics.py` 不在 commit 內）。
+- 實跑 `bathroom_tiled.png` 完整複現自我檢查：exit 3、只點名 `floor`(fallback)、
+  未點名 `ceiling`(無來源)與四牆(clip)、無 `--override-dims` 建議、輸出目錄未建立；
+  `--override-material floor=marble` 後 exit 0、`materials_confidence=medium`、
+  IR 非靜音（48 kHz／5.610 s／RMS 0.008996）。
+- 診斷力查核：把新版 `test_output_gate.py` 放進 HEAD~1 的 `git worktree` 實跑，
+  **4 項新斷言失敗** → 不是空測試。另寫探針掃四種 (geometry, materials) 組合，
+  確認依軸給建議與動態步驟編號（1/2/3、1/2、1）全部正確。
+- ⚠️ 兩則後續建議（不影響通過，已寫進 T-30 卡）：①**規則 2 的死路未覆蓋**——
+  materials=low 由「六面全同」觸發且無 fallback 面、geometry 非 low 時，
+  訊息只剩 `--force-low-confidence`，T-28 的「儀式化 --force」原樣重現；
+  這是卡片規格邊界（步驟 1/2 只從 fallback/ood 清單造骨架），非 Sonnet 瑕疵，
+  需 Fable 另開卡。②`geometry=low` 的 `--override-dims` 分支無測試覆蓋。
+- 下一步：Fable 裁決 T-27（室內陳設吸音，材質修正輪前置）。
+
 ## 2026-08-30 (56)
 
 - 🔵 **T-30 完成，待驗證**：gate 出口導引（裁決 T-28-A 執行卡）。只改

@@ -3638,7 +3638,7 @@
   還是明確文件化「三軸只適用照片管線」並讓 schema 差異變成有意的設計？
 
 ### T-30 gate 出口導引：把「怎麼繼續」從死路改成可走的路（裁決 T-28-A 執行卡）
-- **狀態**：🔵 待驗證（Sonnet 2026-08-30 完成，自我檢查通過，待 Opus 驗證）
+- **狀態**：✅ 通過（Opus 驗證 2026-08-30，三層標準全過；附兩則不影響通過的後續建議）
 - **前置**：T-26 ✅（gate 本體）；裁決 T-28-A（見 T-28 卡尾，2026-08-30）
 - **⚠️ 命名註記**：本卡是任務編號 T-30，與聲學量 T30（`t30_low_combined()`）無關。
 - **問題**：gate 擋下時印的「怎麼繼續」兩條建議，Fable 2026-08-30 實測：
@@ -3726,3 +3726,42 @@
     （已刪除 `output/bathroom_tiled/`，非交付產物）。
   - **下一步**：Opus 驗證 T-30。通過後回 Fable 裁決 T-27（室內陳設吸音，
     材質修正輪前置）。
+
+- **Opus 驗證紀錄（2026-08-30）**：**✅ 通過**。全部指令由驗證者親自重跑，非採信 Sonnet 宣稱。
+  - **第一層（能跑）**：九套測試親跑全 exit 0（`test_ir_synth`／`test_output_gate`／
+    `test_confidence_axes`／`test_material_fallback`／`test_surface_trusted_scope`／
+    `test_t30_low_combined`／`test_scene_text`／`test_coupled`／`test_acoustics`）。
+    `bathroom_tiled.png` 自我檢查逐項複現：不帶旗標 → exit 3、只點名
+    `floor：目前推測 gypsum_board（來源：fallback）`、**未**點名 `ceiling`（無來源）
+    與四面牆（clip）、**無** `--override-dims` 建議（該張 geometry=medium）、
+    `output/bathroom_tiled/` 完全沒被建立；加 `--override-material floor=marble`
+    重跑 → exit 0、`materials_confidence=medium`、`confidence=medium`。
+    產出 `ir_mono.wav` 非靜音（`check_audio.py`：48 kHz、5.610 s、RMS 0.008996、峰值 0.708）。
+  - **第二層（做對）**：六條交付 IR MD5 全數未變——T-14 兩條由 `test_ir_synth`【6】
+    硬編碼比對（該套 exit 0）；T-20 兩條驗證者重生得 `2adbaa75eb698772a8c9aa693179ec47`／
+    `2dd19b6e6d351d713887636fe45cd67e`；T-21 兩條重生得 `9a94ffdf5d8295aee7889729c39c9cd8`／
+    `a1c21bcc3fd9aa3480df203a89c8cd05`，且重生後 `output/neighbor_voices/`、
+    `output/stadium_corridor/` 與驗證前備份 `diff -rq` 完全相同（含 `wet_preview.wav`）。
+    gate 判定條件零改動：`git show HEAD` 只動 `pipeline.py`（訊息段）與
+    `test_output_gate.py`，`surfaces.py`（`compute_materials_confidence()`）、
+    `ir_metrics.py`、SPEC／ROADMAP／WORKFLOW、`output/mvp_acceptance/` 皆未列入。
+  - **第三層（做好）**：新斷言有診斷力——把新版 `test_output_gate.py` 放進 HEAD~1 的
+    `git worktree` 實跑，**4 項失敗**（點名觸發面／`--override-material` 骨架／
+    案例 D 兩項），證明不是空測試。未替使用者猜材質（`<材質id>` 佔位保留，
+    `--list-materials` 確認存在於 `gen_ir_manual.py:231`）。錯誤處理未退化
+    （不存在檔案／非圖片皆為清楚訊息非 crash）。驗證者另寫探針跑四種
+    (geometry, materials) 組合，確認依軸給建議與動態步驟編號皆正確：
+    geo=low+mat=low → 1)dims 2)material 3)force；geo=low+mat=medium → 1)dims 2)force；
+    geo=medium+mat=low → 1)material 2)force。
+  - **⚠️ 後續建議一（給 Fable，不影響本卡通過）**：**規則 2 的死路沒被本卡覆蓋**。
+    當 materials=low 是由退化規則（六面全同、且無任何 fallback/out_of_domain 面）觸發、
+    且 geometry 非 low 時，`low_conf_faces` 為空 → 訊息只剩
+    `1) 仍要照樣輸出 → 加 --force-low-confidence`，正是 T-28 記錄的「儀式化 --force」
+    原樣重現。驗證者以 uniform+clip 樁實測確認。**這是本卡規格（步驟 1/2 只從
+    fallback/out_of_domain 清單造骨架）的邊界，不是 Sonnet 的執行瑕疵**——Sonnet
+    逐字照做。建議 Fable 另開卡處理規則 2 的出口（例如提示「六面材質完全相同，
+    請至少覆寫其中一面使其不同」）。
+  - **⚠️ 後續建議二（給 Fable/下一位 Sonnet）**：`geometry == "low"` 印
+    `--override-dims` 這條分支**沒有任何測試覆蓋**——案例【A】帶 `--override-dims`，
+    走 `manual_estimate()` → confidence=`high`；案例【D】是 `medium`。驗證者已用探針
+    手動確認該分支行為正確，但建議補一個 geometry=low 的正向案例，避免日後改到不知情。
