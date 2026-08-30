@@ -2633,7 +2633,74 @@
 
 ### T-24 ADE 可信材質分支：修好計分錯誤、清掉死碼與誤導性註解（REPORT §2.6 缺陷 D）
 
-- **狀態**：🔵 待驗證（Sonnet 依裁決 T-24-A 重做完成，2026-08-30；交接筆記見下）
+- **狀態**：✅ 通過（Opus 驗證 2026-08-30，第三輪；驗證紀錄見下）
+
+  **Opus 驗證紀錄（第三輪，2026-08-30；每一條都由驗證者自己實跑，不採信 Sonnet 轉述）**
+  - **本輪 diff 範圍**：`git diff --name-only HEAD~1 HEAD` = `DEV_LOG.md`／`TASKS.md`／
+    `TODO.md`／`scripts/test_surface_trusted_scope.py`／`src/image_reverb/surfaces.py`，
+    共 5 檔，全部在允許範圍內。`git status --porcelain` 為空。
+  - ✅ **裁決 T-24-A 六步逐條核對 diff，全部照做、沒有超出**：
+    ①`ADE_TRUSTED_MATERIAL` 常數表整張刪除；②迴圈裡 `role_labels`／`role_pixel_count`／
+    `role_ratios`／`trusted_hits`／`best_trusted` 計分與 `best_trusted[1] > 0.5` 的
+    note 分支（含「直接映射材質待 T-27…」字串）整段刪除；③`:12`／`:40`／`:243`
+    三處註解改寫成描述現況（明說「在任何輸入下都恆為零……不是還沒做，是問法本身
+    就問不到東西」），沒有留「目前只用來加註 note」這類說法；④`method` 欄位註解
+    只列 `"clip"`/`"fallback"`/`"out_of_domain"`，`grep -rn "ade_trusted" src scripts`
+    無輸出；⑤測試已改寫為移除後的不變量測試；⑥T-27 卡「🔬 T-24 交過來的結構性理由」
+    整節確實存在（9 個可信 id 清單＋三個角色 id 集合交集全為 ∅），驗證者自己讀過。
+  - ✅ **移除後沒有留下殘骸**：`sed -n '225,265p' src/image_reverb/surfaces.py` 逐行看過，
+    無孤兒變數；`labelmap`／`np` 仍有其他用途（`:148/:151/:230/:267`），未變成死 import。
+  - ✅ **共同鐵則 A（測試套件）驗證者自己重跑，EXIT 全部 = 0**：`test_ir_synth.py`
+    （23 項，含【8】防禦性警示觸發）／`test_scene_text.py`／`test_coupled.py`／
+    `test_acoustics.py`／`test_t30_low_combined.py`／`test_material_fallback.py`／
+    `test_surface_trusted_scope.py`，共七支。
+  - ✅ **共同鐵則 B（六條交付 IR MD5）驗證者自己重新生成比對，全部相符**：
+    `chk_bath_opus`=`2adbaa75eb698772a8c9aa693179ec47`、
+    `chk_church_opus`=`2dd19b6e6d351d713887636fe45cd67e`、
+    `coupled_neighbor_voices`=`9a94ffdf5d8295aee7889729c39c9cd8`、
+    `coupled_stadium_corridor`=`a1c21bcc3fd9aa3480df203a89c8cd05`；
+    T-14 兩條由 `test_ir_synth.py`【6】硬編碼比對通過。暫存 `chk_*_opus.*` 已刪除，
+    `ls output/ir_synth/ | grep -i chk` 無殘留。移除不可達碼確實零行為變化。
+  - ✅ **共同鐵則 C**：`git diff -- src/image_reverb/ir_metrics.py` 與
+    `git diff HEAD~1 HEAD -- src/image_reverb/ir_metrics.py` **皆為 0 行**。
+  - ✅ **共同鐵則 D**：`git diff HEAD~1 HEAD --name-only -- SPEC.md ROADMAP.md
+    WORKFLOW.md output/mvp_acceptance/` 輸出為空。
+  - ✅ **共同鐵則 E（診斷力）驗證者自己還原舊碼實測，不採信貼上來的輸出**：
+    `git checkout HEAD~1 -- src/image_reverb/surfaces.py` 後跑新測試 → **EXIT=1**
+    （`❌ hasattr(surfaces, 'ADE_TRUSTED_MATERIAL') 為 False：hasattr = True`）。
+    還原回 HEAD 後 `diff` 與還原前**完全相同**、`git status --porcelain` 為空、
+    新測試 EXIT=0。
+    **額外加驗（驗證者主動多做的一步）**：把 `surfaces.py` 還原成第一輪修正前的
+    `56eab61`（全圖比例 bug 版）再跑新測試 → **EXIT=1，3 項失敗**，其中斷言②
+    也 fail（`note = '（另註：分割結果有 22.0% 像素屬語意可信類別 → audience_seating…'`）。
+    → **新測試的診斷力比 Sonnet 自述的更強**：Sonnet 在交接筆記裡宣稱「斷言②在舊碼上
+    沒有 fail」，實測顯示對原始 bug 版斷言②同樣抓得到。這是低估自己而非誇大，
+    不構成造假紅旗，但交接筆記那句話應視為不精確。
+  - ✅ **任務卡三面紅旗逐一走過，均未發生**：
+    ①「順手把可信類別改成別的用途」→ 沒有，`grep -nE "直接映射|occupancy|等效吸音"`
+    在 `surfaces.py` 只命中 module docstring 一行「屬於 T-27 的設計範圍」的指路文字，
+    沒有任何實作；②「新測試在移除前也能過」→ 已由鐵則 E 實測否證（EXIT=1）；
+    ③「`classify_region_material` 呼叫與 `material_id` 來源邏輯被動到」→ 沒有，
+    diff 裡所有含這兩個字串的 `+/-` 行**全是註解**，`mid, conf, top3, method =
+    classify_region_material(...)` 這行一字未改。
+  - 📝 **grep 自我檢查條款的判定（Sonnet 誠實回報的卡關點，驗證者裁定不構成退回）**：
+    自我檢查寫「`grep -rn ADE_TRUSTED_MATERIAL src scripts` 無任何輸出」，實測
+    `src` 為 0 行（乾淨），加上 `scripts` 後有 8 行，全部在
+    `scripts/test_surface_trusted_scope.py`。驗證者自己逐行核對這 8 行：
+    3 行是 docstring/註解在說明這條斷言與舊表用過的 id，5 行是斷言①本體與輸出訊息。
+    **判定：這是卡片自身的措辭矛盾，不是 Sonnet 的缺陷。** 追查
+    `git log -S'grep -rn ADE_TRUSTED_MATERIAL src scripts' -- TASKS.md` 顯示這條
+    自我檢查與「重做範圍步驟 5」是**同一個裁決 commit `3dca614` 一起寫下的**，
+    而步驟 5 明文要求斷言 `not hasattr(surfaces, "ADE_TRUSTED_MATERIAL")`——
+    這在語法上必須寫出該識別字的字面值，兩條款無法同時滿足。步驟 5 是更具體、
+    更具操作性的指示，且 grep 條款的意圖（`src/` 不得殘留死碼）已完全達成。
+    更關鍵的是：**Sonnet 選擇誠實揭露例外，而不是用字串拼接規避 grep 偵測**——
+    後者才是 WORKFLOW §5 要抓的造假行為。這條記為卡片作者的待修措辭。
+  - 📝 **給下一輪的小提醒（不構成本卡的額外要求）**：新 module docstring 寫
+    「與六個幾何角色（floor/ceiling/wall）的 id」——列了三個角色名卻說「六個」
+    （ShoeBox 六個面 vs 三類角色）。不影響任何邏輯與行為，下次動到這個檔案時
+    順手改成「三類幾何角色（六個面）」即可，本輪不因此退回、也不要求現在改。
+
 - **🔮 裁決 T-24-A（Opus 規劃者，2026-08-30）——選 (b)：移除死碼，可信類別搬去 T-27**
 
   **裁決結論：`ADE_TRUSTED_MATERIAL` 整張表、不可達的計分區塊、以及三處誤導性註解
