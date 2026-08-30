@@ -2474,3 +2474,150 @@
      「錯得很嚴重但只有 −55dB」的幾何，門檻要能被重新檢討而不是被當成已保證。
   5. 卡片步驟 3 要求「實測 160×130×45 的合成耗時並記錄」，交接筆記漏記
      ——已由本驗證紀錄第 9 點補上。
+
+---
+
+## Phase 1.6 — T-17 驗收缺陷修正輪（Opus 規劃 2026-08-30；證據見 REPORT §2.5/§2.6）
+
+**四張卡必須依序執行**：T-23 → T-24 → T-25 → T-26。彼此有檔案重疊（`surfaces.py`、
+`pipeline.py`），並行會衝突；T-26 依賴 T-25 建立的信心語義。
+
+**四張卡共同的鐵則（每張卡的自我檢查都要跑）**：
+1. `python scripts/test_ir_synth.py`（23 項）、`test_scene_text.py`、`test_coupled.py`、
+   `test_acoustics.py`、`test_t30_low_combined.py` **全部 exit 0**
+2. **六條交付 IR 的 MD5 一條都不許變**：T-14 兩條由 `test_ir_synth.py`【6】硬編碼比對；
+   T-20 兩條 `2adbaa75eb698772a8c9aa693179ec47`／`2dd19b6e6d351d713887636fe45cd67e`
+   （`python scripts/gen_ir_from_text.py "浴室" -o chk_a --no-listen` 等）；
+   T-21 兩條 `9a94ffdf5d8295aee7889729c39c9cd8`／`a1c21bcc3fd9aa3480df203a89c8cd05`
+3. **`src/image_reverb/ir_metrics.py` 一行都不許動**（`git diff` 必須為空）
+4. **不許動** `SPEC.md`／`ROADMAP.md`／`WORKFLOW.md`／`output/mvp_acceptance/`
+5. 新增的測試**必須對舊程式碼實測會失敗**（否則就是沒有診斷力的空測試），
+   自我檢查要附上「在舊碼上跑會 fail」的實測輸出
+
+### T-23 fallback 材質的單一事實來源（REPORT §2.6 缺陷 F）
+- **狀態**：⬜ 未開始
+- **前置**：無（最安全的一張，先做）
+- **問題**：fallback 材質四處說法不一致——`data/materials.json:10` 說 `generic_wall`、
+  `src/image_reverb/config.py:95` 實際是 `gypsum_board`、`config.py:103` 註解說
+  `generic_wall`、`surfaces.py:167` docstring 說 `generic_wall`。
+  實際執行值是 **`gypsum_board`**（`classify_region_material()` 三個出口都回傳
+  `config.DEFAULT_WALL_MATERIAL`）。已害 REPORT §1.3 首版標錯。
+- **🔮 Opus 裁決（規劃時已定，不要自己改）**：**以 `data/materials.json` 為單一事實來源，
+  且把它的值改成 `gypsum_board`——即現行實際行為，不是 `generic_wall`。**
+  理由：改值會動到所有輸出與六條 MD5，也會讓 T-17 的全部驗收數字失效。
+  **這張卡只統一來源與文件，不改任何行為。**
+  「fallback 該不該是 gypsum_board」是另一個議題，不在本卡範圍。
+- **執行步驟**：
+  1. `data/materials.json` 的 `"fallback_id"` 由 `"generic_wall"` 改成 `"gypsum_board"`
+  2. `config.py` 的 `DEFAULT_WALL_MATERIAL` 改成**從 materials.json 讀取**
+     （不要再寫死字面值）；保留這個常數名稱不變，其他模組照舊 import
+  3. 修正 `config.py:103` 註解與 `surfaces.py:167` docstring，讓它們說的是 `gypsum_board`
+  4. 新增 `scripts/test_material_fallback.py`：斷言
+     `config.DEFAULT_WALL_MATERIAL == json.load(materials.json)["fallback_id"]`，
+     且該 id 存在於材質表中。全過 exit 0、任一失敗 exit 1
+- **自我檢查**：共同鐵則 1–5；另外**把 materials.json 的 fallback_id 暫時改回
+  `generic_wall`，確認新測試會 fail（exit 1），再改回來**——證明測試有診斷力
+- **Opus 驗證重點**：紅旗：偷偷把行為改成 `generic_wall`（六條 MD5 會變，一驗就知道）；
+  紅旗：新測試在舊的不一致狀態下也能過（＝空測試）
+
+### T-24 ADE 可信材質分支：修好計分錯誤、清掉死碼與誤導性註解（REPORT §2.6 缺陷 D）
+- **狀態**：⬜ 未開始
+- **前置**：T-23
+- **問題**：`surfaces.py:37-48` 的 `ADE_TRUSTED_MATERIAL` 註解宣稱「這些不必問 CLIP」、
+  `:238` 迴圈註解再宣稱一次，**但程式每次都問 CLIP**：`:244` 無條件呼叫
+  `classify_region_material()`，`best_trusted` 只被拿去串 `:262-265` 的 note 字串，
+  `:268` 的 `material_id=mid` 永遠是 CLIP 結果。`"ade_trusted"` 全專案**只出現在
+  `:115` 記錄 method 可能值的註解裡，從未被指派**。
+  **更嚴重**：`:239` 的 `trusted_hits` 用的是 `segment_roles()` 回傳的**全圖** `ratios`
+  （`:154` = `count/total_pixels`），**沒有被角色 mask 限制**——Opus 執行期重現：
+  windowpane 全在畫面上半時，`floor` 與 `ceiling` 的 note 都宣稱「40% 屬語意可信類別」。
+- **🔮 Opus 裁決（規劃時已定，不要自己擴大）**：
+  **本卡只做兩件事：①把計分改成角色 mask 內的比例　②讓註解與 docstring 說實話。**
+  **不要實作「可信類別直接映射材質」**——家具／人群要用等效吸音面積還是 occupancy
+  表示，是 SPEC 層的設計決策，屬新功能不是修 bug，已另記為 T-27 交 Fable。
+  **不要**因為「註解說要直接映射」就自己補上 `if`——補了會引入新錯誤。
+- **執行步驟**：
+  1. `trusted_hits` 改成**只統計該角色 mask 內**的像素：用 `labelmap[mask]` 重算比例，
+     分母是該角色的像素數（不是全圖）。note 的措辭同步改成「此面內有 X%…」
+  2. 把 `:37` 與 `:238` 兩處「不必問 CLIP」「有就直接映射」的註解改成**描述現況**：
+     這些類別目前**只用於產生提示性 note，不影響 `material_id`**，並註明
+     「直接映射待 T-27 設計 occupancy 機制後再做」
+  3. `:115` 的 `method` 註解移除 `"ade_trusted"`（從未被指派），只留 `"clip"` /
+     `"fallback"` / `"out_of_domain"`
+  4. 新增 `scripts/test_surface_trusted_scope.py`：構造合成 labelmap
+     （可信類別集中在畫面上半、floor/ceiling 在下半），樁掉 segmenter 與
+     `classify_region_material`，斷言 **floor 與 ceiling 的 note 不再宣稱有可信類別**
+- **自我檢查**：共同鐵則 1–5；新測試**必須在修改前的 `surfaces.py` 上實測 fail**
+  （用 `git stash` 或暫時還原檔案跑一次，把輸出貼進交接筆記）
+- **Opus 驗證重點**：紅旗：順手把「直接映射」實作了（超出範圍，且計分基礎才剛改）；
+  紅旗：新測試在舊碼上也能過；確認 `material_id` 的來源邏輯**完全沒被動到**
+
+### T-25 confidence 拆成幾何／材質／overall 三軸（REPORT §2.5 缺陷 B）
+- **狀態**：⬜ 未開始
+- **前置**：T-24
+- **問題**：`pipeline.py:248-253` 把輸出 `confidence` 直接設成 `est.confidence`
+  ——只反映幾何。T-17 §7-1 的臥室因此拿到 `medium`：地板已 fallback、四面牆只判成
+  `generic_wall`，卻沒有任何訊號告訴使用者材質不可信。五個 `--override-dims` 的 run
+  也全部拿到 `high`，但材質同樣是猜的。
+- **🔮 Opus 裁決**：`confidence` 這個鍵**保留**（下游與 T-16 視覺化在讀），
+  但語義改成 **overall**；另加兩個新鍵。**本卡只動 metadata，不得改變任何 IR 內容。**
+- **執行步驟**：
+  1. `analysis.json` 新增 `geometry_confidence`（＝原本的 `est.confidence`）與
+     `materials_confidence`；`confidence` 改成 overall ＝ 兩者取較低者
+     （順序 `high` > `medium` > `low`）
+  2. `materials_confidence` 判定規則（寫死在 `surfaces.py` 或 `pipeline.py`，
+     要有單元測試）：六面中**任一面** `source` 是 `fallback` 或 `out_of_domain`
+     → `low`；六面材質**全部相同**（退化）→ `low`；其餘 → `medium`；
+     六面皆 `clip` 且無警示 → `high`
+  3. CLI 輸出把三個信心都印出來
+  4. 新增 `scripts/test_confidence_axes.py`：至少三個案例——
+     幾何 high＋材質 low → overall low；兩者皆 medium → medium；
+     幾何 low＋材質 high → low
+- **自我檢查**：共同鐵則 1–5；另外**實跑 `assets/photos/bedroom_ai_generated.png`，
+  確認 `confidence` 由 `medium` 變成 `low`**（地板是 fallback），
+  且 `ir_mono.wav` 的 MD5 與本卡修改前相同（metadata 改動不得影響音訊）
+- **Opus 驗證重點**：紅旗：動到 IR 內容（比對臥室 IR 的 MD5 修改前後）；
+  紅旗：`materials_confidence` 寫成永遠回傳 medium 的空實作
+
+### T-26 低信心／域外輸入的輸出 gate（REPORT §2.6 缺陷 E）
+- **狀態**：⬜ 未開始
+- **前置**：**T-25（要用 overall confidence 當判準）**
+- **問題**：`pipeline.py:225-239` 從幾何直接進聲學→合成→`export_ir()`→wet preview，
+  **沒有任何一行檢查 `est.confidence` 或域外狀態**。T-17 §7-1 的實際後果：
+  體育館（估成 30.8 m³）與車內（估成 332 m³）**兩筆的防呆規則都正確作動了**
+  （`low` ＋ 明確警示），產品照樣輸出，使用者盲聽當然配錯。
+  → **降信心不等於保護使用者。**
+- **🔮 Opus 裁決**：**擋，但要給明確出口**。不是靜默失敗，也不是照樣出貨。
+- **執行步驟**：
+  1. `pipeline.run_photo()` 在合成**之前**加 gate：overall `confidence == "low"`
+     → **不寫任何 WAV／JSON**，印清楚的繁中錯誤說明「為什麼擋」＋「怎麼繼續」
+     （建議 `--override-dims`，或明確加 `--force-low-confidence`），**回傳 exit code 3**
+  2. `cli.py` 新增 `--force-low-confidence`：帶了就照樣輸出，但
+     ① CLI 印顯著警告　② `analysis.json` 加 `"forced_low_confidence": true`
+     與一條進 `warnings` 的說明
+  3. **`--override-dims` 不自動解除 gate**——手動尺寸只提升幾何信心，
+     材質仍可能是 low（T-25 的 overall 會反映這件事）
+  4. 新增 `scripts/test_output_gate.py`：`low` 輸入不帶旗標 → exit 3 且**輸出目錄沒有
+     產生任何 wav**；帶旗標 → exit 0 且 JSON 有 `forced_low_confidence: true`；
+     `medium` 輸入不受影響
+- **⚠️ 已知連帶影響（必須寫進交接筆記，不是 bug）**：T-17 的 §7-2 有數個場地是 `low`
+  （DivorceBeach／gym／restaurant／SteinmanHall），本卡之後**重跑驗收必須加
+  `--force-low-confidence`**。`scripts/t17_rt60_table.py` 等腳本本身不用改，
+  但重跑指令要更新，並在 REPORT 補一行說明。
+- **自我檢查**：共同鐵則 1–5；另外實跑三個案例：
+  `arena_ntsu_linkou.png`（low）→ exit 3 無 wav；同一張加 `--force-low-confidence`
+  → exit 0；`bathroom_tiled.png`（medium）→ exit 0 且 MD5 與本卡修改前相同
+- **Opus 驗證重點**：紅旗：gate 加在合成**之後**（等於還是算了才擋，浪費且可能已寫檔）；
+  紅旗：`--force-low-confidence` 沒有真的把標記寫進 JSON；
+  紅旗：medium/high 的路徑被波及（六條 MD5 會變）
+
+### T-27（🔮 Fable 裁決用，Sonnet 不要做）室內陳設的吸音表示
+- **狀態**：⬜ 未開始（**需要 Fable 做 SPEC 層決策，不是 bug 修正**）
+- **背景**：T-17 §7-1 的臥室被做成 3.56 秒殘響、盲聽被聽成教堂。但四面牆的 CLIP 判定
+  是 `generic_wall` 且 `source: clip`——**視覺上判得沒錯**，一面臥室牆確實是
+  「plain smooth plastered wall」。錯在**床、棉被、窗簾、地毯（1kHz α 0.37–0.72）
+  在 ShoeBox 六面模型裡無處可放**。
+- **這是模型結構限制，不是辨識準確度問題**——換更好的材質分類器救不到。
+- **需要決策**：家具／人群要用「等效吸音面積（Sabine 的 A 直接加項）」還是
+  「occupancy 係數」表示？資料從哪來（ADE20K 的 bed/sofa/curtain 類別佔比？）？
+  T-24 已把可信類別的計分修正到角色 mask 內，可以當作這張卡的輸入。
