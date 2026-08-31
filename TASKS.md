@@ -5655,7 +5655,50 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
 
 ### T-40 評測快取指紋與自動失效（插卡 1/4；純 harness 卡，零 `src/` 改動）
 
-- **狀態**：🔵 待驗證（退回修正輪已完成，2026-08-31；請 Opus 複驗）
+- **狀態**：✅ 通過（Opus 複驗，2026-08-31；退回修正輪已驗收）
+  - **複驗結論**：退回理由的阻擋項已修掉，且未在別處開新洞。以下每項都由 Opus
+    實跑，非採信交接筆記。
+  - **核心驗收（本次退回理由的直接對照）**：複本目錄刪掉 `runs/bathroom_tiled/`
+    後跑預設指令 → `🔴 卡關：… 屬於凍結基線目錄，快取不存在，不可自動重跑產生
+    新內容。治療評測請用 --out-dir 指到新目錄。`、**EXIT=1**，且
+    `runs/bathroom_tiled/` **未被重新產生**（`ls` 確認 No such file or directory）。
+    修正前同情境為「靜默重跑＋寫進凍結基線＋印 ✓」，第三態已消除。
+  - **必改項 B 驗收**：`--out-dir output/clip_accuracy/sub`（凍結目錄子目錄）
+    現判為凍結 → hard fail、EXIT=1、無任何資料寫入；`is_frozen_dir()` 四種輸入
+    （相等／子目錄／`..` 正規化／前綴相似但無關）判定正確。
+  - **鐵則 5（修 bug 的測試對舊碼必須 fail）獨立複現**：`git worktree add <暫存> a874536`
+    ＋把新版 `test_eval_cache.py` 複製進去 → **EXIT=1**（`[11]` 因
+    `ImportError: cannot import name 'is_frozen_dir'` 而 fail）；再隔離對舊
+    `eval_cache.load_or_run(is_frozen=True, 快取不存在)` 直測 → 未丟
+    `FrozenBaselineError`、`run_fn 被呼叫=True`、`快取檔被寫入=True`，`[10]`
+    對舊碼確實 fail。worktree 事後已 `--force` 移除。
+  - **無回歸**：非凍結 `--out-dir` 端到端仍正確——指紋相符讀快取 EXIT=0 產出
+    REPORT/tables；竄改指紋 → `↻ … 已重跑（原因：clip_threshold: 0.99 → 0.4;
+    code_sha256.surfaces.py: 000… → c87d…）`；刪掉快取 → `↻ … 已重跑（原因：
+    快取不存在）`，兩者皆 EXIT=0 且三軸交叉驗證通過。凍結目錄「快取存在但舊格式」
+    與 `--fresh` 兩條既有路徑仍 EXIT=1。
+  - **既有測試「播種」改 `is_frozen=False` 已逐行核對**：三個測試只改了建立初始
+    快取的那一行，正式斷言（指紋相符讀快取／指紋不符 hard fail 且逐位元不變／
+    拒絕 `--fresh`）一字未動——不是放寬驗收標準。
+  - **共同鐵則**：14 支 `scripts/test_*.py` 逐支單獨執行全部 exit 0；六條交付 IR
+    MD5 逐條相符（T-20／T-21 四條實跑重生成，T-14 兩條由 `test_ir_synth.py`
+    硬編碼比對）；`git diff src/ data/` 為空；`FREEZE_MANIFEST` 對 71 個既有檔案
+    逐檔重算 sha256 → 不符 0 項（複驗前後皆是）；本次 commit 只動
+    `DEV_LOG.md`／`TASKS.md`／`TODO.md`／`scripts/eval_cache.py`／
+    `scripts/t36_clip_accuracy.py`／`scripts/test_eval_cache.py`，
+    SPEC／ROADMAP／WORKFLOW／`output/` 皆未觸碰。
+  - **殘留觀察（非阻擋，不影響本卡通過，供 T-41 之後順手處理或 Fable 裁決）**：
+    1. `main()` 的 `runs_dir.mkdir(parents=True, exist_ok=True)` 仍排在凍結判定
+       之前，因此對凍結目錄 hard fail 時會先留下**空目錄**（例如
+       `output/clip_accuracy/sub/runs/`）。只有目錄、沒有檔案，git 不追蹤空目錄，
+       `FREEZE_MANIFEST` 只列檔案，故不違反「既有檔案一個 bit 不許變」，屬美觀問題。
+    2. 凍結目錄的提示橫幅仍寫「快取指紋不符將 hard fail」，但現在「快取不存在」
+       也會 hard fail，措辭比實際行為窄了一點（不再像修正前那樣**與行為矛盾**）。
+    3. 前一輪的非阻擋建議仍未做（本輪刻意不做，範圍正確）：
+       `verify_freeze_manifest()` 至今**沒有任何呼叫端**，凍結基線被改寫時無自動
+       偵測；`t40_freeze_manifest.py` 每次執行都無條件覆寫 manifest，若在基線已被
+       污染後重跑等於重新蓋章。建議加 `--verify` 模式並在 `t36_clip_accuracy.py`
+       指向凍結目錄時先驗一次——請 Fable 裁決是否開新卡。
 
 - **退回紀錄（已修正）**（Opus 驗證退回，2026-08-31；以下為退回理由全文，保留供對照）：
   - **退回理由（一項阻擋項，其餘全部通過）**：`eval_cache.load_or_run()` 的凍結分支
