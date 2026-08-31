@@ -5370,7 +5370,7 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
      （T-41／T-42／T-43）一律照原文重跑 13 張產表。
 
 ### T-37 地雷 #16 修正：`is_equirect()` 加極點列均勻度檢查（裁決 T-36-A 執行卡 1/3）
-- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-08-31）
+- **狀態**：✅ 通過（Opus 驗證，2026-08-31）
 - **前置**：T-36 ✅＋「T-36 文件修正」已 commit；本卡動 `src/image_reverb/preprocess.py`
 - **問題**（HANDOFF.md 地雷 #16，T-17 驗收發現、T-36 再現並補量化證據）：
   `is_equirect()` 只看長寬比（2.0±5%），`TunnelToHell.jpg`（2592×1296 的
@@ -5477,6 +5477,76 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
     `before/after` 逐面比對，west 兩邊完全相同時本來就不該出現在漂移表）。
   - **下一步**：請 Opus 驗證本卡；通過後依 Phase 1.9 固定順序開 T-40（評測
     快取指紋，插卡 1/4）。
+
+- **✅ Opus 驗證紀錄（2026-08-31）——結論：通過**（每一項都由驗證者自己重跑，
+  不採信交接筆記貼上來的輸出）：
+  - ✅ **共同鐵則 1**：`scripts/test_*.py` **13 支全部 EXIT=0**（驗證者自己逐支跑）。
+    `test_preprocess.py` 的資產測試**實際執行、非略過**——輸出逐張印出
+    `TunnelToHell → False`、`CathedralRoom/DivorceBeach/RacquetballCourt4/
+    SteinmanHall → True`。
+  - ✅ **共同鐵則 2（六條交付 IR MD5）驗證者自己重新生成比對，全部相符**：
+    `gen_ir_from_text.py "浴室"`／`"大教堂"` 產出 `chk_bath_opus`=
+    `2adbaa75eb698772a8c9aa693179ec47`、`chk_church_opus`=
+    `2dd19b6e6d351d713887636fe45cd67e`；`gen_ir_coupled.py` 重跑兩個場景
+    JSON 產出 `coupled_neighbor_voices`=`9a94ffdf5d8295aee7889729c39c9cd8`、
+    `coupled_stadium_corridor`=`a1c21bcc3fd9aa3480df203a89c8cd05`；T-14 兩條由
+    `test_ir_synth.py`【6】硬編碼比對隨鐵則 1 通過。暫存 `chk_*_opus.*` 已刪除。
+    另跑 `check_audio.py output/ir_synth/text_bathroom.wav`：RMS 0.014144、
+    峰值 0.707946，非靜音。
+  - ✅ **共同鐵則 3／4**：`git diff HEAD~1 HEAD -- src/image_reverb/ir_metrics.py`
+    **0 行**；`git diff HEAD~1 HEAD --name-only -- SPEC.md ROADMAP.md WORKFLOW.md
+    output/mvp_acceptance/ output/material_round/ output/clip_accuracy/` **0 檔**。
+    本次 commit 觸及的 10 個檔案全部落在本卡宣告範圍內。
+  - ✅ **共同鐵則 5（診斷力）驗證者自己還原舊碼實測**：`git worktree add HEAD~1`
+    建出 T-37 前的碼、符號連結接上 5 張 .jpg、把新版 `test_preprocess.py` 複製
+    進去 → **EXIT=1**，訊息為「長寬比 2:1 但極點列不均勻的合成影像被誤判為環景
+    （地雷 #16 回歸了）」，停在 `[3/4]`。另在舊碼上直接呼叫 `is_equirect()`：
+    `TunnelToHell → True`（bug 確實存在）、`CathedralRoom → True`，證實資產測試
+    同樣具診斷力。worktree 已 `git worktree remove`，`git worktree list` 只剩主目錄。
+  - ✅ **共同鐵則 6**：`gate` 判定規則零改動——diff 只有 `config.py`（新增一個常數
+    ＋註解）與 `preprocess.py`（`is_equirect()` ＋新 helper `_pole_row_diff_mean()`），
+    `surfaces.py`／`pipeline.py`／`geometry.py` 未出現在 diff 中。
+  - ✅ **共同鐵則 7（臥室紅旗）**：`bedroom_ai_generated` materials low → low、
+    overall low → low，未從擋變放。
+  - ✅ **共同鐵則 8（基線變化表）驗證者自己全量重跑 13 張**：
+    `python scripts/t37_rebaseline.py` **EXIT=0**（13 張逐張 18–33 秒，總計約 5 分鐘），
+    產出的 `REPORT.md`／`tables.md` 與 commit 版本 **bit-identical**（`git status`
+    重跑後仍乾淨）——數字可重現、非手打。
+  - ✅ **不靠對方腳本的獨立複核**：驗證者另寫一次性比對，直接讀
+    `output/material_round/runs/<name>__no_furn/analysis.json`（before）與
+    `output/equirect_fix/runs/<name>/analysis.json`（after）比 `dims_source`／
+    三軸 confidence：**13 張中只有 TunnelToHell 變動**
+    （`equirect_multiview → metric_depth`、`geometry medium → low`），其餘 12 張
+    逐值不變。逐面材質同法直接比 `surfaces`／`sources`：**78 面中只有
+    TunnelToHell 的 5 面變動**（floor／ceiling／east／south／north），
+    **72 面逐面不變**，且 `TunnelToHell.west` 前後皆為 `gypsum_board/fallback`
+    ——交接筆記「west 剛好相同、非程式遺漏」的說法**成立**。
+  - ✅ **卡片驗收條件「不得比原本更自信」成立**：TunnelToHell 走透視路徑後
+    `geometry_confidence` medium → **low**、overall low → low，與地雷 #16 記載的
+    誠實值一致。
+  - ✅ **門檻餘裕（卡片點名的紅旗）不成立**：4 張真環景 max_diff 上限 0.4859、
+    TunnelToHell 4.5149、門檻 1.2，兩側餘裕 2.47x／3.76x；門檻**不是**剛好只救
+    TunnelToHell，4 張真環景全部維持 True 且離門檻還有 2 倍以上。
+  - ✅ **無假實作**：`t37_rebaseline.py` 的三道守門（非 TunnelToHell 三軸漂移、
+    非 TunnelToHell 材質漂移、臥室紅旗）皆為 `sys.exit(1)`、條件可真觸發；
+    另有「TunnelToHell 一面都沒變也算失敗」的反向守門。REPORT.md 的結論句
+    （含「未比原本更自信」）由 `tunnel_gate` 變數推導，非寫死。
+  - ✅ **錯誤處理**：`python -m src.image_reverb /nope/missing.jpg` → 「錯誤：
+    找不到檔案 …」；`python -m src.image_reverb README.md` → 「錯誤：無法辨識
+    為圖片檔 …」，皆為中文訊息、無 traceback。
+  - ⚪ **非退回、留給後續的觀察**（不影響本卡通過，僅記錄）：
+    1. 統計量只取**第一列與最後一列**各一列。本批 5 張區辨力充足（>2x），但若
+       日後遇到極點有明顯壓縮雜訊的真環景，可能誤判為非環景——失敗方向是
+       「掉回透視路徑＋low」，屬誠實的保守失敗，非本卡缺陷。若 T-10 之後擴充
+       環景素材，建議改成取首/尾各 N 列的中位數。
+    2. `test_is_equirect_real_assets()` 在素材缺席時回傳成功（會清楚印出略過
+       訊息，非靜默通過）。本機素材齊全、本次為真實驗證；但全新 clone 的
+       CI 抓不到真實資產的迴歸——合成案例 `[3/4]`／`[4/4]` 有補上核心診斷力。
+    3. REPORT.md 寫「取兩者幾何中點附近的 1.2」，實際幾何中點是 1.48，1.2 略偏
+       保守側。數字本身由程式產出且正確，僅措辭寬鬆，不必改。
+  - ⚪ **與本卡無關的既有狀況**：工作目錄有未進版控的 `AGENTS.md`（Codex 版入口
+    說明，mtime 05:36，早於本卡 commit 06:27），不在本卡 diff 內，非本卡產物。
+  - **下一步**：依 Phase 1.9 固定順序開 **T-40**（評測快取指紋，插卡 1/4）。
 
 ### T-38 CLIP 提示詞治療：地板優先＋in-set 混淆對（裁決 T-36-A 執行卡 2/3）
 - **狀態**：⬜ 未開始

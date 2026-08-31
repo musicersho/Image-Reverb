@@ -1,5 +1,26 @@
 # Dev Log
 
+## 2026-08-31 (79)
+
+- **T-37 Opus 驗證通過 ✅**：八條共同鐵則逐條由驗證者自己重跑，不採信交接筆記
+  貼上來的輸出——13 支測試 EXIT=0（資產測試真的執行、非略過）；六條交付 IR
+  自己重新生成，MD5 全部相符；`git worktree add HEAD~1` 還原舊碼跑新測試
+  **EXIT=1**（地雷 #16 回歸訊息），舊碼直接呼叫 `is_equirect()` 亦得
+  `TunnelToHell → True`，診斷力屬實；`python scripts/t37_rebaseline.py` 全量
+  重跑 13 張 EXIT=0，產出的 REPORT.md／tables.md 與 commit 版本 **bit-identical**。
+- **另寫一次性腳本獨立複核（不靠對方的腳本）**：直接比對 `material_round`
+  ／`clip_accuracy` 凍結基線與 `equirect_fix/runs/` 的 analysis.json——13 張中
+  只有 TunnelToHell 三軸變動（`equirect_multiview → metric_depth`、geometry
+  medium → low）、78 面中只有 TunnelToHell 5 面變動、72 面逐面不變，
+  且 `TunnelToHell.west` 前後皆 `gypsum_board/fallback`，證實交接筆記「west
+  剛好相同、非程式遺漏」的說法成立。
+- **門檻紅旗不成立**：真環景 max 0.4859／TunnelToHell 4.5149／門檻 1.2，兩側
+  餘裕 2.47x／3.76x，4 張真環景全部維持 True 且離門檻 2 倍以上。
+- **三項非退回觀察已寫進 T-37 卡**：統計量只取首/尾各一列（素材擴充後建議改
+  取首/尾各 N 列中位數）、資產測試在素材缺席時回傳成功（有明確略過訊息）、
+  REPORT 「幾何中點」措辭略寬鬆（實際中點 1.48）。
+- **下一步：T-40（評測快取指紋，Phase 1.9 插卡 1/4）**。
+
 ## 2026-08-31 (78)
 
 - **T-37 地雷 #16 修正完成（Sonnet，🔵 待驗證）**：`preprocess.is_equirect()`
