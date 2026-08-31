@@ -5655,7 +5655,7 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
 
 ### T-40 評測快取指紋與自動失效（插卡 1/4；純 harness 卡，零 `src/` 改動）
 
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-08-31）
 - **前置**：T-37 ✅（先修錯誤影像基線，指紋機制才不會把污染基線「保鮮」）
 - **問題**（外部掃描 P2，已對碼核實）：`run_or_load()`
   （`scripts/t36_clip_accuracy.py:110-116`）只要 `detail.json` 存在且未加
@@ -5719,6 +5719,140 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
   凍結基線既有檔案 hash 與 FREEZE_MANIFEST 不符；紅旗：存在任何「指紋不符
   仍印成功」的路徑（含 `--fresh` 以外的旁路）；紅旗：`src/` 或 `data/` 出現
   diff；紅旗：舊碼最小重現沒附實測輸出。
+
+- **✅ 交接筆記（Sonnet，2026-08-31）**：
+  - **產出檔案**：`scripts/eval_cache.py`（新，快取指紋模組——
+    `compute_fingerprint()` / `diff_fingerprint()` / `load_or_run()` /
+    `FrozenBaselineError` / `list_frozen_files()` / `build_freeze_manifest_text()` /
+    `verify_freeze_manifest()`，純函式，零 `src/`／`data/` 匯入以外的副作用）、
+    `scripts/t36_clip_accuracy.py`（接上 `eval_cache`，新增 `--out-dir`，
+    `run_or_load()`／`main()` 改寫）、`scripts/t40_freeze_manifest.py`
+    （新，一次性產生 `output/clip_accuracy/FREEZE_MANIFEST.md` 的 CLI）、
+    `scripts/test_eval_cache.py`（新，13 個測試函式）、
+    `output/clip_accuracy/FREEZE_MANIFEST.md`（新，鐵則 4 唯一允許例外，
+    程式產出）。`git diff --stat -- src/ data/` 為空——命名定案為
+    `scripts/eval_cache.py`，符合卡片建議。
+  - **指紋內容 6 項全部實作**：來源圖片 sha256／`preprocess.py`＋`surfaces.py`＋
+    `config.py` 內容 hash（`FINGERPRINT_CODE_PATHS`）／`materials.json`＋
+    `material_ground_truth.json` 內容 hash（`FINGERPRINT_DATA_PATHS`）／
+    `SEGMENTATION_MODEL_ID`＋`CLIP_MODEL_ID`／`CLIP_CONFIDENCE_THRESHOLD`／
+    `eval_mode`（`t36_clip_accuracy.py` 固定傳 `"default"`，T-38 接上時可傳
+    `"treatment"` 等值，介面已留好）。
+  - **設計調整（卡片未明講、執行時發現必要）：指紋計算改惰性
+    （`fingerprint_fn: Callable[[], dict]` 而非預先算好的 `dict`）**。原因：
+    若快取是「完全沒有 `fingerprint` 欄位」的舊格式（T-36 產出的原始 13 份
+    `detail.json` 正是這樣），`diff_fingerprint(None, ...)` 不需要看任何
+    欄位內容就能判定「全部不符」——但若指紋在呼叫前就先算好，勢必得先讀
+    來源圖片 bytes 算 sha256，而**乾淨 clone 沒有 `assets/reference_irs/`
+    的 5 張真環景素材**（地雷第 2 條、`assets/reference_irs/*/INFO.md`
+    另行下載），會讓「凍結目錄 hard fail」這個核心行為在缺素材的環境上
+    變成不可控的 `FileNotFoundError` traceback，而不是卡片要求的清楚
+    hard fail 訊息。`load_or_run()` 現在只在「快取存在且格式正常（有
+    `fingerprint` 欄）」時才呼叫 `fingerprint_fn()` 比對內容；舊格式或
+    快取不存在都不會觸碰 `fingerprint_fn()`。`test_eval_cache.py`
+    `[9/9-f]` 用一個「被呼叫就 die()」的樁 `fingerprint_fn` 直接證明這件事
+    （舊格式命中凍結目錄 hard fail 前，該樁函式全程未被呼叫）。
+  - **失效行為兩態、`--fresh` 語義**：`t36_clip_accuracy.py` 預設輸出目錄
+    仍是 `OUT_DIR = output/clip_accuracy`；`main()` 用
+    `parse_args()` 解析 `--out-dir`／`--fresh`，`is_frozen = (out_dir 解析後
+    路徑 == OUT_DIR 解析後路徑)`。凍結目錄下無論是快取本身指紋不符，或是
+    使用者手動加 `--fresh`，一律走 `eval_cache.FrozenBaselineError`（`main()`
+    用 `try/except` 接住印訊息、`return 1`，不會是未捕捉的例外）；非凍結
+    目錄（`--out-dir` 指到別處）指紋不符則自動重跑並印出哪幾項變了。
+    `cross_check_against_frozen_baseline()`（T-33/T-28-A 基線比對）與
+    `write_report()` 的輸出路徑都改吃 `out_dir`／`runs_dir` 參數，不再寫死
+    `OUT_DIR`——非凍結模式下 REPORT.md／tables.md 會寫到 `--out-dir` 指定的
+    新目錄，供 T-38/T-39 直接沿用。
+  - **副作用（預期中、卡片精神的直接後果）**：這個改動使得「用預設參數重跑
+    `t36_clip_accuracy.py`」從此**永遠 hard fail**（因為 13 份既有
+    `detail.json` 全部是無 `fingerprint` 欄的舊格式，且鐵則 4 不准補寫
+    fingerprint 進這些既有檔案）。這是刻意的：T-36 已結案，`output/clip_accuracy/`
+    此後只應該被讀取（供 T-37/T-40 等後續卡比對），不應該再被當成「可重新
+    產生」的目標；`--out-dir` 才是往後治療評測（T-38/T-39）該用的入口。
+    已在 `t36_clip_accuracy.py` 檔頭 docstring 與 `main()` 開頭的提示行
+    寫清楚這件事，避免下一個視窗誤以為程式「壞了」。
+  - **實測：全部 `scripts/test_*.py`（含新增 `test_eval_cache.py`）14 支
+    全部 `exit 0`**（逐支單獨執行確認，非批次吞掉個別失敗）。
+    `test_eval_cache.py` 13 個測試涵蓋：首次執行寫入快取／快取命中不重跑／
+    六類指紋逐項擾動皆觸發失效（來源圖片、三個 `src` 檔任一、兩個 `data`
+    檔任一、`SEGMENTATION_MODEL_ID`、`CLIP_MODEL_ID`、`clip_threshold`、
+    `eval_mode`——共 8 個子案例對應卡片列的 6 大類，模型 id 拆兩個子案例）／
+    舊格式視同不符（非凍結自動重跑、凍結 hard fail 各一）／凍結目錄指紋
+    相符時正常讀快取（不誤殺）／凍結目錄拒絕 `--fresh`／`FrozenBaselineError`
+    丟出前後快取檔案 bytes 逐位元不變／`FREEZE_MANIFEST` 產生後立即自我驗證
+    一致、竄改後偵測到 hash 不符、新增未記錄檔案偵測到「多出」。
+  - **六條交付 IR MD5 全部重新生成比對，逐位元相符**：`gen_ir_from_text.py`
+    `"浴室"`／`"大教堂"` → `text_bathroom.wav`=`2adbaa75eb698772a8c9aa693179ec47`、
+    `text_church.wav`=`2dd19b6e6d351d713887636fe45cd67e`；
+    `gen_ir_coupled.py` 兩個場景 JSON →
+    `coupled_neighbor_voices.wav`=`9a94ffdf5d8295aee7889729c39c9cd8`、
+    `coupled_stadium_corridor.wav`=`a1c21bcc3fd9aa3480df203a89c8cd05`；
+    T-14 兩條由 `test_ir_synth.py` 內建硬編碼比對隨鐵則 1 通過。
+  - **`FREEZE_MANIFEST` 與凍結基線實檔逐項相符（程式驗證，非目視）**：
+    產生後立即用 `eval_cache.verify_freeze_manifest()` 讀回真實
+    `output/clip_accuracy/` 逐檔重算 sha256 比對，`不符項目數：0`（71 個
+    既有檔案，含 `REPORT.md`／`tables.md`／13 份 `runs/<name>/` 底下的
+    `detail.json` 與 `preprocess/` 子目錄）。`git status --short
+    output/clip_accuracy/` 執行前後除新增的 `FREEZE_MANIFEST.md` 本身，
+    無任何既有檔案被標記為改動。
+  - **舊碼最小重現（卡片點名的自我檢查項目，完整實測輸出如下）**：
+    - 手法：`git worktree add /tmp/ir_t40_old_code HEAD`（本卡前舊碼，即
+      T-37 通過後的 commit `49a0e74`）；把真實 `output/clip_accuracy/runs/`
+      與 `output/material_round/runs/`（T-33/T-36 兩份凍結快取，交叉守門
+      需要）複製進該 worktree；竄改
+      `<worktree>/output/clip_accuracy/runs/bathroom_tiled/detail.json`
+      的 `"faces"` 欄，整段換成 `bedroom_ai_generated/detail.json` 的
+      `"faces"` 內容，`surfaces`／`sources`／`warnings`／`is_equirect`
+      刻意保持不變（這樣既有的 `cross_check_against_frozen_baseline()`
+      三軸比對不會單獨抓到這個竄改，才乾淨地只驗證「快取指紋」這一層
+      防線本身，不跟既有的三軸守門混在一起）。
+    - **舊碼**（worktree，改動前的 `t36_clip_accuracy.py`）跑
+      `python scripts/t36_clip_accuracy.py`：**`EXIT=0`**，逐張印
+      `✓ bathroom_tiled（perspective）` 到 `✓ TunnelToHell（equirect）`
+      全部通過，最後印「✅ 13 張照片三軸 confidence 與裁決 T-28-A 基線完全
+      相同」與「完成。報告：.../REPORT.md」——**完全看不出資料被竄改**。
+      直接 diff 竄改前後的 `tables.md` 證實報告數字確實被污染：
+      `bathroom_tiled | floor | generic_wall | 0.244 | gypsum_board | ✗`
+      （竄改後，取自 bedroom 的信心值）vs 真實
+      `0.352`；門檻敏感度表格 0.25/0.30/0.35 三列的 in-set 誤判計數也各
+      少算 1（29→28、26→25、9→8）。**這就是卡片描述的「量到假資料」**。
+    - **新碼**（本卡改動後）用同一份竄改資料（複製到另一個獨立目錄
+      `/tmp/ir_t40_new_code`，只放 `src/`／`scripts/`／`data/` 與
+      竄改後的 `output/clip_accuracy/runs/`，刻意不放 `assets/`，
+      驗證上述「惰性指紋」設計真的不需要來源圖片）跑
+      `python scripts/t36_clip_accuracy.py`：印出
+      「（輸出目錄 .../output/clip_accuracy 為 T-36 凍結基線，快取指紋不符
+      將 hard fail，不會自動重跑。）」，接著在處理第一張
+      （`bathroom_tiled`，剛好也是被竄改的那張）時印
+      `🔴 卡關：.../runs/bathroom_tiled/detail.json 指紋不符，但這是凍結
+      基線目錄，不可自動重跑覆寫。不符項目：['快取內無 fingerprint 欄位
+      （舊格式，視為指紋全部不符）']。治療評測請用 --out-dir 指到新目錄。`，
+      **`EXIT=1`**，未寫出任何 REPORT.md／tables.md（複本目錄的
+      `output/clip_accuracy/` 完全沒有新檔案）。
+    - 重現用的兩個目錄與 worktree 事後皆已清除
+      （`git worktree remove /tmp/ir_t40_old_code --force`、
+      `rm -rf /tmp/ir_t40_new_code`），未殘留在專案或系統暫存目錄。
+  - **禁止修改逐項核對**：`git diff --stat -- src/ data/` 空白；
+    `output/clip_accuracy/` 既有 71 個檔案（`FREEZE_MANIFEST` 驗證）逐位元
+    未變，唯一新檔是 `FREEZE_MANIFEST.md` 本身；`SPEC.md`／`ROADMAP.md`／
+    `WORKFLOW.md`／`output/mvp_acceptance/`／`output/material_round/`
+    `git status --short` 全部空白。
+  - **已知限制／留給 Opus 判斷的設計取捨**：
+    1. `scripts/t37_rebaseline.py`「若有自己的快取也接上」——查證該腳本
+       docstring 與程式碼，它**刻意不做任何跨次快取**（每次都全量重跑
+       13 張，理由已寫在它自己的 `write_report_md()` 「快取策略」段：
+       T-40 排在它之後，它自己的時點還沒有指紋機制可信，所以選擇每次全新
+       執行）。因此本卡沒有東西可接，不算範圍遺漏。
+    2. 指紋惰性化（`fingerprint_fn` 而非預算好的 `dict`）是卡片文字沒有
+       明講、但執行「舊碼最小重現」時必然浮現的需求（見上）；已用
+       `test_eval_cache.py [9/9-f]` 補一個直接證明「不會呼叫」的測試，
+       而不是只靠行為觀察。
+    3. `main()` 印出的「（輸出目錄 ... 為 T-36 凍結基線 / 非凍結目錄 ...）」
+       提示行，以及檔頭 docstring 的重寫，是為了讓下一個開這支程式的人
+       （含未來的自己）不會在看到預設指令 hard fail 時誤判成程式壞掉——
+       卡片沒有硬性要求文字內容，措辭可能需要 Opus 或 Fable 覆核。
+  - **下一步**：請 Opus 驗證本卡；通過後依 Phase 1.9 固定順序開 **T-41**
+    （透視照 SegFormer 重複載入去重，插卡 2/4）。
 
 ### T-41 透視照 SegFormer 重複載入去重（插卡 2/4）
 

@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 """T-36：CLIP 材質判定準確度診斷（裁決 T-33-A 裁決 B 執行卡 1/n；量測卡）。
 
-跑法：`python scripts/t36_clip_accuracy.py`（可重跑；已產生的逐面判定明細會被快取在
-`output/clip_accuracy/runs/<name>/detail.json`，加 `--fresh` 強制全部重跑模型）。
+跑法：`python scripts/t36_clip_accuracy.py`（預設輸出目錄＝T-36 凍結基線
+`output/clip_accuracy/`——**該目錄自 T-40 起視為凍結，不可再被本腳本改寫**，
+逐面判定明細快取沒有指紋，預設指令會 hard fail，訊息指向 `--out-dir`）。
+
+治療評測（T-38／T-39 等）請用 `--out-dir <新目錄>` 指到非凍結目錄；該情境下
+快取有指紋失效才會自動重跑，並印出哪些指紋項目變了。`--fresh` 語義維持
+「強制全部重跑」，但對凍結目錄一律拒絕（見 T-40／`scripts/eval_cache.py`）。
 
 **這是量測卡的量測驅動程式**：只唯讀 import `src/image_reverb`
 （`preprocess.preprocess_image()` / `surfaces.surfaces_from_preprocess()` /
@@ -15,9 +20,13 @@
 - 逐面判定明細（含 CLIP 原始 top3，含 fallback/out_of_domain 被覆寫前的真實候選）用
   `surfaces.surfaces_from_preprocess()` 的回傳值直接讀，不重新實作任何評分邏輯。
 - 「判定全對」天花板模擬只唯讀呼叫 `surfaces.compute_materials_confidence()`，規則零改動。
+- 快取指紋（來源圖片 hash／`preprocess.py`／`surfaces.py`／`config.py` 內容 hash／
+  `data/materials.json`／`data/material_ground_truth.json` 內容 hash／模型 id／CLIP
+  門檻／評測模式）由 `scripts/eval_cache.py`（T-40）計算與比對，本檔不重新實作。
 
-輸出：`output/clip_accuracy/REPORT.md`、`output/clip_accuracy/tables.md`（表格由本腳本產生，
-地雷 #15：不手打數字），以及 `output/clip_accuracy/runs/<name>/detail.json`（逐面判定明細快取）。
+輸出：`<out_dir>/REPORT.md`、`<out_dir>/tables.md`（表格由本腳本產生，
+地雷 #15：不手打數字），以及 `<out_dir>/runs/<name>/detail.json`（逐面判定明細快取，
+內含 T-40 起新增的 `fingerprint` 欄位）。`<out_dir>` 預設為 `output/clip_accuracy`。
 """
 
 from __future__ import annotations
@@ -35,10 +44,23 @@ from src.image_reverb import surfaces as surfaces_mod  # noqa: E402
 from src.image_reverb import materials as materials_mod  # noqa: E402
 from src.image_reverb.materials import SURFACE_NAMES  # noqa: E402
 
-OUT_DIR = REPO_ROOT / "output" / "clip_accuracy"
-RUNS_DIR = OUT_DIR / "runs"
+import eval_cache  # noqa: E402  （T-40，唯讀引用，harness 專用模組）
+
+OUT_DIR = REPO_ROOT / "output" / "clip_accuracy"  # T-36 凍結基線，自 T-40 起不可再被本腳本改寫
 GROUND_TRUTH_PATH = REPO_ROOT / "data" / "material_ground_truth.json"
 MATERIAL_ROUND_RUNS = REPO_ROOT / "output" / "material_round" / "runs"
+
+# T-40 指紋內容 2/3：三個 src 檔內容 hash（檔案內容而非 git HEAD，才抓得到 dirty 工作樹）
+FINGERPRINT_CODE_PATHS = [
+    REPO_ROOT / "src" / "image_reverb" / "preprocess.py",
+    REPO_ROOT / "src" / "image_reverb" / "surfaces.py",
+    REPO_ROOT / "src" / "image_reverb" / "config.py",
+]
+# T-40 指紋內容 3/3：materials.json 與 ground truth 內容 hash
+FINGERPRINT_DATA_PATHS = [
+    REPO_ROOT / "data" / "materials.json",
+    GROUND_TRUTH_PATH,
+]
 
 # ------------------------------------------------------------------
 # 13 張照片與裁決 T-28-A 複驗基準——照抄自 scripts/t33_material_round_tables.py
@@ -107,30 +129,59 @@ def _flatten_equirect(detail: dict) -> dict[str, dict]:
     return flat
 
 
-def run_or_load(item: dict, fresh: bool) -> dict:
-    """跑（或讀快取）一張照片的逐面判定明細，回傳 {"is_equirect":bool, "faces": {...}}。"""
+def run_or_load(
+    item: dict,
+    *,
+    runs_dir: Path,
+    is_frozen: bool,
+    force_fresh: bool,
+    eval_mode: str = "default",
+) -> dict:
+    """跑（或讀快取）一張照片的逐面判定明細，回傳 {"is_equirect":bool, "faces": {...}}。
+
+    快取讀寫與失效判斷全部委由 `eval_cache.load_or_run()`（T-40）處理：
+    快取內容多包一層 `fingerprint` 欄位，本函式只準備 `run_fn` 與指紋內容。
+    """
     name = item["name"]
-    run_dir = RUNS_DIR / name
+    run_dir = runs_dir / name
     cache_path = run_dir / "detail.json"
-    if cache_path.exists() and not fresh:
-        return json.loads(cache_path.read_text(encoding="utf-8"))
-
-    run_dir.mkdir(parents=True, exist_ok=True)
     photo_path = REPO_ROOT / item["photo"]
-    prep_summary = preprocess.preprocess_image(photo_path, output_dir=run_dir / "preprocess")
-    surfaces_obj, detail = surfaces_mod.surfaces_from_preprocess(prep_summary)
 
-    is_equirect = bool(prep_summary["is_equirect"])
-    faces = _flatten_equirect(detail) if is_equirect else _flatten_perspective(detail)
+    def _fingerprint() -> dict:
+        # 惰性：只有真的需要比對／寫入指紋時才呼叫（會讀來源圖片 bytes）。
+        return eval_cache.compute_fingerprint(
+            photo_path=photo_path,
+            code_paths=FINGERPRINT_CODE_PATHS,
+            data_paths=FINGERPRINT_DATA_PATHS,
+            segmentation_model_id=surfaces_mod.config.SEGMENTATION_MODEL_ID,
+            clip_model_id=surfaces_mod.config.CLIP_MODEL_ID,
+            clip_threshold=THRESHOLD,
+            eval_mode=eval_mode,
+        )
 
-    payload = {
-        "is_equirect": is_equirect,
-        "surfaces": surfaces_obj.as_dict(),
-        "sources": surfaces_obj.sources,
-        "warnings": surfaces_obj.warnings,
-        "faces": faces,
-    }
-    cache_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    def _run() -> dict:
+        run_dir.mkdir(parents=True, exist_ok=True)
+        prep_summary = preprocess.preprocess_image(photo_path, output_dir=run_dir / "preprocess")
+        surfaces_obj, detail = surfaces_mod.surfaces_from_preprocess(prep_summary)
+        is_equirect = bool(prep_summary["is_equirect"])
+        faces = _flatten_equirect(detail) if is_equirect else _flatten_perspective(detail)
+        return {
+            "is_equirect": is_equirect,
+            "surfaces": surfaces_obj.as_dict(),
+            "sources": surfaces_obj.sources,
+            "warnings": surfaces_obj.warnings,
+            "faces": faces,
+        }
+
+    payload, was_rerun, reasons = eval_cache.load_or_run(
+        cache_path=cache_path,
+        fingerprint_fn=_fingerprint,
+        run_fn=_run,
+        is_frozen=is_frozen,
+        force_fresh=force_fresh,
+    )
+    if was_rerun and reasons:
+        print(f"  ↻ {name}：快取失效，已重跑（原因：{'; '.join(reasons)}）")
     return payload
 
 
@@ -174,9 +225,28 @@ def cross_check_against_frozen_baseline(name: str, payload: dict) -> None:
         sys.exit(1)
 
 
+def parse_args(argv: list[str]) -> tuple[Path, bool]:
+    """回傳 (out_dir, force_fresh)。--out-dir 未指定時預設為凍結基線 OUT_DIR。"""
+    force_fresh = "--fresh" in argv
+    out_dir = OUT_DIR
+    if "--out-dir" in argv:
+        idx = argv.index("--out-dir")
+        if idx + 1 >= len(argv):
+            raise SystemExit("🔴 卡關：--out-dir 需要接一個路徑參數。")
+        raw = Path(argv[idx + 1])
+        out_dir = raw if raw.is_absolute() else (REPO_ROOT / raw)
+    return out_dir.resolve(), force_fresh
+
+
 def main() -> int:
-    fresh = "--fresh" in sys.argv
-    RUNS_DIR.mkdir(parents=True, exist_ok=True)
+    out_dir, force_fresh = parse_args(sys.argv[1:])
+    is_frozen = out_dir == OUT_DIR.resolve()
+    runs_dir = out_dir / "runs"
+    runs_dir.mkdir(parents=True, exist_ok=True)
+    if is_frozen:
+        print(f"（輸出目錄 {out_dir} 為 T-36 凍結基線，快取指紋不符將 hard fail，不會自動重跑。）")
+    else:
+        print(f"（輸出目錄 {out_dir} 為非凍結目錄，快取指紋不符會自動重跑。）")
 
     if not GROUND_TRUTH_PATH.exists():
         print(f"🔴 卡關：找不到 {GROUND_TRUTH_PATH}，這份檔案必須先由使用者逐面確認產生。")
@@ -186,12 +256,18 @@ def main() -> int:
 
     all_data: dict[str, dict] = {}
     print("=== 逐面判定明細（跑或讀快取）與三軸基準交叉驗證 ===")
-    for item in GATE_ITEMS:
-        name = item["name"]
-        payload = run_or_load(item, fresh)
-        cross_check_against_frozen_baseline(name, payload)
-        all_data[name] = payload
-        print(f"✓ {name}（{'equirect' if payload['is_equirect'] else 'perspective'}）")
+    try:
+        for item in GATE_ITEMS:
+            name = item["name"]
+            payload = run_or_load(
+                item, runs_dir=runs_dir, is_frozen=is_frozen, force_fresh=force_fresh
+            )
+            cross_check_against_frozen_baseline(name, payload)
+            all_data[name] = payload
+            print(f"✓ {name}（{'equirect' if payload['is_equirect'] else 'perspective'}）")
+    except eval_cache.FrozenBaselineError as exc:
+        print(f"🔴 卡關：{exc}")
+        return 1
     print("✅ 13 張照片三軸 confidence 與裁決 T-28-A 基線完全相同（含本腳本唯讀重算）。\n")
 
     from t36_analysis import (  # noqa: E402  (放同目錄，避免這支主檔案過長)
@@ -207,11 +283,11 @@ def main() -> int:
     sensitivity = build_threshold_sensitivity(GATE_ITEMS, all_data, gt_photos, OOD_PREFIX, THRESHOLD)
     simulation = build_ceiling_simulation(GATE_ITEMS, all_data, gt_photos, surfaces_mod, EXPECTED_GATE)
 
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    write_report(OUT_DIR, accuracy, error_types, sensitivity, simulation, ground_truth)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    write_report(out_dir, accuracy, error_types, sensitivity, simulation, ground_truth)
 
-    print(f"\n完成。報告：{OUT_DIR / 'REPORT.md'}")
-    print(f"表格：{OUT_DIR / 'tables.md'}")
+    print(f"\n完成。報告：{out_dir / 'REPORT.md'}")
+    print(f"表格：{out_dir / 'tables.md'}")
     return 0
 
 

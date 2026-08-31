@@ -1,11 +1,13 @@
 # 交接文件 — 給下一個視窗
 
-> 最後更新：2026-08-31（Sonnet 視窗：**T-37 地雷 #16 修正完成，🔵 待驗證**——
-> `is_equirect()` 加極點列均勻度檢查，TunnelToHell 正確判為 False；下一步是
-> Opus 驗證 T-37，通過後開 T-40）
+> 最後更新：2026-08-31（Sonnet 視窗：**T-37 已通過（Opus 驗證），T-40
+> 評測快取指紋與自動失效完成自檢，🔵 待驗證**——`scripts/eval_cache.py`
+> 快取指紋模組接上 `t36_clip_accuracy.py`，`output/clip_accuracy/` 從此視為
+> 凍結、預設指令 hard fail 而非靜默用舊快取；下一步是 Opus 驗證 T-40，
+> 通過後開 T-41）
 > **新視窗請先讀 [CLAUDE.md](CLAUDE.md) 知道自己的角色，再讀本檔知道現在的狀況。**
 >
-> 驗證本檔是否過期：看 [DEV_LOG.md](DEV_LOG.md) 最上面一筆是不是 `2026-08-31 (78)`；
+> 驗證本檔是否過期：看 [DEV_LOG.md](DEV_LOG.md) 最上面一筆是不是 `2026-08-31 (80)`；
 > 若已有更新的紀錄，以 DEV_LOG 為準。
 
 ---
@@ -25,14 +27,20 @@ Phase 1.6 修正輪（T-23~T-26）✅ 四張全過（2026-08-30）。**
 **gate 規則不動、修出口（T-30）、材質準確度先行**（全文見 TASKS.md T-28 卡尾）。
 文字（`--text`）與複合場景（`--scene`）兩條管線不受 gate 影響，端到端可用。
 
-🎯 **現在該做的：T-37（地雷 #16 修正）已完成自檢，🔵 待驗證 → 開 Opus 視窗
-驗證 T-37，通過後開 Sonnet 視窗執行 T-40（評測快取指紋）**。⚠️ 2026-08-31
-Fable 已依外部掃描報告在 Phase 1.9 插入**產物可信度修正輪 T-40～T-43**
-（評測快取指紋／SegFormer 去重／gate 交易式輸出／T-17 產物溯源——五項缺陷
-全部對碼核實屬實），完整順序更新為
-**T-37（🔵 待驗證）→ T-40 → T-41 → T-38 → T-39 → T-42 → T-43 → 收尾複評**；
+🎯 **現在該做的：T-37 ✅ 已通過（Opus，2026-08-31）；T-40（評測快取指紋）
+已完成自檢，🔵 待驗證 → 開 Opus 視窗驗證 T-40，通過後開 Sonnet 視窗執行
+T-41（透視照 SegFormer 去重）**。⚠️ 2026-08-31 Fable 已依外部掃描報告在
+Phase 1.9 插入**產物可信度修正輪 T-40～T-43**（評測快取指紋／SegFormer
+去重／gate 交易式輸出／T-17 產物溯源——五項缺陷全部對碼核實屬實），完整
+順序更新為
+**T-37 ✅ → T-40（🔵 待驗證）→ T-41 → T-38 → T-39 → T-42 → T-43 → 收尾複評**；
 **任何新的正式盲聽必須在 T-42＋T-43 之後**（現存盲測素材是 `d958b3c` 產的，
 舊 2/5 不能宣稱屬於現行碼）。卡片與插卡裁決全文在 TASKS.md 檔尾 Phase 1.9 節。
+⚠️ **T-40 的一個重要副作用**：`python scripts/t36_clip_accuracy.py`
+不帶參數執行**從此永遠 hard fail**（因為 13 份既有 `detail.json` 是無
+`fingerprint` 欄的舊格式，且規則規定既有凍結檔一個 bit 都不許補寫）——
+這是刻意設計，不是程式壞了；往後任何治療評測（T-38／T-39）一律要加
+`--out-dir <新目錄>`。詳見 TASKS.md T-40 卡「交接筆記」。
 
 🔮 **裁決 T-36-A 一句話（2026-08-31，全文在 TASKS.md T-36 卡尾）**：
 **gate 規則就地定案——規則 1／2／3 與地雷 #23／#24 全部維持原樣、議題關閉**
@@ -178,7 +186,8 @@ T-21 ✅（四輪迭代）｜T-17 §7-4 ✅ 已執行（無鐵筒子 artifact；
 | T-34 | gate 訊息補洞（規則 2 死路＋測試覆蓋） | ✅ **通過**（Opus 驗證 2026-08-31；gate 判定條件零改動，只補訊息與測試；附兩則文件修正建議） |
 | T-35 | 陳設改預設觀測模式（裁決 T-33-A 裁決 A） | ✅ **通過**（Opus 驗證，2026-08-31） |
 | T-36 | CLIP 材質判定準確度診斷（量測卡，需使用者標註） | ✅ **通過**（Opus 複驗 2026-08-31）；裁決 T-36-A 已下，開 Phase 1.9 治療輪 |
-| T-37 | 地雷 #16 修正：`is_equirect()` 加極點列均勻度檢查 | 🔵 **待驗證**（Sonnet 自檢通過，2026-08-31；`output/equirect_fix/REPORT.md`） |
+| T-37 | 地雷 #16 修正：`is_equirect()` 加極點列均勻度檢查 | ✅ **通過**（Opus 驗證，2026-08-31；`output/equirect_fix/REPORT.md`） |
+| T-40 | 評測快取指紋與自動失效（插卡 1/4） | 🔵 **待驗證**（Sonnet 自檢通過，2026-08-31；`scripts/eval_cache.py`） |
 | T-29 | 三管線 analysis.json schema 一致性 | ⬜ 未裁決（不進 Phase 1.8） |
 
 逐卡的詳細交接筆記在 [TASKS.md](TASKS.md) 每張卡的「交接筆記」欄，本檔不重複。
@@ -635,33 +644,45 @@ python scripts/convolve.py assets/dry/clap_synth.wav output/ir_room_small_carpet
   事項（詳細執行紀錄見 TASKS.md T-36 卡尾），十三套測試與六條 IR MD5 全綠、
   `src/` 零改動。
 
-【已完成 — T-37 🔵 待驗證】（Sonnet 執行，2026-08-31）
+【已完成 — T-37 ✅ 通過】（Sonnet 執行，Opus 驗證，2026-08-31）
   地雷 #16 修正：`preprocess.is_equirect()` 加極點列均勻度檢查（長寬比 2:1±5%
   AND 灰階首/尾列相鄰像素絕對差均值 < `config.EQUIRECT_POLE_DIFF_THRESHOLD`
   = 1.2；門檻由 `scripts/t37_rebaseline.py` 程式量測，4 張真環景 max 0.4859、
   TunnelToHell 4.5149，兩側餘裕 2.47x／3.76x）。TunnelToHell.jpg 修正後正確
   判為 False（改走透視路徑，`geometry_confidence` medium→low，未比原本更
   自信）；4 張真環景維持 True；其餘 12 張三軸 confidence／gate 與 72 面材質
-  判定逐值不變（`scripts/t37_rebaseline.py` 內建三道程式化守門：非 TunnelToHell
-  漂移／臥室紅旗，本次執行全部通過）。新增 4 個測試（2 資產案例＋2 合成案例），
-  用 `git worktree` 對舊碼實測確認會 fail。`is_equirect()` 函式簽章維持相容
-  （新參數有預設值，既有呼叫點不必修改）；EXIF/XMP 評估後決定不實作（極點列
-  統計量餘裕已 >2x，不需要更弱的輔助訊號）。
-  自我檢查：13 支測試全 exit 0；六條交付 IR MD5 逐位元相同；`src/` 只動
-  `config.py`／`preprocess.py`，`ir_metrics.py`／gate 判定邏輯零改動；
-  `output/clip_accuracy/`／`output/material_round/`／SPEC／ROADMAP／WORKFLOW
-  全部未觸碰。詳見 TASKS.md T-37 卡「交接筆記」與 `output/equirect_fix/REPORT.md`。
+  判定逐值不變。Opus 驗證通過（詳見 TASKS.md T-37 卡「Opus 驗證紀錄」）。
 
-【現在該做的 — 開 Opus 視窗驗證 T-37】（模型選 Opus）
-  依 WORKFLOW.md 第 5 節驗證標準審查 T-37。重點：門檻是否只救 TunnelToHell
-  卻讓任一張真環景掉出（4 張必須全 True）；是否動了 `is_equirect()` 以外的
-  前處理邏輯；12 張基線是否有任何漂移；新測試對舊碼是否真的 fail（可用
-  `git worktree` 或 `git stash` 重現）。通過後開 Sonnet 視窗執行 T-40。
+【已完成 — T-40 🔵 待驗證】（Sonnet 執行，2026-08-31）
+  評測快取指紋與自動失效（插卡 1/4）：新增 `scripts/eval_cache.py`（純函式
+  模組——`compute_fingerprint()`／`diff_fingerprint()`／`load_or_run()`／
+  `FrozenBaselineError`／FREEZE_MANIFEST 產生與驗證），接上
+  `scripts/t36_clip_accuracy.py`（新增 `--out-dir`）。六類指紋（來源圖片／
+  三個 `src` 檔／兩個 `data` 檔／模型 id／CLIP 門檻／評測模式）任一改變即
+  觸發失效；指向非凍結目錄自動重跑，指向 `output/clip_accuracy/`（T-36
+  凍結基線）一律 hard fail，絕不自動重跑覆寫。新增
+  `output/clip_accuracy/FREEZE_MANIFEST.md`（71 個既有檔案 sha256 清單，
+  鐵則 4 唯一允許例外）。指紋計算改惰性（`fingerprint_fn`）以避免舊格式
+  快取的 hard fail 判定意外要求讀取可能不存在的來源圖片。
+  舊碼最小重現（`git worktree` 開 T-37 後的舊碼＋竄改一張照片的快取內容）
+  證實：舊碼 exit 0 印成功但報告數字被污染；新碼同情境 hard fail 並點名
+  「快取內無 fingerprint 欄位」。零 `src/`／`data/` 改動；六條交付 IR MD5
+  逐位元相同；14 支測試（含新增 `test_eval_cache.py`）全 exit 0。
+  ⚠️ 副作用：`t36_clip_accuracy.py` 不帶參數執行從此永遠 hard fail（13 份
+  既有快取是舊格式且不許被補寫）——刻意設計，往後治療評測要用 `--out-dir`。
+  詳見 TASKS.md T-40 卡「交接筆記」。
 
-【T-37 通過後 — 依序 T-40 → T-41 → T-38 → T-39 → T-42 → T-43】（模型選 Sonnet）
-  2026-08-31 插卡的產物可信度修正輪：T-40（評測快取指紋與自動失效＋T-36
-  凍結基線 FREEZE_MANIFEST）→ T-41（透視照 SegFormer 去重，13 張基線逐值
-  不變）→ 治療主線 T-38 → T-39 → T-42（gate 交易式輸出與舊產物 archive
+【現在該做的 — 開 Opus 視窗驗證 T-40】（模型選 Opus）
+  依 WORKFLOW.md 第 5 節驗證標準審查 T-40。重點：六類指紋是否真的逐項擾動
+  都觸發失效（`test_eval_cache.py` 少一類＝退回）；FREEZE_MANIFEST 與凍結
+  基線既有檔案 hash 是否逐項相符；是否存在任何「指紋不符仍印成功」的路徑
+  （含 `--fresh` 以外的旁路）；`src/`／`data/` 是否零 diff；舊碼最小重現是否
+  真的附了實測輸出（可用 `git worktree` 重現驗證者自己再跑一次）。通過後開
+  Sonnet 視窗執行 T-41。
+
+【T-40 通過後 — 依序 T-41 → T-38 → T-39 → T-42 → T-43】（模型選 Sonnet）
+  2026-08-31 插卡的產物可信度修正輪：T-41（透視照 SegFormer 去重，13 張基線
+  逐值不變）→ 治療主線 T-38 → T-39 → T-42（gate 交易式輸出與舊產物 archive
   隔離）→ T-43（analysis.json 生成指紋＋t17_blind_test 溯源驗證）。
   插卡裁決與四張卡全文見 TASKS.md「Phase 1.9 插卡」節。
 

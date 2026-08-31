@@ -1,5 +1,37 @@
 # Dev Log
 
+## 2026-08-31 (80)
+
+- **T-40 完成自檢，🔵 待驗證**：評測快取指紋與自動失效（Phase 1.9 插卡 1/4）。
+  新增 `scripts/eval_cache.py`（純函式：`compute_fingerprint()`／
+  `diff_fingerprint()`／`load_or_run()`／`FrozenBaselineError`／
+  FREEZE_MANIFEST 產生與驗證），接上 `t36_clip_accuracy.py`（新增
+  `--out-dir`）。指紋六類（來源圖片 sha256／`preprocess.py`＋`surfaces.py`＋
+  `config.py` 內容 hash／`materials.json`＋`material_ground_truth.json`
+  內容 hash／`SEGMENTATION_MODEL_ID`＋`CLIP_MODEL_ID`／CLIP 門檻／評測模式）
+  任一不符即失效：非凍結目錄自動重跑並印原因，指向 T-36 凍結基線
+  `output/clip_accuracy/` 一律 hard fail、絕不覆寫。
+- **指紋計算改惰性**（`fingerprint_fn` callable，而非預先算好的 dict）：
+  避免「舊格式快取（無 fingerprint 欄）在凍結目錄下判定不符」這件事還要求
+  先讀來源圖片 bytes——乾淨 clone 缺 `assets/reference_irs/` 素材時會變成
+  未捕捉的 `FileNotFoundError`，而不是卡片要求的清楚 hard fail 訊息。
+  `test_eval_cache.py [9/9-f]` 用會 die() 的樁函式直接證明惰性成立。
+- **舊碼最小重現**（`git worktree add HEAD`＋竄改 `bathroom_tiled/detail.json`
+  的 `faces` 欄為 `bedroom_ai_generated` 的內容，`surfaces`／`sources` 刻意
+  不變以隔離出「純快取層」的問題）：舊碼 `EXIT=0` 印「13 張三軸 confidence
+  與裁決 T-28-A 基線完全相同」，但 `tables.md` 數字證實被污染
+  （`bathroom_tiled/floor` 信心 0.244 vs 真實 0.352）；新碼同情境
+  `EXIT=1`，點名「快取內無 fingerprint 欄位（舊格式，視為指紋全部不符）」。
+- **FREEZE_MANIFEST 驗證**：`output/clip_accuracy/FREEZE_MANIFEST.md`（新增，
+  71 個既有檔案 sha256 清單，鐵則 4 唯一允許例外）產生後立即用
+  `verify_freeze_manifest()` 重算比對，`不符項目數：0`。
+- 自我檢查：14 支 `scripts/test_*.py`（含新增 `test_eval_cache.py`）全
+  EXIT=0；六條交付 IR MD5 逐位元相同；`git diff --stat -- src/ data/` 空白。
+- ⚠️ **副作用（刻意設計）**：`t36_clip_accuracy.py` 不帶參數執行從此永遠
+  hard fail（13 份既有 `detail.json` 是舊格式且規則不許補寫）；治療評測
+  （T-38／T-39）一律要用 `--out-dir`。
+- **下一步：請 Opus 驗證 T-40；通過後開 T-41（透視照 SegFormer 去重）**。
+
 ## 2026-08-31 (79)
 
 - **T-37 Opus 驗證通過 ✅**：八條共同鐵則逐條由驗證者自己重跑，不採信交接筆記
