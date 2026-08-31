@@ -5655,7 +5655,55 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
 
 ### T-40 評測快取指紋與自動失效（插卡 1/4；純 harness 卡，零 `src/` 改動）
 
-- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-08-31）
+- **狀態**：🔵 待驗證（退回修正輪已完成，2026-08-31；請 Opus 複驗）
+
+- **退回紀錄（已修正）**（Opus 驗證退回，2026-08-31；以下為退回理由全文，保留供對照）：
+  - **退回理由（一項阻擋項，其餘全部通過）**：`eval_cache.load_or_run()` 的凍結分支
+    存在**第三態**——`is_frozen=True` 但 `cache_path` **不存在**時，程式不丟
+    `FrozenBaselineError`，而是直接呼叫 `run_fn()` 並把新產物**寫進凍結基線目錄**，
+    印 `↻ …已重跑（原因：快取不存在）` 與 `✓`、回報成功。違反卡片明列的
+    「失效行為（兩態，不得有第三態）」「絕不允許自動重跑覆寫凍結基線（鐵則 4）」
+    與「禁止修改：`output/clip_accuracy/` 既有檔案一個 bit 不許變（唯一允許的新增
+    ＝FREEZE_MANIFEST.md）」，也命中 Opus 驗證重點紅旗「存在任何指紋不符仍印成功的
+    旁路」。**這不是罕見邊角**：`.gitignore` 的 `output/**`（只放行 `*.md`）使
+    `output/clip_accuracy/runs/*/detail.json` 與 `preprocess/` 全部不進版控，
+    任何乾淨 clone、或一次 `rm -rf output/`（.gitignore 註解自己提到的情境），
+    預設指令就會用**現行（T-37 之後）的碼**重產凍結基線內容。
+    - 實測（複本目錄，凍結基線本體未動）：刪掉 `runs/bathroom_tiled/` 後跑預設指令，
+      橫幅仍印「快取指紋不符將 hard fail，不會自動重跑」，實際卻印
+      `↻ bathroom_tiled：快取失效，已重跑（原因：快取不存在）` → `✓ bathroom_tiled`，
+      並在凍結目錄重新產生 `runs/bathroom_tiled/detail.json` 與 `preprocess/`。
+    - 單元層直證：`load_or_run(is_frozen=True, cache_path=不存在)` → `run_fn` 被呼叫、
+      `was_rerun=True`、`reasons=['快取不存在']`、快取檔已寫入，未丟 `FrozenBaselineError`。
+    - 目前 13 份快取全刪的情境下，流程會在第 13 張 `TunnelToHell` 的
+      `cross_check_against_frozen_baseline()`（T-37 改了 `is_equirect()`，surfaces 與
+      T-33 凍結快取不符）才 `exit 1`，`REPORT.md`／`tables.md` 因此僥倖沒被覆寫——
+      但那是**別張卡的守門**擋下來的，且 13 份 `detail.json`＋`preprocess/` 早已被改寫、
+      `FREEZE_MANIFEST` 隨即全面失準。不能靠這個偶然當防線。
+  - **修法建議（小改，不需重做本卡）**：(a) `load_or_run()` 的
+    `is_frozen and not cache_path.exists()` 也丟 `FrozenBaselineError`（訊息指向
+    `--out-dir`）；(b) 順帶把 `is_frozen` 從「路徑完全相等」改成「等於或位於凍結目錄之下」
+    ——實測 `--out-dir output/clip_accuracy/sub` 目前判為非凍結，會直接寫進凍結樹內；
+    (c) `test_eval_cache.py` 補「凍結目錄＋快取不存在 → hard fail」與
+    「凍結目錄子目錄視同凍結」兩個測試。
+  - **建議（非阻擋，Fable 可裁決是否併入本卡）**：`verify_freeze_manifest()` 已實作並
+    有測試，但**全專案沒有任何呼叫端**——凍結基線被改寫時沒有任何自動偵測；
+    且 `t40_freeze_manifest.py` 每次執行都無條件覆寫 `FREEZE_MANIFEST.md`，
+    若在基線已被污染後重跑，等於把污染狀態「重新蓋章」成新基線。
+    建議加 `--verify` 模式（只驗證、不寫），並在 `t36_clip_accuracy.py`
+    指向凍結目錄時先跑一次驗證。
+  - **已通過的項目（Opus 實跑，供修完後不必重驗）**：14 支 `scripts/test_*.py`
+    逐支 exit 0；六條交付 IR MD5 逐條相符（T-20／T-21 四條實跑重生成比對，
+    T-14 兩條由 `test_ir_synth.py` 硬編碼比對通過）；`git diff src/ data/` 為空、
+    `SPEC/ROADMAP/WORKFLOW` 未動、commit 只新增 `output/clip_accuracy/FREEZE_MANIFEST.md`；
+    `FREEZE_MANIFEST` 對 71 個既有檔案逐檔重算 sha256 → 不符 0 項（驗證前後皆是）；
+    六類指紋全部實作且逐項擾動測試全覆蓋（8 個子案例）；凍結目錄「快取存在但指紋不符」
+    與「`--fresh`」兩條路徑實測 hard fail（exit 1）且凍結基線 0 項變動；非凍結
+    `--out-dir` 實測端到端成功——指紋相符讀快取產報告（exit 0）、指紋竄改後正確
+    自動重跑並逐項印出變動；舊碼最小重現獨立複現成功（worktree HEAD~1＋竄改
+    `faces` → **EXIT=0** 且 `tables.md` 印出被污染的 `bathroom_tiled | floor | … | 0.244`，
+    真實基線為 `0.352`），新碼同情境 hard fail（exit 1、不產 REPORT/tables、
+    無 `assets/` 也能正確 hard fail，惰性指紋設計成立）。
 - **前置**：T-37 ✅（先修錯誤影像基線，指紋機制才不會把污染基線「保鮮」）
 - **問題**（外部掃描 P2，已對碼核實）：`run_or_load()`
   （`scripts/t36_clip_accuracy.py:110-116`）只要 `detail.json` 存在且未加
@@ -5853,6 +5901,122 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
        卡片沒有硬性要求文字內容，措辭可能需要 Opus 或 Fable 覆核。
   - **下一步**：請 Opus 驗證本卡；通過後依 Phase 1.9 固定順序開 **T-41**
     （透視照 SegFormer 重複載入去重，插卡 2/4）。
+
+- **✅ 退回修正輪交接筆記（Sonnet，2026-08-31）**：
+  - **範圍確認**：只改必改項 A／B／C 三項，未動 `verify_freeze_manifest()` 呼叫端
+    （非阻擋建議，留給 Fable 裁決）、未動 `t40_freeze_manifest.py`、未重跑產生
+    `FREEZE_MANIFEST.md`、零 `src/`／`data/` 改動、`output/clip_accuracy/` 既有
+    71 個檔案一個 bit 未變（下方逐項核對）。
+  - **必改項 A（阻擋級，[eval_cache.py:158-162](scripts/eval_cache.py:158)）**：
+    `load_or_run()` 原本的 `else:` 分支（涵蓋「快取不存在」與「非凍結
+    `force_fresh`」兩種情況）拆成 `elif is_frozen:` 與 `else:`——`is_frozen`
+    為真時（此時 `force_fresh` 必為假，因為 `is_frozen and force_fresh` 在
+    函式最前面已提早丟出）直接丟 `FrozenBaselineError`，訊息比照既有格式
+    （「快取不存在，不可自動重跑產生新內容」＋指向 `--out-dir`）；非凍結
+    目錄的分支（`else:`）一個字都沒動，快取不存在照樣正常 `run_fn()` 寫檔。
+    同步更新 [`load_or_run()` docstring 第 127 行附近](scripts/eval_cache.py:125)，
+    把「快取不存在，或 `force_fresh`（非凍結目錄）：執行 `run_fn()`」拆成
+    凍結／非凍結兩種情況，不再籠統帶過凍結目錄也會執行 `run_fn()`。
+  - **必改項 B（[t36_clip_accuracy.py:243](scripts/t36_clip_accuracy.py:243)）**：
+    新增 `is_frozen_dir(out_dir: Path) -> bool` 函式（`out_dir.is_relative_to(
+    OUT_DIR.resolve())`——`.venv` 為 Python 3.9，`is_relative_to()` 可用且
+    語意上「等於自己」也算 relative to，一次涵蓋卡片要求的「等於或位於凍結
+    目錄之下」），`main()` 改呼叫這個函式取代原本的路徑完全相等比較。抽成
+    具名函式而非行內改寫，是為了必改項 C 的第 2 個測試能直接呼叫、不必
+    經過 `sys.argv`／`main()` 副作用。
+  - **必改項 C（`scripts/test_eval_cache.py`）**：新增 `[10]`
+    `test_frozen_dir_missing_cache_hard_fails_without_running()`（凍結目錄＋
+    快取不存在 → 樁 `run_fn` 一被呼叫就 `die()`，直接證明沒被呼叫；
+    hard fail 後快取檔案不存在，證明沒有被建立）與 `[11]`
+    `test_t36_is_frozen_dir_covers_subdirectories()`（`import t36_clip_accuracy`
+    唯讀引用，比照 `t37_rebaseline.py` 既有的引用方式；驗四種輸入：與凍結
+    目錄完全相等→True、子目錄→True、含 `..` 正規化後仍在凍結目錄下→True、
+    完全無關但前綴相似的目錄→False）。
+  - **意外發現並一併修正的測試地基問題**：改完必改項 A 後跑舊測試，
+    `test_frozen_dir_matching_fingerprint_is_cache_hit()`／
+    `test_frozen_dir_mismatch_hard_fails_without_overwriting()`／
+    `test_frozen_dir_rejects_force_fresh()` 三個既有測試的「播種」寫法都是
+    `load_or_run(..., is_frozen=True)` 在快取不存在時建立初始快取——這正是
+    本次要堵住的第三態，改完 A 之後這三個測試在播種那一步就直接
+    `FrozenBaselineError`，測試本身跑不下去。改成 `is_frozen=False` 播種
+    （模擬「快取是凍結前、非凍結狀態下產生的」這個真實情境——凍結基線的
+    `detail.json` 本來就是 T-36 當初非凍結時期跑出來的，不是靠凍結分支
+    寫入），播種之後的正式斷言才改回 `is_frozen=True`。三個測試要驗的行為
+    本身（指紋相符讀快取／指紋不符 hard fail／拒絕 `--fresh`）完全沒變。
+  - **鐵則 5（修 bug 的測試要對舊碼 fail）實測**：用
+    `git show a874536:scripts/eval_cache.py`／`t36_clip_accuracy.py`（本次
+    退回修正前、也就是最初通過自檢送驗的版本）另存到 `/tmp`，複製一份
+    `scripts/`＋`src/`＋`data/`＋`assets/`＋`output/clip_accuracy/`＋
+    `output/material_round/` 到 scratchpad 目錄（不動真正的凍結基線），
+    刪掉複本裡的 `output/clip_accuracy/runs/bathroom_tiled/`：
+    - **舊碼**跑 `python scripts/t36_clip_accuracy.py`（複本目錄，`OUT_DIR`
+      因 `__file__` 相對路徑解析到複本自身，等同該複本情境下的「凍結
+      目錄」）：印出橫幅「快取指紋不符將 hard fail，不會自動重跑」，但實際
+      印 `  ↻ bathroom_tiled：快取失效，已重跑（原因：快取不存在）` →
+      `✓ bathroom_tiled（perspective）`，`runs/bathroom_tiled/` 被重新產生
+      （`detail.json` 內容變成新格式、含 `fingerprint` 欄，與真實凍結基線的
+      舊格式完全不同）——**這就是退回理由描述的第三態，獨立重現成立**。
+      （之後在處理下一張 `bedroom_ai_generated` 時因為它自己的快取是舊格式，
+      命中既有的「指紋不符＋凍結目錄」判斷才 `EXIT=1`——但 `bathroom_tiled`
+      已經被污染，不能靠這個當防線，這正是原退回理由指出的問題。）
+    - **新碼**（本次修正後）同一份刪除 `bathroom_tiled/` 的複本情境（另開一份
+      獨立複本，避免被舊碼那次跑污染）：印出
+      `🔴 卡關：.../runs/bathroom_tiled/detail.json 屬於凍結基線目錄，快取
+      不存在，不可自動重跑產生新內容。治療評測請用 --out-dir 指到新目錄。`，
+      **`EXIT=1`**，`runs/bathroom_tiled/` **沒有**被重新產生（`test -d`
+      確認不存在）。
+    - 兩份 scratchpad 複本與 `/tmp` 的暫存腳本事後已 `rm -rf` 清除，未殘留。
+  - **必改項 C 測試最小重現（對修正前的碼實測 fail）**：把新增的 `[10]`
+    測試單獨搬到套用舊碼（commit `a874536`）的 `eval_cache.py` 上跑，
+    因為舊碼的 `else:` 分支不分凍結與否一律 `run_fn()`，斷言「`run_fn`
+    未被呼叫」會失敗——`die()` 被觸發（樁函式印出
+    `[錯誤] run_fn 不該被呼叫——凍結目錄下快取不存在必須直接 hard fail，
+    不得默默重跑並把新產物寫進凍結基線`），`sys.exit(1)`；同一份測試對
+    本次修正後的新碼跑 `EXIT=0`（如上方 `[10]` 輸出）。`[11]` 測試依賴
+    必改項 B 新增的 `is_frozen_dir()` 函式，舊碼裡該函式不存在
+    （舊碼 `main()` 內只有行內 `out_dir == OUT_DIR.resolve()`，沒有這個
+    具名函式），`from t36_clip_accuracy import is_frozen_dir` 或
+    `getattr(舊模組, "is_frozen_dir")` 直接 `AttributeError`；新碼 `EXIT=0`。
+  - **自我檢查逐項實測**：
+    1. `scripts/test_*.py` 15 支（含改動後的 `test_eval_cache.py`）**逐支
+       單獨執行全部 `EXIT=0`**（`for f in scripts/test_*.py; do python "$f"; done`
+       逐支確認，非批次)。
+    2. 六條交付 IR MD5 逐條重新生成比對，**全部相符**：
+       `text_bathroom.wav`=`2adbaa75eb698772a8c9aa693179ec47`、
+       `text_church.wav`=`2dd19b6e6d351d713887636fe45cd67e`、
+       `coupled_neighbor_voices.wav`=`9a94ffdf5d8295aee7889729c39c9cd8`、
+       `coupled_stadium_corridor.wav`=`a1c21bcc3fd9aa3480df203a89c8cd05`；
+       T-14 兩條隨 `test_ir_synth.py` 硬編碼比對通過。
+    3. `git diff --stat -- src/ data/` 輸出為空。
+    4. `eval_cache.verify_freeze_manifest()` 讀回真實 `output/clip_accuracy/`
+       逐檔重算 sha256，**不符項目數：0**；`git status --short
+       output/clip_accuracy/` 修正前後皆空白（無任何既有檔案被標記改動）。
+    5. 行為回歸四條：
+       - 預設指令（`output/clip_accuracy/` 13 份快取仍是舊格式）→
+         `EXIT=1`，印「快取內無 fingerprint 欄位（舊格式，視為指紋全部
+         不符）」（行為與修正前一致，這條路徑本來就沒改）；
+       - `--fresh` → `EXIT=1`，印「不可用 --fresh 強制重跑」（同上，未改）；
+       - **本次修正的核心驗收**：scratchpad 複本刪除
+         `output/clip_accuracy/runs/bathroom_tiled/` 後跑預設指令 →
+         `EXIT=1`，印「快取不存在，不可自動重跑產生新內容」，
+         `runs/bathroom_tiled/` 確認**沒有**被重新產生；
+       - 非凍結 `--out-dir`：把凍結基線 13 份 `detail.json` 的
+         `surfaces`／`sources`／`warnings`／`faces` 內容包上用當前程式碼
+         現算出的正確指紋，複製到 scratchpad 暫存 `--out-dir`（避免全量跑
+         13 張模型），跑 `python scripts/t36_clip_accuracy.py --out-dir
+         <暫存目錄>` → 指紋全部相符，13 張全部 `✓`，`EXIT=0`；接著竄改
+         `bathroom_tiled` 快取的 `clip_threshold` 指紋欄再跑一次 →
+         印 `↻ bathroom_tiled：快取失效，已重跑（原因：clip_threshold:
+         0.999 → 0.4）`，`EXIT=0`（正確自動重跑並印出變動項目，行為未變）。
+    6. 必改項 C 的「舊碼 fail／新碼 pass」實測輸出已附於上方。
+  - **禁止修改逐項核對**：`git diff --stat -- src/ data/` 空白；
+    `output/clip_accuracy/` 既有 71 個檔案（`FREEZE_MANIFEST` 驗證）逐位元
+    未變；`SPEC.md`／`ROADMAP.md`／`WORKFLOW.md`／`output/mvp_acceptance/`／
+    `output/material_round/` `git status --short` 全部空白；未動
+    `verify_freeze_manifest()` 呼叫端、未動 `t40_freeze_manifest.py`、未重新
+    產生 `FREEZE_MANIFEST.md`（`git status --short` 對這份檔案也是空白）。
+  - **下一步**：請 Opus 複驗本卡（狀態已改回 🔵 待驗證）；通過後依 Phase 1.9
+    固定順序開 **T-41**（透視照 SegFormer 重複載入去重，插卡 2/4）。
 
 ### T-41 透視照 SegFormer 重複載入去重（插卡 2/4）
 

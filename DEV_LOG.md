@@ -1,5 +1,37 @@
 # Dev Log
 
+## 2026-08-31 (81)
+
+- **T-40 退回修正輪完成，🔵 待驗證**：Opus 驗證抓到 `eval_cache.load_or_run()`
+  凍結分支的第三態——`is_frozen=True` 但快取檔**不存在**時，舊碼一律
+  `run_fn()` 並把新產物寫進凍結基線，印「已重跑」＋`✓` 回報成功，違反
+  「兩態不得有第三態」與鐵則 4。修法：`load_or_run()` 該分支拆出
+  `elif is_frozen:` 直接丟 `FrozenBaselineError`（[eval_cache.py:158](scripts/eval_cache.py:158)），
+  非凍結分支一字未動。順帶修同根因的
+  [`t36_clip_accuracy.py:243`](scripts/t36_clip_accuracy.py:243)：
+  `is_frozen` 原本是「路徑完全相等」，`--out-dir output/clip_accuracy/sub`
+  會被誤判非凍結而直接寫進凍結樹——抽成 `is_frozen_dir()` 函式改用
+  `Path.is_relative_to()`（凍結目錄或其子目錄皆算凍結）。
+- **測試地基意外發現**：三個既有的凍結目錄測試原本用
+  `load_or_run(..., is_frozen=True)` 在快取不存在時「播種」初始快取——
+  這正是要堵住的第三態，改完 A 之後播種步驟本身就先 hard fail。改成
+  `is_frozen=False` 播種（模擬「快取是凍結前產生的」真實情境），斷言階段
+  才改回 `is_frozen=True`；測試驗的行為本身未變。
+- **鐵則 5 實測**：`test_eval_cache.py` 新增 `[10]`（凍結目錄＋快取不存在
+  → hard fail，樁 `run_fn` 未被呼叫、快取檔未建立）與 `[11]`
+  （`t36_clip_accuracy.is_frozen_dir()` 四種輸入：相等／子目錄／`..`
+  正規化後相等／無關目錄）。兩者對 commit `a874536`（退回前的舊碼）
+  實測皆 fail（`[10]` 觸發 die() 樁函式 exit 1；`[11]` 因舊碼無
+  `is_frozen_dir` 函式 `AttributeError`），對修正後的新碼皆 `EXIT=0`。
+  另用 scratchpad 複本（刪 `output/clip_accuracy/runs/bathroom_tiled/`）
+  端到端重現：舊碼靜默重跑並污染複本凍結基線（`✓ bathroom_tiled` 但
+  `detail.json` 已變新格式），新碼同情境 `EXIT=1` 且該目錄未被重新產生。
+- 自我檢查：15 支 `scripts/test_*.py` 逐支 `EXIT=0`；六條交付 IR MD5 逐位元
+  相符；`git diff --stat -- src/ data/` 空白；`FREEZE_MANIFEST` 對 71 個
+  既有檔案重算 sha256 不符 0 項；非凍結 `--out-dir` 端到端（指紋相符讀快取／
+  竄改後自動重跑並印變動項）行為未受影響。
+- **下一步：請 Opus 複驗 T-40**；通過後依 Phase 1.9 固定順序開 T-41。
+
 ## 2026-08-31 (80)
 
 - **T-40 完成自檢，🔵 待驗證**：評測快取指紋與自動失效（Phase 1.9 插卡 1/4）。

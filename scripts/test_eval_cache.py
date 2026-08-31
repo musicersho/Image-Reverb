@@ -21,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import eval_cache  # noqa: E402
+from t36_clip_accuracy import is_frozen_dir, OUT_DIR  # noqa: E402  （唯讀引用，測 is_frozen 判定）
 
 
 def die(msg: str) -> None:
@@ -241,7 +242,9 @@ def test_frozen_dir_matching_fingerprint_is_cache_hit():
         inputs = make_baseline_inputs(root)
         fingerprint = eval_cache.compute_fingerprint(**inputs)
         cache_path = root / "runs" / "item1" / "detail.json"
-        eval_cache.load_or_run(cache_path=cache_path, fingerprint_fn=lambda: fingerprint, run_fn=Runner("v1"), is_frozen=True)
+        # 快取由「凍結前」寫入（is_frozen=False 播種），模擬真實情境：凍結基線的
+        # detail.json 是 T-36 當初非凍結狀態下產生的，不是靠凍結分支寫入。
+        eval_cache.load_or_run(cache_path=cache_path, fingerprint_fn=lambda: fingerprint, run_fn=Runner("v1"), is_frozen=False)
 
         runner2 = Runner("should-not-run")
         payload, was_rerun, reasons = eval_cache.load_or_run(
@@ -259,7 +262,7 @@ def test_frozen_dir_mismatch_hard_fails_without_overwriting():
         inputs = make_baseline_inputs(root)
         fingerprint = eval_cache.compute_fingerprint(**inputs)
         cache_path = root / "runs" / "item1" / "detail.json"
-        eval_cache.load_or_run(cache_path=cache_path, fingerprint_fn=lambda: fingerprint, run_fn=Runner("v1"), is_frozen=True)
+        eval_cache.load_or_run(cache_path=cache_path, fingerprint_fn=lambda: fingerprint, run_fn=Runner("v1"), is_frozen=False)
         before_bytes = cache_path.read_bytes()
 
         mutated_inputs = dict(inputs)
@@ -344,7 +347,7 @@ def test_frozen_dir_rejects_force_fresh():
         inputs = make_baseline_inputs(root)
         fingerprint = eval_cache.compute_fingerprint(**inputs)
         cache_path = root / "runs" / "item1" / "detail.json"
-        eval_cache.load_or_run(cache_path=cache_path, fingerprint_fn=lambda: fingerprint, run_fn=Runner("v1"), is_frozen=True)
+        eval_cache.load_or_run(cache_path=cache_path, fingerprint_fn=lambda: fingerprint, run_fn=Runner("v1"), is_frozen=False)
         before_bytes = cache_path.read_bytes()
 
         runner2 = Runner("should-not-run")
@@ -397,6 +400,65 @@ def test_freeze_manifest_round_trip():
         print(f"    ✓ 新增未記錄檔案正確偵測：{[p for p in problems3 if '多出' in p]}")
 
 
+# ------------------------------------------------------------------
+# T-40 退回修正（2026-08-31）：凍結目錄＋快取不存在的第三態
+# ------------------------------------------------------------------
+
+def test_frozen_dir_missing_cache_hard_fails_without_running():
+    print("[10] 凍結目錄＋快取不存在 → FrozenBaselineError，run_fn 未被呼叫、"
+          "快取檔未被建立（本次退回修正的核心驗收） ...")
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        inputs = make_baseline_inputs(root)
+        fingerprint = eval_cache.compute_fingerprint(**inputs)
+        cache_path = root / "runs" / "item1" / "detail.json"
+        if cache_path.exists():
+            die("測試前置條件錯誤：快取檔不應存在")
+
+        def _run_fn_should_not_be_called():
+            die("run_fn 不該被呼叫——凍結目錄下快取不存在必須直接 hard fail，"
+                "不得默默重跑並把新產物寫進凍結基線")
+
+        try:
+            eval_cache.load_or_run(
+                cache_path=cache_path,
+                fingerprint_fn=lambda: fingerprint,
+                run_fn=_run_fn_should_not_be_called,
+                is_frozen=True,
+            )
+        except eval_cache.FrozenBaselineError as exc:
+            if cache_path.exists():
+                die("凍結目錄快取不存在時 hard fail 後，快取檔不應被建立，但它存在了")
+            print(f"    ✓ 正確丟出 FrozenBaselineError：{exc}")
+        else:
+            die("凍結目錄＋快取不存在時應丟出 FrozenBaselineError，但沒有")
+
+
+def test_t36_is_frozen_dir_covers_subdirectories():
+    print("[11] t36_clip_accuracy.is_frozen_dir()：相等／子目錄／"
+          "含 .. 正規化後相等／完全無關目錄 四種輸入 ...")
+    frozen_root = OUT_DIR.resolve()
+
+    if not is_frozen_dir(frozen_root):
+        die(f"is_frozen_dir(凍結目錄本身) 應為 True，實際 False（{frozen_root}）")
+    print("    ✓ 與凍結目錄完全相等 → True")
+
+    subdir = frozen_root / "sub"
+    if not is_frozen_dir(subdir):
+        die(f"is_frozen_dir(凍結目錄子目錄) 應為 True，實際 False（{subdir}）")
+    print("    ✓ 凍結目錄的子目錄 → True")
+
+    dotdot_path = (frozen_root / "sub" / ".." / "sub2" / "..").resolve()
+    if not is_frozen_dir(dotdot_path):
+        die(f"is_frozen_dir(含 .. 正規化後仍在凍結目錄下) 應為 True，實際 False（{dotdot_path}）")
+    print("    ✓ 含 .. 正規化後仍在凍結目錄下 → True")
+
+    unrelated = frozen_root.parent / "clip_accuracy_unrelated"
+    if is_frozen_dir(unrelated):
+        die(f"is_frozen_dir(完全無關的目錄) 應為 False，實際 True（{unrelated}）")
+    print("    ✓ 完全無關的目錄（僅前綴相似）→ False")
+
+
 def main() -> int:
     test_first_run_writes_cache_with_fingerprint()
     test_cache_hit_skips_rerun()
@@ -413,8 +475,11 @@ def main() -> int:
     test_legacy_cache_mismatch_never_calls_fingerprint_fn()
     test_frozen_dir_rejects_force_fresh()
     test_freeze_manifest_round_trip()
+    test_frozen_dir_missing_cache_hard_fails_without_running()
+    test_t36_is_frozen_dir_covers_subdirectories()
     print("\n全部通過：六類指紋逐項擾動皆觸發失效、舊格式視同不符、凍結目錄"
-          "hard fail 且絕不覆寫、非凍結目錄自動重跑、FREEZE_MANIFEST 產生/驗證往返一致。")
+          "hard fail 且絕不覆寫（含快取不存在的第三態）、非凍結目錄自動重跑、"
+          "FREEZE_MANIFEST 產生/驗證往返一致、is_frozen_dir() 子目錄判定正確。")
     return 0
 
 

@@ -124,7 +124,11 @@ def load_or_run(
 
     - 目標是凍結目錄且要求 `force_fresh`：直接 `FrozenBaselineError`（凍結
       目錄不允許任何形式的強制重跑，包含手動 `--fresh`）。
-    - 快取不存在，或 `force_fresh`（非凍結目錄）：執行 `run_fn()`。
+    - 快取不存在：
+        - 非凍結目錄，或 `force_fresh`（非凍結目錄）：執行 `run_fn()`；
+        - 凍結目錄：`FrozenBaselineError`（凍結目錄不存在快取也不可自動
+          產生新內容——不得有「快取不存在就默默重跑並寫進凍結基線」的
+          第三態）。
     - 快取存在且指紋相符：直接回傳快取內容，`was_rerun=False`。
     - 快取存在但指紋不符：
         - 非凍結目錄 → 自動重跑（`was_rerun=True`），`mismatch_reasons` 非空；
@@ -151,6 +155,11 @@ def load_or_run(
                 f"{cache_path} 指紋不符，但這是凍結基線目錄，不可自動重跑覆寫。"
                 f"不符項目：{reasons}。治療評測請用 --out-dir 指到新目錄。"
             )
+    elif is_frozen:
+        raise FrozenBaselineError(
+            f"{cache_path} 屬於凍結基線目錄，快取不存在，不可自動重跑產生新內容。"
+            "治療評測請用 --out-dir 指到新目錄。"
+        )
     else:
         reasons = ["快取不存在" if not force_fresh else "使用者要求 --fresh 強制重跑"]
 

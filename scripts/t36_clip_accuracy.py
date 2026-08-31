@@ -238,9 +238,18 @@ def parse_args(argv: list[str]) -> tuple[Path, bool]:
     return out_dir.resolve(), force_fresh
 
 
+def is_frozen_dir(out_dir: Path) -> bool:
+    """判定 `out_dir` 是否等於凍結基線目錄，或位於其之下（子目錄也算凍結）。
+
+    `out_dir` 須已 `.resolve()` 過（`parse_args()` 保證），才能正確處理
+    `..` 正規化後與凍結目錄相等／互為子目錄的情況。
+    """
+    return out_dir.is_relative_to(OUT_DIR.resolve())
+
+
 def main() -> int:
     out_dir, force_fresh = parse_args(sys.argv[1:])
-    is_frozen = out_dir == OUT_DIR.resolve()
+    is_frozen = is_frozen_dir(out_dir)
     runs_dir = out_dir / "runs"
     runs_dir.mkdir(parents=True, exist_ok=True)
     if is_frozen:
