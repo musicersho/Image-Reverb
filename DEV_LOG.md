@@ -1,5 +1,20 @@
 # Dev Log
 
+## 2026-08-31 (83)
+
+- **T-41 ✅ 驗證通過（Opus）**：透視照 SegFormer 去重（`pipeline.py` scene_cues
+  改重用 `detail["class_ratios"]["single"]`）。Opus 逐項實跑複驗：15 支測試全
+  exit 0；鐵則 5 自建 `git worktree`（HEAD~1）重現舊碼 `count=2` fail／新碼
+  `count=1` pass；13 張 `analysis.json` **全部 25 個鍵**（不只卡片要求的 8 個）
+  對 T-37 基線零差異，另自己 CLI 重跑 bathroom_tiled／TunnelToHell 三方逐鍵相同；
+  臥室紅旗仍是擋；六條交付 IR MD5 逐條重生比對全中；`FREEZE_MANIFEST` 重算
+  逐位元相同（凍結基線未動）；卡片驗收條件未被改寫。
+- **非阻擋觀察**：交接筆記寫「環景量測雜訊 ±1.1s」，但表 3 的 CathedralRoom
+  環景差 −5.39s——單張耗時雜訊實際可達 ±5s，bedroom 的 −0.59s 不足以單獨當
+  改善證據（去重的系統性改善仍成立）。另「scene_cues 三鍵」應為四鍵，建議
+  Fable 順手修卡片與 HANDOFF 地雷 #16 措辭。
+- **下一步**：依 Phase 1.9 固定順序開 **T-38**（CLIP 提示詞治療）。
+
 ## 2026-08-31 (82)
 
 - **T-41 完成，🔵 待驗證**：透視照 `run_photo()` 對同一張圖跑兩次 SegFormer

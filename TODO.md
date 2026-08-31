@@ -199,7 +199,13 @@
       15 支測試全綠、六條 IR MD5 不變、`git diff` 限縮 `pipeline.py`、
       `output/clip_accuracy/` 未觸碰、舊碼 worktree 重現 count=2 fail／新碼
       count=1 pass。詳見 TASKS.md T-41 卡。
-      **下一步：Opus 複驗 T-41，通過後開 T-38**。
+      **T-41 ✅ 通過（Opus 驗證 2026-08-31）**：15 支測試全綠、13 張
+      `analysis.json` 全 25 鍵零漂移（Opus 另自行重跑兩張交叉比對）、
+      六條 IR MD5 全中、舊碼 worktree 重現 count=2 fail／新碼 count=1 pass、
+      凍結基線 sha256 逐檔未變。非阻擋觀察：單張耗時雜訊實際達 ±5s
+      （環景 CathedralRoom −5.39s），「9/9 張改善」不宜逐張當顯著；
+      scene_cues 實為四鍵。詳見 TASKS.md T-41 卡。
+      **下一步：開 Sonnet 視窗執行 T-38（CLIP 提示詞治療）**。
 - [ ] **🔮 Phase 1.9 插卡（Fable 規劃 2026-08-31）：產物可信度修正輪
       T-40～T-43（卡片與裁決全文在 TASKS.md「Phase 1.9 插卡」節）**——
       外部掃描五項缺陷逐項對碼核實屬實後插卡：**T-40**（評測快取指紋與

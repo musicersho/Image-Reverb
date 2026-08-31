@@ -6063,7 +6063,72 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
 
 ### T-41 透視照 SegFormer 重複載入去重（插卡 2/4）
 
-- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-08-31）
+- **狀態**：✅ 通過（Opus 驗證，2026-08-31）
+  - **驗證方法**：以下每一項都由 Opus 在本機**實跑**，不採信交接筆記的自述數字。
+  - **第一層（能跑）**：15 支 `scripts/test_*.py` **逐支單獨執行、全部 exit 0
+    且 `❌` 次數為 0**（含動前處理才要跑的 `test_preprocess`／`test_depth`／
+    `test_segmentation`，共同鐵則 1）。`test_pipeline_dedup.py` 完整跑
+    （part A＋part B）exit 0：part A `count=1`、part B 9 張透視照 45 條斷言全綠。
+    `output/pipeline_dedup/runs/bathroom_tiled/ir_mono.wav` 非靜音
+    （48kHz／4.484s／RMS 0.009091／峰值 0.708）。
+  - **鐵則 5（修 bug 的測試對舊碼必須 fail）獨立複現**：Opus 自己
+    `git worktree add <暫存> HEAD~1` 建舊碼、複製新版測試進去跑
+    `--part-a-only` → `❌ _load_segmenter 全程恰好呼叫 1 次…：count=2`、EXIT=1；
+    本機新碼同案例 `✅ …count=1`、EXIT=0。worktree 已 `--force` 移除。
+    樁確認未樁掉推論本體（wrapper 計數後轉呼叫真 `_load_segmenter`）。
+  - **第二層（做對）— 13 張零漂移不採信報表，Opus 自己重算**：
+    ① 直接對 13 張 `output/pipeline_dedup/runs/<name>/analysis.json` 與 T-37
+    基線 `output/equirect_fix/runs/<name>/analysis.json` 逐檔比對**全部 25 個
+    鍵**（不只卡片要求的 8 個，含 `rt60_bands_target_sabine`／`warnings`／
+    `notes`／`furnishings`／`closed_loop` 等），排除 `elapsed_s` 後
+    **13 張全部零差異**。② 再自己以 CLI 全新重跑 `bathroom_tiled`（透視）與
+    `TunnelToHell`（T-37 改判後的透視照）→ 與 T-37 基線、與 Sonnet 的 after
+    產物**三方逐鍵相同**（唯一差異是 `input` 欄的相對／絕對路徑寫法，源於我
+    自己的呼叫方式）。③ 臥室紅旗（鐵則 7）：`bedroom_ai_generated`
+    materials=low／overall=low **仍是擋**，未從擋變放。
+  - **鐵則 2（六條交付 IR MD5）逐條實測**：T-20 兩條以 `-o t41_chk_*` 另存重生
+    → `2adbaa75eb698772a8c9aa693179ec47`／`2dd19b6e6d351d713887636fe45cd67e`
+    （比對後暫存檔已刪）；T-21 兩條記錄舊值後重生覆寫比對 →
+    `9a94ffdf5d8295aee7889729c39c9cd8`／`a1c21bcc3fd9aa3480df203a89c8cd05`；
+    T-14 兩條由 `test_ir_synth.py` 硬編碼比對隨鐵則 1 一起過。**六條全中**。
+  - **第三層（做好）— 語意等價逐行核對**：`detail["class_ratios"]["single"]`
+    的來源是 `analyse_image()` 的 `res["class_ratios"]`，而該值就是
+    `segment_roles(Image.open(preprocess_summary["cropped"]).convert("RGB"), …)`
+    的原 dict——與舊碼刪掉的那三行**同一張圖、同一函式、同一模型**，鍵型別
+    同為 int class id。`grep -n "ratios" pipeline.py` 只剩三行（取值＋兩處
+    `.get()`），無任何寫入，不存在共用 dict 被就地改動的別名風險。
+    `run_photo()` 走到 scene_cues 段時 `summary["is_equirect"]` 必為 False，
+    而 `surfaces_from_preprocess()` 在同一條件下**無條件**寫入
+    `detail["class_ratios"]["single"]`，不存在 KeyError 新風險。
+  - **範圍與鐵則 3／4**：`git show --stat HEAD` 只動 9 個檔——`src/` 僅
+    `pipeline.py`（`+2 -5`），**`surfaces.py`／`geometry.py` 零 diff**、
+    `ir_metrics.py` 零 diff（鐵則 3）、`SPEC.md`／`ROADMAP.md`／`WORKFLOW.md`／
+    `output/mvp_acceptance/`／`output/material_round/`／`output/clip_accuracy/`
+    零 diff（鐵則 4）。`output/clip_accuracy/` 另以
+    `python scripts/t40_freeze_manifest.py` 重算 sha256 → 產出的
+    `FREEZE_MANIFEST.md` 與版控內容**逐位元相同**（`git status` 無變動），
+    直證凍結基線 71 個檔案一個 bit 未變。`TASKS.md` 的 T-41 卡除了狀態列，
+    **驗收條件一個字都沒被改寫**（`git diff HEAD~1 HEAD -- TASKS.md` 的刪除行
+    只有 `- **狀態**：⬜ 未開始` 一行）——紅旗「把驗收標準改寬鬆」排除。
+  - **耗時對照非手打**：表 3 的 `elapsed_s` 由 `analysis.json` 程式讀出；Opus
+    自己重跑的兩張也落在同一區間（bathroom 14.62s vs 基線 17.27s、TunnelToHell
+    16.47s vs 基線 21.25s，且我重跑時機器上還有其他測試在跑）。
+  - ⚠️ **非阻擋觀察（不影響通過，供 Fable／後續卡處理）**：
+    1. **交接筆記的耗時措辭偏樂觀**：筆記寫「4 張環景量測雜訊落在 ±1.1s」，但
+       表 3 的 `CathedralRoom` 環景是 **−5.39s**（環景路徑完全不經 scene_cues
+       段，這 5.39s 必然是雜訊）。也就是說單張量測雜訊實際可達 ±5s 量級，
+       `bedroom_ai_generated` 的 −0.59s 落在雜訊內、不足以單獨當作改善證據。
+       去重的改善本身仍成立（機制明確＋6 張透視照 −3.8～−11.6s 系統性一致），
+       只是「9／9 張都改善」不該被當成逐張顯著。TODO.md 的「環景持平」同理略寬。
+    2. 卡片與 HANDOFF 地雷 #16 段的「scene_cues 三鍵」實為**四鍵**（Sonnet 已在
+       交接筆記標明落差），建議 Fable 順手改掉文字，以免下一張動 scene_cues
+       的卡（T-42）照著錯的鍵數做驗收。
+    3. `test_pipeline_dedup.py` part B 的 `out_of_domain`／`out_of_domain_label`
+       兩鍵新舊路共用同一份 `detail`，比對在結構上必然相同（Sonnet 已誠實註明
+       「一併驗證只是把四鍵都覆蓋到」）；真正有診斷力的是 `class_ratios`
+       全 dict 與前兩鍵的比對，這部分成立。無需修改。
+  - **下一步**：依 Phase 1.9 固定順序開 **T-38**（CLIP 提示詞治療，裁決 T-36-A
+    執行卡 2/3）。
 - **前置**：T-40 ✅（先有快取指紋，本卡改 `pipeline.py` 後的量測才保證量到新碼）
 - **問題**（外部掃描 P1，已對碼核實）：`run_photo()` 對一張透視照會**載入
   SegFormer 兩次、完整推論兩次**——`surfaces_from_preprocess()`
