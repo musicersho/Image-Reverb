@@ -170,7 +170,7 @@ def run_photo(
     no_furnishings: bool = False,
 ) -> int:
     from .preprocess import preprocess_image
-    from .surfaces import surfaces_from_preprocess, _load_segmenter, segment_roles
+    from .surfaces import surfaces_from_preprocess
 
     t0 = time.time()
     photo_path = Path(photo)
@@ -205,10 +205,7 @@ def run_photo(
         surf, detail = surfaces_from_preprocess(summary)
         scene_cues: dict[str, float] = {}
         if not summary["is_equirect"]:
-            from PIL import Image
-
-            img = Image.open(summary["cropped"]).convert("RGB")
-            _, ratios = segment_roles(img, *_load_segmenter())
+            ratios = detail["class_ratios"]["single"]
             ood = [
                 v
                 for v in detail["views"].get("single", {}).values()

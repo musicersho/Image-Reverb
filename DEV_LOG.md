@@ -1,5 +1,19 @@
 # Dev Log
 
+## 2026-08-31 (82)
+
+- **T-41 完成，🔵 待驗證**：透視照 `run_photo()` 對同一張圖跑兩次 SegFormer
+  （`surfaces_from_preprocess()` 一次＋scene_cues 段重複一次）——scene_cues
+  改直接重用 `detail["class_ratios"]["single"]`，刪掉重複的
+  `_load_segmenter()`／`segment_roles()`（[pipeline.py](src/image_reverb/pipeline.py)，
+  `+2 -5` 行）。scene_cues 其實是四鍵（卡片誤寫三鍵，已在交接筆記記落差）；
+  因 `analysis.json` 不落盤 scene_cues，新增測試改用新舊兩路直算比對證明
+  零漂移，而非比對 JSON。9 張透視照全部 bit-identical，13 張基線
+  （三軸 confidence／gate／六面材質／`dims_m`／`volume_m3`）零漂移、含臥室
+  紅旗；耗時 9 張全部改善（−0.6s～−11.6s）。15 支測試全 exit 0、六條交付
+  IR MD5 全中、舊碼 worktree 重現 count=2 fail／新碼 count=1 pass。詳見
+  TASKS.md T-41 卡交接筆記。
+
 ## 2026-08-31 (81)
 
 - **T-40 退回修正輪完成，🔵 待驗證**：Opus 驗證抓到 `eval_cache.load_or_run()`

@@ -6063,7 +6063,7 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
 
 ### T-41 透視照 SegFormer 重複載入去重（插卡 2/4）
 
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-08-31）
 - **前置**：T-40 ✅（先有快取指紋，本卡改 `pipeline.py` 後的量測才保證量到新碼）
 - **問題**（外部掃描 P1，已對碼核實）：`run_photo()` 對一張透視照會**載入
   SegFormer 兩次、完整推論兩次**——`surfaces_from_preprocess()`
@@ -6111,6 +6111,71 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
   漂移」）；紅旗：`surfaces.py` 出現 diff；紅旗：scene_cues 鍵名／計算式被
   「順手優化」；紅旗：計數測試樁掉了推論本體（測試要能分辨「真的只跑一次
   推論」）；紅旗：耗時對照數字是手打的（要附指令與原始輸出）。
+
+- **✅ 交接筆記（Sonnet，2026-08-31）**：
+  - **改動**：`src/image_reverb/pipeline.py` 兩處——①函式內 import 刪掉
+    `_load_segmenter`／`segment_roles`（只留 `surfaces_from_preprocess`）；
+    ②scene_cues 段刪掉 `Image.open(summary["cropped"])`＋
+    `segment_roles(img, *_load_segmenter())` 三行，改成直接
+    `ratios = detail["class_ratios"]["single"]`（`surfaces_from_preprocess()`
+    已用同一張圖跑過一次，語意等價、鍵名與計算式一字未動）。`git diff --stat
+    -- src/` 只有 `pipeline.py`，`+2 -5` 行。
+  - **卡片文字落差（陷阱 3）**：卡片與地雷 #16 段落都寫「scene_cues 三鍵」，
+    實際是**四鍵**（`floor_pixel_ratio`／`person_pixel_ratio`／`out_of_domain`／
+    `out_of_domain_label`，見 `pipeline.py:217-223`）。後兩鍵來自
+    `detail["views"]["single"]`（`surfaces_from_preprocess()` 的既有回傳值，
+    從未經過本卡改動的重複呼叫），理論上不可能受本卡影響；前兩鍵才是本卡
+    真正牽動的路徑。四鍵全部驗證過（見下），但只有前兩鍵是有意義的迴歸點——
+    請 Fable 之後把卡片與 HANDOFF 地雷 #16 段的「三鍵」改成「四鍵」。
+  - **陷阱 1（analysis.json 不落盤 scene_cues）處理方式**：`test_pipeline_dedup.py`
+    part B 與 `t41_rebaseline.py` 都直接呼叫 `surfaces_from_preprocess()`
+    （新路，取 `detail["class_ratios"]["single"]`）與
+    `segment_roles(Image.open(cropped)..., *_load_segmenter())`（舊路，
+    pipeline.py 修正前的做法）各算一次 ratios，逐鍵比對——不依賴
+    `analysis.json`。13 張基線集合裡目前判定為透視照的 9 張
+    （bathroom_tiled／bedroom_ai_generated／stairwell_tiled／
+    arena_ntsu_linkou／car_interior_suv／site_photo_department_store／
+    site_photo_gym／site_photo_restaurant／TunnelToHell）全部 bit-identical
+    （含 `class_ratios` 全 dict 逐值比對，不只挑兩鍵）。
+  - **陷阱 2 處理方式**：新寫 `scripts/t41_rebaseline.py`（唯讀 import
+    `t36_clip_accuracy.GATE_ITEMS` 與本卡自己的 `test_pipeline_dedup._build_scene_cues`
+    公式，未改動 `t36_clip_accuracy.py`／`t37_rebaseline.py`／
+    `t33_material_round_tables.py`／`eval_cache.py` 任何一支），13 張走 CLI
+    （`--force-low-confidence --no-furnishings --no-viz`，與 T-37 基線
+    `output/equirect_fix/runs/` 同方法論，逐值可比）；`output/clip_accuracy/`
+    全程只被 freeze manifest 驗證，未被本卡任何腳本寫入。
+  - **新測試 `scripts/test_pipeline_dedup.py`**：part A 樁
+    `surfaces._load_segmenter`（計數後轉呼叫真本體，不樁掉推論），一張真實
+    透視照（`bathroom_tiled.png`）走完 `run_photo()`（`--override-dims`
+    跳過深度模型、`--force-low-confidence` 確保不被 gate 擋，只為讓分割段
+    真的跑到），斷言恰好 1 次；part B 是陷阱 1 的 9 張透視照雙路驗證。
+    另加 `--part-a-only` 旗標供鐵則 5 的舊碼重現用（part B 只碰
+    `surfaces.py`／`preprocess.py`，不經過本卡改動的 `pipeline.py` scene_cues
+    段，對舊碼一樣會過，不是有效的舊碼 fail 重現，鐵則 5 只需要重現 part A）。
+  - **鐵則 5 舊碼重現實測**：`git worktree add <scratchpad>/ir_old_code_t41 HEAD`
+    建出改動前的碼，複製新版 `test_pipeline_dedup.py` 進去跑
+    `python scripts/test_pipeline_dedup.py --part-a-only`——舊碼實測輸出
+    `❌ _load_segmenter 全程恰好呼叫 1 次...：count=2`（exit 1）；新碼（本機
+    工作樹）同案例 `✅ ...：count=1`（exit 0）。worktree 已
+    `git worktree remove --force` 清掉。
+  - **13 張基線變化表（`scripts/t41_rebaseline.py`，`output/pipeline_dedup/`）**：
+    三軸 confidence／gate／六面材質／`dims_m`／`volume_m3` **13 張逐值零漂移**
+    （零容忍，程式化守門，不是人工核對）；`bedroom_ai_generated` 臥室紅旗
+    （materials/overall 維持 low → low，未從擋變放）；scene_cues 四鍵 9 張透視照
+    全 bit-identical。三份都見 `output/pipeline_dedup/tables.md` 表 1／2。
+  - **耗時對照（`output/pipeline_dedup/tables.md` 表 3，`elapsed_s` 程式讀出、
+    非手打）**：9 張透視照全部改善或持平，改善幅度 −0.59s（bedroom_ai_generated）
+    到 −11.57s（arena_ntsu_linkou）不等；4 張環景照片（本卡不影響的路徑）
+    有正有負、量級落在量測雜訊範圍內（±1.1s），符合預期（環景路徑完全不經
+    scene_cues 段）。
+  - **自我檢查實測結果**：15 支 `scripts/test_*.py`（含新增
+    `test_pipeline_dedup.py`）**逐支單獨執行全部 exit 0**；六條交付 IR MD5——
+    T-14 兩條由 `test_ir_synth.py` 自動比對通過（`f3a763be…`／`f24353b5…`）；
+    T-20/T-21 四條重新生成後 `md5` 逐條比對，與卡片指定值**完全相同**
+    （`2adbaa75…`／`2dd19b6e…`／`9a94ffdf…`／`a1c21bcc…`）；`git diff --stat
+    -- src/` 只有 `pipeline.py`（`+2 -5`）；`output/clip_accuracy/` 未被觸碰
+    （`verify_freeze_manifest()` 回傳 `0`）。
+  - **下一步**：請使用者開 Opus 視窗驗證 T-41。
 
 ### T-42 low-confidence gate 交易式輸出與舊產物隔離（插卡 3/4）
 

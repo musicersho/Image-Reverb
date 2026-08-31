@@ -187,7 +187,19 @@
       第三態（會靜默重跑並寫進凍結基線）已修正，順帶修 `--out-dir` 指到
       凍結目錄子目錄會被誤判非凍結的同根因問題；15 支測試全綠，鐵則 5
       舊碼 fail／新碼 pass 實測已附。詳見 TASKS.md T-40 卡。
-      **下一步：Opus 複驗 T-40，通過後開 T-41**。
+      **T-41 🔵 待驗證（Sonnet 自檢通過 2026-08-31）**：透視照 SegFormer
+      重複載入去重——`pipeline.py` scene_cues 段改重用
+      `surfaces_from_preprocess()` 已算好的 `detail["class_ratios"]["single"]`，
+      刪掉重複的 `_load_segmenter()`／`segment_roles()`（`+2 -5` 行，`src/`
+      只動 `pipeline.py`）。scene_cues 實為四鍵（卡片誤寫三鍵，已記落差）；
+      因 `analysis.json` 不落盤 scene_cues，新測試改用新舊兩路直算逐鍵比對
+      （9 張透視照全 bit-identical），不是比對 JSON。13 張基線（三軸
+      confidence／gate／六面材質／`dims_m`／`volume_m3`）零漂移＋臥室紅旗；
+      9 張透視照耗時全部改善（−0.6s～−11.6s）；環景路徑（本卡不影響）持平。
+      15 支測試全綠、六條 IR MD5 不變、`git diff` 限縮 `pipeline.py`、
+      `output/clip_accuracy/` 未觸碰、舊碼 worktree 重現 count=2 fail／新碼
+      count=1 pass。詳見 TASKS.md T-41 卡。
+      **下一步：Opus 複驗 T-41，通過後開 T-38**。
 - [ ] **🔮 Phase 1.9 插卡（Fable 規劃 2026-08-31）：產物可信度修正輪
       T-40～T-43（卡片與裁決全文在 TASKS.md「Phase 1.9 插卡」節）**——
       外部掃描五項缺陷逐項對碼核實屬實後插卡：**T-40**（評測快取指紋與
