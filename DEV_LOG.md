@@ -1,5 +1,30 @@
 # Dev Log
 
+## 2026-09-01 (85)
+
+- **T-38A 🔵 待驗證（Sonnet 自檢通過）**：可重現評測與實驗紀錄。
+  修正 `t38_treatment_eval.py` 誤導訊息（`diff_scope_summary()` 真正檢查
+  差異照片集合，取代舊版「只要非空就印預期只有 TunnelToHell」——對舊碼
+  用 round3/round5 型多張漂移實測重現過 bug）；新增原子發布
+  （`publish_round_artifacts()`，`summary.json` 最後落地，中途當機不留下
+  看似完整的輪次）；新增每輪自動生成 `ROUND.md`（快照／差異／父輪次／
+  假設／指紋／數字）與 `load_completed_rounds()` 讀取端跳過邏輯（對真實
+  `output/clip_treatment/rounds/` 執行，正確判定 round0～round5 完整、
+  round6 因無 `summary.json` 被跳過）。
+  補寫 round1～round6 的 `ROUND.md`：round1～round5 的提示詞字串已遺失，
+  誠實標記「不可恢復」，只留 `surfaces.py` sha256（不猜測倒填）；round6
+  的 `surfaces.py` 未提交 diff（carpet 提示詞一行）原文記進 ROUND.md
+  （sha256 與快取指紋相符），status 標 interrupted、不納入比較；記錄
+  commit 之後才依規定順序把 `surfaces.py` 還原到 HEAD 基線。還原後用
+  快取重跑 `round0_baseline` 驗證新機制（純 cache hit，`tables.md`／
+  `summary.json`／`ROUND.md` 二次執行逐位元相同），順便產出其
+  `ROUND.md`／`prompts_snapshot.json`。
+  自我檢查：16 支 `test_*.py` 全 exit 0（含新增
+  `test_t38_treatment_eval.py` 12 項）；`git diff src/ data/` 為空；
+  `ir_metrics.py` 零 diff；六條交付 IR MD5 全中；
+  SPEC/ROADMAP/WORKFLOW/mvp_acceptance/material_round/clip_accuracy
+  全部未觸碰。下一步：Opus 驗證 T-38A，通過後執行 T-38B。
+
 ## 2026-09-01 (84)
 
 - **🔮 Fable：T-38 拆卡改版（純文件，未動任何程式與未提交成果）**。依外部

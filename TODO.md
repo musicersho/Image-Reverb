@@ -216,7 +216,17 @@
       baseline 交 Fable 裁決進 T-39 或 role-aware 卡）。T-41 維持 ✅。
       工作樹未提交的實驗證據在 T-38A 記錄前不得清除。裁決全文見 TASKS.md
       T-38 卡。
-      **下一步：開 Sonnet 視窗執行 T-38A（Prompt 在 HANDOFF_T38.md §6）**。
+      **T-38A 🔵 待驗證（Sonnet 自檢通過 2026-09-01）**：`t38_treatment_eval.py`
+      修正誤導訊息（`diff_scope_summary()` 真正檢查差異照片集合，對舊碼
+      實測重現過 round3/round5 型多張漂移被誤判為「預期只有 TunnelToHell」
+      的 bug）＋新增原子發布（`summary.json` 最後落地）＋每輪自動生成
+      `ROUND.md`＋讀取端跳過機制（對真實 `output/clip_treatment/rounds/`
+      執行，正確判定 round0～round5 完整、round6 跳過）。round1～round5
+      的 `ROUND.md` 誠實標記提示詞字串不可恢復；round6 的 `surfaces.py`
+      未提交 diff 已原文記進 `ROUND.md`（sha256 相符）後才依規定順序還原
+      `surfaces.py` 到 HEAD 基線，`src/` 現為零 diff。16 支測試全綠、六條
+      交付 IR MD5 全中。詳見 TASKS.md T-38A 卡。
+      **下一步：請 Opus 驗證 T-38A，通過後開 Sonnet 視窗執行 T-38B**。
 - [ ] **🔮 Phase 1.9 插卡（Fable 規劃 2026-08-31）：產物可信度修正輪
       T-40～T-43（卡片與裁決全文在 TASKS.md「Phase 1.9 插卡」節）**——
       外部掃描五項缺陷逐項對碼核實屬實後插卡：**T-40**（評測快取指紋與

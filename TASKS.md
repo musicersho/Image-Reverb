@@ -5615,7 +5615,7 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
    出口。
 
 ### T-38A 可重現評測與實驗紀錄（拆卡 1/2；工程卡）
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證（Sonnet 自檢通過，2026-09-01）
 - **前置**：T-37 ✅＋T-40 ✅＋T-41 ✅（同原 T-38）。⚠️ 開工時工作樹**已有**
   未提交的 `scripts/t38_treatment_eval.py`（前輪產物，由本卡收編修正後進
   版控）與 `src/image_reverb/surfaces.py` 一行提示詞改動（round6 快照，
@@ -5663,6 +5663,86 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
   提示詞字串（只准 hash＋不可恢復聲明）；紅旗：round6 被納入任何比較表；
   紅旗：`surfaces.py` 還原發生在 round6 diff 記錄 commit 之前；紅旗：
   誤導訊息只改字面沒改條件檢查；紅旗：`t36_clip_accuracy.py` 預設模式被動。
+
+- **✅ 交接筆記（Sonnet，2026-09-01）**：
+  - **產出檔案**：`scripts/t38_treatment_eval.py`（修正＋新增機制，見下）、
+    `scripts/test_t38_treatment_eval.py`（新測試，12 項）、
+    `output/clip_treatment/rounds/round{0_baseline,1,2,3,4,5,6}/ROUND.md`
+    （7 份，round0_baseline 由本次修好的 harness 實際跑出，round1～round6
+    手寫補齊）、`output/clip_treatment/rounds/round0_baseline/prompts_snapshot.json`
+    （harness 跑出的副產物，`.json` 依 `.gitignore` 規則不進版控）。
+  - **步驟 1（誤導訊息）**：新增 `diff_scope_summary(diff_photo_names)`，
+    真正檢查本輪與 T-33 凍結快取有差異的照片集合，只有集合恰為
+    `{"TunnelToHell"}` 才回報「符合預期」，否則列出實際涉及的照片清單。
+    對舊碼實測重現過 bug：把舊版第 216 行附近的三元運算式逐字抄進
+    `test_t38_treatment_eval.py` 的 `test_old_message_logic_was_misleading_new_fixes_it()`，
+    餵進 round3 型（bathroom_tiled／car_interior_suv／SteinmanHall 三張漂移）
+    的合成輸入，舊邏輯確實印出「預期只有 TunnelToHell 三項比對」（誤判成立），
+    新函式正確印出非預期範圍與涉及的三張照片。另用真實歷史資料交叉核對：
+    round0_baseline 的 diff 集合是 `{TunnelToHell}` → 符合預期；
+    round1/2/3/5 各有 7～11 張漂移、round4 有 2 張（RacquetballCourt4 +
+    TunnelToHell）→ 皆非預期範圍（詳見各輪 `ROUND.md`）。
+  - **步驟 2（原子發布）**：新增 `_atomic_write_text()`（寫 `.tmp` 再
+    `Path.replace()`）與 `publish_round_artifacts()`，寫入順序
+    `tables.md` → `prompts_snapshot.json` → `ROUND.md` → `summary.json`
+    （`summary.json` 刻意最後落地，讀取端只認它是否存在當完整性判準）。
+    測試用注入式故障（monkeypatch `_atomic_write_text` 在寫特定檔名時
+    丟例外）模擬「寫 `tables.md` 到一半當機」與「`tables.md`／快照已落地、
+    `ROUND.md` 當機」兩種中途失敗，兩種情況下 `summary.json` 皆確認不存在、
+    `load_completed_rounds()` 皆正確跳過並附上跳過原因。
+  - **步驟 3（每輪自動 ROUND.md）**：新增 `snapshot_prompts()`（讀
+    `surfaces` 模組當下的提示詞字典）、`diff_prompt_snapshots()`（相對
+    `round0_baseline` 逐鍵字串差異，含新增/刪除/改值三種標示）、
+    `load_baseline_snapshot()`、`collect_round_fingerprint()`（彙整整輪
+    `code_sha256`／`data_sha256`／模型 id／門檻／`eval_mode` 應一致的
+    共同指紋＋逐張 `photo_sha256`，內部不一致或缺檔會丟 `ValueError`，
+    不靜默吞掉）、`build_round_md()`（組出含 status／父輪次／執行指令／
+    假設／快照／差異／數字／指紋的完整 `ROUND.md`）。`main()` 新增
+    `--hypothesis`／`--parent` 參數，非基線輪次未提供 `--hypothesis` 直接
+    `🔴 卡關`退出，不放行空白假設；`round0_baseline` 有預設值（基線本身
+    無假設）。
+  - **步驟 3 真實驗證（非只靠合成測試）**：`surfaces.py` 還原到 HEAD 後，
+    用修好的 harness 實際重跑 `python scripts/t38_treatment_eval.py
+    round0_baseline`——13 張全部 cache hit（無 `↻` 重跑訊息，因為
+    `code_sha256`/`data_sha256`/模型 id/門檻/`eval_mode` 與原快取完全
+    相符），產出的 `tables.md`／`summary.json`（overall 31/76、floor
+    4/13、in-set 誤判 9，與遺失前讀到的原始數字一致）＋新產出的
+    `ROUND.md`／`prompts_snapshot.json`。**再跑一次同一指令**，
+    `tables.md`／`summary.json`／`ROUND.md` 三個檔案逐位元相同（`diff`
+    確認），證明機制冪等、非隨機。另對真實
+    `output/clip_treatment/rounds/` 目錄呼叫 `load_completed_rounds()`：
+    正確回報 `completed=[round0_baseline, round1, round2, round3, round4,
+    round5]`、`skipped=["round6：無 summary.json（不完整或中止的輪次），跳過"]`。
+  - **步驟 4（歷史補寫）**：round1～round5 的 `ROUND.md` 逐輪標記提示詞
+    快照與相對基線差異「不可恢復」，只列 `surfaces.py` sha256（來自各輪
+    既有 `runs/*/detail.json` 快取，非重跑），數字取自既有 `summary.json`；
+    父輪次標「推定——逐輪覆寫的線性紀錄推定，非精確 lineage 證據」，不
+    冒充為已驗證的事實。round6：完整 `CLIP_MATERIAL_PROMPTS` 快照與相對
+    基線的字串差異（僅 `carpet` 一項）皆可重建並原文寫入（`git diff`
+    抄錄＋sha256 與快取指紋 `c89382ba…` 核對相符），另記錄完成度
+    （6/13 有 `detail.json`、DivorceBeach 只有 `preprocess/` 尚未產出
+    `detail.json`、其餘 6 張未啟動），status 標 `interrupted`。**先把
+    round6 的 `ROUND.md`（含 diff 原文）commit（`5ec3610`），才執行
+    `git checkout HEAD -- src/image_reverb/surfaces.py`**，順序未顛倒。
+  - **共同鐵則自我檢查**：16 支 `scripts/test_*.py`（含新增的
+    `test_t38_treatment_eval.py`）全部 `exit 0`（`test_pipeline_dedup.py`／
+    `test_preprocess.py`／`test_segmentation.py` 等會載入模型的測試耗時
+    較長，改用背景執行逐一確認，非省略未跑）；`git diff --stat -- src/
+    data/` 為空；`git diff -- src/image_reverb/ir_metrics.py` 為空；
+    六條交付 IR MD5 全數重新生成比對相符（T-14 兩條隨鐵則 1 由
+    `test_ir_synth.py` 驗證；T-20 兩條 `2adbaa75eb698772a8c9aa693179ec47`／
+    `2dd19b6e6d351d713887636fe45cd67e`；T-21 兩條
+    `9a94ffdf5d8295aee7889729c39c9cd8`／`a1c21bcc3fd9aa3480df203a89c8cd05`）；
+    `git status --short SPEC.md ROADMAP.md WORKFLOW.md output/mvp_acceptance/
+    output/material_round/ output/clip_accuracy/` 全部空白（未觸碰）。
+  - **已知限制／非阻擋**：round1～round5 的「父輪次」與「差異範圍評估」
+    是依現有 `tables.md` 差異清單重建，非當輪執行當下自動產生（因為
+    ROUND.md 機制在這些輪次跑的時候還不存在）；round6 因中止，
+    `collect_round_fingerprint()`／`build_round_md()` 沒有對它實際呼叫過
+    （它的指紋表是手動從既有 6 張 `detail.json` 摘錄的），這是歷史補寫
+    本身的性質，不是機制的缺陷——機制本身已用 round0_baseline 的真實重跑
+    完整驗證過。
+  - **下一步**：請 Opus 驗證本卡；通過後開 Sonnet 視窗執行 T-38B。
 
 ### T-38B 有界提示詞實驗（拆卡 2/2；實驗卡）
 - **狀態**：⬜ 未開始
