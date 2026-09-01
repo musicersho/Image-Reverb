@@ -233,6 +233,28 @@
       四點非阻擋觀察已寫進 T-38A 卡交給 T-38B 帶走（其中最重要：T-38B 的
       輪次軌跡表必須真的呼叫 `load_completed_rounds()`）。
       **下一步：開 Sonnet 視窗執行 T-38B（有界提示詞實驗）**。
+      **T-38B 🔵 待驗證（2026-09-01）——四輪跑完，否定結論**：依 PLAN.md
+      （先寫後跑，commit 早於各輪）跑 round7～round10（預算用滿），累積式
+      單改一個候選字串——round7 改 `concrete`（目標 bedroom 四面
+      generic_wall→concrete，未修到，且讓 DivorceBeach floor 從對變錯）；
+      round8 改 `acoustic_panel`（目標 2 面 acoustic_panel→carpet，未修到，
+      且讓該候選在 gym／restaurant 大量牆面搶答成功，in-set 誤判 9→18）；
+      round9 改 `curtain_fabric`（目標 3 面，2 面換成 acoustic_panel 頂替、
+      1 面未修到，in-set 誤判累積到 23）；round10 依 PLAN §4 事前規則機械
+      選中 generic_wall→concrete（round9 後仍是次數最多的原始誤判組），
+      改用簡短 caption 式 `concrete` 第二版仍未修到 bedroom，in-set 誤判
+      來到四輪最高 26。四輪對 round0_baseline（31/76／4/13／9）**無一輪
+      同時滿足 overall 上升＋floor 上升＋in-set 誤判不上升**，且一輪比一輪
+      差。**最終決定：不採用任何改動**，`surfaces.py` 已還原成
+      `CLIP_MATERIAL_PROMPTS` 原字串，`git diff -- src/ data/` 為空；
+      16 支測試全綠、六條交付 IR MD5 全中、SPEC/ROADMAP/WORKFLOW／三個
+      凍結目錄未觸碰；`src/` 零 diff 使臥室紅旗無從觸發。介面限制（無
+      role 參數，全域 12 候選共用 softmax）明文承認為可能根因之一：
+      兩種完全不同寫法的 `concrete` 都無法讓 bedroom 四面牆改判，過擬合
+      紅線（78 面無 held-out）誠實記錄。詳見 `output/clip_treatment/
+      PLAN.md`／`REPORT.md`／`rounds/round7~round10/ROUND.md`，以及
+      TASKS.md T-38B 卡。**下一步：請 Opus 驗證本卡；通過後開 Fable 視窗
+      收尾裁決是否進 T-39（擴候選材質集）或另開 role-aware 設計卡。**
 - [ ] **🔮 Phase 1.9 插卡（Fable 規劃 2026-08-31）：產物可信度修正輪
       T-40～T-43（卡片與裁決全文在 TASKS.md「Phase 1.9 插卡」節）**——
       外部掃描五項缺陷逐項對碼核實屬實後插卡：**T-40**（評測快取指紋與
@@ -243,7 +265,7 @@
       **T-43**（`analysis.json` 加 provenance 生成指紋＋`t17_blind_test.py`
       溯源驗證，MANIFEST 不得再拿打包當下 HEAD 冒充來源 revision）。
       執行順序更新（2026-09-01 T-38 拆卡後）：**T-37 ✅ → T-40 ✅ → T-41 ✅ →
-      T-38A → T-38B → T-39 → T-42 →
+      T-38A ✅ → T-38B 🔵 待驗證 → T-39 → T-42 →
       T-43 → 收尾複評**；**任何新的正式盲聽必須在 T-42＋T-43 之後**（現存
       盲測素材是 `d958b3c` 產的，舊 §7-1 的 2/5 不能宣稱屬於現行碼）。
 - [ ] **🔮 Fable 複評裁決 T-33-A ✅ 已裁決（2026-08-31，全文在 TASKS.md T-33 卡尾）

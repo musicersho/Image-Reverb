@@ -5286,7 +5286,8 @@ T-34 與 T-35 都動 `pipeline.py`／`cli.py`，依序做避免衝突；T-36 是
 ## Phase 1.9 — CLIP 治療輪（Fable 規劃 2026-08-31；依裁決 T-36-A）
 
 **執行順序固定（2026-09-01 T-38 拆卡後更新）：T-36 文件修正 ✅ → T-37 ✅ →
-T-40 ✅ → T-41 ✅ → T-38A → T-38B → T-39 → T-42 → T-43 → 回 Fable 收尾複評**
+T-40 ✅ → T-41 ✅ → T-38A ✅ → T-38B 🔵 待驗證 → T-39 → T-42 → T-43 →
+回 Fable 收尾複評**
 （T-38 原卡已由 Fable 2026-09-01 拆成 T-38A／T-38B，見 T-38 卡的拆卡裁決）。
 T-36 文件修正是純文件小卡（不另開卡號，範圍見下）；T-37 動 `preprocess.py`、
 T-38B 動 `surfaces.py` 提示詞字典、T-39 動 `data/materials.json`＋提示詞字典
@@ -5835,7 +5836,7 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
     非阻擋觀察，尤其第 2 點（軌跡表必須真的呼叫 `load_completed_rounds()`）。
 
 ### T-38B 有界提示詞實驗（拆卡 2/2；實驗卡）
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證（2026-09-01，Sonnet 自檢完成，否定結論）
 - **前置**：T-38A ✅（harness 可重現＋歷史紀錄補齊＋`surfaces.py` 已還原
   baseline）
 - **性質聲明（寫進 REPORT 開頭）**：本卡是**模型實驗**，結果不可事前保證。
@@ -5878,6 +5879,65 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
   （PLAN.md 的 commit 時間在輪次之後）；紅旗：持平被寫成通過；紅旗：
   否定結果被標成 🔴 卡關或工程失敗（正確標記是 ✅＋否定結論）；紅旗：
   role-aware 偷渡；紅旗：其餘同原 T-38（ground truth／門檻 0.4／過擬合）。
+
+- **交接筆記（Sonnet，2026-09-01）**：
+  - **做了什麼**：先寫 `output/clip_treatment/PLAN.md`（依 round0_baseline
+    表 4 的五組 in-set 誤判設計 round7～9 累積式單變因假設＋round10 事前
+    選擇規則）並單獨 commit（`ca029ee`，早於任何輪次），再依序跑
+    round7（改 `concrete`）→round8（改 `acoustic_panel`，累積）→
+    round9（改 `curtain_fabric`，累積）→round10（依 PLAN §4 規則機械
+    選中再改一次 `concrete`，累積），每輪跑 `scripts/t38_treatment_eval.py`
+    對 78 面全量量測，讀 ROUND.md／tables.md 逐輪核對。四輪對
+    round0_baseline 無一同時滿足三個產品採用門檻（見下表），且逐輪
+    劣化（in-set 誤判 9→9→18→23→26）。最終把 `surfaces.py` 的
+    `concrete`／`acoustic_panel`／`curtain_fabric` 三個候選字串逐字
+    還原成 round0_baseline 版本，`git diff -- src/ data/` 為空。寫
+    `output/clip_treatment/REPORT.md` 誠實記錄全部四輪的數字、副作用
+    （例如 round7 讓 DivorceBeach floor 從對變錯、round8 讓
+    acoustic_panel 在 gym／restaurant 暴走）、介面限制推論、過擬合紅線。
+  - **改了哪些檔案**：新增 `output/clip_treatment/PLAN.md`、
+    `output/clip_treatment/REPORT.md`、
+    `output/clip_treatment/rounds/round7~round10/`（各含 `ROUND.md`／
+    `tables.md`／`summary.json`／`prompts_snapshot.json`／`runs/`）；
+    `src/image_reverb/surfaces.py` 過程中三度暫改又逐字還原，最終
+    `git diff` 為空（**不在本卡最終 diff 內**，過程紀錄見各輪 ROUND.md）；
+    `TASKS.md`／`DEV_LOG.md`／`TODO.md` 收工更新。未動
+    `classify_region_material()`／`compute_materials_confidence()`／
+    門檻／候選 id／ground truth／`CLIP_OOD_PROMPTS`。
+  - **下一步**：請 Opus 驗證本卡（狀態改到 🔵 待驗證前的自檢已如上）；
+    通過後開 **Fable** 視窗做收尾裁決——選項 A：進 T-39（擴候選材質集，
+    涵蓋率天花板本來就是否定結論指向的方向）；選項 B：另開 role-aware
+    設計卡（本卡已證實無 role 參數的全域 12 候選介面下，改字串對
+    bedroom 這類案例沒有槓桿點）。
+  - **踩過的坑（給下一個視窗）**：
+    1. `gen_ir_coupled.py` **不支援 `-o`／`--out`** 參數（只有 `scene`／
+       `--no-listen`／`--list-types`），輸出固定寫到
+       `config.IR_SYNTH_OUTPUT_DIR`（`output/ir_synth/`）+ 依場景檔名；
+       要重新驗證交付 IR MD5，直接對該固定路徑跑、跑完再 md5 比對，
+       不要加 `-o`。
+    2. `gen_ir_from_text.py` 加 `-o <路徑>` 雖然能改主要 IR 輸出路徑，
+       但腳本內部還會另外組一個「試聽檔」路徑（`output/listen_<主檔名>`），
+       若 `-o` 給的是非預設目錄（例如 `/tmp/...`），試聽檔路徑會組出
+       非法字串導致 `convolve.py` 對該路徑寫檔失敗、腳本以非零碼結束——
+       但**主要 IR 檔案本身仍正確產生**，MD5 不受影響；驗證 MD5 時看
+       重生成的 wav 檔內容，不要只看 exit code。
+    3. 全域 12 候選＋無 role 參數的架構下，改一個候選的字串幾乎必然
+       在**未鎖定的其他照片**製造副作用（round7/8/10 皆有實例）——
+       這不是 bug，是介面設計的直接後果，逐輪的「與 T-33 凍結快取差異」
+       段落（`diff_scope_summary()`）會自動列出，別漏看。
+    4. 累積式設計（round8 建立在 round7 之上）代表後面輪次的效果可能被
+       前面輪次的副作用污染（round9 的目標有 2/3 被 round8 已經壞掉的
+       `acoustic_panel` 頂替，而非真的被 curtain_fabric 修正）——這是
+       PLAN.md 已預先聲明的已知代價，不是本卡才發現的設計缺陷，Opus
+       審查時不必當新紅旗，但要核對 REPORT.md 有沒有誠實揭露。
+
+  | 輪次 | overall | floor | in-set 誤判 |
+  |---|---:|---:|---:|
+  | round0_baseline | 31/76 | 4/13 | 9 |
+  | round7 | 30/76 | 3/13 | 9 |
+  | round8 | 24/76 | 3/13 | 18 |
+  | round9 | 20/76 | 3/13 | 23 |
+  | round10 | 23/76 | 3/13 | 26 |
 
 ### T-39 候選材質集擴充（裁決 T-36-A 執行卡 3/3；需使用者參與）
 - **狀態**：⬜ 未開始

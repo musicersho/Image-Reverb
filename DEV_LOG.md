@@ -1,5 +1,26 @@
 # Dev Log
 
+## 2026-09-01 (87)
+
+- **T-38B 🔵 待驗證（有界提示詞實驗，否定結論）**：依 `output/clip_treatment/
+  PLAN.md`（先寫後跑，commit `ca029ee` 早於各輪）跑滿 4 輪預算
+  round7～round10，累積式單改一個候選字串：round7 改 `concrete`（目標
+  bedroom 四面 generic_wall→concrete，未修到，還讓 DivorceBeach floor
+  從對變錯）→ round8 改 `acoustic_panel`（目標 2 面 acoustic_panel→carpet，
+  未修到，且該候選在 gym／restaurant 大量牆面暴走，in-set 誤判 9→18）→
+  round9 改 `curtain_fabric`（3 面目標，2 面換成 acoustic_panel 頂替仍算
+  誤判、1 面未修到，累積到 23）→ round10 依 PLAN §4 事前規則機械選中
+  generic_wall→concrete（round9 後仍是次數最多的原始誤判），換簡短
+  caption 式第二版仍未修到 bedroom，in-set 誤判來到四輪最高 26。四輪對
+  round0_baseline（31/76／4/13／9）**無一輪同時滿足三個產品採用門檻**，
+  且逐輪劣化。**最終決定：不採用任何改動**，`surfaces.py` 已逐字還原成
+  baseline 字串，`git diff -- src/ data/` 為空；16 支測試全綠、六條交付
+  IR MD5 自行重新生成全中、SPEC/ROADMAP/WORKFLOW／三個凍結目錄未觸碰；
+  `load_completed_rounds()` 實際呼叫核對輪次軌跡（回應 T-38A 非阻擋觀察
+  第 2 點）。介面限制（`classify_region_material()` 無 role 參數）與 78
+  面無 held-out 的過擬合風險已誠實記錄進 REPORT.md。下一步：請 Opus
+  驗證本卡；通過後開 Fable 視窗裁決 T-39 或 role-aware 路線。
+
 ## 2026-09-01 (86)
 
 - **T-38A ✅ 通過（Opus 驗證）**：可重現評測與實驗紀錄。驗證者自己重跑：
