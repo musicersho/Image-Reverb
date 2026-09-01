@@ -5286,7 +5286,7 @@ T-34 與 T-35 都動 `pipeline.py`／`cli.py`，依序做避免衝突；T-36 是
 ## Phase 1.9 — CLIP 治療輪（Fable 規劃 2026-08-31；依裁決 T-36-A）
 
 **執行順序固定（2026-09-01 T-38 拆卡後更新）：T-36 文件修正 ✅ → T-37 ✅ →
-T-40 ✅ → T-41 ✅ → T-38A ✅ → T-38B 🔵 待驗證 → T-39 → T-42 → T-43 →
+T-40 ✅ → T-41 ✅ → T-38A ✅ → T-38B ✅（否定結論） → T-39 → T-42 → T-43 →
 回 Fable 收尾複評**
 （T-38 原卡已由 Fable 2026-09-01 拆成 T-38A／T-38B，見 T-38 卡的拆卡裁決）。
 T-36 文件修正是純文件小卡（不另開卡號，範圍見下）；T-37 動 `preprocess.py`、
@@ -5836,7 +5836,7 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
     非阻擋觀察，尤其第 2 點（軌跡表必須真的呼叫 `load_completed_rounds()`）。
 
 ### T-38B 有界提示詞實驗（拆卡 2/2；實驗卡）
-- **狀態**：🔵 待驗證（2026-09-01，Sonnet 自檢完成，否定結論）
+- **狀態**：✅ 通過（Opus 驗證，2026-09-01）——**實驗否定結論成立，工程任務完成**
 - **前置**：T-38A ✅（harness 可重現＋歷史紀錄補齊＋`surfaces.py` 已還原
   baseline）
 - **性質聲明（寫進 REPORT 開頭）**：本卡是**模型實驗**，結果不可事前保證。
@@ -5938,6 +5938,96 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
   | round8 | 24/76 | 3/13 | 18 |
   | round9 | 20/76 | 3/13 | 23 |
   | round10 | 23/76 | 3/13 | 26 |
+
+- **✅ Opus 驗證紀錄（2026-09-01）——結論：通過**（實驗卡：跑滿預算＋誠實否定
+  結論＝完成；每一項都由驗證者自己重跑或自己重算，不採信交接筆記貼上來的輸出）：
+  - ✅ **紅旗一（超出 4 輪預算）不成立**：`rounds/` 實際只有 round0_baseline＋
+    round1～round10（無 round11＋），本卡新增的正是 round7／8／9／10 四輪，
+    四輪 `summary.json` mtime 14:39／14:43／14:46／14:50 遞增，四份
+    `surfaces.py` sha256 **兩兩相異**（`4611161b…`／`633247db…`／`76a0398c…`／
+    `d34bd2c4…`）＝四次真實不同的量測，非複製貼上。
+  - ✅ **紅旗二（假設跑完才補寫）不成立，時間序可證**：`PLAN.md` 單獨 commit
+    `ca029ee` 於 **14:36:35**，早於全部四輪產物 mtime（14:39～14:50）；且
+    PLAN 內「寫死」的三條字串與 round7／8／9 的 `prompts_snapshot.json`
+    **逐字元相符**（驗證者程式比對，非目視）——不可能事後補寫還字字對得上。
+  - ✅ **紅旗三（持平被寫成通過）不成立**：四輪全部劣化或持平，REPORT 表格
+    每一輪「三門檻同時通過？」欄皆寫「否」並附理由；round7 的 in-set 9
+    （與基線持平）也明確判為否（overall／floor 皆下降）。
+  - ✅ **紅旗四（否定結果被標成卡關／工程失敗）不成立**：REPORT 開頭〈性質
+    聲明〉、TASKS／TODO／DEV_LOG 全部寫「合法的實驗否定結論，非執行失敗」，
+    狀態走 🔵 待驗證而非 🔴 卡關。
+  - ✅ **紅旗五（role-aware 偷渡）不成立**：`classify_region_material()` 簽名
+    仍是 `(img, mask, clip_processor, clip_model, threshold)`——**無 role
+    參數**；`git diff -- src/ data/` 為空。
+  - ✅ **範圍紅線逐條複驗**：四輪 snapshot 皆 **12 材質候選＋4 OOD**、id 集合
+    與基線完全相同（無加減候選）；`clip_threshold` 四輪皆 **0.4**；
+    `material_ground_truth.json` sha256 四輪皆 `a4116632…`，與現行實檔相符
+    （ground truth 一字未改）；`CLIP_OOD_PROMPTS` 四輪零變動。四條新字串
+    逐句實讀，皆為一般性材質視覺描述，**未出現任何場地／照片名稱或特徵**
+    （過擬合紅線未越線）。
+  - ✅ **還原是真的——以密碼學＋行為雙重證實**：現行 `src/image_reverb/surfaces.py`
+    sha256 = **`c87d90c9cc23f4bcbc15c32b7955f3066881da9b91565d15fd413eaf0c7f6511`**，
+    與 `round0_baseline/ROUND.md` 的指紋**完全相符**；且驗證者用現行工作樹
+    跑了一輪**全新 13 張、無快取**的完整量測（暫用標籤 `opus_verify_t38b`，
+    驗完即刪，`git status` 仍乾淨）→ **overall 31/76、floor 4/13、in-set 誤判 9**，
+    與 round0_baseline **逐項相同**，且 `tables.md` 的表 1～表 4 與基線
+    **逐行 diff 為空**。還原成立、harness 可重現、基線數字非手打。
+  - ✅ **四輪數字誠實（讀取端獨立核對）**：驗證者自己呼叫
+    `load_completed_rounds()` → `completed` 十輪的 overall/floor/in-set 與
+    REPORT §一表格、與各 `summary.json` **逐項相符**（round7 30/3/9、
+    round8 24/3/18、round9 20/3/23、round10 23/3/26）；`skipped` 正確排除
+    無 summary 的 round6（回應 T-38A 非阻擋觀察第 2 點：軌跡表確實真的呼叫了
+    這支函式，非手挑檔案）。各輪表 4 的誤判明細逐行實讀，與 REPORT 描述的
+    副作用相符（round7 表 4 與基線 9 面**逐行相同**＝目標一面沒修到；
+    round10 新增 RacquetballCourt4 north／SteinmanHall floor／TunnelToHell
+    south 三面 concrete 誤搶，共 26 面）。
+  - ✅ **round10 選擇有照 PLAN §4 事前規則**：round9 確實未同時滿足三門檻
+    （20<31、3<4、23>9）→ 依規則須跑 round10；目標取自 §0 表格內的組合
+    `generic_wall→concrete`（round7～9 全程 4 面未修正），修改候選＝
+    ground truth 該有的 `concrete`，與 ROUND.md `--hypothesis` 所述一致，
+    非臨時換目標。
+  - ✅ **共同鐵則 1**：`scripts/test_*.py` **16 支全部 EXIT=0**（驗證者逐支實跑，
+    含 `test_preprocess`／`test_segmentation`／`test_pipeline_dedup` 三支載入
+    模型的慢測試，非略過）。
+  - ✅ **共同鐵則 2（六條交付 IR MD5）驗證者自己重新生成比對，全部相符**：
+    `gen_ir_from_text.py "浴室"`／`"大教堂"` →
+    `2adbaa75eb698772a8c9aa693179ec47`／`2dd19b6e6d351d713887636fe45cd67e`；
+    `gen_ir_coupled.py` 兩場景 → `9a94ffdf5d8295aee7889729c39c9cd8`／
+    `a1c21bcc3fd9aa3480df203a89c8cd05`；T-14 兩條由 `test_ir_synth.py` 隨鐵則 1
+    通過。四檔皆 48000 Hz、非靜音（RMS 0.049047／0.014144／0.007097／
+    0.030652，峰值 0.707946）。
+  - ✅ **共同鐵則 3／4／6／8（準用 T-40 補充細則）**：`ir_metrics.py` 零 diff；
+    `git diff 63d1f20 HEAD -- SPEC.md ROADMAP.md WORKFLOW.md output/mvp_acceptance/
+    output/material_round/ output/clip_accuracy/` **為空**；本卡 diff 共 **13 檔**，
+    與交接筆記宣告的產出清單**不多不少**（PLAN／REPORT＋四輪 ROUND.md／
+    tables.md＋TASKS／DEV_LOG／TODO），`src/`／`data/` 零 diff。
+  - ✅ **錯誤處理**：無參數 → 印用法 exit 1；非基線輪次缺 `--hypothesis` →
+    `🔴 卡關` exit 1；皆不 crash、不留半成品輪次目錄。
+  - ⚪ **非阻擋觀察（措辭精度，不必回頭改，交下一棒知悉）**：
+    1. round10 的 ROUND.md 寫「round9 仍未修正、次數最多者＝
+       generic_wall→concrete（4 面）」，未提到 round9 當下
+       `curtain_fabric→gypsum_board`（department_store 四面牆，本輪新製造）
+       **同樣是 4 面、與之同分**。但 PLAN §4 的同分規則（取字典序在前的候選）
+       落在 `concrete` < `gypsum_board`，選擇結果仍然正確；TODO.md 用的
+       「**原始**誤判組」措辭則本來就無歧義。屬記述精度問題，非違規。
+    2. REPORT §round8 寫「in-set 從 9 面暴增到 18 面（全部新增的 9 面都是這個
+       候選造成的）」——**淨增**是 9 面，但實際新出現的誤判面是 10 面
+       （acoustic_panel 9 面＋SteinmanHall north 的 audience_seating 1 面），
+       同時 `car_interior_suv` floor 退出 in-set 清單（它掉成 fallback
+       gypsum_board，仍是錯的，只是不算 in-set）。偏差方向是**低估**自身
+       造成的擾動，未誇大任何改善。
+    3. REPORT §round9 敘事把「restaurant ceiling 改判成 acoustic_panel」
+       算在 round9 頭上，實際 round8 就已翻轉；`car_interior_suv` floor 則是
+       round8 短暫離開 in-set、round9 又回來。最終數字與結論不受影響。
+    4. `prompts_snapshot.json`／`summary.json`／`runs/` 依 `.gitignore` 不進
+       版控（承 T-38A 非阻擋觀察第 4 點）：全新 clone 只能靠各 ROUND.md 內嵌
+       的 json 區塊與數字表回溯，數值證據仍在，但無法直接跑讀取端函式。
+  - ⚪ **與本卡無關的既有狀況**：工作目錄仍有未進版控的 `AGENTS.md`
+    （T-41／T-38A 驗證時已記錄，非本卡產物，不在本卡 diff 內）。
+  - **下一步**：開 **Fable** 視窗做收尾裁決——選項 A：進 T-39（擴充候選材質集）；
+    選項 B：另開 role-aware 設計卡。本卡已用實證關掉「純改字串」這條路：
+    兩種風格完全不同的 `concrete` 寫法都動不了 bedroom 四面牆，且全域 12 候選
+    共用 softmax 使任一字串改動必然在未鎖定照片上製造副作用。
 
 ### T-39 候選材質集擴充（裁決 T-36-A 執行卡 3/3；需使用者參與）
 - **狀態**：⬜ 未開始
