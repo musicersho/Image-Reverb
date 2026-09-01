@@ -1,5 +1,33 @@
 # Dev Log
 
+## 2026-09-01 (84)
+
+- **🔮 Fable：T-38 拆卡改版（純文件，未動任何程式與未提交成果）**。依外部
+  診斷報告（`T41_transition_block_diagnosis.md`）逐項核實：T-38 實際已跑
+  round0～round5 六個完整輪次（基線 31/76、floor 4/13、in-set 9；最佳
+  round4 僅持平），round6 中止於 6/13 張、無 summary → 標 **interrupted
+  不納入比較**；原卡卻仍顯示「⬜ 未開始」。根因＝把不可保證成功的模型實驗
+  寫成必須達標的工程卡（產品成效門檻誤當工程完成條件、無迭代預算、無
+  提示詞快照——round1～round5 字串已遺失只剩 hash，標「不可恢復」不得倒填）。
+- **拆卡**：**T-38A**（可重現評測與實驗紀錄：ROUND.md 規格／原子發布／
+  修 `t38_treatment_eval.py` 誤導訊息／補寫七份歷史 ROUND.md）→
+  **T-38B**（有界實驗：假設先寫進 PLAN.md、最多 4 輪 round7～round10、
+  每輪原則上一個變因、跑滿誠實報告＝✅；「沒有提示詞能改善」是合法研究
+  結論非工程失敗；產品採用門檻不變——overall↑＋floor↑＋in-set 不升，
+  對 round0 基線；無達標保留 baseline 交 Fable 裁決）。並明文記錄介面
+  限制：`classify_region_material()` 無 role 參數、三角色共用全域 prompts
+  與 softmax，floor 目標用全域字串不保證可達；role-aware 路線須 Fable
+  新裁決，執行者不得偷渡。
+- **T-41 維持 ✅ 不退回**（卡關與去重無因果）；T-41 卡「scene_cues 三鍵」
+  措辭修正為四鍵。T-39 前置改 T-38B ✅（否定結論同樣解鎖）。T-42／T-43
+  紅線與「正式盲聽必須在 T-42＋T-43 之後」維持不變。
+- **文件更新**：TASKS.md（T-38 拆卡裁決＋T-38A／T-38B 新卡）、
+  HANDOFF_T38.md（大改版，刪除「只要貼 Prompt 就能完成」誤導措辭）、
+  HANDOFF.md、TODO.md。⚠️ 工作樹未提交的 `surfaces.py`／
+  `t38_treatment_eval.py`／`output/clip_treatment/` 是實驗證據，**本次
+  未提交也未清除**，處置寫死在 T-38A 步驟。
+- **下一步**：開 Sonnet 視窗執行 **T-38A**（Prompt 在 HANDOFF_T38.md §6）。
+
 ## 2026-08-31 (83)
 
 - **T-41 ✅ 驗證通過（Opus）**：透視照 SegFormer 去重（`pipeline.py` scene_cues

@@ -1,13 +1,15 @@
 # 交接文件 — 給下一個視窗
 
-> 最後更新：2026-08-31（Opus 驗證視窗：**T-37 ✅、T-40 ✅、T-41 ✅ 三張皆已
-> 通過**——T-41 把 `pipeline.py` scene_cues 段改成重用
-> `surfaces_from_preprocess()` 已算好的 `detail["class_ratios"]["single"]`，
-> 一張透視照的 SegFormer 從載入兩次降為一次；13 張基線全 25 鍵零漂移、
-> 六條交付 IR MD5 未變；下一步是開 Sonnet 視窗執行 T-38）
+> 最後更新：2026-09-01（Fable 規劃視窗：**T-38 拆卡改版**——T-38 實際已跑過
+> round0～round5 六個完整輪次＋round6 中止，無一輪同時達成三門檻；根因是
+> 原卡把「不可保證成功的模型實驗」寫成「必須達標的工程卡」。已拆成
+> **T-38A（可重現評測與實驗紀錄）→ T-38B（有界提示詞實驗，最多 4 輪，
+> 否定結果是合法結論）**；T-41 維持 ✅ 不退回。⚠️ 工作樹有未提交的
+> `surfaces.py`／`t38_treatment_eval.py`／`output/clip_treatment/`＝上一輪
+> 實驗證據，**T-38A 依步驟記錄前不得清除**。下一步：開 Sonnet 視窗執行 T-38A）
 > **新視窗請先讀 [CLAUDE.md](CLAUDE.md) 知道自己的角色，再讀本檔知道現在的狀況。**
 >
-> 驗證本檔是否過期：看 [DEV_LOG.md](DEV_LOG.md) 最上面一筆是不是 `2026-08-31 (83)`；
+> 驗證本檔是否過期：看 [DEV_LOG.md](DEV_LOG.md) 最上面一筆是不是 `2026-09-01 (84)`；
 > 若已有更新的紀錄，以 DEV_LOG 為準。
 
 ---
@@ -27,15 +29,24 @@ Phase 1.6 修正輪（T-23~T-26）✅ 四張全過（2026-08-30）。**
 **gate 規則不動、修出口（T-30）、材質準確度先行**（全文見 TASKS.md T-28 卡尾）。
 文字（`--text`）與複合場景（`--scene`）兩條管線不受 gate 影響，端到端可用。
 
-🎯 **現在該做的：T-37 ✅、T-40 ✅、T-41 ✅ 皆已通過（Opus）→ 開 Sonnet 視窗
-執行 T-38（CLIP 提示詞治療，裁決 T-36-A 執行卡 2/3）**。
-📄 **T-38／T-39 這一階段另有專屬交接文件 [HANDOFF_T38.md](HANDOFF_T38.md)**
-（三個一定會踩到的地雷：預設評測指令永遠 hard fail、T-33 凍結守門會在改動前
-就卡關、驗收基線必須重算——動工前必讀）。⚠️ 2026-08-31 Fable 已依外部掃描報告在
+🎯 **現在該做的：開 Sonnet 視窗執行 T-38A（可重現評測與實驗紀錄）**。
+⚠️ **T-38 已於 2026-09-01 由 Fable 拆卡改版**：原卡實際已跑六個完整輪次
+（round0 基線 31/76、最佳 round4 僅持平、round6 中止 6/13 張）無一達標；
+拆成 **T-38A**（先把實驗紀錄機制修好——round1～round5 的提示詞字串已遺失
+只剩 hash，標「不可恢復」不得倒填）→ **T-38B**（有界實驗：假設先寫、最多
+4 輪、跑滿誠實報告＝完成；「沒有提示詞能改善」是合法研究結論，不是工程
+失敗也不是使用者操作失敗）。產品採用門檻不變（overall↑＋floor↑＋in-set
+不升，對 round0 基線）；無候選達標則保留 baseline 交 Fable 裁決進 T-39 或
+另開 role-aware 卡（`classify_region_material()` 無 role 參數，floor 目標
+用全域字串不保證可達——介面限制已明文入卡）。拆卡裁決全文在 TASKS.md
+T-38 卡。
+📄 **T-38A／T-38B／T-39 這一階段另有專屬交接文件 [HANDOFF_T38.md](HANDOFF_T38.md)**
+（三個一定會踩到的地雷＋工作樹未提交證據的處置規矩——動工前必讀）。
+⚠️ 2026-08-31 Fable 已依外部掃描報告在
 Phase 1.9 插入**產物可信度修正輪 T-40～T-43**（評測快取指紋／SegFormer
 去重／gate 交易式輸出／T-17 產物溯源——五項缺陷全部對碼核實屬實），完整
 順序更新為
-**T-37 ✅ → T-40 ✅ → T-41 ✅ → T-38 → T-39 → T-42 → T-43 → 收尾複評**；
+**T-37 ✅ → T-40 ✅ → T-41 ✅ → T-38A → T-38B → T-39 → T-42 → T-43 → 收尾複評**；
 **任何新的正式盲聽必須在 T-42＋T-43 之後**（現存盲測素材是 `d958b3c` 產的，
 舊 2/5 不能宣稱屬於現行碼）。卡片與插卡裁決全文在 TASKS.md 檔尾 Phase 1.9 節。
 ⚠️ **T-40 的一個重要副作用**：`python scripts/t36_clip_accuracy.py`
@@ -683,10 +694,24 @@ python scripts/convolve.py assets/dry/clap_synth.wav output/ir_room_small_carpet
   真的附了實測輸出（可用 `git worktree` 重現驗證者自己再跑一次）。通過後開
   Sonnet 視窗執行 T-41。
 
-【T-40 通過後 — 依序 T-41 → T-38 → T-39 → T-42 → T-43】（模型選 Sonnet）
-  2026-08-31 插卡的產物可信度修正輪：T-41（透視照 SegFormer 去重，13 張基線
-  逐值不變）→ 治療主線 T-38 → T-39 → T-42（gate 交易式輸出與舊產物 archive
-  隔離）→ T-43（analysis.json 生成指紋＋t17_blind_test 溯源驗證）。
+【已完成 — T-40 ✅、T-41 ✅ 皆通過（Opus，2026-08-31）】
+  T-41：透視照 SegFormer 去重（pipeline.py +2 -5），13 張基線全 25 鍵零漂移、
+  六條交付 IR MD5 未變。詳見 TASKS.md T-41 卡。
+
+【已處理 — T-38 拆卡改版（Fable，2026-09-01）】
+  T-38 實際已跑 round0～round5 六個完整輪次＋round6 中止（6/13 張、無
+  summary、標 interrupted 不納入比較），無一輪同時達成三門檻（基線 31/76、
+  最佳 round4 僅持平）；round1～round5 提示詞字串已遺失只剩 hash（標
+  「不可恢復」，不得倒填）。根因＝原卡把模型實驗寫成必達工程卡。拆成
+  T-38A（可重現評測與實驗紀錄）→ T-38B（有界實驗，最多 4 輪，否定結果
+  是合法結論）。T-41 維持 ✅ 不退回。⚠️ 工作樹未提交的 surfaces.py／
+  t38_treatment_eval.py／output/clip_treatment/ 是實驗證據，T-38A 依步驟
+  記錄前不得清除。裁決全文見 TASKS.md T-38 卡。
+
+【現在該做的 — 開 Sonnet 視窗執行 T-38A】
+  貼 HANDOFF_T38.md §6 的 T-38A Prompt（含「不得清除工作樹證據」的提醒）。
+  之後依序 T-38B → T-39 → T-42（gate 交易式輸出與舊產物 archive 隔離）→
+  T-43（analysis.json 生成指紋＋t17_blind_test 溯源驗證）。
   插卡裁決與四張卡全文見 TASKS.md「Phase 1.9 插卡」節。
 
 【Phase 1.9 跑完後 — 回 Fable 收尾複評】（模型選 Fable）

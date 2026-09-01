@@ -5285,10 +5285,11 @@ T-34 與 T-35 都動 `pipeline.py`／`cli.py`，依序做避免衝突；T-36 是
 
 ## Phase 1.9 — CLIP 治療輪（Fable 規劃 2026-08-31；依裁決 T-36-A）
 
-**執行順序固定（2026-08-31 插卡後更新）：T-36 文件修正 ✅ → T-37 → T-40 →
-T-41 → T-38 → T-39 → T-42 → T-43 → 回 Fable 收尾複評**。
+**執行順序固定（2026-09-01 T-38 拆卡後更新）：T-36 文件修正 ✅ → T-37 ✅ →
+T-40 ✅ → T-41 ✅ → T-38A → T-38B → T-39 → T-42 → T-43 → 回 Fable 收尾複評**
+（T-38 原卡已由 Fable 2026-09-01 拆成 T-38A／T-38B，見 T-38 卡的拆卡裁決）。
 T-36 文件修正是純文件小卡（不另開卡號，範圍見下）；T-37 動 `preprocess.py`、
-T-38 動 `surfaces.py` 提示詞字典、T-39 動 `data/materials.json`＋提示詞字典
+T-38B 動 `surfaces.py` 提示詞字典、T-39 動 `data/materials.json`＋提示詞字典
 ＋ground truth 重對映（需使用者小輪參與），依序做避免衝突。
 T-40～T-43 是 2026-08-31 依外部掃描報告插入的**產物可信度修正輪**（背景與
 順序裁決全文見下方「Phase 1.9 插卡」節）：T-40（評測快取指紋）與 T-41
@@ -5548,49 +5549,171 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
     說明，mtime 05:36，早於本卡 commit 06:27），不在本卡 diff 內，非本卡產物。
   - **下一步**：依 Phase 1.9 固定順序開 **T-40**（評測快取指紋，插卡 1/4）。
 
-### T-38 CLIP 提示詞治療：地板優先＋in-set 混淆對（裁決 T-36-A 執行卡 2/3）
+### T-38 CLIP 提示詞治療（原卡；🔮 已由 Fable 拆卡改版 2026-09-01，本卡保留為歷史紀錄，不再執行）
+- **狀態**：🔮 **已拆卡（Fable 2026-09-01）**——實際已執行 round0～round5
+  六個完整輪次＋round6 中止（6/13 張、無 summary），**無一輪同時達成三門檻**；
+  原卡把「不可保證成功的模型實驗」寫成「必須達標的工程卡」＝任務設計錯誤
+  （根因裁決見下方「Fable 拆卡裁決」）。後續執行改走 **T-38A（可重現評測與
+  實驗紀錄）→ T-38B（有界提示詞實驗）** 兩張新卡。
+  ⚠️ 此前本卡長期顯示「⬜ 未開始」與事實不符——六輪量測是真實發生過的，
+  記錄如下（數字取自各輪 `summary.json`，`output/clip_treatment/rounds/`）：
+
+  | 輪次 | overall | floor | in-set 誤判 | 同時達成三門檻？ |
+  |---|---:|---:|---:|---|
+  | round0_baseline | 31/76 | 4/13 | 9 | （基線） |
+  | round1 | 24/76 | 4/13 | 11 | 否 |
+  | round2 | 24/76 | 3/13 | 16 | 否 |
+  | round3 | 29/76 | 3/13 | 10 | 否 |
+  | round4 | 31/76 | 4/13 | 9 | 否（**僅持平，不得記為通過**） |
+  | round5 | 24/76 | 3/13 | 12 | 否 |
+  | round6 | 6/13 張中止 | — | — | **interrupted，不納入比較** |
+
+  round1～round5 的提示詞字串已被逐輪覆寫且未 commit，**只剩 `surfaces.py`
+  sha256，實際字串不可恢復**——這正是拆卡要修的第一件事（T-38A）。
+  現行工作樹的 `surfaces.py` 未提交改動（carpet 提示詞一行）sha256 與
+  round6 相同＝round6 的提示詞快照，處置方式寫死在 T-38A 步驟裡，
+  **在那之前不得 reset／checkout／清除**。
+- **原卡驗收門檻（保留供追溯；產品採用條件由 T-38B 原文繼承）**：
+  1. overall 正確率必須上升；2. floor 必須上升且 in-set 誤判不得上升；
+  3. 分組數字照列；4. 基線變化表＋gate 放行變化清單；5. 臥室紅旗。
+- **原卡其餘內容**（範圍紅線／證據／方法論警語）已全文移入 T-38A／T-38B，
+  此處不重複。
+
+#### 🔮 Fable 拆卡裁決（2026-09-01，依外部診斷報告 `T41_transition_block_diagnosis.md` 逐項核實）
+
+**一句話：卡關根因不是 T-41，是 T-38 的任務設計——把「產品成效門檻」誤寫成
+「工程任務完成條件」，且沒有迭代預算與可重現的實驗紀錄。** 逐項裁決：
+
+1. **T-41 維持 ✅，不退回**。SegFormer 去重 13 張零漂移已經 Opus 逐項複驗，
+   與本次卡關無因果。診斷報告指出的「scene_cues 三鍵應為四鍵」屬文件措辭，
+   已就地修正（見 T-41 卡步驟 4 註記）。
+2. **「工程完成」與「產品成效」分離**：提示詞能否同時提高 overall 與 floor
+   又不增加 in-set 誤判，是**待驗證的假設**，不是工程步驟可保證的結果。
+   原卡只有「達標」或「🔴 卡關」兩種出口，缺少「實驗完成、假設不成立」的
+   正常完成狀態，導致執行者無限換句重跑——六輪即是實證。拆成：
+   **T-38A**（工程卡：可重現評測 harness 與輪次紀錄）＋
+   **T-38B**（實驗卡：有界提示詞實驗；跑滿預算誠實報告＝工程完成，
+   「沒有提示詞能改善」是合法實驗結論，不是工程實作失敗，也不是使用者
+   操作失敗）。
+3. **floor 目標與介面不匹配，明文入卡**：`classify_region_material()`
+   **沒有 `role` 參數**，floor／wall／ceiling 共用同一套全域 prompts 與同一個
+   softmax 候選集——任何為地板調的字串必然同時影響牆與天花板，改一個候選
+   也會重分配全部候選的機率。所以「floor 必須改善」**不是只改全域字串就
+   保證可達的目標**。T-38B 不得偷偷擴大成 role-aware prompts；若實驗失敗，
+   由 Fable 在收尾另行裁決：**A.** 直接進 T-39 擴充候選集（16/78 proxy 面
+   已證明涵蓋率本來就是天花板）；或 **B.** 新開 role-aware prompts／
+   role-specific candidate set 設計卡。**未經新裁決，不得修改
+   `classify_region_material()` 介面或分類邏輯。**
+4. **實驗必須可重現**：round1～round5 只留 hash 沒留提示詞字串，無法重現
+   任何舊輪、也無法解釋 round4 為何優於 round5——已遺失的字串**明確標
+   「不可恢復」，不得猜測或倒填**。往後每輪必產會進版控的 `ROUND.md`
+   （規格見 T-38A）。
+5. **round6 標 interrupted，不納入比較**；round4 只能記為持平，
+   **不得改寫成通過**。無候選達標時保留 baseline（不採用任何提示詞改動）。
+6. **交接文件的「使用者只要貼 Prompt 就能完成」措辭刪除**（HANDOFF_T38.md
+   已同步改寫）：否定結果是研究結論，必須事前讓使用者知道這是可能且合法的
+   出口。
+
+### T-38A 可重現評測與實驗紀錄（拆卡 1/2；工程卡）
 - **狀態**：⬜ 未開始
-- **前置**：T-37 ✅（TunnelToHell 修正後，它的六面才是真的透視裁切，量測才乾淨）
-  ＋T-40 ✅（評測快取指紋——本卡是「改提示詞→重量 78 面」的迭代輪，每輪
-  量測必須保證量到新提示詞，不得靠操作者記得 `--fresh`）＋T-41 ✅
-  （SegFormer 去重——降低本卡與 T-39 反覆重跑 13 張的時間與記憶體成本）
-- **目標**：只動提示詞字串，提升 CLIP 真判定準確率。**驗收基線＝T-37 的
-  再基線表**（`output/equirect_fix/REPORT.md`；T-36 原始數字並列供追溯——
-  clip 面 11/21＝52.4%、非 proxy 31/60＝51.7%、floor 4/13＝30.8%、in-set
-  誤判 10 面、「不該 fallback 而 fallback」3 面）。
-- **證據**（T-36 REPORT ①②④、表 3/5/6）：地板是最差角色；in-set 混淆對
-  集中在 curtain_fabric↔glass（壁球場西牆）、acoustic_panel↔地毯（百貨／
-  健身房地板）、curtain_fabric↔carpet（車內地板）、generic_wall↔concrete
-  （臥室四牆）。
-- **範圍紅線**：只動 `surfaces.py` 的 `CLIP_MATERIAL_PROMPTS`／
-  `CLIP_OOD_PROMPTS` 字串值；**不加減候選 id**（T-39 的事）；門檻 0.4 不動；
-  `classify_region_material()`／`compute_materials_confidence()` 邏輯零改動；
-  `data/material_ground_truth.json` 是評測集，**一個字都不許改**。
-- **評測 harness**：擴充 `scripts/t36_clip_accuracy.py`（或另立
-  `t38_treatment_eval.py` 引用其模組）加「治療模式」：與 T-33 凍結快取的
-  交叉守門在治療模式下改成**產差異表**而非 exit 1；**預設模式行為不變**
-  （守門不得被靜默弱化，Opus 會實測預設模式仍會擋竄改）。輸出寫
-  `output/clip_treatment/`。
-- **驗收門檻（事前寫死，防止調到哪算哪）**：
-  1. 端到端六面材質正確率（表 1 口徑，T-37 再基線起算）**必須上升**；
-  2. floor 角色正確率**必須上升**；in-set 誤判面數**不得上升**；
-  3. clip／fallback／out_of_domain 分組數字照列（分母會因面在組間移動而變，
-     如實記錄，不當門檻）；
-  4. 基線變化表（共同鐵則 8）＋gate 放行變化清單，放行清單附
-     「是否 T-17 已知錯誤輸出」欄（裁決一第 5 點的格式）；
-  5. 臥室紅旗檢查（共同鐵則 7）。
-- **方法論警語（誠實揭露，寫進 REPORT）**：13 張 78 面既是調參集也是驗收集，
-  沒有 held-out set——這是已知限制。防線：(a) 提示詞必須是**材質的一般性
-  描述**，不得夾帶特定場地／照片特徵（Opus 逐條讀提示詞內容）；(b) 允許
-  迭代，但每輪都在完整 78 面上量測並記錄輪次軌跡，不得只挑錯的面調；
-  (c) 日後新照片是天然的 held-out 驗證。
-- **Opus 驗證重點**：紅旗：提示詞夾帶場地特定描述（過擬合捷徑）；紅旗：
-  diff 超出兩個字典的字串值；紅旗：ground truth 被改；紅旗：預設模式守門
-  被弱化；紅旗：驗收門檻沒達卻寫通過；紅旗：門檻 0.4 被動了。
+- **前置**：T-37 ✅＋T-40 ✅＋T-41 ✅（同原 T-38）。⚠️ 開工時工作樹**已有**
+  未提交的 `scripts/t38_treatment_eval.py`（前輪產物，由本卡收編修正後進
+  版控）與 `src/image_reverb/surfaces.py` 一行提示詞改動（round6 快照，
+  處置見步驟 4）——**這些是本卡的輸入，不是垃圾，動工前不得清除**。
+- **目標**：把治療評測變成「每輪可重現、狀態誠實、原子發布」的 harness，
+  並補齊 round0～round6 的歷史紀錄。**本卡不改任何提示詞、不追求正確率**。
+- **範圍**：`scripts/t38_treatment_eval.py`（收編＋修正）、
+  `output/clip_treatment/rounds/*/ROUND.md`（新增，`output/` 的 `*.md` 會進
+  版控）、新測試。**`src/` 最終零 diff**（步驟 4 的還原即為此）；
+  `data/material_ground_truth.json`／門檻 0.4／gate 邏輯照共同鐵則零改動；
+  `t36_clip_accuracy.py` 預設模式行為一字不動（原 T-38 紅線繼承）。
+- **執行步驟**：
+  1. **修正 `t38_treatment_eval.py` 的誤導訊息**（修 bug 類，對舊碼實測
+     fail）：現行第 216 行附近只要 `all_diffs` 非空就印「預期只有
+     TunnelToHell 三項比對」——round3／round5 明明有多張照片大量漂移也印
+     同一句。改成**真正檢查差異照片集合**：差異僅涉及 `TunnelToHell` 時才
+     印「符合預期」，否則列出實際涉及的照片清單與項數並標示「非預期範圍，
+     多半是本輪提示詞造成的漂移」。
+  2. **每輪原子發布**：`summary.json`／`tables.md` 一律先寫暫存路徑、該輪
+     13 張全部完成後才 rename 到位；`ROUND.md` 含
+     `status: complete／failed／interrupted` 欄。**部分完成的目錄不得被
+     當成有效輪次**——讀取端（含 tables 彙整）遇到無 `summary.json` 或
+     status 非 complete 的輪次必須明示跳過，不得靜默納入比較。
+  3. **每輪自動生成會進版控的 `ROUND.md`**，必含：
+     完整 `CLIP_MATERIAL_PROMPTS`／`CLIP_OOD_PROMPTS` snapshot；相對基線
+     （round0_baseline）的 before/after 字串 diff；父輪次；本輪假設與修改
+     理由（執行者提供，不得留空）；執行指令；code／data／model／input
+     fingerprint（沿用 `eval_cache.py` 六類指紋）；overall／floor／in-set
+     ／來源分組數字；status。
+  4. **補寫歷史輪次 round0～round6 的 `ROUND.md`**：
+     現有數字與 `surfaces.py` hash 照錄；round1～round5 的提示詞字串
+     **明確寫「不可恢復」**（只留 hash，不得造資料）；round6 標
+     `interrupted`（6/13 張、無 summary，不納入比較），並把現行工作樹
+     `surfaces.py` 的未提交 diff **原文**記進 round6 的 ROUND.md（sha256
+     相符＝round6 唯一倖存的提示詞證據）。**記錄 commit 之後**，才允許把
+     `surfaces.py` 還原到 HEAD 基線（這是全案唯一允許的還原動作，順序
+     不得顛倒）。
+  5. 新測試：原子發布（模擬中途失敗→不得留下看似完整的輪次）、誤導訊息
+     修正（構造多照片差異→不得印「預期只有 TunnelToHell」）。
+- **驗收（工程口徑，無正確率門檻）**：測試全綠；ROUND.md 七份齊備且
+  round1~5 誠實標不可恢復；`src/` 零 diff；共同鐵則 1–4（六條 IR MD5 照抓；
+  本卡零 `src/` 改動，鐵則 8 準用 T-40 補充細則以「`git diff src/ data/`
+  為空＋MD5 比對」代替 13 張重跑）。
+- **Opus 驗證重點**：紅旗：round1～round5 的 ROUND.md 出現「回憶」出來的
+  提示詞字串（只准 hash＋不可恢復聲明）；紅旗：round6 被納入任何比較表；
+  紅旗：`surfaces.py` 還原發生在 round6 diff 記錄 commit 之前；紅旗：
+  誤導訊息只改字面沒改條件檢查；紅旗：`t36_clip_accuracy.py` 預設模式被動。
+
+### T-38B 有界提示詞實驗（拆卡 2/2；實驗卡）
+- **狀態**：⬜ 未開始
+- **前置**：T-38A ✅（harness 可重現＋歷史紀錄補齊＋`surfaces.py` 已還原
+  baseline）
+- **性質聲明（寫進 REPORT 開頭）**：本卡是**模型實驗**，結果不可事前保證。
+  「跑滿預算、誠實產出報告」＝工程任務完成（✅ 的充分條件）；
+  **「沒有提示詞能改善」是合法實驗結論**，不得標成工程實作失敗。
+- **實驗設計（先寫後跑，不准邊跑邊無限改句子）**：
+  1. 開跑前先在 `output/clip_treatment/PLAN.md` 列出**每輪要驗證的假設**
+     （依 round0～round5 的錯誤表選：in-set 混淆對 curtain_fabric↔glass、
+     acoustic_panel↔地毯、curtain_fabric↔carpet、generic_wall↔concrete
+     ——T-36 REPORT ①②④ 的證據仍有效）；
+  2. **預算寫死：最多 4 個新輪次（round7～round10）**，一輪＝一次完整
+     13 張量測嘗試（含因自身錯誤中止的輪；純環境事故中止經 ROUND.md 記錄
+     原因後不計，不得濫用）；跑滿即停；
+  3. **每輪原則上只改一個明確變因**（一個候選的字串）；同時改多個必須在
+     ROUND.md 記錄理由；
+  4. 每輪照 T-38A 機制產 ROUND.md＋原子發布，78 面全量量測，不得只挑錯
+     的面調。
+- **介面限制（裁決第 3 點，明文承認）**：`classify_region_material()` 無
+  `role` 參數，floor／wall／ceiling 共用全域 prompts 與 softmax——
+  「floor 改善」在此介面下**無法保證可達**。**不得偷偷擴大成 role-aware
+  prompts、不得動 `classify_region_material()` 介面或邏輯**；此路線是否
+  開卡由 Fable 收尾裁決（選項 A：進 T-39 擴候選；選項 B：role-aware 設計卡）。
+- **產品採用條件（事前門檻，繼承原 T-38，不變）**：某輪候選要被採用進
+  `surfaces.py`，必須同時：1. overall 上升；2. floor 上升；3. in-set 誤判
+  不上升（皆對 round0_baseline：31/76／4/13／9）。**round4 型的持平不算
+  通過**。無候選達標→ `surfaces.py` 保留 baseline、不採用任何提示詞改動，
+  REPORT 寫明「提示詞治療輪否定結果」，交 Fable 收尾裁決進 T-39 或選項 B。
+- **範圍紅線（繼承原 T-38）**：只動 `CLIP_MATERIAL_PROMPTS`／
+  `CLIP_OOD_PROMPTS` 字串值；不加減候選 id；門檻 0.4 不動；ground truth
+  一個字不改；提示詞必須是材質的一般性描述，不得夾帶場地／照片特徵
+  （過擬合紅線，Opus 逐條讀）；78 面既是調參集也是驗收集、無 held-out
+  ——誠實寫進 REPORT。
+- **收尾（兩種出口都要做）**：
+  - **有候選達標**：採用該輪字串 commit，跑基線變化表（共同鐵則 8）＋
+    gate 放行變化清單（附「是否 T-17 已知錯誤輸出」欄）＋臥室紅旗
+    （共同鐵則 7）；
+  - **無候選達標**：`surfaces.py` 零 diff（＝baseline），鐵則 8 準用
+    T-40 補充細則；REPORT 誠實記錄全部輪次軌跡與否定結論。
+- **Opus 驗證重點**：紅旗：超出 4 輪預算；紅旗：假設是跑完才補寫的
+  （PLAN.md 的 commit 時間在輪次之後）；紅旗：持平被寫成通過；紅旗：
+  否定結果被標成 🔴 卡關或工程失敗（正確標記是 ✅＋否定結論）；紅旗：
+  role-aware 偷渡；紅旗：其餘同原 T-38（ground truth／門檻 0.4／過擬合）。
 
 ### T-39 候選材質集擴充（裁決 T-36-A 執行卡 3/3；需使用者參與）
 - **狀態**：⬜ 未開始
-- **前置**：T-38 ✅；**需使用者參與**（16 個 proxy 面的 ground truth 重對映
+- **前置**：T-38B ✅（⚠️ Fable 2026-09-01 拆卡後更新：**T-38B 以「跑滿預算
+  ＋否定結論」收尾也算 ✅**，同樣解鎖本卡——涵蓋率天花板正是否定結論
+  指向這裡的理由）；**需使用者參與**（16 個 proxy 面的 ground truth 重對映
   確認——比 T-36 的 78 面小很多，估 10 分鐘級）
 - **證據**：16/78 面（20.5%）的真實材質不在 12 候選內、proxy 正確率 1/16
   （6.2%）——涵蓋率是準確率天花板。T-36 逐面確認記錄的實際材質：塑膠
@@ -6163,8 +6286,11 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
      REPORT；只允許改善，不設定量門檻）；
   4. 基線變化表（鐵則 8）：沿用 T-37 的基線表機制（或 T-33 的 13 張重跑
      手法）重跑 13 張——三軸 confidence、gate 結果、六面材質、scene_cues
-     三鍵數值**全部逐值不變**（任何一格漂移＝🔴 停；本卡是純去重，沒有
-     任何數值允許動）。
+     四鍵數值**全部逐值不變**（任何一格漂移＝🔴 停；本卡是純去重，沒有
+     任何數值允許動）。（⚠️ Fable 2026-09-01 修正措辭：原誤寫「三鍵」，
+     實為四鍵 `floor_pixel_ratio`／`person_pixel_ratio`／`out_of_domain`／
+     `out_of_domain_label`——Sonnet 交接筆記與 Opus 驗證早已按四鍵執行，
+     僅文件與事實不符，非驗收缺陷。）
 - **舊碼必須 fail 的最小重現**：`test_pipeline_dedup.py` 對 `git worktree`
   舊碼實測——舊碼計到 2 次載入 → fail；新碼 1 次 → pass。輸出貼交接筆記。
 - **自我檢查**：全部 `scripts/test_*.py`（含新增）exit 0；六條交付 IR MD5
