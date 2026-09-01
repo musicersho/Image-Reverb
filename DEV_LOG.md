@@ -1,5 +1,21 @@
 # Dev Log
 
+## 2026-09-01 (86)
+
+- **T-38A ✅ 通過（Opus 驗證）**：可重現評測與實驗紀錄。驗證者自己重跑：
+  16 支 `test_*.py` 全 EXIT=0；六條交付 IR MD5 自行重新生成全中；
+  `git diff a0fe24e HEAD -- src/ data/` 為空。四項紅旗逐項不成立——
+  **round6 的 diff 原文以密碼學方式獨立證實**（把 ROUND.md 記的 carpet 那行
+  套回 HEAD 的 `surfaces.py`，sha256 = `c89382ba…` 與 round6 快取指紋完全相符；
+  HEAD 現值 `c87d90c9…` 與 round0 基線相符），代表證據為真且還原確實回到基線；
+  **兩發突變測試**（破壞原子發布順序、把 `diff_scope_summary()` 退回舊邏輯）
+  分別讓測試 [1]／[5] 實測 fail，證明新測試非空、修正非只改字面；
+  `t36_clip_accuracy.py` 零 diff。另自行重跑 `round0_baseline` → 四個產物
+  逐位元相同（冪等）、`load_completed_rounds()` 對真實目錄正確跳過 round6。
+  四點非阻擋觀察（測試註解誤指 git 歷史、`load_completed_rounds()` 尚無正式
+  呼叫端、status 解析對粗體敏感、`prompts_snapshot.json` 不進版控）已寫入
+  T-38A 卡，交給 T-38B 帶著走。下一步：開 Sonnet 視窗執行 **T-38B**。
+
 ## 2026-09-01 (85)
 
 - **T-38A 🔵 待驗證（Sonnet 自檢通過）**：可重現評測與實驗紀錄。

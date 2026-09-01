@@ -1,15 +1,16 @@
 # 交接文件 — 給下一個視窗
 
-> 最後更新：2026-09-01（Fable 規劃視窗：**T-38 拆卡改版**——T-38 實際已跑過
-> round0～round5 六個完整輪次＋round6 中止，無一輪同時達成三門檻；根因是
-> 原卡把「不可保證成功的模型實驗」寫成「必須達標的工程卡」。已拆成
-> **T-38A（可重現評測與實驗紀錄）→ T-38B（有界提示詞實驗，最多 4 輪，
-> 否定結果是合法結論）**；T-41 維持 ✅ 不退回。⚠️ 工作樹有未提交的
-> `surfaces.py`／`t38_treatment_eval.py`／`output/clip_treatment/`＝上一輪
-> 實驗證據，**T-38A 依步驟記錄前不得清除**。下一步：開 Sonnet 視窗執行 T-38A）
+> 最後更新：2026-09-01（Opus 驗證視窗：**T-38A ✅ 通過**——治療評測 harness
+> 已可重現（原子發布＋每輪 `ROUND.md`＋讀取端跳過中止輪次），round0～round6
+> 七份 `ROUND.md` 齊備，round1～round5 的提示詞字串誠實標「不可恢復」，
+> round6 標 interrupted 不納入比較、其 diff 原文已用 sha256 證實為真，
+> `surfaces.py` 已還原基線（`src/` 零 diff）。T-38 拆卡背景：實際已跑
+> round0～round5 六輪無一同時達成三門檻，根因是原卡把不可保證的模型實驗
+> 寫成必達工程卡，故拆成 **T-38A（工程）→ T-38B（實驗，最多 4 輪，否定
+> 結果是合法結論）**；T-41 維持 ✅。下一步：開 Sonnet 視窗執行 T-38B）
 > **新視窗請先讀 [CLAUDE.md](CLAUDE.md) 知道自己的角色，再讀本檔知道現在的狀況。**
 >
-> 驗證本檔是否過期：看 [DEV_LOG.md](DEV_LOG.md) 最上面一筆是不是 `2026-09-01 (84)`；
+> 驗證本檔是否過期：看 [DEV_LOG.md](DEV_LOG.md) 最上面一筆是不是 `2026-09-01 (86)`；
 > 若已有更新的紀錄，以 DEV_LOG 為準。
 
 ---
@@ -29,7 +30,11 @@ Phase 1.6 修正輪（T-23~T-26）✅ 四張全過（2026-08-30）。**
 **gate 規則不動、修出口（T-30）、材質準確度先行**（全文見 TASKS.md T-28 卡尾）。
 文字（`--text`）與複合場景（`--scene`）兩條管線不受 gate 影響，端到端可用。
 
-🎯 **現在該做的：開 Sonnet 視窗執行 T-38A（可重現評測與實驗紀錄）**。
+🎯 **現在該做的：開 Sonnet 視窗執行 T-38B（有界提示詞實驗）**——
+T-38A 已於 2026-09-01 由 Opus 驗證 ✅ 通過（harness 可重現、round0～round6 的
+`ROUND.md` 齊備、`surfaces.py` 已還原基線）。T-38B 開工前請讀 T-38A 卡尾
+Opus 驗證紀錄的四點非阻擋觀察，尤其：輪次軌跡表必須真的呼叫
+`load_completed_rounds()`，否則 round6 之類的中止輪次會漏掉跳過保護。
 ⚠️ **T-38 已於 2026-09-01 由 Fable 拆卡改版**：原卡實際已跑六個完整輪次
 （round0 基線 31/76、最佳 round4 僅持平、round6 中止 6/13 張）無一達標；
 拆成 **T-38A**（先把實驗紀錄機制修好——round1～round5 的提示詞字串已遺失
@@ -46,7 +51,7 @@ T-38 卡。
 Phase 1.9 插入**產物可信度修正輪 T-40～T-43**（評測快取指紋／SegFormer
 去重／gate 交易式輸出／T-17 產物溯源——五項缺陷全部對碼核實屬實），完整
 順序更新為
-**T-37 ✅ → T-40 ✅ → T-41 ✅ → T-38A → T-38B → T-39 → T-42 → T-43 → 收尾複評**；
+**T-37 ✅ → T-40 ✅ → T-41 ✅ → T-38A ✅ → T-38B → T-39 → T-42 → T-43 → 收尾複評**；
 **任何新的正式盲聽必須在 T-42＋T-43 之後**（現存盲測素材是 `d958b3c` 產的，
 舊 2/5 不能宣稱屬於現行碼）。卡片與插卡裁決全文在 TASKS.md 檔尾 Phase 1.9 節。
 ⚠️ **T-40 的一個重要副作用**：`python scripts/t36_clip_accuracy.py`
@@ -708,8 +713,8 @@ python scripts/convolve.py assets/dry/clap_synth.wav output/ir_room_small_carpet
   t38_treatment_eval.py／output/clip_treatment/ 是實驗證據，T-38A 依步驟
   記錄前不得清除。裁決全文見 TASKS.md T-38 卡。
 
-【現在該做的 — 開 Sonnet 視窗執行 T-38A】
-  貼 HANDOFF_T38.md §6 的 T-38A Prompt（含「不得清除工作樹證據」的提醒）。
+【現在該做的 — 開 Sonnet 視窗執行 T-38B】（T-38A 已 ✅ 通過 2026-09-01）
+  貼 HANDOFF_T38.md §6 的 T-38B Prompt。
   之後依序 T-38B → T-39 → T-42（gate 交易式輸出與舊產物 archive 隔離）→
   T-43（analysis.json 生成指紋＋t17_blind_test 溯源驗證）。
   插卡裁決與四張卡全文見 TASKS.md「Phase 1.9 插卡」節。
