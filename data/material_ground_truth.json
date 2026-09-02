@@ -1,7 +1,8 @@
 {
-  "version": "1.0",
-  "description": "T-36 CLIP 材質判定準確度診斷：13 張照片 × 六面的人工 ground truth。由使用者於對話中逐面確認（非 AI 自填），confirmed_by 一律為 'user'。material_id 為 data/materials.json 的 12 個候選 id 之一，或 'unknown'（照片看不到/判不了的面，這些面排除在 t36_clip_accuracy.py 的正確率分母外）。'proxy': true 標記代表真實材質不在 12 個候選裡，使用者選擇聲學特性最接近的候選作為近似值——這類面的『誤判』統計需搭配這個標記解讀，不是單純的判斷錯誤。",
+  "version": "1.1",
+  "description": "T-36 CLIP 材質判定準確度診斷：13 張照片 × 六面的人工 ground truth。由使用者於對話中逐面確認（非 AI 自填），confirmed_by 一律為 'user'。material_id 為 data/materials.json 候選 id 之一，或 'unknown'（照片看不到/判不了的面，這些面排除在 t36_clip_accuracy.py 的正確率分母外）。'proxy': true 標記代表真實材質不在候選集裡，使用者選擇聲學特性最接近的候選作為近似值——這類面的『誤判』統計需搭配這個標記解讀，不是單純的判斷錯誤。T-39（2026-09-02）：16 個 proxy 面經使用者逐面重新確認，3 面因新增候選（vinyl_panel／rubber_flooring／metal_roof_deck）改標並取消 proxy，其餘 13 面查無公開聲學出處，維持原候選並記錄理由，proxy 標記不變。",
   "confirmed_date": "2026-08-31",
+  "t39_remap_date": "2026-09-02",
   "candidate_material_ids": [
     "concrete",
     "brick",
@@ -14,7 +15,10 @@
     "acoustic_panel",
     "audience_seating",
     "grass_soil",
-    "generic_wall"
+    "generic_wall",
+    "vinyl_panel",
+    "rubber_flooring",
+    "metal_roof_deck"
   ],
   "photos": {
     "bathroom_tiled": {
@@ -24,11 +28,11 @@
         "date": "2026-08-31"
       },
       "ceiling": {
-        "material_id": "gypsum_board",
+        "material_id": "vinyl_panel",
         "confirmed_by": "user",
-        "date": "2026-08-31",
-        "note": "使用者判斷天花板為平整塗料/塑膠材質，12 候選裡沒有塑膠選項，使用者選擇最接近的 gypsum_board 作為近似值",
-        "proxy": true
+        "date": "2026-09-02",
+        "note": "T-39 重對映：使用者判斷天花板為平整塗料/塑膠材質，T-39 新增候選 vinyl_panel（乙烯基/塑膠硬質面板，出處見 data/materials.json）與此描述吻合，改標並取消 proxy",
+        "proxy": false
       },
       "west": {
         "material_id": "generic_wall",
@@ -93,8 +97,8 @@
       "floor": {
         "material_id": "marble",
         "confirmed_by": "user",
-        "date": "2026-08-31",
-        "note": "樓梯踏面為磨石子/水磨石拼色地面，12 候選無磨石子選項，使用者選擇最接近的 marble（大理石/磁磚類）",
+        "date": "2026-09-02",
+        "note": "樓梯踏面為磨石子/水磨石拼色地面，12 候選無磨石子選項；T-39 查證建築聲學公開表格（akustik.ua absorption coefficients：「Smooth marble or terrazzo slabs」0.01/0.01/0.01/0.01/0.02/0.02），磨石子與現有 marble 候選的吸音係數逐頻段完全相同——marble 不是近似值，是數值零誤差的精確匹配，但視覺材質仍非拋光大理石，故 proxy 維持 true，使用者已確認不新增獨立候選（新增對聲學模擬結果無影響）",
         "proxy": true
       },
       "ceiling": {
@@ -168,8 +172,8 @@
       "ceiling": {
         "material_id": "curtain_fabric",
         "confirmed_by": "user",
-        "date": "2026-08-31",
-        "note": "車頂棚為絨面內裝，12 候選無專屬車用內裝材質，使用者選擇最接近的 curtain_fabric 作為近似值",
+        "date": "2026-09-02",
+        "note": "車頂棚為絨面內裝，12 候選無專屬車用內裝材質；T-39 查證多個建築聲學公開表格與 SAE 論文索引，查無汽車內裝織物（headliner）的公開逐頻段吸音係數數值表（SAE 相關論文為付費文獻，無可引用的免費數值），依卡片規則不自創數字，使用者確認維持 curtain_fabric 近似值",
         "proxy": true
       },
       "north": {
@@ -187,58 +191,58 @@
       "east": {
         "material_id": "acoustic_panel",
         "confirmed_by": "user",
-        "date": "2026-08-31",
-        "note": "east/west 代表左右車門內裝（軟質絨面板），12 候選無專屬材質，使用者選擇最接近的 acoustic_panel 作為近似值",
+        "date": "2026-09-02",
+        "note": "east/west 代表左右車門內裝（軟質絨面板），12 候選無專屬材質；T-39 查證查無車用門板內裝的公開逐頻段吸音係數表，依卡片規則不自創數字，使用者確認維持 acoustic_panel 近似值",
         "proxy": true
       },
       "west": {
         "material_id": "acoustic_panel",
         "confirmed_by": "user",
         "date": "2026-08-31",
-        "note": "同 east 備註：west 代表左右車門內裝"
+        "note": "同 east 備註：west 代表左右車門內裝。⚠️ T-39 發現既有資料標記不一致：east 標 proxy:true，west 同一材質卻未標 proxy——不在 T-39 範圍內（僅整理已使用者確認的 16 個 proxy 面），如實記錄留給 Fable 收尾複評裁決是否修正"
       }
     },
     "CathedralRoom": {
       "floor": {
         "material_id": "concrete",
         "confirmed_by": "user",
-        "date": "2026-08-31",
-        "note": "六面 AI 判定全部是 gypsum_board，且來源清一色 fallback/out_of_domain（無任何一面是真正 clip 判定）——形同零真實判斷。官網資料標註材質為 Limestone, concrete；裁切圖畫面昏暗看不出細節，使用者依官網資訊六面統一標為 concrete",
+        "date": "2026-09-02",
+        "note": "六面 AI 判定全部是 gypsum_board，且來源清一色 fallback/out_of_domain（無任何一面是真正 clip 判定）——形同零真實判斷。官網資料標註材質為 Limestone, concrete；裁切圖畫面昏暗看不出細節，使用者依官網資訊六面統一標為 concrete。T-39 查證：石灰岩公開資料顯示吸音係數約 0.02–0.05 量級，與粗面混凝土（akustik.ua：0.02/0.03/0.03/0.03/0.04/0.07）相近，但查無石灰岩專屬逐頻段公開係數表，依卡片規則不自創數字，使用者確認維持 concrete 近似值",
         "proxy": true
       },
       "ceiling": {
         "material_id": "concrete",
         "confirmed_by": "user",
-        "date": "2026-08-31",
-        "note": "同上，六面統一標註理由見 floor 備註",
+        "date": "2026-09-02",
+        "note": "同上，六面統一標註理由與 T-39 查證結果見 floor 備註",
         "proxy": true
       },
       "west": {
         "material_id": "concrete",
         "confirmed_by": "user",
-        "date": "2026-08-31",
-        "note": "同上",
+        "date": "2026-09-02",
+        "note": "同上，見 floor 備註",
         "proxy": true
       },
       "east": {
         "material_id": "concrete",
         "confirmed_by": "user",
-        "date": "2026-08-31",
-        "note": "同上",
+        "date": "2026-09-02",
+        "note": "同上，見 floor 備註",
         "proxy": true
       },
       "south": {
         "material_id": "concrete",
         "confirmed_by": "user",
-        "date": "2026-08-31",
-        "note": "同上",
+        "date": "2026-09-02",
+        "note": "同上，見 floor 備註",
         "proxy": true
       },
       "north": {
         "material_id": "concrete",
         "confirmed_by": "user",
-        "date": "2026-08-31",
-        "note": "同上",
+        "date": "2026-09-02",
+        "note": "同上，見 floor 備註",
         "proxy": true
       }
     },
@@ -258,29 +262,29 @@
       "west": {
         "material_id": "grass_soil",
         "confirmed_by": "user",
-        "date": "2026-08-31",
-        "note": "四面牆皆為沙岩峭壁（風化砂岩），符合官網「Sand, sandstone」描述；12 候選無天然岩石選項，使用者選擇最接近的 grass_soil",
+        "date": "2026-09-02",
+        "note": "四面牆皆為沙岩峭壁（風化砂岩），符合官網「Sand, sandstone」描述；12 候選無天然岩石選項，使用者選擇最接近的 grass_soil。T-39 查證：多個建築聲學公開表格與資料庫查無砂岩/天然岩壁專屬逐頻段吸音係數表，依卡片規則不自創數字，使用者確認維持 grass_soil 近似值",
         "proxy": true
       },
       "east": {
         "material_id": "grass_soil",
         "confirmed_by": "user",
-        "date": "2026-08-31",
-        "note": "同 west 備註",
+        "date": "2026-09-02",
+        "note": "同 west 備註，含 T-39 查證結果",
         "proxy": true
       },
       "south": {
         "material_id": "grass_soil",
         "confirmed_by": "user",
-        "date": "2026-08-31",
-        "note": "同 west 備註",
+        "date": "2026-09-02",
+        "note": "同 west 備註，含 T-39 查證結果",
         "proxy": true
       },
       "north": {
         "material_id": "grass_soil",
         "confirmed_by": "user",
-        "date": "2026-08-31",
-        "note": "同 west 備註",
+        "date": "2026-09-02",
+        "note": "同 west 備註，含 T-39 查證結果",
         "proxy": true
       }
     },
@@ -324,18 +328,18 @@
     },
     "site_photo_gym": {
       "floor": {
-        "material_id": "carpet",
+        "material_id": "rubber_flooring",
         "confirmed_by": "user",
-        "date": "2026-08-31",
-        "note": "AI 判定 acoustic_panel（clip）用在地板上邏輯不通；畫面實際是深色橡膠防震地墊，12 候選無橡膠選項，使用者選擇聲學特性最接近的 carpet 作為近似值",
-        "proxy": true
+        "date": "2026-09-02",
+        "note": "T-39 重對映：畫面實際是深色橡膠防震地墊，T-39 新增候選 rubber_flooring（出處見 data/materials.json）與此描述吻合，改標並取消 proxy",
+        "proxy": false
       },
       "ceiling": {
-        "material_id": "concrete",
+        "material_id": "metal_roof_deck",
         "confirmed_by": "user",
-        "date": "2026-08-31",
-        "note": "無來源（角色未被觀測到，AI 判定為系統預設值），裁切圖顯示斜頂白色烤漆金屬鋼構屋頂，12 候選無金屬鋼構選項，使用者判斷最接近一般建築物水泥材質",
-        "proxy": true
+        "date": "2026-09-02",
+        "note": "T-39 重對映：裁切圖顯示斜頂白色烤漆金屬鋼構屋頂，T-39 新增候選 metal_roof_deck（出處見 data/materials.json）與此描述吻合，改標並取消 proxy",
+        "proxy": false
       },
       "west": {
         "material_id": "gypsum_board",
