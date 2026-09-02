@@ -1,19 +1,24 @@
 #!/usr/bin/env python3
-"""T-39 迴歸測試：候選材質集擴充不得動到既有 12 種材質／12 條提示詞字串。
+"""T-39 迴歸測試：候選材質集擴充的最終狀態——資料保留、候選集不採用。
 
 背景：T-38B 已實證「改既有候選字串」有害無益（見 output/clip_treatment/
-rounds/round7~10）；T-39 的範圍紅線明文規定既有 12 條 CLIP_MATERIAL_PROMPTS
-字串與既有 12 種材質的 alpha 逐位元不變。本測試把 T-39 之前的 12 種材質
-alpha 與 12 條提示詞字串**逐位元寫死**成期望值（修 bug 類的測試，對照
-data/materials.json 與 src/image_reverb/surfaces.py 的既有 12 條）；同時驗證
-T-39 新增的 3 種材質／3 條提示詞確實存在且數值與出處對應。
+rounds/round7~10）；T-39 試了新增 3 個候選（round12～14），對
+round11_remap_baseline 未同時滿足產品採用門檻（overall 24/76 < 30/76，
+round14 最終輪，見 REPORT_T39.md），依 PLAN_T39.md §5 已還原
+`CLIP_MATERIAL_PROMPTS`，不採用。本測試鎖定最終狀態：
+
+1. 既有 12 種材質的 alpha 與既有 12 條 CLIP_MATERIAL_PROMPTS 字串
+   **逐位元不變**（修 bug 類，寫死期望值）；
+2. T-39 新增的 3 種材質資料（含出處）**保留**在 `data/materials.json`
+   （有出處的資料本身有價值，供 `--override-material` 手動指定）；
+3. 這 3 種材質**不在** `CLIP_MATERIAL_PROMPTS` 裡（不採用的裁決結果，
+   `classify_region_material()` 不會自動判出這三個 id）。
 
 跑法：`python scripts/test_t39_materials_invariant.py`（純資料，不依賴模型
 下載）；全部通過 exit 0，任一失敗 exit 1。
 
 **對舊碼（T-39 之前）必然 fail**：舊碼的 materials.json 沒有 vinyl_panel／
-rubber_flooring／metal_roof_deck 三筆，舊碼的 surfaces.py 沒有對應三條
-CLIP_MATERIAL_PROMPTS——【3】【4】會直接 KeyError／assert fail。
+rubber_flooring／metal_roof_deck 三筆材質資料——【3】會直接 KeyError fail。
 """
 
 from __future__ import annotations
@@ -68,14 +73,6 @@ NEW_ALPHA = {
     "metal_roof_deck": {"125": 0.13, "250": 0.09, "500": 0.08, "1000": 0.09, "2000": 0.11, "4000": 0.11},
 }
 
-NEW_PROMPTS = {
-    "vinyl_panel": "a smooth glossy plastic or vinyl panel surface, non-porous",
-    "rubber_flooring": "a dark rubber or vinyl composition floor mat with a matte non-porous surface",
-    "metal_roof_deck": (
-        "a rigid painted sheet metal surface with visible corrugated or ribbed"
-        " ridges and a dull metallic sheen, not fabric or cloth"
-    ),
-}
 
 
 def check(name: str, ok: bool, detail: str) -> None:
@@ -103,10 +100,19 @@ def main() -> int:
         check(f"{mid}.alpha", mat["alpha"] == expected, f"{mat['alpha']} == {expected}")
         check(f"{mid}.source 非空", bool(mat.get("source", "").strip()), f"source 長度 {len(mat.get('source', ''))}")
 
-    print("【4】T-39 新增的 3 條 CLIP_MATERIAL_PROMPTS 字串存在")
-    for mid, expected in NEW_PROMPTS.items():
-        actual = surfaces.CLIP_MATERIAL_PROMPTS.get(mid)
-        check(f"CLIP_MATERIAL_PROMPTS['{mid}']", actual == expected, f"{actual!r} == {expected!r}")
+    print("【4】T-39 新增的 3 種材質**不在** CLIP_MATERIAL_PROMPTS（round12～14 未達"
+          "產品採用門檻，已還原，僅保留 materials.json 資料）")
+    for mid in NEW_ALPHA:
+        check(
+            f"CLIP_MATERIAL_PROMPTS 不含 '{mid}'",
+            mid not in surfaces.CLIP_MATERIAL_PROMPTS,
+            f"CLIP_MATERIAL_PROMPTS 現有 {len(surfaces.CLIP_MATERIAL_PROMPTS)} 條",
+        )
+    check(
+        "CLIP_MATERIAL_PROMPTS 恰好 12 條（未採用新候選）",
+        len(surfaces.CLIP_MATERIAL_PROMPTS) == 12,
+        f"實際 {len(surfaces.CLIP_MATERIAL_PROMPTS)} 條",
+    )
 
     print("【5】CLIP_OOD_PROMPTS 與門檻 0.4 零改動（T-39 範圍紅線）")
     from src.image_reverb import config

@@ -68,13 +68,13 @@ CLIP_MATERIAL_PROMPTS = {
     "audience_seating": "rows of upholstered seats with an audience",
     "grass_soil": "natural grass or bare soil ground",
     "generic_wall": "a plain smooth plastered wall",
-    # T-39 新增（裁決 T-38B-A 開卡）：16 個 proxy 面裡 3 面的真實材質不在原 12
-    # 候選內，字串已在 output/clip_treatment/PLAN_T39.md §2 先寫死並 commit。
-    # 既有 12 條字串一字不動（T-38B 已實證改它們有害無益）。
-    "vinyl_panel": "a smooth glossy plastic or vinyl panel surface, non-porous",
-    "rubber_flooring": "a dark rubber or vinyl composition floor mat with a matte non-porous surface",
-    "metal_roof_deck": "a rigid painted sheet metal surface with visible corrugated or ribbed ridges and a dull metallic sheen, not fabric or cloth",
 }
+# T-39（裁決 T-38B-A 開卡，output/clip_treatment/PLAN_T39.md／REPORT_T39.md）
+# 試過新增 vinyl_panel／rubber_flooring／metal_roof_deck 三個候選（round12～14），
+# 對 round11_remap_baseline 未同時滿足產品採用門檻（overall 24/76 < 30/76、
+# 非 proxy 正確率 24/63 < 30/63，round14 最終輪），已還原、不採用。
+# `data/materials.json` 仍保留這三種材質的資料（有出處，供 --override-material
+# 手動指定使用），只是這裡不把它們排進 CLIP 候選集。
 
 # 「以上皆非」的域外候選（out-of-domain）。
 #
