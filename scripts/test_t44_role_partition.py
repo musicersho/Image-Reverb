@@ -99,16 +99,22 @@ def compute_reachable_materials_per_role() -> dict[str, set[str]]:
 
 def test_partition_completeness() -> None:
     print("【1】分區完整性：ROLE_MATERIAL_CANDIDATES 涵蓋每個角色 ground truth 實際出現的所有材質")
+    # 卡片原文（分區完整性鐵則）規定的是下限（子集必須「涵蓋」該角色 ground
+    # truth 出現過的材質），不是上限——PLAN_T44.md §7（round16）刻意保留
+    # 多餘候選（floor 加回 generic_wall／wall 全還原）來稀釋搶答者的 softmax
+    # 佔比，這是完整性鐵則允許的合法調整，所以檢查用 issubset（⊆）而不是
+    # 相等；「只含 12 條已有材質、不新增候選字串」才是必須逐位元卡死的上限。
     reachable = compute_reachable_materials_per_role()
     for role in ("floor", "ceiling", "wall"):
         candidate_set = set(surfaces.ROLE_MATERIAL_CANDIDATES[role])
         check(
-            f"{role} 候選子集 == ground truth reachable 材質集合",
-            candidate_set == reachable[role],
-            f"候選={sorted(candidate_set)}，reachable={sorted(reachable[role])}",
+            f"{role} 候選子集涵蓋（⊇）ground truth reachable 材質集合（完整性鐵則下限）",
+            reachable[role] <= candidate_set,
+            f"候選={sorted(candidate_set)}，reachable={sorted(reachable[role])}，"
+            f"缺漏={sorted(reachable[role] - candidate_set) or '無'}",
         )
         check(
-            f"{role} 候選子集只含 CLIP_MATERIAL_PROMPTS 已有的材質（不新增候選字串）",
+            f"{role} 候選子集只含 CLIP_MATERIAL_PROMPTS 已有的材質（不新增候選字串，上限）",
             candidate_set <= set(surfaces.CLIP_MATERIAL_PROMPTS.keys()),
             f"候選={sorted(candidate_set)}",
         )

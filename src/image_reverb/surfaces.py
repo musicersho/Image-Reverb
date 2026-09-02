@@ -84,11 +84,22 @@ CLIP_MATERIAL_PROMPTS = {
 # （完整性檢查見 scripts/test_t44_role_partition.py）。
 # 提示詞字串本身不動——這裡只決定「哪些候選參賽」，不動「怎麼描述」。
 ROLE_MATERIAL_CANDIDATES: dict[str, list[str]] = {
+    # round17（PLAN_T44.md §8）：round16 加回 generic_wall 的假設證偽——它沒有
+    # 只「稀釋」carpet，而是自己信心夠高直接接管成新的錯誤冠軍
+    # （bathroom_tiled.floor 仍錯，且反過來讓 round15 唯一命中的
+    # stairwell_tiled.floor 倒退）。generic_wall 從未是任何一面地板的 ground
+    # truth，撤銷這個候選，floor 還原成 round15 的 6 種（round16 唯一改動的
+    # 撤銷，其餘維持不動）。
     "floor": ["concrete", "carpet", "wood_panel", "gypsum_board", "marble", "audience_seating"],
     "ceiling": ["concrete", "curtain_fabric", "generic_wall", "gypsum_board"],
+    # round16（PLAN_T44.md §7）：round15 首輪實測 wall 角色零修正、三倒退
+    # （SteinmanHall 三面牆被 acoustic_panel／curtain_fabric 搶答，兩者依
+    # 完整性鐵則本來就不能排除，本卡對 wall 找不到合法的正面槓桿）。還原成
+    # 全域 12 種候選（等同 wall 角色暫不 role-aware），不影響 floor／ceiling。
     "wall": [
-        "concrete", "brick", "glass", "gypsum_board", "marble",
-        "curtain_fabric", "acoustic_panel", "grass_soil", "generic_wall",
+        "concrete", "brick", "wood_panel", "gypsum_board", "glass", "marble",
+        "carpet", "curtain_fabric", "acoustic_panel", "audience_seating",
+        "grass_soil", "generic_wall",
     ],
 }
 

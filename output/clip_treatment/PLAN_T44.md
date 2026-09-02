@@ -223,3 +223,131 @@ fallback 值本來就＝gt，排除 `acoustic_panel` 0.2 對其影響方向不�
 修正、也有 0～2 面「有風險」被拆穿同意偏誤而倒扣，wall 幾乎不動——
 **overall 淨變化方向在跑之前無法確定，這正是需要真跑一輪的原因，不是可以
 用試算表算出來的**。
+
+## 7. round15 結果與 round16 決策（round15 跑完後補寫，早於 round16 執行）
+
+**round15_role_partition 實測**：overall **29/76**（round11 為 30/76，**下降
+1**）、floor **5/13**（round11 為 4/13，**上升 1**）、ceiling **4/11**（round11
+為 3/11，**上升 1**）、wall **20/52**（round11 為 23/52，**下降 3**）、
+in-set 誤判 **15**（round11 為 9，**上升 6**）。三個產品採用門檻裡只有
+「floor 上升」達成，「overall 上升」與「in-set 誤判不上升」都未達成。
+
+逐面核對（讀 `runs/*/detail.json` 的 `surfaces`／`sources`／`top3`，非手打，
+比對腳本輸出見下）：
+
+| 方向 | 面 | ground truth | round11 | round15 |
+|---|---|---|---|---|
+| ✅ FIXED | `stairwell_tiled.floor` | marble | gypsum_board（fallback） | marble（clip 0.429） |
+| ✅ FIXED | `stairwell_tiled.ceiling` | generic_wall | gypsum_board（fallback） | generic_wall（clip 0.433） |
+| ✅ FIXED | `CathedralRoom.floor`（proxy） | concrete | gypsum_board（fallback） | concrete（clip 0.497） |
+| ❌ REGRESSED | `bathroom_tiled.floor` | gypsum_board | gypsum_board（fallback，巧合答對） | carpet（clip **0.404**，剛過門檻） |
+| ❌ REGRESSED | `SteinmanHall.north` | gypsum_board | gypsum_board（fallback，巧合答對） | acoustic_panel（clip 0.544） |
+| ❌ REGRESSED | `SteinmanHall.east` | gypsum_board | gypsum_board（fallback，巧合答對） | acoustic_panel（clip **0.407**，剛過門檻） |
+| ❌ REGRESSED | `SteinmanHall.south` | gypsum_board | gypsum_board（fallback，巧合答對） | curtain_fabric（clip 0.452） |
+
+**機制診斷（不是猜測，是 softmax 重新正規化的直接後果）**：CLIP 對每個
+候選的原始 logit 不受候選集大小影響（各候選字串各自獨立跟圖片算相似度），
+排除候選只會讓「剩下的候選」共同被重新正規化，倖存候選之間的**相對排序
+不變**，但**絕對機率一起被推高**——這正是本卡整個機制的雙面刃：對
+`stairwell_tiled`／`CathedralRoom` 是好事（本來因為 `generic_wall`／
+`acoustic_panel` 用掉大部分機率、真答案被壓在門檻下，排除跨角色候選後
+真答案的機率被推過門檻）；但對 `bathroom_tiled.floor` 與
+`SteinmanHall` 三面牆是壞事——這幾面在 round11 是「fallback 預設值剛好等於
+ground truth」的**同意偏誤巧合**（§6 已預先寫死的風險類別，但只猜中
+`bathroom_tiled.floor` 一面，`SteinmanHall` 三面牆是新發現的同型態案例）：
+排除候選讓原本次高的候選（`carpet`／`acoustic_panel`／`curtain_fabric`）
+被推過門檻，從「誠實的不知道」變成「自信的答錯」。
+
+**分區完整性鐵則鎖死了這條路的兩個方向**：`carpet`（`bathroom_tiled.floor`
+的搶答者）是 floor 角色的合法材質（`car_interior_suv.floor`／
+`site_photo_department_store.floor`／`site_photo_restaurant.floor` 的 gt
+都是 `carpet`），`acoustic_panel`／`curtain_fabric`（`SteinmanHall` 三面牆
+的搶答者）是 wall 角色的合法材質（`car_interior_suv.east/west` 的 gt 是
+`acoustic_panel`，`SteinmanHall.west` 自己的 gt 就是 `curtain_fabric`）——
+**依完整性鐵則都不能被排除**，這幾個搶答不是「跨角色偷渡」，是**角色內
+合法材質互搶**，本卡設計的機制對這類搶答沒有槓桿。
+
+**round16 決策（事前規則，不是跑完才選）**：完整性鐵則規定的是**下限**
+（子集必須涵蓋該角色的 ground truth 材質），不是上限——**多留候選在子集
+內、不違反完整性鐵則**，且「多留候選」會稀釋剩餘機率、把邊緣過門檻的
+搶答重新壓回門檻下，這是可以測試的機制性對策，不是為了湊數字亂調。
+本輪兩個獨立、單一角色的調整（floor／wall 分開判斷、互不影響）：
+
+1. **floor：把 `generic_wall` 加回候選子集**（唯一改動，其餘 5 個排除
+   `brick`／`glass`／`curtain_fabric`／`acoustic_panel`／`grass_soil`
+   維持不動）——`bathroom_tiled.floor` 的 round11 原始候選裡
+   `generic_wall` 佔比最高（0.35），是把 `carpet` 推過門檻的主要空出來
+   的機率來源，加回去應該能把 `carpet` 重新壓回門檻下。**已知風險**：
+   `stairwell_tiled.floor` 的 `marble`（0.429）margin 很薄，稀釋後也可能
+   被壓回門檻下——這是本次調整**故意接受**的權衡，round16 跑完要如實
+   記錄兩邊究竟誰贏。
+2. **wall：整組還原成全域 12 種候選（等同該角色暫不 role-aware）**——
+   round15 實測 wall 角色**零修正、三倒退**，且倒退的搶答者
+   （`acoustic_panel`／`curtain_fabric`）依完整性鐵則本來就不能排除，
+   本卡對 wall 目前找不到任何合法的正面槓桿；wall 排除的 3 種材質
+   （`wood_panel`／`carpet`／`audience_seating`）本身從未在 round15 的
+   wall 判定裡出現過（不是它們造成搶答，是候選集變小的稀釋效應本身
+   造成搶答），加回去純粹是為了不讓 wall 白白倒退，不影響 floor／
+   ceiling 的實驗。
+
+若 round16 後 floor／wall 淨變化為正（即使沒轉正整體三門檻）→
+round17 視情況做更細的調整（例如只加回部分材質而非全加）；若 round16
+後仍未同時達成 §5 三個產品採用門檻，且已無更多不違反完整性鐵則的候選
+可調 → 停止調整，直接進入誠實 REPORT（PLAN §4：跑滿即停，不得為了達標
+超預算加輪次）。
+
+## 8. round16 結果與 round17 決策（round16 跑完後補寫，早於 round17 執行）
+
+**round16 實測**：overall **31/76**（round11 為 30/76，**上升 1**）、
+floor **4/13**（round11 為 4/13，**持平，未上升**）、ceiling **4/11**
+（持平於 round15，仍比 round11 上升 1）、wall **23/52**（**回到 round11
+基線水準，逐面驗證與 round11 逐位元相同**——`ROLE_MATERIAL_CANDIDATES["wall"]`
+還原成全域 12 種後，候選字典與 `role=None` 的內容與插入順序完全相同，
+softmax 值不受影響）、in-set 誤判 **9**（回到 round11 基線水準）。三個
+產品採用門檻：①overall 上升 ✅；②floor 上升 ❌（4=4，持平不算上升）；
+③in-set 誤判不上升 ✅（9=9）——**只差 floor 這一項**。
+
+**wall 還原的假設完全證實**：`SteinmanHall` 三面牆全部恢復成 round11 的
+`gypsum_board`（fallback，答對），且逐面核對 wall 角色 52 面與 round11
+**逐一相同**（非只是加總數字剛好一樣）。
+
+**floor 加回 `generic_wall` 的假設部分證偽，且產生新的負面效應**——
+不是單純「稀釋」，`generic_wall` 自己的原始信心夠高，直接**接管**成新的
+（錯誤）冠軍，而不只是把 `carpet` 壓下去：
+- `bathroom_tiled.floor`：`carpet`（round15，0.404，錯）→`generic_wall`
+  （round16，0.4195，**仍錯**，gt=`gypsum_board`）——carpet 搶答確實被壓下去了，
+  但換成另一個錯答案接管，沒有變成 fallback，仍是 in-set 誤判，只是換了臉。
+- `stairwell_tiled.floor`：`marble`（round15，0.429，**對**）→`generic_wall`
+  （round16，0.4257，**錯**，gt=`marble`）——round15 唯一命中的 floor 目標被
+  `generic_wall` 反過來搶答，**倒退**。
+- 淨效應：floor 從 round15 的 5/13 跌回 4/13，跟基線打平，「加回
+  `generic_wall`」這個假設對 floor **淨負面**，應該撤銷。
+
+**round17 決策（事前規則）**：`generic_wall` 從未是任何一面地板的 ground
+truth（§1 完整性檢查表已列），加回它換來的是「新的錯誤冠軍」而非「稀釋
+搶答」，這個特定材質不適合留在 floor 候選集——**撤銷 floor 的
+`generic_wall`，floor 還原成 round15 的 6 種候選**（`concrete`／`carpet`／
+`wood_panel`／`gypsum_board`／`marble`／`audience_seating`），**wall 保留
+round16 的還原（全域 12 種）**，ceiling 不動。
+
+依「floor 用 round15 逐面資料、wall 用 round16 逐面資料、ceiling 不變」
+唯讀交叉核算（不是猜測，程式算出——floor／ceiling／wall 三個角色的
+`classify_region_material()` 呼叫彼此獨立，改一個角色的候選集不影響其他
+角色的判定值，所以可以用既有兩輪的快取資料直接算出第三種組合的預期結果，
+供決策依據，round17 仍會真跑一次驗證而非只採信這個推算）：
+
+| 角色 | 預期正確數 | 依據 |
+|---|---|---|
+| floor | 5/13 | round15 的 floor 資料（沒有 `generic_wall`） |
+| ceiling | 4/11 | round15／round16 皆相同 |
+| wall | 23/52 | round16 的 wall 資料（已還原全域） |
+| **overall** | **32/76** | 三者相加 |
+| **in-set 誤判** | **8** | floor 2（`bathroom_tiled`／`site_photo_gym`）＋ceiling 1
+（`site_photo_restaurant`）＋wall 5（`bedroom_ai_generated`×4／
+`RacquetballCourt4.west`，與 round11 基線相同） |
+
+若這個預期被 round17 實測證實（且同時滿足 §5 三個產品採用門檻：
+overall 32>30、floor 5>4、in-set 8<9）→ 依 §5 改 `pipeline.py` 為
+`role_aware=True`。若 round17 實測與預期不符，或三門檻仍未同時滿足 →
+本卡已用滿 PLAN §4 的「首輪 1 輪＋最多 2 輪調整」預算（round15＋round16＋
+round17＝3 輪已達上限），跑滿即停，直接進入誠實 REPORT。
