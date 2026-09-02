@@ -202,9 +202,10 @@ def run_photo(
         materials_data = load_materials()
 
         print("--- T-12 逐表面材質辨識 ---")
-        # T-44：role_aware 開關單一呼叫點。分區表未達 PLAN_T44.md §5 產品採用
-        # 門檻前固定 False（＝全域 baseline 行為，與 T-44 之前逐位元相同）。
-        surf, detail = surfaces_from_preprocess(summary, role_aware=False)
+        # T-44：role_aware 開關單一呼叫點。round17（PLAN_T44.md §8）對
+        # round11_remap_baseline 同時達成 §5 三個產品採用門檻（overall
+        # 32/76>30/76、floor 5/13>4/13、in-set 誤判 8<9）→ 採用 True。
+        surf, detail = surfaces_from_preprocess(summary, role_aware=True)
         scene_cues: dict[str, float] = {}
         if not summary["is_equirect"]:
             ratios = detail["class_ratios"]["single"]
