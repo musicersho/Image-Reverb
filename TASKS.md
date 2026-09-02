@@ -6088,7 +6088,7 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
    交接筆記的四個坑）；`HANDOFF_T38.md` 維持到 T-39 結案後刪除。
 
 ### T-39 候選材質集擴充（裁決 T-36-A 執行卡 3/3；需使用者參與；🔮 已由 Fable 依裁決 T-38B-A 改版 2026-09-01）
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證（2026-09-02，Sonnet 執行完成，工程完成／否定結論——加候選集未採用，資料保留）
 - **前置**：T-38B ✅（2026-09-01 以「跑滿預算＋否定結論」通過，正式解鎖
   本卡——涵蓋率天花板正是否定結論指向這裡的理由）；**需使用者參與**
   （16 個 proxy 面的 ground truth 重對映確認——比 T-36 的 78 面小很多，
@@ -6152,6 +6152,59 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
    行為，不是壞掉，不得為省時間繞過指紋機制。
 5. **新增 Opus 紅旗**：round12+ 拿 round0_baseline 當比較基線；既有 12 條
    提示詞字串出現 diff；超出 2 輪調整預算；否定結論被標成失敗或 🔴 卡關。
+
+- **✅ 交接筆記（Sonnet，2026-09-02）**：
+  - **產出檔案**：`data/materials.json`（新增 `vinyl_panel`／`rubber_flooring`／
+    `metal_roof_deck` 三種材質，各附公開出處；既有 12 種 α 逐位元不變）、
+    `data/material_ground_truth.json`（16 個 proxy 面使用者逐面重對映，
+    `confirmed_by: "user"`；3 面改標新候選並 `proxy: false`，13 面查無
+    公開出處維持原候選並記錄理由）、`src/image_reverb/surfaces.py`
+    （`CLIP_MATERIAL_PROMPTS` 最終**還原**至與 T-39 開工前逐位元相同，
+    僅多一段說明否定結論的註解）、`scripts/test_t39_materials_invariant.py`
+    （新增，鎖定既有 12 種材質/字串不變＋新 3 種材質資料保留但不在候選集）、
+    `output/clip_treatment/PLAN_T39.md`（先寫死，含 round13/14 事前決策
+    規則）、`output/clip_treatment/REPORT_T39.md`（誠實 REPORT）、
+    `output/clip_treatment/rounds/{round11_remap_baseline,round12_expanded,
+    round13,round14}/`（ROUND.md／tables.md）。
+  - **使用者參與**：2026-09-02 對話中逐面確認 16 個 proxy 面重對映方案
+    （含查證結果），使用者回覆「都同意」。
+  - **工程完成（✅）**：新材質 α 皆有公開出處（akustik.ua absorption
+    coefficients）；`test_t39_materials_invariant.py` 證明既有 12 種 α／
+    12 條提示詞逐位元不變（對 T-39 前舊碼實測 `KeyError` fail，診斷力
+    確認）；重對映有使用者逐面確認紀錄；PLAN 先寫且 commit 早於各輪
+    執行（`git log --format='%h %cI %s'` 可查）；round12 首跑＋round13／
+    round14 調整＝預算上限剛好用滿；門檻敏感度表 7 已重跑收進 REPORT；
+    REPORT 誠實記錄結構性發現與否定結論。
+  - **產品採用（否定結論）**：對 `round11_remap_baseline`（30/76、
+    floor 4/13、非 proxy 30/63）——round14（最終輪）overall 24/76
+    （↓）、floor 4/13（持平）、非 proxy 24/63（↓），三門檻未同時滿足
+    （①③失敗）→ 不採用新候選。`surfaces.py` 已還原（`git diff` 對照
+    T-39 前 commit 只剩不影響執行的註解）；`materials.json` 新增資料保留；
+    `ground_truth.json` 重對映保留不回滾。
+  - **關鍵發現（結構性，非用詞問題，寫進 REPORT §四）**：`vinyl_panel`／
+    `metal_roof_deck` 的目標面（`bathroom_tiled.ceiling`／
+    `site_photo_gym.ceiling`）在 ADE20K 分割階段就未偵測到 `ceiling`
+    角色像素，CLIP 從未被呼叫——這兩個候選的收益端在本 13 張資料集裡
+    結構性不可達，任何提示詞調整都碰不到（T-39 範圍紅線本來就不准動
+    分割邏輯）。只有 `rubber_flooring` 的目標面
+    （`site_photo_gym.floor`）真正可達且修正成功；同時新增候選製造了
+    地雷 #13 型副作用（`SteinmanHall.ceiling`／`RacquetballCourt4.south`／
+    `RacquetballCourt4.floor` 從正確翻成錯誤）。
+  - **共同鐵則自我檢查（全部實跑，逐項見 REPORT_T39.md §七）**：17 支
+    `scripts/test_*.py` 逐支 `EXIT=0`；六條交付 IR MD5 重新生成逐條比對
+    相符；`ir_metrics.py` 零 diff；`SPEC/ROADMAP/WORKFLOW`／三凍結目錄
+    零 diff；臥室紅旗仍是擋（`geometry=medium, materials=low,
+    overall=low`，未從擋變放）；基線變化表用 `round11_remap_baseline`
+    （與最終狀態程式碼逐位元相同）的實測結果，對 T-33 凍結快取僅
+    `TunnelToHell` 一項既知差異（T-37 修正後預期行為），其餘 12 張不變。
+  - **非阻擋觀察（留給 Fable 收尾複評，本卡不必回頭改）**：
+    `car_interior_suv.west` 與 `.east` 是同一種車門絨面板，但既有資料
+    只有 `east` 標了 `proxy: true`，`west` 沒有標——不在本卡「16 個已
+    使用者確認的 proxy 面」範圍內，已如實記錄在 ground truth 檔案的
+    `west` 面備註，未更動。
+  - **下一步**：請 Opus 驗證本卡；通過後依 Phase 1.9 固定順序開 **T-44**
+    （role-aware 候選子集，前置已滿足——T-39 收尾基線即
+    `round11_remap_baseline`，因為新候選未採用）。
 
 ### T-44 role-aware 材質候選子集（裁決 T-38B-A 執行卡；設計＋實驗卡）
 - **狀態**：⬜ 未開始

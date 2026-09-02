@@ -1,5 +1,25 @@
 # Dev Log
 
+## 2026-09-02 (89)
+
+- **T-39 候選材質集擴充（🔵 待驗證，否定結論，資料保留）**。16 個 proxy
+  面經使用者逐面確認重對映；查建築聲學公開表格為 3 個真實材質（塑膠面板／
+  橡膠地墊／金屬鋼構屋頂）找到出處，新增 `vinyl_panel`／`rubber_flooring`／
+  `metal_roof_deck` 三種材質；其餘 13 面查無出處，維持原候選並記錄理由
+  （其中磨石子意外發現與現有 `marble` 係數逐頻段完全相同）。
+- 兩段式基線：`round11_remap_baseline`（重對映後候選未動）30/76；
+  `round12_expanded`（+3 候選）28/76，追查發現結構性天花板——
+  `vinyl_panel`／`metal_roof_deck` 的目標面在 ADE20K 分割階段就未偵測到
+  ceiling 角色，CLIP 從未被呼叫，提示詞調整碰不到。round13（調
+  `metal_roof_deck`）29/76，round14（調 `vinyl_panel`，最終輪）24/76、
+  且新增 3 張非預期漂移照片——2 輪調整預算用滿，三個產品採用門檻未同時
+  滿足。`surfaces.py` 候選集已還原（與 T-39 前逐位元相同）；
+  `materials.json`／`ground_truth.json` 的新增資料與重對映保留不回滾。
+- 共同鐵則自我檢查全過：17 支 `test_*.py`（含新增
+  `test_t39_materials_invariant.py`，對舊碼實測 fail）逐支 exit 0；六條
+  交付 IR MD5 重生成比對相符；`ir_metrics.py` 零 diff；臥室紅旗仍是擋。
+  下一步：請 Opus 驗證本卡；通過後依 Phase 1.9 固定順序開 T-44。
+
 ## 2026-09-01 (88)
 
 - **🔮 Fable：裁決 T-38B-A（T-38B 收尾，純文件）**。T-38B 否定結論（Opus

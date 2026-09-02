@@ -264,8 +264,16 @@
       T-39 改兩段式基線（重對映後先跑 round11_remap_baseline 再比）；
       鐵則 6 對 T-44 開限定例外；陳設公式修正輪不插隊（維持收尾複評
       評估）。交接文件：新開 HANDOFF_T39.md。
-      **下一步：開 Sonnet 視窗執行 T-39（貼 HANDOFF_T39.md §6 Prompt，
-      需使用者 10 分鐘級逐面確認）。**
+      **T-39 🔵 待驗證（2026-09-02，否定結論，資料保留）**：16 面使用者
+      逐面重對映，3 面查到公開出處新增候選（`vinyl_panel`／
+      `rubber_flooring`／`metal_roof_deck`），13 面查無出處維持原候選；
+      round12～14（首跑＋2 輪調整，預算用滿）對 `round11_remap_baseline`
+      三個產品採用門檻未同時滿足——關鍵發現：其中兩個新候選的目標面在
+      ADE20K 分割階段就未偵測到 ceiling 角色，CLIP 從未被呼叫，提示詞
+      調整結構性碰不到。`surfaces.py` 候選集已還原，`materials.json`／
+      `ground_truth.json` 的新增資料與重對映保留不回滾。詳見
+      `output/clip_treatment/REPORT_T39.md`。
+      **下一步：請 Opus 驗證 T-39；通過後依固定順序開 T-44。**
 - [ ] **🔮 Phase 1.9 插卡（Fable 規劃 2026-08-31）：產物可信度修正輪
       T-40～T-43（卡片與裁決全文在 TASKS.md「Phase 1.9 插卡」節）**——
       外部掃描五項缺陷逐項對碼核實屬實後插卡：**T-40**（評測快取指紋與
