@@ -97,3 +97,52 @@ round12（若不需調整）或 round13／round14（若有調整，取最後一�
 
 若同時滿足 → 採用該輪的新增候選作為 `surfaces.py` 正式內容並 commit，
 跑基線變化表（共同鐵則 8）＋臥室紅旗檢查（共同鐵則 7）。
+
+## 6. round12 結果與 round13 決策（round12 跑完後補寫，早於 round13 執行）
+
+**round12_expanded 實測**：overall 28/76（round11 為 30/76，**下降**）、floor
+4/13（持平）、in-set 誤判 10（round11 為 9，**上升**）。逐面追查（讀
+`runs/*/detail.json` 的 `top3`/`sources`，非手打）：
+
+- **結構性發現（決定性，非用詞問題）**：`bathroom_tiled.ceiling` 與
+  `site_photo_gym.ceiling` 兩個面在 `detail.json` 的 `sources`／`faces` 完全
+  沒有 `ceiling` 鍵——ADE20K 分割階段就沒偵測到 ceiling 角色像素
+  （`ratio < config.MIN_SURFACE_AREA_RATIO`），CLIP **從未被呼叫**。這是
+  分割階段的缺口，不是 CLIP 候選/提示詞能碰到的範圍（T-39 範圍紅線本來就
+  不准動分割邏輯）。也就是說 `vinyl_panel` 與 `metal_roof_deck` 兩個新
+  候選的**自身目標面在本 13 張資料集裡結構性不可達**——不管字串怎麼調，
+  這兩面永遠不可能被判對。
+- `site_photo_gym.floor`（`rubber_flooring` 的目標面）**成功修正**：
+  `clip` 來源、信心 0.543，top3 為
+  `[rubber_flooring 0.543, acoustic_panel 0.250, concrete 0.090]`。這是
+  唯一一個目標面真的可達且修正成功的案例。
+- **新副作用（地雷 #13 型，softmax 重分配）**：
+  - `SteinmanHall.ceiling` 從正確（`curtain_fabric`）翻成錯誤
+    （`metal_roof_deck`，信心 0.718，`top3=[metal_roof_deck 0.718,
+    curtain_fabric 0.165, acoustic_panel 0.043]`）——單一候選搶答信心
+    最高的一起side effect。
+  - `RacquetballCourt4.south` 從正確（`glass`）翻成錯誤（`vinyl_panel`，
+    信心 0.532，`top3=[vinyl_panel 0.532, glass 0.216, gypsum_board
+    0.062]`）。
+  - `RacquetballCourt4.floor` 從正確（`wood_panel`，clip 信心足夠）翻成
+    `fallback`（`top3=[rubber_flooring 0.388, wood_panel 0.247,
+    vinyl_panel 0.171]`，top1 機率被 `rubber_flooring` 拉到門檻 0.4 以下）。
+
+**round13 決策（事前規則，不是跑完才選）**：既然 `metal_roof_deck` 與
+`vinyl_panel` 的自身目標面結構性不可達，調字串**不可能**讓它們自己變成
+淨正貢獻，唯一還值得驗證的是「能不能至少把已觀測到的副作用（搶答）壓
+下去」。取本輪信心最高的單一搶答（`SteinmanHall.ceiling`，`metal_roof_deck`
+信心 0.718，全部副作用中最高）作為 round13 目標，只改 `metal_roof_deck`
+一個候選（單一變因，比照 T-38B 規則），字串改為強調「硬質金屬光澤／
+非布料」以降低與絨布垂墜的視覺混淆：
+
+```
+"a rigid painted sheet metal surface with visible corrugated or ribbed
+ridges and a dull metallic sheen, not fabric or cloth"
+```
+
+若 round13 後 `SteinmanHall.ceiling` 恢復正確且未在別處製造新副作用 →
+round14 比照方式處理 `vinyl_panel` 對 `RacquetballCourt4.south` 的搶答；
+若 round13 沒有改善或製造更多副作用 → 停止調整（round14 不跑，預算未
+用完是因為已有充分證據判定字串調整這條路無法讓兩個結構性不可達的候選
+變成淨正貢獻），直接進入 §5 產品採用門檻判定與 REPORT。

@@ -68,6 +68,12 @@ CLIP_MATERIAL_PROMPTS = {
     "audience_seating": "rows of upholstered seats with an audience",
     "grass_soil": "natural grass or bare soil ground",
     "generic_wall": "a plain smooth plastered wall",
+    # T-39 新增（裁決 T-38B-A 開卡）：16 個 proxy 面裡 3 面的真實材質不在原 12
+    # 候選內，字串已在 output/clip_treatment/PLAN_T39.md §2 先寫死並 commit。
+    # 既有 12 條字串一字不動（T-38B 已實證改它們有害無益）。
+    "vinyl_panel": "a smooth glossy plastic or vinyl panel surface, non-porous",
+    "rubber_flooring": "a dark rubber or vinyl composition floor mat with a matte non-porous surface",
+    "metal_roof_deck": "a painted corrugated or ribbed sheet metal roof or ceiling panel",
 }
 
 # 「以上皆非」的域外候選（out-of-domain）。

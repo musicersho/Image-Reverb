@@ -1,0 +1,93 @@
+# Round `round12_expanded` — T-38 治療輪紀錄
+
+- status: complete
+- 父輪次: round11_remap_baseline
+- 執行指令: `python scripts/t38_treatment_eval.py round12_expanded --hypothesis 在 round11_remap_baseline 的候選集基礎上，新增 3 個候選（vinyl_panel／rubber_flooring／metal_roof_deck，字串已在 PLAN_T39.md §2 先寫死），既有 12 條字串一字不動。假設：3 個真實材質原本不在候選集內、proxy 正確率天花板是 0%，新增對應候選後這 3 面有機會被正確判定；同時依地雷 #13，全域 softmax 加候選會重分配所有 78 面的機率，可能在未鎖定面製造副作用，需對照表 4 檢查。 --parent round11_remap_baseline`
+- 本輪假設與修改理由: 在 round11_remap_baseline 的候選集基礎上，新增 3 個候選（vinyl_panel／rubber_flooring／metal_roof_deck，字串已在 PLAN_T39.md §2 先寫死），既有 12 條字串一字不動。假設：3 個真實材質原本不在候選集內、proxy 正確率天花板是 0%，新增對應候選後這 3 面有機會被正確判定；同時依地雷 #13，全域 softmax 加候選會重分配所有 78 面的機率，可能在未鎖定面製造副作用，需對照表 4 檢查。
+
+## CLIP_MATERIAL_PROMPTS / CLIP_OOD_PROMPTS 快照
+
+```json
+{
+  "CLIP_MATERIAL_PROMPTS": {
+    "concrete": "a smooth poured concrete surface",
+    "brick": "a bare unglazed brick surface",
+    "wood_panel": "a wooden panel or wood plank surface",
+    "gypsum_board": "a painted plasterboard drywall surface",
+    "glass": "a pane of clear glass or a window",
+    "marble": "a polished marble or ceramic tile surface",
+    "carpet": "a thick carpet or textile floor covering",
+    "curtain_fabric": "a heavy fabric curtain or drape",
+    "acoustic_panel": "a fibrous acoustic absorption panel",
+    "audience_seating": "rows of upholstered seats with an audience",
+    "grass_soil": "natural grass or bare soil ground",
+    "generic_wall": "a plain smooth plastered wall",
+    "vinyl_panel": "a smooth glossy plastic or vinyl panel surface, non-porous",
+    "rubber_flooring": "a dark rubber or vinyl composition floor mat with a matte non-porous surface",
+    "metal_roof_deck": "a painted corrugated or ribbed sheet metal roof or ceiling panel"
+  },
+  "CLIP_OOD_PROMPTS": {
+    "__vehicle_interior": "the inside of a car or vehicle cabin",
+    "__outdoor_scene": "an outdoor landscape with sky and trees",
+    "__object_closeup": "a close-up photograph of a small object",
+    "__person": "a photograph of a person's face or body"
+  }
+}
+```
+
+## 相對 round0_baseline 的字串差異
+
+- CLIP_MATERIAL_PROMPTS.metal_roof_deck：新增（"a painted corrugated or ribbed sheet metal roof or ceiling panel"）
+- CLIP_MATERIAL_PROMPTS.rubber_flooring：新增（"a dark rubber or vinyl composition floor mat with a matte non-porous surface"）
+- CLIP_MATERIAL_PROMPTS.vinyl_panel：新增（"a smooth glossy plastic or vinyl panel surface, non-porous"）
+
+## 正確率數字
+
+| 指標 | 數值 |
+|---|---|
+| overall | 28/76 |
+| floor | 4/13 |
+| in-set 誤判 | 10 |
+| clip 來源正確率 | 8/18 |
+| 非 proxy 正確率 | 28/63 |
+| proxy 正確率 | 0/13 |
+
+## 按判定來源分組
+
+| 來源 | 面數 | 排除數 | 正確率 |
+|---|---|---|---|
+| clip | 19 | 1 | 8/18（44.4%） |
+| fallback | 38 | 0 | 16/38（42.1%） |
+| out_of_domain | 10 | 0 | 4/10（40.0%） |
+| 無來源 | 11 | 1 | 0/10（0.0%） |
+
+## 指紋（沿用 `eval_cache.py` 六類指紋）
+
+| 項目 | 值 |
+|---|---|
+| code_sha256 | {"preprocess.py": "f3d1d2f820087f603ff5cde90c6a4905ec87513fd3d846440c2f79ee7f6b8352", "surfaces.py": "d328e95b6f02fd4344d9bb79c782e8e1aefd072f28241b948457ee91dd7c8f72", "config.py": "c1e09da90283cb20b3a1c672f0b3150c6f6c280d6d83adeeb218b6413fc176c4"} |
+| data_sha256 | {"materials.json": "dddf5bd0a3680419e594a17de44e28269c64b038f7100cb7cf5faedf0acb1c3a", "material_ground_truth.json": "965e51ac19e2d25a61b89bb8b94c01e4f34e3e41d6300002627d212abfc430c7"} |
+| segmentation_model_id | nvidia/segformer-b4-finetuned-ade-512-512 |
+| clip_model_id | openai/clip-vit-base-patch32 |
+| clip_threshold | 0.4 |
+| eval_mode | treatment:round12_expanded |
+
+### 逐張照片 photo_sha256
+
+| 照片 | sha256 |
+|---|---|
+| CathedralRoom | d4dcaed7c3b590546aa26e006930b1dfc1050e509cca20e4d806a050773c9d48 |
+| DivorceBeach | 746d0c7adfe71a30805ae41366d48e2195e42cd8f6094b79a2623fcd0c63928a |
+| RacquetballCourt4 | 878ee129bf633cb4d4e6589d04743fd7ceae7325d2e9eee2d1e753f678a835d2 |
+| SteinmanHall | 1d2e11433e4285c0453ffed64c916307c5b97b8e5ca35826650a263baa5d0696 |
+| TunnelToHell | 51dde5694fca64df43ac466da52bbcb926cd048641d79c67763cbbfc42045e65 |
+| arena_ntsu_linkou | 2b72af99bbaf6ae791b4c462af1da4808a4fded5f4cb39f9a3f1eb89df0a9b10 |
+| bathroom_tiled | 1f7ced1531d50ff9ed839315ad85063d6bfc6a699cbd63467481b56a44e35d73 |
+| bedroom_ai_generated | b108578269b96adcdcabac65641c766ff1a7e3e5243707a2ce5014858434bde5 |
+| car_interior_suv | 7dd1c6b2a154fea934e0ecc4790d18de46276be52f291d6a6eb873cf06ca0cc5 |
+| site_photo_department_store | a3aa38e1821829ce12e0f2a25294db35a32cf297172cc0a8376e34cf9c568a5c |
+| site_photo_gym | 9ccc9c335ff8862a7f46f22548c1d1c90e9b4b79090cfaf9dd25f2346a96749e |
+| site_photo_restaurant | a3576a3a2eb8993ca87b6c8df864f5e0b7421316a91880176d59c6f340d27214 |
+| stairwell_tiled | 40859d6e815202a700b237625e33e177ec6f3193cd5e409231ef0c0385b370fa |
+
+詳細逐面判定與 in-set 誤判明細見同目錄 `tables.md`。

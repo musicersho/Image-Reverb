@@ -175,6 +175,51 @@
       "source": "戶外聲學文獻中「grass, approx. 2 in. high / soft earth」的常引數值（約 0.11 / 0.26 / 0.60 / 0.69 / 0.92 / 0.99）。標 low 的理由：戶外地面實際上要用流阻（flow resistivity）與地面阻抗模型描述，折算成 α 只是粗略等效；且乾土、濕土、雪地、碎石差異可達數倍。乾硬夯實土地的 α 會明顯低於此表。"
     },
     {
+      "id": "vinyl_panel",
+      "name_zh": "塑膠／乙烯基硬質面板（光滑面，黏貼於實體基材）",
+      "name_en": "Vinyl or plastic panel, smooth, bonded to solid backing",
+      "alpha": {
+        "125": 0.02,
+        "250": 0.02,
+        "500": 0.03,
+        "1000": 0.04,
+        "2000": 0.04,
+        "4000": 0.05
+      },
+      "confidence": "medium",
+      "source": "T-39 新增（裁決 T-38B-A 開卡，用於 bathroom_tiled 天花板重對映）。akustik.ua《Absorption Coefficients》表中「Linoleum or vinyl stuck to concrete」欄位（0.02 / 0.02 / 0.03 / 0.04 / 0.04 / 0.05），與同表 marble/terrazzo 同屬光滑不透氣硬面材質量級。標 medium 是因為原表為地板應用，套用到天花板/牆面假設安裝方式同為直接黏貼實體基材（無背後空氣層）；若實際是懸吊式天花板（背後有空腔），會形成類似石膏板的板共振，低頻 α 可能明顯升高（比照 gypsum_board 0.29）。"
+    },
+    {
+      "id": "rubber_flooring",
+      "name_zh": "橡膠地墊（防震墊，6mm）",
+      "name_en": "Rubber floor mat / tile, approx. 6mm",
+      "alpha": {
+        "125": 0.05,
+        "250": 0.05,
+        "500": 0.1,
+        "1000": 0.1,
+        "2000": 0.05,
+        "4000": 0.05
+      },
+      "confidence": "medium",
+      "source": "T-39 新增（裁決 T-38B-A 開卡，用於 site_photo_gym 地板重對映）。akustik.ua《Absorption Coefficients》表中「Rubber floor tiles」欄位（6mm，0.05 / 0.05 / 0.10 / 0.10 / 0.05 / 0.05），全頻段吸音量級遠低於現有 carpet 候選（多孔纖維地毯）——橡膠是非多孔彈性材質，機制不同。標 medium 是因為厚度是決定性變因：同表「Sheet rubber (hard) 6mm」更薄更硬，數值更低（0.00/0.05/0.05/0.10/0.05/0.00）；健身房防震地墊常見厚度較厚，實際 α 可能略高於此表。"
+    },
+    {
+      "id": "metal_roof_deck",
+      "name_zh": "金屬鋼構屋頂/天花板（波浪/肋狀鋼板，無背襯吸音材）",
+      "name_en": "Painted corrugated or ribbed steel roof deck, unlined",
+      "alpha": {
+        "125": 0.13,
+        "250": 0.09,
+        "500": 0.08,
+        "1000": 0.09,
+        "2000": 0.11,
+        "4000": 0.11
+      },
+      "confidence": "medium",
+      "source": "T-39 新增（裁決 T-38B-A 開卡，用於 site_photo_gym 天花板重對映）。akustik.ua《Absorption Coefficients》表「FLOORS」分類中「Steel decking」欄位（0.13 / 0.09 / 0.08 / 0.09 / 0.11 / 0.11，同一物理構造之鋼板，屋頂/樓板應用同源）。125Hz 明顯高於 concrete（0.01）反映薄鋼板振動吸能，但全頻段仍偏低反射面。標 medium 是因為背後有無吸音材差異極大：同表「Metal ceiling, 32.5% perforated, backed by 30mm rockwool」達 0.12/0.45/0.87/0.98/1.00/1.00，若實際屋頂內側有隔熱/吸音棉層，α 會遠高於本表。"
+    },
+    {
       "id": "generic_wall",
       "name_zh": "一般牆面（磚/砌體上抹灰泥，光滑面）— 無法辨識時的 fallback",
       "name_en": "Generic wall: plaster, smooth finish on masonry",
