@@ -71,7 +71,10 @@ NEW_ALPHA = {
 NEW_PROMPTS = {
     "vinyl_panel": "a smooth glossy plastic or vinyl panel surface, non-porous",
     "rubber_flooring": "a dark rubber or vinyl composition floor mat with a matte non-porous surface",
-    "metal_roof_deck": "a painted corrugated or ribbed sheet metal roof or ceiling panel",
+    "metal_roof_deck": (
+        "a rigid painted sheet metal surface with visible corrugated or ribbed"
+        " ridges and a dull metallic sheen, not fabric or cloth"
+    ),
 }
 
 

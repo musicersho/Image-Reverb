@@ -73,7 +73,7 @@ CLIP_MATERIAL_PROMPTS = {
     # 既有 12 條字串一字不動（T-38B 已實證改它們有害無益）。
     "vinyl_panel": "a smooth glossy plastic or vinyl panel surface, non-porous",
     "rubber_flooring": "a dark rubber or vinyl composition floor mat with a matte non-porous surface",
-    "metal_roof_deck": "a painted corrugated or ribbed sheet metal roof or ceiling panel",
+    "metal_roof_deck": "a rigid painted sheet metal surface with visible corrugated or ribbed ridges and a dull metallic sheen, not fabric or cloth",
 }
 
 # 「以上皆非」的域外候選（out-of-domain）。

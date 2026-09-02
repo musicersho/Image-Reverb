@@ -146,3 +146,37 @@ round14 比照方式處理 `vinyl_panel` 對 `RacquetballCourt4.south` 的搶答
 若 round13 沒有改善或製造更多副作用 → 停止調整（round14 不跑，預算未
 用完是因為已有充分證據判定字串調整這條路無法讓兩個結構性不可達的候選
 變成淨正貢獻），直接進入 §5 產品採用門檻判定與 REPORT。
+
+## 7. round13 結果與 round14 決策（round13 跑完後補寫，早於 round14 執行）
+
+**round13 實測**：overall 29/76（round12 為 28/76，回升 1；仍比 round11 的
+30/76 少 1）、floor 4/13（持平）、in-set 誤判 9（round12 為 10，**回到
+round11 水準**）。逐面核對（`runs/SteinmanHall/detail.json`）：
+
+- `SteinmanHall.ceiling` **恢復正確**：`curtain_fabric`，clip 信心 0.571，
+  `top3=[curtain_fabric 0.571, acoustic_panel 0.148, vinyl_panel 0.132]`——
+  round13 改的 `metal_roof_deck` 字串加入「not fabric or cloth」後不再
+  搶答，且**未在其他面新增副作用**（T-33 差異清單從 round12 的 5 張降到
+  4 張，少的正是 SteinmanHall）。
+- 符合 §6 預先寫死的條件（「round13 後 `SteinmanHall.ceiling` 恢復正確且
+  未在別處製造新副作用 → round14 處理 `vinyl_panel`」），進入 round14。
+- **round13 未解決、留給 round14 或最終報告的殘留副作用**（與
+  `metal_roof_deck` 無關，round13 本來就不改這兩個候選）：
+  `RacquetballCourt4.south`（`vinyl_panel` 搶走 `glass`，信心 0.548）、
+  `RacquetballCourt4.floor`（`rubber_flooring` 把 `wood_panel` 信心拉到
+  門檻下，fallback 判成 `gypsum_board`）。
+
+**round14 決策（事前規則）**：只改 `vinyl_panel` 一個候選（單一變因），
+針對它與 `glass` 的混淆——現有字串「glossy...non-porous」的 "glossy"
+可能與玻璃的光澤語意重疊，且沒有明示「不透明/不透光」與玻璃區隔。
+改法：
+
+```
+"a smooth opaque plastic or vinyl panel surface with a slight sheen,
+not glass and not transparent"
+```
+
+`rubber_flooring` 對 `RacquetballCourt4.floor` 的副作用**不在本輪調整
+範圍**——round14 跑完即用完 PLAN §4 的 2 輪調整預算上限，若 round14 後仍
+未同時達成 §5 的三個產品採用門檻，直接停止並進入誠實 REPORT（不得為了
+達標超預算加輪次）。
