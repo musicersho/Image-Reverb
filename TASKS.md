@@ -6301,7 +6301,118 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
     其比較基線＝`round11_remap_baseline`（因新候選未採用，該輪即最終狀態）。
 
 ### T-44 role-aware 材質候選子集（裁決 T-38B-A 執行卡；設計＋實驗卡）
-- **狀態**：🔵 待驗證（2026-09-02，正面結論，已採用）
+- **狀態**：🟠 退回（Opus 驗證，2026-09-02）——**只有一項阻擋，且是純文件修正，
+  不必重跑任何一輪、不必動任何程式碼**。以下每一項都由 Opus 實跑核對，非採信交接筆記。
+
+  - **❌ 阻擋項（唯一）：REPORT_T44.md 第七節「門檻敏感度」的 floor 段落，
+    結論與它自己引用的表 7' 完全相反，且數據張冠李戴。** 這一節正是卡片
+    「Opus 驗證重點」明文點名的項目，而收尾複評的 Fable 只會讀 REPORT、
+    不會逐張翻 tables.md，錯誤結論會直接傳下去。
+    - REPORT 寫「門檻降到 0.30 都不會放行任何一面…現行門檻 0.4 對 floor
+      是穩定的，調低不會製造新的搶答」。
+      `rounds/round17/tables.md` 表 7' floor 實際是：門檻 0.30 → **放行 2 面、
+      答對 0、答錯 2**；要到 0.35 才是 0 面。正確結論應是「調低到 0.30
+      **會**多放行 2 面且兩面皆錯」——與 REPORT 現在的說法相反。
+    - REPORT 寫「`bedroom_ai_generated.floor` top-1 `wood_panel` 0.220」。
+      實際（round17 detail.json 逐位元核對）：top-1 是 `concrete` 0.3394，
+      `wood_panel` 0.2202 是 **ground truth 兼第二名**。把 gt 寫成 top-1、
+      把第二名機率寫成 top-1 信心。
+    - REPORT 寫「`SteinmanHall.floor` top-1 `gypsum_board`／`concrete`」。
+      實際：top-1 是 `concrete` 0.331，`gypsum_board` 是 ground truth。同型錯誤。
+    - 附帶（同段一併修）：該句括號未閉合；wall 段落寫「沒有舊表可直接拿來
+      對照…不需要額外的舊表格比對」，但表 7' 其實**真的跑出了 wall 的完整
+      敏感度表**（0.20→27 面／0.25→22／0.30→20／0.35→7／0.40→0，放行後答對
+      恆為 0 或 1）。要求本身有做到，是 REPORT 的敘述把自己的成果講沒了，
+      且漏掉「0.35 會放行 7 面且 0 面答對」這個對未來調門檻很重要的發現。
+    - **修法（範圍嚴格限定）**：只改 `REPORT_T44.md` 第七節這三段文字，
+      使其與 `rounds/round17/tables.md` 表 7' 的實際數字一致；**不准**重跑
+      任何一輪、不准動 `surfaces.py`／`pipeline.py`／分區表／測試／門檻，
+      也不准去「修」表 7' 的數字（表是對的，錯的是摘要）。改完 commit
+      `docs: T-44 修正 REPORT 第七節門檻敏感度摘要`，狀態改回 🔵 待驗證。
+
+  - **✅ 以下全部實測通過，退回後不必重做**：
+    1. **分區完整性（無偷壓天花板）**：Opus 獨立對
+       `data/material_ground_truth.json` 78 面重算每個角色的 reachable 材質集合
+       → floor `{audience_seating, carpet, concrete, gypsum_board, marble,
+       wood_panel}`、ceiling `{concrete, curtain_fabric, generic_wall,
+       gypsum_board}`、wall 9 種。與 `ROLE_MATERIAL_CANDIDATES` 對照，
+       **「該角色 gt 出現過卻被排除」的材質＝0 項**；floor／ceiling 的候選集
+       與 reachable 集合**恰好相等**（連多餘候選都沒有），wall 是全域 12 種。
+       三個 unreachable 材質（`rubber_flooring`／`metal_roof_deck`／
+       `vinyl_panel`）不在 12 條候選宇宙內，不是被分區表排除。
+    2. **OOD 候選未被分掉**：`all_prompts = {**material_prompts,
+       **CLIP_OOD_PROMPTS}` 無條件合併；`test_t44_role_partition.py`【4】三角色
+       逐一驗證候選字串數 == 子集材質數＋4（floor 10／ceiling 8／wall 16），實跑通過。
+    3. **既有 12 條提示詞字串零 diff（無字串變體偷渡）**：
+       `git diff 63c536c HEAD -- src/image_reverb/surfaces.py` 的**所有被刪除行
+       共 7 行**，逐行檢視全部是 `all_prompts` 那行與三處呼叫式，
+       `CLIP_MATERIAL_PROMPTS` 字典一個字元未動。
+    4. **`role=None` 逐位元等價**：不只結果相同——`analyse_image(role_aware=False)`
+       對 `classify_region_material()` 的呼叫式**字面上不含 `role` 關鍵字**
+       （5 個位置參數、kwargs 為空），測試【3】以樁函式錄下呼叫式證明。
+       另 Opus 實測 round17 的 wall 角色 52 面與 `round11_remap_baseline`
+       **含 top3 機率逐位元相同、差異 0 筆**（wall 還原成 12 種同順序的直接後果）。
+    5. **新測試對舊碼確實 fail（鐵則 5）**：Opus 自建 `git worktree` 到 `63c536c`
+       ＋把新測試複製進去實跑 → `AttributeError: module ... has no attribute
+       'ROLE_MATERIAL_CANDIDATES'`、**EXIT=1**。worktree 已 `--force` 移除。
+    6. **量測數字獨立重算相符**：Opus 不採信 summary.json，直接拿各輪
+       `runs/*/detail.json` 對 ground truth 重新計分 →
+       round11 30/76（floor 4/13、ceiling 3/11、wall 23/52）、round15 29/76
+       （5／4／20）、round16 31/76（4／4／23）、round17 **32/76（5／4／23）**，
+       與 REPORT 逐項相符。in-set 誤判 Opus 自算定義略有差異（各輪一致少 1），
+       但 round17 相對 round11 的**下降方向與幅度相同**，8<9 成立。
+    7. **基線用對了**：`t44_role_eval.py` 的 `BASELINE_LABEL` 寫死
+       `round11_remap_baseline`，全程未誤用 `round0_baseline` 或已否定的
+       `round12`～`14`。三個產品採用門檻（32>30、5>4、8<9）確實同時達成。
+    8. **快取確實是現行碼產的**：對 13 張逐一重算 `eval_cache.compute_fingerprint()`
+       →**round17 全部 13 筆與現行 HEAD 相符**（`surfaces.py`
+       sha `9125d64a…`）；round15／round16 各 13 筆不符（記的是各自輪次當時的
+       `surfaces.py`），正是指紋機制該有的行為。採用的那一輪沒有靜默舊快取。
+    9. **輪次預算**：`rounds/` 只有 round15／16／17 三輪＝首輪＋2 輪調整，
+       round17 的 ROUND.md 執行指令明載「預算用滿」，無第 18 輪。
+       PLAN_T44.md 於 `f22c2d1` **單獨 commit（只有這一個檔案）**、
+       早於程式改動（`23f2aba`）與跑輪（`eebf71a`），符合「先寫死才准跑」。
+    10. **門檻敏感度確實跑了三個角色**（要求本身**達標**，錯的只是 REPORT 摘要）：
+        `round17/tables.md` 表 7' 有 floor／ceiling／wall 三張獨立表，
+        ROUND.md 的執行指令含 `--role-sensitivity`。
+    11. **範圍紅線零違反**：`compute_materials_confidence()`／gate／scene_cues／
+        `config.py`（門檻 0.4）／`data/`／`ir_metrics.py`／`SPEC.md`／
+        `ROADMAP.md`／`WORKFLOW.md` 及三個凍結目錄 `git diff` 全空；
+        `output/clip_accuracy/FREEZE_MANIFEST.md` 71 個檔案逐檔重算 sha256
+        →**不符 0 項**。整個 T-44 只動了 17 個檔案，全在卡片授權範圍內。
+    12. **18 支測試逐支單獨執行全部 EXIT=0**（含新增的
+        `test_t44_role_partition.py`）。
+    13. **六條交付 IR MD5**：Opus 在 `role_aware=True` 的 HEAD 上**實際重新生成**
+        四條並比對——`text_bathroom 2adbaa75…`／`text_church 2dd19b6e…`／
+        `coupled_neighbor_voices 9a94ffdf…`／`coupled_stadium_corridor a1c21bcc…`
+        **四條全部逐位元相符**；T-14 兩條由 `test_ir_synth.py`【6】內建比對通過。
+    14. **臥室紅旗（共同鐵則 7）未觸發**：`bedroom_ai_generated` round17 vs
+        round11 的 `surfaces`／`sources` 完全相同、gate 兩輪皆 `low`（BLOCK），
+        **未從擋變放**。（更正一處交接筆記的用詞：它**不是**「逐位元相同」——
+        floor 那面的 top3 從 `generic_wall 0.2436` 變成 `concrete 0.3394`，
+        因為 floor 候選集收窄了；只是仍低於 0.4 門檻，材質與 gate 結論不變。
+        這是措辭精確度問題，不是阻擋項，但下輪 REPORT 請改用「surfaces／
+        sources／gate 相同」而非「逐位元相同」。）
+    15. **否定結論沒有被誤標**：本卡是正面結論，狀態走 🔵 而非 🔴 卡關，正確。
+
+  - **關於交接筆記點名要 Opus 裁決的 `bathroom_tiled` gate flip——Opus 的結論：
+    不構成退回理由，但必須升級成 Fable 收尾複評的正式議題。**
+    Opus 實跑 `python -m src.image_reverb.cli assets/photos/bathroom_tiled.png
+    --no-viz` 確認現象屬實：floor 判成 `carpet`（來源 clip，gt=`gypsum_board`）、
+    `materials=medium`／`overall=medium`、**EXIT=0 且真的產出了 ir_mono.wav／
+    ir_stereo.wav／analysis.json**（round11 時這張是 low 被擋下的）。
+    理由：①卡片明文的三個採用門檻不含這一項，事後追加驗收標準不公平；
+    ②範圍紅線明文禁止本卡動 `compute_materials_confidence()`，Sonnet 沒有
+    偷改規則去迎合結果，反而主動揭露，這是正確行為；③機制是候選集收窄→
+    softmax 濃縮→越過門檻，屬本卡設計的必然副作用，不是實作疏漏。
+    但風險是真的：**信心分數變高、判定沒有變準**，與臥室紅旗同型。
+    另補一筆 Opus 額外量到、REPORT 沒提的同型近失：`bedroom_ai_generated.floor`
+    的 top-1 信心也從 0.2436 升到 0.3394（僅差 0.06 就會跨過 0.4 門檻）——
+    這說明 `bathroom_tiled` 不是孤例，而是「離門檻最近的那一張先中」。
+    **請 Fable 收尾複評時把「候選集收窄後的信心膨脹 vs 門檻 0.4 是否還成立」
+    列為明確議題**（例如門檻隨候選集大小調整、或 `compute_materials_confidence()`
+    區分收窄與未收窄），本卡不動手是對的。
+
 - **前置**：T-39 ✅（分區表要對擴充後的最終候選集做一次，不是做兩次；
   T-39 量出的新候選副作用是分區設計的證據輸入）
 - **性質聲明（寫進 PLAN 與 REPORT 開頭）**：與 T-38B 同型的**實驗卡**——
