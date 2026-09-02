@@ -5286,7 +5286,7 @@ T-34 與 T-35 都動 `pipeline.py`／`cli.py`，依序做避免衝突；T-36 是
 ## Phase 1.9 — CLIP 治療輪（Fable 規劃 2026-08-31；依裁決 T-36-A）
 
 **執行順序固定（2026-09-01 裁決 T-38B-A 後更新）：T-36 文件修正 ✅ → T-37 ✅ →
-T-40 ✅ → T-41 ✅ → T-38A ✅ → T-38B ✅（否定結論） → T-39 → T-44（role-aware
+T-40 ✅ → T-41 ✅ → T-38A ✅ → T-38B ✅（否定結論） → T-39 ✅（否定結論） → T-44（role-aware
 候選子集，裁決 T-38B-A 新增） → T-42 → T-43 → 回 Fable 收尾複評**
 （T-38 原卡已由 Fable 2026-09-01 拆成 T-38A／T-38B，見 T-38 卡的拆卡裁決；
 T-38B 否定結論的收尾裁決 T-38B-A 見 T-38B 卡尾）。
@@ -6088,7 +6088,7 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
    交接筆記的四個坑）；`HANDOFF_T38.md` 維持到 T-39 結案後刪除。
 
 ### T-39 候選材質集擴充（裁決 T-36-A 執行卡 3/3；需使用者參與；🔮 已由 Fable 依裁決 T-38B-A 改版 2026-09-01）
-- **狀態**：🔵 待驗證（2026-09-02，Sonnet 執行完成，工程完成／否定結論——加候選集未採用，資料保留）
+- **狀態**：✅ 通過（Opus 驗證，2026-09-02）——**實驗否定結論成立，工程任務完成**（加候選集未採用、materials.json 資料與 ground truth 重對映保留）
 - **前置**：T-38B ✅（2026-09-01 以「跑滿預算＋否定結論」通過，正式解鎖
   本卡——涵蓋率天花板正是否定結論指向這裡的理由）；**需使用者參與**
   （16 個 proxy 面的 ground truth 重對映確認——比 T-36 的 78 面小很多，
@@ -6205,6 +6205,100 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
   - **下一步**：請 Opus 驗證本卡；通過後依 Phase 1.9 固定順序開 **T-44**
     （role-aware 候選子集，前置已滿足——T-39 收尾基線即
     `round11_remap_baseline`，因為新候選未採用）。
+
+- **✅ Opus 驗證紀錄（2026-09-02）——結論：通過**（每一項都由驗證者自己重跑或
+  自己從 `runs/*/detail.json` 重算，不採信交接筆記貼上來的輸出）：
+  - ✅ **紅旗「既有 12 材質 α 漂移」不成立**：驗證者自己把 `a42066c` 的
+    `materials.json` 與現行檔逐材質逐欄位（alpha／name_zh／name_en／
+    confidence／source）比對，既有 12 種**零差異**，只多出 3 筆新 id。
+  - ✅ **紅旗「既有 12 條提示詞漂移」不成立**：`git diff a42066c HEAD --
+    src/image_reverb/surfaces.py` 只有字典後方 6 行註解，字典本體零差異；
+    另把 round11／12／13／14 四份 `ROUND.md` 的 `CLIP_MATERIAL_PROMPTS`
+    快照逐條比對，既有 12 條四輪全程逐位元相同，只有新候選在動。
+  - ✅ **紅旗「α 沒有出處」不成立**：3 筆新材質的 `source` 欄位各自點名
+    具體表格欄位（akustik.ua「Linoleum or vinyl stuck to concrete」／
+    「Rubber floor tiles 6mm」／「Steel decking」），數值與該類公開吸音表
+    的常見列一致，且都在 0–1 之間、量級合理；`metal_roof_deck` 取自表中
+    FLOORS 分類套用到屋頂、`vinyl_panel` 取自地板應用套用到天花板，兩處
+    外推**都在 source 欄位自己講明並標 medium**，屬誠實揭露而非自創數字。
+  - ✅ **紅旗「重對映沒有使用者確認紀錄」不成立（在檔案層面）**：16 面
+    全部 `confirmed_by: "user"`，3 面改標並 `proxy: false`、13 面維持原候選
+    且**逐面寫了查證結果與維持理由**，日期更新為 `2026-09-02`，檔頭另加
+    `t39_remap_date`。驗證者自己統計：proxy 面 16 → 13、78 面總數與 2 面
+    `unknown` 皆未變。（對話本身在另一個視窗，本視窗只能核到檔案紀錄與
+    PLAN §1 表格；紀錄完備、與卡片要求相符。）
+  - ✅ **紅旗「門檻敏感度沒重跑」不成立**：驗證者自己載入
+    `rounds/round11_remap_baseline/runs/*/detail.json` 呼叫
+    `t36_analysis.build_threshold_sensitivity()`，得 0.20→35(3 對/32 錯)、
+    0.25→27(3/24)、0.30→25(3/22)、0.35→9(1/8)、0.40→0，與 REPORT §六
+    **逐格相同**。
+  - ✅ **紅旗「round12+ 誤拿 round0_baseline 當基線」不成立**：REPORT §二
+    表格把 round0 明標為「T-38B 舊基線，重對映前」的參考列，§五 三個門檻
+    全部對 `round11_remap_baseline` 判定；ROUND.md 的 parent 鏈是
+    round11→12→13→14（「相對 round0_baseline 的字串差異」是 harness 內建
+    的字串 diff 區塊，不是準確率比較）。
+  - ✅ **紅旗「超出 2 輪調整預算」不成立**：`rounds/` 只有 round11～round14，
+    round12＝首跑、round13／round14＝2 輪調整，剛好用滿無超支；四輪
+    `surfaces.py` sha256 兩兩相異（`c87d90c9…`／`d328e95b…`／`227a5c03…`／
+    `7b6c4c67…`）＝四次真實量測。PLAN commit `103674c`(14:53) 早於全部
+    round 產物 commit(15:05／15:08／15:20)，且 PLAN §2 寫死的三條字串與
+    round12 快照逐字元相符、§6/§7 的 round13/14 事前決策字串也與各自快照
+    逐字元相符（事前登記成立）。
+  - ✅ **紅旗「否定結論被標成失敗／卡關」不成立**：卡片、REPORT、DEV_LOG、
+    TODO 全程標「工程完成＋產品不採用」，無 🔴。
+  - ✅ **數字全部自行重算**：驗證者用 ground truth ＋ 各輪 `detail.json`
+    自己算四輪 overall／floor／非 proxy／proxy＝
+    30/76・4/13・30/63・0/13（round11）、28/76・4/13・28/63・0/13（round12）、
+    29/76・4/13・29/63・0/13（round13）、24/76・4/13・24/63・0/13（round14），
+    與 REPORT §二、§五 **逐格相同**；三個採用門檻①③失敗判定成立。
+  - ✅ **結構性發現屬實**：`bathroom_tiled` 與 `site_photo_gym` 的
+    `detail.json` 在四輪裡 `sources`／`faces` 都沒有 `ceiling` 鍵（CLIP
+    確實從未被呼叫）；`site_photo_gym.floor` round12 起判為
+    `rubber_flooring` 0.543（唯一可達且修正成功的目標面）；round13
+    `SteinmanHall.ceiling` 確實恢復 `curtain_fabric` 0.571。T-33 差異照片
+    數 round12=5／round13=4／round14=7，與 REPORT 敘述相符。
+  - ✅ **還原屬實**：現行 `CLIP_MATERIAL_PROMPTS` 恰好 12 條、不含三個新
+    候選；`classify_region_material()` 只吃 `CLIP_MATERIAL_PROMPTS`＋
+    `CLIP_OOD_PROMPTS`，`materials.json` 只在 `surfaces.validate()` 用到，
+    因此新增 3 筆材質資料**在結構上不可能影響自動判定**——REPORT §八
+    「round11 可當最終狀態對照表」的推論成立。
+  - ✅ **共同鐵則驗證者自己重跑**：17 支 `scripts/test_*.py` 逐支
+    `EXIT=0`；`test_t39_materials_invariant.py` 在 `a42066c` 的 worktree
+    實測 `KeyError: 材質表裡沒有 id 'vinyl_panel'`、非零離開（診斷力屬實）；
+    四條交付 IR 驗證者自己重新生成 → `chk_bath`
+    `2adbaa75eb698772a8c9aa693179ec47`、`chk_church`
+    `2dd19b6e6d351d713887636fe45cd67e`、`coupled_neighbor_voices`
+    `9a94ffdf5d8295aee7889729c39c9cd8`、`coupled_stadium_corridor`
+    `a1c21bcc3fd9aa3480df203a89c8cd05`，**四條全中**（T-14 兩條隨
+    `test_ir_synth.py` 一起過）；`git diff a42066c HEAD` 對
+    `ir_metrics.py`／`SPEC.md`／`ROADMAP.md`／`WORKFLOW.md`／三個凍結目錄
+    **全為空**；本卡 src/scripts/data diff 只有 4 個檔，不多不少；臥室紅旗
+    驗證者自己重跑 → `geometry=medium, materials=low, overall=low`，仍是擋。
+  - ✅ **卡片「新候選自動繼承」要求已滿足**：`gen_ir_manual.py
+    --list-materials` 自動列出三個新 id；`apply_overrides()` ＋
+    `SurfaceMaterials.validate()` 實測接受 `floor=rubber_flooring`／
+    `ceiling=metal_roof_deck`，無硬編碼清單。
+  - ⚠️ **非阻擋觀察（不影響結論，留給 Fable 收尾複評或下次順手修）**：
+    1. **REPORT §三 round14 有一處敘述不準**：`CathedralRoom.west` 被寫成
+       「原正確 `concrete`」，實際上 round13 它是 `gypsum_board`（fallback，
+       ground truth 為 `concrete`）＝**本來就錯**，round14 只是從錯的
+       `gypsum_board` 變成錯的 `vinyl_panel`（錯→錯，不是正確→錯誤）。
+       驗證者自算 round13→round14 的**正確→錯誤**翻面共 **5 面**
+       （`site_photo_department_store` 四面牆＋`RacquetballCourt4.north`），
+       剛好對上 29→24 的落差；REPORT 其餘敘述與所有數字皆正確，門檻判定
+       不受影響。
+    2. REPORT §六 標題有一個簡體字「门檻」，純錯字。
+    3. 門檻敏感度只對「最終採用狀態（＝round11 候選集）」重跑，未附
+       round12～14 擴充候選集的對照表。因新候選未採用，操作上正確的就是
+       最終狀態那張表，REPORT 也已寫明；若 T-44 要拿擴充集當證據輸入，
+       可再補算（資料都在 `runs/` 裡，唯讀重算即可）。
+    4. `test_t39_materials_invariant.py` 對舊碼的診斷力來自【3】（新材質
+       資料存在），不是來自【1】【2】的不變性斷言——這是凍結型測試的常態，
+       docstring 已自陳，非造假。
+    5. `car_interior_suv.west`／`.east` 的 proxy 標記不一致（Sonnet 已如實
+       記在 ground truth 備註並上報），依卡片範圍未動，留給 Fable 裁決。
+  - **下一步**：依 Phase 1.9 固定順序開 **T-44**（role-aware 候選子集）；
+    其比較基線＝`round11_remap_baseline`（因新候選未採用，該輪即最終狀態）。
 
 ### T-44 role-aware 材質候選子集（裁決 T-38B-A 執行卡；設計＋實驗卡）
 - **狀態**：⬜ 未開始
