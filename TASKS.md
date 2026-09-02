@@ -5286,8 +5286,8 @@ T-34 與 T-35 都動 `pipeline.py`／`cli.py`，依序做避免衝突；T-36 是
 ## Phase 1.9 — CLIP 治療輪（Fable 規劃 2026-08-31；依裁決 T-36-A）
 
 **執行順序固定（2026-09-01 裁決 T-38B-A 後更新）：T-36 文件修正 ✅ → T-37 ✅ →
-T-40 ✅ → T-41 ✅ → T-38A ✅ → T-38B ✅（否定結論） → T-39 ✅（否定結論） → T-44（role-aware
-候選子集，裁決 T-38B-A 新增） → T-42 → T-43 → 回 Fable 收尾複評**
+T-40 ✅ → T-41 ✅ → T-38A ✅ → T-38B ✅（否定結論） → T-39 ✅（否定結論） →
+T-44 🔵 待驗證（正面結論，已採用） → T-42 → T-43 → 回 Fable 收尾複評**
 （T-38 原卡已由 Fable 2026-09-01 拆成 T-38A／T-38B，見 T-38 卡的拆卡裁決；
 T-38B 否定結論的收尾裁決 T-38B-A 見 T-38B 卡尾）。
 T-36 文件修正是純文件小卡（不另開卡號，範圍見下）；T-37 動 `preprocess.py`、
@@ -6301,7 +6301,7 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
     其比較基線＝`round11_remap_baseline`（因新候選未採用，該輪即最終狀態）。
 
 ### T-44 role-aware 材質候選子集（裁決 T-38B-A 執行卡；設計＋實驗卡）
-- **狀態**：⬜ 未開始
+- **狀態**：🔵 待驗證（2026-09-02，正面結論，已採用）
 - **前置**：T-39 ✅（分區表要對擴充後的最終候選集做一次，不是做兩次；
   T-39 量出的新候選副作用是分區設計的證據輸入）
 - **性質聲明（寫進 PLAN 與 REPORT 開頭）**：與 T-38B 同型的**實驗卡**——
@@ -6355,6 +6355,74 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
   否定結論被標成 🔴 卡關；紅旗：`role=None` 路徑與改動前不逐位元等價；
   紅旗：門檻敏感度只跑全域一份；紅旗：`compute_materials_confidence()`
   或 gate 段出現任何 diff。
+
+- **🔵 交接筆記（Sonnet，2026-09-02）——正面結論，已採用**：
+  - **產出檔案**：`output/clip_treatment/PLAN_T44.md`（分區表設計＋逐輪決策鏈，
+    round15 前單獨 commit）、`output/clip_treatment/REPORT_T44.md`（完整結果與
+    誠實揭露）、`scripts/t44_role_eval.py`（新，role-aware 評測 harness，
+    唯讀重用 `t36_clip_accuracy.py`／`t38_treatment_eval.py`／`eval_cache.py`
+    的既有機制，只有 `_run()` 改呼叫 `role_aware=True`）、
+    `scripts/test_t44_role_partition.py`（新，分區完整性＋`role=None`
+    逐位元等價不變量測試，對 T-44 之前的舊碼實測 `AttributeError` fail）、
+    `output/clip_treatment/rounds/round15_role_partition|round16|round17/`
+    （三輪完整產物）。
+  - **介面改動**：`classify_region_material()` 新增 `role` 參數（`None`
+    ＝與改動前逐位元相同的呼叫路徑，不只是結果相同）；`analyse_image()`／
+    `surfaces_from_preprocess()` 新增 `role_aware` 參數（`False` 時對
+    `classify_region_material()` 的呼叫**字面上不帶 `role` 關鍵字**，不是
+    傳 `role=None` 才「碰巧」等價）；新增 `ROLE_MATERIAL_CANDIDATES` 常數
+    （單一事實來源）。既有 12 條 `CLIP_MATERIAL_PROMPTS` 字串、
+    `compute_materials_confidence()`／gate／scene_cues／門檻 0.4 全部
+    零 diff（`git diff 63c536c HEAD` 逐一核對）。
+  - **三輪結果**（比較基線 `round11_remap_baseline`：overall 30/76、
+    floor 4/13、in-set 誤判 9）：
+    - round15（首輪，floor 6 種／ceiling 4 種／wall 9 種候選）：
+      overall 29/76（-1）、floor 5/13（+1）、in-set 誤判 15（+6）——
+      floor/ceiling 有進展但 wall 淨負面（`SteinmanHall` 三面牆被
+      `acoustic_panel`／`curtain_fabric` 搶答，兩者依完整性鐵則不能排除）。
+    - round16（wall 整組還原全域 12 種＋floor 試加回 `generic_wall`）：
+      overall 31/76（+1）、floor 4/13（持平）——wall 還原完全命中
+      （逐位元＝round11），但 floor 加回 `generic_wall` 證偽（它自己接管
+      成新錯誤冠軍，不是單純稀釋，還讓 round15 的一面修正倒退）。
+    - **round17（最終輪，撤銷 floor 的 generic_wall）**：overall
+      **32/76**、floor **5/13**、in-set 誤判 **8**——**三個產品採用門檻
+      同時達成**（①32>30 ②5>4 ③8<9），`pipeline.py` 已改
+      `role_aware=True`。跑之前先用既有兩輪快取資料唯讀推算預期值，
+      round17 實測逐項與推算相符（floor/ceiling/wall 三角色的候選集彼此
+      獨立，可以這樣推算，但仍真跑驗證非只採信推算）。
+  - **⚠️ 誠實揭露的殘留風險（REPORT_T44.md 第五節，請 Opus 特別確認）**：
+    `bathroom_tiled` 的 overall gate 從 BLOCK 變成 pass（`materials_
+    confidence` low→medium），但 floor 的實際判定其實是錯的
+    （`carpet`，gt=`gypsum_board`）。機制：round11 該面是 fallback（誠實
+    承認不知道，預設值剛好等於 gt，觸發 `compute_materials_confidence()`
+    規則 1 → low → 擋下輸出）；round17 候選集收窄後同一面變成 clip（真的
+    判出一個答案，但判錯了），不再觸發規則 1，落入規則 4 → medium → 放行。
+    13 張裡**只有這一張**出現這個型態；`bedroom_ai_generated`（共同鐵則 7
+    明文點名的紅旗）逐位元核對後與 round11 完全相同，**未觸發**從擋變放。
+    卡片明文的三個產品採用門檻不含這一項，依卡片規則本卡判定為採用，但
+    這個新型態的風險與臥室紅旗背後的精神相同（信心分數變高、判定沒有變準），
+    已建議 Fable 收尾複評時考慮是否需要後續處理，本卡未動
+    `compute_materials_confidence()` 去「修」它（範圍紅線禁止）。
+  - **PLAN §0 事前寫死的預期管理**：`bedroom_ai_generated` 牆對牆混淆確實
+    未治（符合預期，逐位元核對）；`bathroom_tiled.ceiling`／
+    `site_photo_gym.ceiling`（分割階段沒有 ceiling 角色像素）與
+    `site_photo_gym.floor`（gt=`rubber_flooring`，T-39 未採用候選）三面
+    結構性不可達，未計入預期收益、也沒動分割邏輯。PLAN §6 預測的兩個
+    「最強機會」（`car_interior_suv.floor`／`site_photo_department_store.floor`）
+    未兌現（換了個錯答案，沒有翻正）；round15 額外發現 PLAN 沒預測到的
+    `SteinmanHall` 三面牆同型風險（不在事前列表內，跑完才發現，如實記錄）。
+  - **共同鐵則自我檢查**：全部 18 支 `scripts/test_*.py` exit 0；六條交付
+    IR MD5 逐條重新生成比對全數相符（T-14 經 `test_ir_synth.py`；T-20 兩條
+    `2adbaa75.../2dd19b6e...`；T-21 兩條 `9a94ffdf.../a1c21bcc...`，皆在
+    `role_aware=True` 採用**之後**重新生成驗證）；`ir_metrics.py` 零 diff；
+    `data/`／SPEC／ROADMAP／WORKFLOW／三個凍結目錄零 diff；臥室紅旗未觸發
+    （逐位元核對，非只看 confidence 標籤）；13 張基線變化表（geometry／
+    materials／overall 三軸 before/after，逐張列出 surfaces 有無變動）見
+    REPORT_T44.md 第六節鐵則 8；門檻敏感度對 floor／ceiling／wall 三個角色
+    分別重跑（`--role-sensitivity`），未只跑全域一份。
+  - **下一步**：請 Opus 驗證本卡，**特別確認第五節的 `bathroom_tiled`
+    gate flip 是否構成需要退回或需要後續開卡的理由**；通過後依 Phase 1.9
+    固定順序開 **T-42**。
 
 ### Phase 1.9 插卡 —— 產物可信度修正輪（Fable 規劃 2026-08-31）
 

@@ -1,5 +1,30 @@
 # Dev Log
 
+## 2026-09-02 (90)
+
+- **T-44 role-aware 材質候選子集（🔵 待驗證，正面結論，已採用）**。
+  `classify_region_material()` 新增 `role` 參數（`None`＝與改動前逐位元
+  相同的呼叫路徑）；新增 `ROLE_MATERIAL_CANDIDATES` 分區表（floor/ceiling/
+  wall 各自候選子集，單一事實來源）；既有 12 條提示詞字串一字不動。
+- 對 `round11_remap_baseline`（overall 30/76、floor 4/13、in-set 誤判 9）
+  跑首輪＋2 輪調整：round15（首輪分區表）overall 29/76、floor 5/13——
+  floor/ceiling 有進展但 wall 因 `SteinmanHall` 三面牆被合法角色內材質
+  （`acoustic_panel`／`curtain_fabric`，依完整性鐵則不能排除）搶答，淨負面；
+  round16 wall 整組還原全域 12 種（完全命中，逐位元＝基線）；floor 試加回
+  `generic_wall` 證偽（自己接管成新錯誤冠軍，非稀釋）；**round17 撤銷
+  floor 的 generic_wall → overall 32/76、floor 5/13、in-set 誤判 8，三個
+  產品採用門檻同時達成**，`pipeline.py` 改 `role_aware=True`。
+- ⚠️ 誠實揭露：`bathroom_tiled` 的 gate 因材質 confidence 由 low→medium
+  從 BLOCK 變 pass，但地板判定其實是錯的（fallback 巧合答對被拆穿，換成
+  clip 自信答錯）——13 張裡僅此一張，臥室紅旗未觸發（逐位元核對）。已在
+  REPORT_T44.md 明確記錄，建議 Fable 收尾複評時評估是否需要後續開卡。
+- 共同鐵則自我檢查全過：18 支 `test_*.py`（含新增 `test_t44_role_
+  partition.py`，對舊碼實測 `AttributeError` fail）逐支 exit 0；六條交付
+  IR MD5 於採用之後重新生成比對全數相符；`ir_metrics.py`／`data/` 零 diff；
+  門檻敏感度對 floor/ceiling/wall 三角色分別重跑。
+  下一步：請 Opus 驗證本卡（特別確認 bathroom_tiled gate flip 是否需退回）；
+  通過後依 Phase 1.9 固定順序開 T-42。
+
 ## 2026-09-02 (89)
 
 - **T-39 候選材質集擴充（🔵 待驗證，否定結論，資料保留）**。16 個 proxy

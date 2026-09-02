@@ -273,7 +273,21 @@
       調整結構性碰不到。`surfaces.py` 候選集已還原，`materials.json`／
       `ground_truth.json` 的新增資料與重對映保留不回滾。詳見
       `output/clip_treatment/REPORT_T39.md`。
-      **下一步：請 Opus 驗證 T-39；通過後依固定順序開 T-44。**
+      **T-44 🔵 待驗證（2026-09-02，正面結論，已採用）**：`classify_region_
+      material()` 新增 `role` 參數＋`ROLE_MATERIAL_CANDIDATES` 分區表
+      （floor 6 種／ceiling 4 種／wall 還原全域 12 種），既有 12 條提示詞
+      字串一字不動。首輪＋2 輪調整（round15→16→17）：round15 首輪分區表
+      floor/ceiling 有進展但 wall 因合法角色內材質互搶淨負面
+      （`SteinmanHall` 三面牆，依完整性鐵則不能排除）；round16 wall 整組
+      還原全域 12 種完全命中、floor 試加回 `generic_wall` 證偽；**round17
+      撤銷該改動後 overall 32/76、floor 5/13、in-set 誤判 8，對
+      `round11_remap_baseline` 三個產品採用門檻同時達成**，`pipeline.py`
+      改 `role_aware=True`。⚠️ 誠實揭露一項殘留風險：`bathroom_tiled` 的
+      gate 因材質 confidence 提升從 BLOCK 變 pass，但地板判定其實答錯
+      （fallback 巧合答對被拆穿）——13 張裡僅此一張，臥室紅旗未觸發。
+      詳見 `output/clip_treatment/REPORT_T44.md`。
+      **下一步：請 Opus 驗證 T-44（特別確認 bathroom_tiled gate flip 是否
+      需退回）；通過後依固定順序開 T-42。**
 - [ ] **🔮 Phase 1.9 插卡（Fable 規劃 2026-08-31）：產物可信度修正輪
       T-40～T-43（卡片與裁決全文在 TASKS.md「Phase 1.9 插卡」節）**——
       外部掃描五項缺陷逐項對碼核實屬實後插卡：**T-40**（評測快取指紋與
