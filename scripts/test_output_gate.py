@@ -147,7 +147,7 @@ def _install_stubs(surf: SurfaceMaterials):
         # segment_roles()/CLIP 場景線索那段（本卡不需要它，也不想連帶下載模型）。
         return {"is_equirect": True}
 
-    def fake_surfaces_from_preprocess(preprocess_summary, threshold=None):
+    def fake_surfaces_from_preprocess(preprocess_summary, threshold=None, role_aware=False):
         return surf, {}
 
     orig_preprocess = preprocess_mod.preprocess_image

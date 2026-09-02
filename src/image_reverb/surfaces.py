@@ -76,6 +76,22 @@ CLIP_MATERIAL_PROMPTS = {
 # `data/materials.json` 仍保留這三種材質的資料（有出處，供 --override-material
 # 手動指定使用），只是這裡不把它們排進 CLIP 候選集。
 
+# T-44（裁決 T-38B-A 執行卡，output/clip_treatment/PLAN_T44.md）：
+# role-aware 候選子集——每個幾何角色只在自己的候選子集裡挑，不共用全域 12 條。
+# 單一事實來源：下面這個表；PLAN_T44.md §1 是它的設計文件與逐條排除理由，
+# 不要各自維護一份。子集內容＝該角色在 data/material_ground_truth.json
+# （T-39 重對映後）實際出現過的材質，排除的材質從未是該角色的 ground truth
+# （完整性檢查見 scripts/test_t44_role_partition.py）。
+# 提示詞字串本身不動——這裡只決定「哪些候選參賽」，不動「怎麼描述」。
+ROLE_MATERIAL_CANDIDATES: dict[str, list[str]] = {
+    "floor": ["concrete", "carpet", "wood_panel", "gypsum_board", "marble", "audience_seating"],
+    "ceiling": ["concrete", "curtain_fabric", "generic_wall", "gypsum_board"],
+    "wall": [
+        "concrete", "brick", "glass", "gypsum_board", "marble",
+        "curtain_fabric", "acoustic_panel", "grass_soil", "generic_wall",
+    ],
+}
+
 # 「以上皆非」的域外候選（out-of-domain）。
 #
 # 為什麼需要這個：CLIP 的 softmax 是在**封閉候選集**上做的，機率永遠加總為 1，
@@ -165,12 +181,18 @@ def classify_region_material(
     clip_processor,
     clip_model,
     threshold: float = config.CLIP_CONFIDENCE_THRESHOLD,
+    role: str | None = None,
 ) -> tuple[str, float, list[tuple[str, float]], str]:
     """對一個表面區域跑 CLIP zero-shot，回傳 (材質 id, 信心, top3, 方法)。
 
     信心 gating：top-1 機率低於 threshold → fallback `config.DEFAULT_WALL_MATERIAL`
     （現行值 `gypsum_board`，單一事實來源是 data/materials.json 的 fallback_id，
     見 T-23），呼叫端要把警示寫進輸出 JSON（不能安靜地當成量到的結果）。
+
+    `role`（T-44）：`None`（預設，向後相容）＝候選集為全域 12 種材質，與
+    T-44 之前逐位元相同；給 `"floor"`／`"ceiling"`／`"wall"` 時，候選集收窄成
+    `ROLE_MATERIAL_CANDIDATES[role]`（單一事實來源），域外候選
+    `CLIP_OOD_PROMPTS` 三個角色都保留，不收窄。
     """
     import torch
 
@@ -185,8 +207,14 @@ def classify_region_material(
     arr[~mask] = 128
     crop = Image.fromarray(arr[y0:y1, x0:x1])
 
-    # 候選集＝12 種材質 ＋ 域外選項，讓 softmax 有辦法表達「以上皆非」
-    all_prompts = {**CLIP_MATERIAL_PROMPTS, **CLIP_OOD_PROMPTS}
+    # 候選集＝材質 ＋ 域外選項，讓 softmax 有辦法表達「以上皆非」。
+    # role=None：全域 12 種（T-44 之前唯一行為，逐位元相同的路徑）。
+    # role=給定角色：只有該角色的候選子集（T-44，ROLE_MATERIAL_CANDIDATES）。
+    if role is None:
+        material_prompts = CLIP_MATERIAL_PROMPTS
+    else:
+        material_prompts = {mid: CLIP_MATERIAL_PROMPTS[mid] for mid in ROLE_MATERIAL_CANDIDATES[role]}
+    all_prompts = {**material_prompts, **CLIP_OOD_PROMPTS}
     ids = list(all_prompts.keys())
     prompts = [all_prompts[i] for i in ids]
     inputs = clip_processor(text=prompts, images=crop, return_tensors="pt", padding=True)
@@ -212,8 +240,15 @@ def analyse_image(
     seg=None,
     clip=None,
     threshold: float = config.CLIP_CONFIDENCE_THRESHOLD,
+    role_aware: bool = False,
 ) -> dict[str, Any]:
-    """對單張透視圖跑兩階段辨識，回傳各幾何角色的觀測結果與警示。"""
+    """對單張透視圖跑兩階段辨識，回傳各幾何角色的觀測結果與警示。
+
+    `role_aware`（T-44，預設 `False`＝向後相容）：`False` 時對
+    `classify_region_material()` 的呼叫**字面上**與 T-44 之前相同（不帶
+    `role` 關鍵字），不是傳 `role=None` 才達成等價；`True` 時才多帶
+    `role=role`（迴圈變數，即 `"floor"`／`"ceiling"`／`"wall"`）。
+    """
     seg_processor, seg_model = seg if seg is not None else _load_segmenter()
     clip_processor, clip_model = clip if clip is not None else _load_clip()
 
@@ -239,9 +274,14 @@ def analyse_image(
             # 區域太小就不判，免得拿一小撮雜點決定整面牆的材質
             continue
 
-        mid, conf, top3, method = classify_region_material(
-            img, mask, clip_processor, clip_model, threshold
-        )
+        if role_aware:
+            mid, conf, top3, method = classify_region_material(
+                img, mask, clip_processor, clip_model, threshold, role=role
+            )
+        else:
+            mid, conf, top3, method = classify_region_material(
+                img, mask, clip_processor, clip_model, threshold
+            )
         note = ""
         if method == "out_of_domain":
             ood_name = top3[0][0].lstrip(OOD_PREFIX)
@@ -277,6 +317,7 @@ def analyse_image(
 def surfaces_from_preprocess(
     preprocess_summary: dict[str, Any],
     threshold: float = config.CLIP_CONFIDENCE_THRESHOLD,
+    role_aware: bool = False,
 ) -> tuple[SurfaceMaterials, dict[str, Any]]:
     """吃 T-10 `preprocess_image()` 的輸出，產生逐表面材質（約束 A）。
 
@@ -285,6 +326,8 @@ def surfaces_from_preprocess(
       所以四面牆可以**各自**判材質，不必共用一個值。
     - **一般透視照**：一張照片看不到背後的牆，四面牆只能共用同一個判定值；
       這件事會如實寫進 `sources` 與 `warnings`，不假裝有四面獨立資訊。
+
+    `role_aware`（T-44，預設 `False`＝向後相容）：原樣往下傳給 `analyse_image()`。
     """
     data = load_materials()
     seg = _load_segmenter()
@@ -300,7 +343,7 @@ def surfaces_from_preprocess(
             if surface is None:
                 continue
             img = Image.open(view_meta["path"]).convert("RGB")
-            res = analyse_image(img, seg, clip, threshold)
+            res = analyse_image(img, seg, clip, threshold, role_aware=role_aware)
             detail["warnings"].extend(f"[{view_name}] {w}" for w in res["warnings"])
             detail["class_ratios"][view_name] = res["class_ratios"]
 
@@ -323,7 +366,7 @@ def surfaces_from_preprocess(
     else:
         detail["mode"] = "single_perspective"
         img = Image.open(preprocess_summary["cropped"]).convert("RGB")
-        res = analyse_image(img, seg, clip, threshold)
+        res = analyse_image(img, seg, clip, threshold, role_aware=role_aware)
         detail["warnings"].extend(res["warnings"])
         detail["class_ratios"]["single"] = res["class_ratios"]
 

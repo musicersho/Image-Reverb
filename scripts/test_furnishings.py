@@ -219,7 +219,7 @@ def _install_stubs_d(surf: SurfaceMaterials, detail: dict):
     def fake_preprocess_image(path, output_dir=None):
         return {"is_equirect": True}
 
-    def fake_surfaces_from_preprocess(preprocess_summary, threshold=None):
+    def fake_surfaces_from_preprocess(preprocess_summary, threshold=None, role_aware=False):
         return surf, detail
 
     orig_preprocess = preprocess_mod.preprocess_image

@@ -202,7 +202,9 @@ def run_photo(
         materials_data = load_materials()
 
         print("--- T-12 逐表面材質辨識 ---")
-        surf, detail = surfaces_from_preprocess(summary)
+        # T-44：role_aware 開關單一呼叫點。分區表未達 PLAN_T44.md §5 產品採用
+        # 門檻前固定 False（＝全域 baseline 行為，與 T-44 之前逐位元相同）。
+        surf, detail = surfaces_from_preprocess(summary, role_aware=False)
         scene_cues: dict[str, float] = {}
         if not summary["is_equirect"]:
             ratios = detail["class_ratios"]["single"]
