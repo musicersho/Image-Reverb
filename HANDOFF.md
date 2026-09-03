@@ -1,17 +1,26 @@
 # 交接文件 — 給下一個視窗
 
-> 最後更新：2026-09-03（Fable 視窗：**裁決 T-45-A 審查制度修正**——依外部稽核
-> `REVIEW_STANDARD_AUDIT_T00_T44.md` 與使用者提交的補救方案
-> `REMEDIATION_AND_REREVIEW_PLAN_T00_T44.md`：單一「✅ 通過」廢止、改四軸狀態
-> （工程／實驗／產品／MVP，WORKFLOW §3）；T-17 首驗定為 **MVP FAIL**（永久保留，
-> 重驗＝T-17-R2）；**T-44 產品採用暫停**（`bathroom_tiled` 由 BLOCK 變自信放行且判錯），
-> 實作保留改 feature flag；回溯重標 12 張卡；新開 T-46／T-47／T-48／T-44-R1／T-17-R2。
-> ⚠️ **HEAD 的 `pipeline.py` 目前仍是 `role_aware=True`**（T-46 才改回）——在 T-46
-> 完成前不要用照片管線的預設輸出做任何宣稱。
-> 下一步：開 Sonnet 視窗執行 **T-46**（TASKS.md 檔尾 Phase 1.9-R 節）。
+> 最後更新：2026-09-03（Sonnet 視窗：**T-46 完成，🔵 待審**——REPORT_T44.md §7
+> 事實修正（floor/wall 門檻敏感度摘要改為與表 7' 一致，補一處未閉合括號）；
+> `pipeline.py` 的 `role_aware` 從硬編碼 `True` 改回 `config.ROLE_AWARE_MATERIALS_
+> DEFAULT`（`False`），CLI 新增 `--role-aware`（實驗路徑，啟用時 stderr／
+> `analysis.json.warnings` 印 experimental 字樣）；新增
+> `scripts/t46_role_flag_baseline.py` 對 13 張照片跑真實 CLI 兩模式，程式化證明
+> 預設模式六面材質＋來源與 `round11_remap_baseline` 逐值相同（`bathroom_tiled`／
+> `bedroom_ai_generated` 回到 BLOCK）、`--role-aware` 模式與 `round17` 逐值相同
+> （`output/role_flag/REPORT.md`）。19 支測試全 exit 0、六條交付 IR MD5 全中、
+> 對舊碼 `git stash` 實測新測試正確 fail。
+> ⚠️ **意外發現兩點，已寫進 T-47 前置、本卡未處理**：①`role_aware` 會透過既有的
+> `scene_cues["out_of_domain"]` 機制間接影響 `geometry_confidence`
+> （`site_photo_department_store`：medium→low）；②`EXPECTED_GATE`（T-28-A／T-36
+> 凍結表）的 geometry 欄位疑似部分過期（`TunnelToHell` 實測 low、表列 medium，
+> T-37 equirect 修正之後未見對應更新）。細節見 TASKS.md T-46 卡交接筆記。
+> **HEAD 的 `pipeline.py` 現在預設 `role_aware=False`（已確認，非宣稱）**。
+> 下一步：**T-46 待 Opus 驗證**；驗證通過後開 Sonnet 視窗執行 **T-42**
+> （TASKS.md 檔尾 Phase 1.9-R 節）。
 > **新視窗請先讀 [CLAUDE.md](CLAUDE.md) 知道自己的角色，再讀本檔知道現在的狀況。**
 >
-> 驗證本檔是否過期：看 [DEV_LOG.md](DEV_LOG.md) 最上面一筆是不是 `2026-09-03 (91)`；
+> 驗證本檔是否過期：看 [DEV_LOG.md](DEV_LOG.md) 最上面一筆是不是 `2026-09-03 (92)`；
 > 若已有更新的紀錄，以 DEV_LOG 為準。
 
 ---
@@ -36,7 +45,8 @@
 - 規則層已改：`WORKFLOW.md` v2（§3 四軸、§5.4 四種驗收、§7 變更控制、§8 不可變欄位）。
   **收工與驗證一律寫四軸，禁止只寫 ✅ 通過。**
 
-**接下來的固定順序**：**T-46**（REPORT §7 修正＋role-aware 回 feature flag）→ T-42 → T-43
+**接下來的固定順序**：~~T-46（REPORT §7 修正＋role-aware 回 feature flag）~~
+**T-46 🔵 待審已完成** → **T-42**（下一張）→ T-43
 → T-47（gate 校準複審量測）→ T-48（T-11／T-12 判準 v2 針對性重驗）→ T-44-R1（需使用者
 核准絕對下限＋提供 held-out 照片）→ T-17-R2（新盲測、frozen manifests、結果另存）→ 回 Fable。
 只有 T-17-R2 全部硬門檻達成才可以寫 `MVP PASS`。
@@ -273,8 +283,8 @@ T-21 ✅（四輪迭代）｜T-17 §7-4 ✅ 已執行（無鐵筒子 artifact；
 | T-39 | 候選材質集擴充 | ✅ 工程已驗證｜🔴 實驗負向｜🚫 不採用（Opus 2026-09-02） |
 | T-44 | role-aware 材質候選子集 | 🟠 工程退回（文件）｜🟢 相對正向｜🧪 產品採用暫停（裁決 T-45-A）｜安全缺口 1＋1 |
 | T-45 | 審查制度修正（Fable 卡） | ✅ 已執行（Fable 2026-09-03） |
-| T-46 | T-44 收尾：REPORT §7 修正＋role-aware 回 feature flag | ⬜ **下一張** |
-| T-42 | gate 交易式輸出與舊產物隔離（插卡 3/4） | ⬜ 前置改 T-46 |
+| T-46 | T-44 收尾：REPORT §7 修正＋role-aware 回 feature flag | 🔵 待審（Sonnet 自檢通過 2026-09-03） |
+| T-42 | gate 交易式輸出與舊產物隔離（插卡 3/4） | ⬜ **下一張**（前置 T-46 已完成） |
 | T-43 | T-17 產物溯源（插卡 4/4） | ⬜ |
 | T-47 | gate 校準複審量測（量測卡） | ⬜ |
 | T-48 | T-11／T-12 判準 v2 針對性重驗（量測卡） | ⬜ |

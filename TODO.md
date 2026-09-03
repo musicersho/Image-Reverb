@@ -9,9 +9,9 @@
 > 專案目前：**MVP：FAIL**（T-17 首驗，永久保留；重驗＝T-17-R2）。
 
 - **T-17 MVP 驗收**：工程已驗證｜MVP **FAIL**（盲聽 2/5、自動組 0/8、手動組 0/5）→ 重驗 T-17-R2
-- **T-44 role-aware**：工程待複驗（🟠 文件退回）｜實驗相對正向｜產品 🧪 **暫停採用**｜
+- **T-44 role-aware**：工程待複驗（🟠 文件退回，T-46 已修）｜實驗相對正向｜產品 🧪 **暫停採用**
+  （T-46 已把 `pipeline.py` 預設改回 `role_aware=False`，`--role-aware` 保留研究路徑）｜
   安全：已知錯誤放行 1 件（bathroom_tiled）＋近失 1 件（bedroom floor）｜MVP FAIL
-  ⚠️ HEAD 的 `pipeline.py` 仍 `role_aware=True`，T-46 才改回。
 - **負向實驗（工程已驗證、產品不採用）**：T-05（相對深度）、T-06（分割即材質）、T-33（陳設
   預設套用）、T-36（CLIP 52.4%，診斷）、T-38 原卡（六輪不達標）、T-38B（四輪劣化）、
   T-39（30→24）。
@@ -21,8 +21,19 @@
 - **gate 校準前提已變**（T-26／T-28／T-36-A）→ T-47 重量四樣證據後裁決 T-47-A。
 - [x] **T-45 審查制度修正 ✅（Fable 2026-09-03）**：WORKFLOW v2、CLAUDE/AGENTS 同步、
       12 卡回溯重標、新卡 T-46～T-48／T-44-R1／T-17-R2、HANDOFF/TODO/DEV_LOG/ROADMAP 同步。
-- [ ] **T-46**（下一張）：REPORT_T44 §7 修正＋role-aware 回 feature flag＋13 張基線證明回 round11
-- [ ] **T-42 → T-43**（產物可信度：交易式輸出、provenance）
+- [x] **T-46 🔵 待審（Sonnet 自檢通過 2026-09-03）**：REPORT_T44 §7 事實修正（含補一處未閉合
+      括號）；`role_aware` 回 feature flag（`config.ROLE_AWARE_MATERIALS_DEFAULT=False`、
+      `cli.py --role-aware`、`pipeline.py` 唯一呼叫點改讀參數＋`analysis.json` 加欄＋
+      `role_aware=True` 時 stderr／warnings 印 experimental）；13 張基線變化表
+      （`output/role_flag/REPORT.md`）程式化證明預設模式六面材質＋來源與
+      `round11_remap_baseline` 逐值相同、`--role-aware` 模式與 `round17` 逐值相同，
+      已知錯誤 5 張案例僅 `bathroom_tiled` BLOCK→pass、其餘 4 張兩模式皆 BLOCK。
+      19 支測試全 exit 0、六條交付 IR MD5 全中、`ir_metrics.py` 零 diff、對舊碼
+      `git stash` 實測新測試正確 fail。⚠️ 意外發現兩點寫進 T-47 前置（不在本卡處理）：
+      role_aware 會透過 `scene_cues["out_of_domain"]` 間接影響 geometry_confidence
+      （`site_photo_department_store`）；`EXPECTED_GATE` 凍結表的 geometry 欄位疑似
+      部分過期（`TunnelToHell`，T-37 之後未見更新）。詳見 TASKS.md T-46 卡交接筆記。
+- [ ] **T-42 → T-43**（下一張；產物可信度：交易式輸出、provenance）
 - [ ] **T-47** gate 校準複審量測（兩模式 ×四樣證據）→ 🔮 裁決 T-47-A
 - [ ] **T-48** T-11／T-12 判準 v2 針對性重驗（只量不改）
 - [ ] **T-44-R1**（等使用者：核准絕對下限選項 A／B、提供 ≥5 張 held-out 照片並逐面確認）
@@ -313,8 +324,12 @@
       gate 因材質 confidence 提升從 BLOCK 變 pass，但地板判定其實答錯
       （fallback 巧合答對被拆穿）——13 張裡僅此一張，臥室紅旗未觸發。
       詳見 `output/clip_treatment/REPORT_T44.md`。
-      **下一步：請 Opus 驗證 T-44（特別確認 bathroom_tiled gate flip 是否
-      需退回）；通過後依固定順序開 T-42。**
+      **🔮 裁決 T-45-A（Fable 2026-09-03）**：`bathroom_tiled` gate flip 判定為已知
+      錯誤放行（安全缺口），產品採用暫停，T-44 REPORT §7 退回修正；順序改
+      T-46 → T-42 → T-43 → T-47 → T-48 → T-44-R1 → T-17-R2（見上方⛔區塊）。
+      **T-46 🔵 待審（2026-09-03）已完成**：REPORT §7 修正＋`role_aware` 回
+      feature flag（預設 False）＋13 張基線程式化證明回到 round11；下一步：
+      T-42。
 - [ ] **🔮 Phase 1.9 插卡（Fable 規劃 2026-08-31）：產物可信度修正輪
       T-40～T-43（卡片與裁決全文在 TASKS.md「Phase 1.9 插卡」節）**——
       外部掃描五項缺陷逐項對碼核實屬實後插卡：**T-40**（評測快取指紋與

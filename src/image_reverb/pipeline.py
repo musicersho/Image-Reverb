@@ -168,6 +168,7 @@ def run_photo(
     force_low_confidence: bool = False,
     furnishings: bool = False,
     no_furnishings: bool = False,
+    role_aware: bool = config.ROLE_AWARE_MATERIALS_DEFAULT,
 ) -> int:
     from .preprocess import preprocess_image
     from .surfaces import surfaces_from_preprocess
@@ -202,10 +203,19 @@ def run_photo(
         materials_data = load_materials()
 
         print("--- T-12 逐表面材質辨識 ---")
+        if role_aware:
+            print(
+                "⚠️  --role-aware 已啟用（experimental）：T-44 候選子集，產品採用暫停"
+                "（裁決 T-45-A），結果可信度未知，請自行評估。",
+                file=sys.stderr,
+            )
         # T-44：role_aware 開關單一呼叫點。round17（PLAN_T44.md §8）對
         # round11_remap_baseline 同時達成 §5 三個產品採用門檻（overall
-        # 32/76>30/76、floor 5/13>4/13、in-set 誤判 8<9）→ 採用 True。
-        surf, detail = surfaces_from_preprocess(summary, role_aware=True)
+        # 32/76>30/76、floor 5/13>4/13、in-set 誤判 8<9），但門檻只含相對
+        # 改善、未含絕對安全下限——`bathroom_tiled` 已知錯誤放行（裁決
+        # T-45-A）。產品採用暫停，預設改回 `config.ROLE_AWARE_MATERIALS_DEFAULT`
+        # （False），研究路徑保留在 `--role-aware`（T-46）。
+        surf, detail = surfaces_from_preprocess(summary, role_aware=role_aware)
         scene_cues: dict[str, float] = {}
         if not summary["is_equirect"]:
             ratios = detail["class_ratios"]["single"]
@@ -390,6 +400,12 @@ def run_photo(
     mono_payload = json.loads(mono_json.read_text(encoding="utf-8"))
     notes, warnings = _split_notes_and_warnings(mono_payload["warnings"])
 
+    if role_aware:
+        warnings.append(
+            "--role-aware 已啟用（experimental）：T-44 候選子集，產品採用暫停"
+            "（裁決 T-45-A），結果可信度未知。"
+        )
+
     # T-35：陳設三態組 analysis.json 的 "furnishings" 鍵。
     #   --no-furnishings → None（現行為，ac.furnishings 本來就是 None）。
     #   --furnishings     → ac.furnishings（現行完整結構）＋ applied=True。
@@ -453,6 +469,7 @@ def run_photo(
         "geometry_confidence": est.confidence,
         "materials_confidence": materials_confidence,
         "forced_low_confidence": forced_low_confidence,
+        "role_aware": role_aware,
         "dims_m": {"length": est.length_m, "width": est.width_m, "height": est.height_m},
         "volume_m3": round(est.volume_m3, 2),
         "surfaces": surf.as_dict(),

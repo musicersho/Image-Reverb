@@ -1,5 +1,27 @@
 # Dev Log
 
+## 2026-09-03 (92)
+
+- **T-46 T-44 收尾修正（🔵 待審，裁決 T-45-A 執行卡 1/5）**。REPORT_T44.md §7
+  改為與表 7' 一致（floor 門檻 0.30 放行 2 面皆錯，非「零面」；補 wall 完整敏感度
+  表；補一處未閉合括號），獨立 commit `1121293`。`pipeline.py` 的 `role_aware`
+  從硬編碼 `True` 改回 `config.ROLE_AWARE_MATERIALS_DEFAULT`（`False`），
+  `cli.py` 新增 `--role-aware`（實驗路徑，啟用時 stderr／`analysis.json.warnings`
+  印 experimental）。新增 `scripts/t46_role_flag_baseline.py`：13 張照片真實 CLI
+  兩模式並跑，程式化證明預設模式六面材質＋來源與 `round11_remap_baseline` 逐值
+  相同（`bathroom_tiled`／`bedroom_ai_generated` 回到 BLOCK）、`--role-aware`
+  模式與 `round17` 逐值相同；已知錯誤 5 張案例僅 `bathroom_tiled` 兩模式不同
+  （BLOCK→pass），其餘 4 張兩模式皆 BLOCK。新增 `scripts/test_t46_role_flag.py`
+  （對舊碼 `git stash` 實測正確 fail）。19 支測試全 exit 0、六條交付 IR MD5 全中、
+  `ir_metrics.py` 零 diff、`bathroom_tiled` 真實 CLI 預設 exit 3／`--role-aware`
+  exit 0 皆已實測。
+- ⚠️ **意外發現、寫進 T-47 前置、本卡未處理**：①`role_aware` 會經既有的
+  `scene_cues["out_of_domain"]` 機制間接影響 `geometry_confidence`
+  （`site_photo_department_store` medium→low）；②`EXPECTED_GATE`（T-28-A／T-36
+  凍結表）的 geometry 欄位疑似部分過期（`TunnelToHell` 實測 low、表列 medium，
+  T-37 equirect 修正之後未見對應更新）。
+  下一步：T-46 待 Opus 驗證；通過後開 Sonnet 視窗執行 **T-42**。
+
 ## 2026-09-03 (91)
 
 - **🔮 Fable：裁決 T-45-A（審查制度修正，純文件）**。依外部稽核

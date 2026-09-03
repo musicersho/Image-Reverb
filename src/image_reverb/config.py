@@ -135,6 +135,14 @@ MIN_SURFACE_AREA_RATIO = 0.01
 
 SURFACES_OUTPUT_DIR = PROJECT_ROOT / "output" / "surfaces"
 
+# T-44 role-aware 材質候選子集（`classify_region_material()` 的 `role` 分區表）。
+# 裁決 T-45-A（2026-09-03）：T-44 的產品採用門檻只有相對改善、未含絕對安全下限，
+# 實測 `bathroom_tiled` 從「誠實 fallback 被擋」變成「自信判錯、exit 0、輸出 WAV」
+# （已知錯誤放行）＋ `bedroom_ai_generated.floor` 近失——產品採用暫停，改回預設關閉，
+# 以 feature flag（`--role-aware`）保留研究路徑。
+# 解除條件：T-44-R1（安全門檻重新驗證）與 T-17-R2（MVP 重新驗收）皆 PASS。
+ROLE_AWARE_MATERIALS_DEFAULT = False
+
 # ------------------------------------------------------------
 # T-31 室內陳設等效吸音（裁決 T-27-A 執行卡 1/3）
 # ------------------------------------------------------------

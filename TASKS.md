@@ -7536,8 +7536,10 @@ MINC/DMS 模型卡與陳設公式修正輪的評估併入 T-17-R2 前的 Fable �
   - [ ] 只有 T-17-R2 完整硬門檻全部達成時才顯示 `MVP PASS`
 
 ### T-46 T-44 收尾修正：REPORT §7 事實修正＋role-aware 回 feature flag（Sonnet 卡；裁決 T-45-A 執行卡 1/5）
-- **狀態**：⬜ 未開始
-- **四軸狀態**：工程：未開始｜實驗：不適用｜產品：本卡完成後 T-44 為 🧪 feature flag｜MVP：不適用
+- **狀態**：🔵 待審
+- **四軸狀態**：工程：🔵 待審（自我檢查全過，待 Opus 驗證）｜實驗：不適用｜產品：本卡完成，
+  `pipeline.py` 預設 `role_aware` 已回 `False`，T-44 回到 🧪 feature flag（`--role-aware` 保留研究
+  路徑；正式生效待 Opus／Fable 確認）｜MVP：不適用
 - **前置**：T-45 ✅
 - **目標**：把 T-44 的兩個懸案收掉——①Opus 退回的 REPORT §7 文件錯誤；②依裁決 T-45-A
   把 `role_aware` 從預設 True 改回預設 False，以 feature flag 保留研究路徑，並用程式證明
@@ -7591,6 +7593,78 @@ MINC/DMS 模型卡與陳設公式修正輪的評估併入 T-17-R2 前的 Fable �
   預設路徑與 round11 有任何一值不同；紅旗：只寫 ✅ 通過。通過後 T-44 四軸改
   「工程：已驗證（經 T-46 複驗）｜實驗：相對指標正向｜產品：🧪 feature flag｜MVP：FAIL」。
 - **交接筆記**：
+  1. **REPORT §7 修正**（獨立 commit `1121293` `docs: T-44 修正 REPORT 第七節門檻敏感度摘要`）：
+     floor 段改為與表 7' 一致（門檻 0.20/0.25/0.30 皆放行 2 面、答對 0、答錯 2；0.35 起 0 面），
+     補上兩面逐面明細（`bedroom_ai_generated.floor` top-1 實為 `concrete` 0.339、`wood_panel`
+     0.220 是次高候選兼 gt；`SteinmanHall.floor` top-1 `concrete` 0.331、gt `gypsum_board`）；
+     wall 段補上完整敏感度表（0.20→27/1、0.25→22/1、0.30→20/1、**0.35→7/0**、0.40→0，
+     逐面明細見 `rounds/round17/tables.md` 表 7'）；補上第 253 行未閉合的括號（程式化掃描
+     `stack` 法確認全檔括號配對，見自我檢查）；檔頭加裁決 T-45-A 現況說明段，標題字面不改
+     （2026-09-02 的事實）。表 7' 本身（`rounds/round17/tables.md`）一個數字都沒動。
+  2. **feature flag**：`config.py` 新增 `ROLE_AWARE_MATERIALS_DEFAULT = False`（含裁決 T-45-A
+     與解除條件註解）；`cli.py` 新增 `--role-aware`（store_true，help 標實驗性／裁決 T-45-A）
+     並納入既有「僅照片輸入」互斥檢查；`pipeline.py` `run_photo()` 新增
+     `role_aware: bool = config.ROLE_AWARE_MATERIALS_DEFAULT` 參數，唯一呼叫點
+     `surfaces_from_preprocess(summary, role_aware=role_aware)` 取代硬編碼 `True`；
+     `analysis.json` 加 `"role_aware"` 欄（照片管線限定，`--text`／`--scene` 不受影響——
+     兩條管線程式碼完全沒碰）。額外加了卡片自我檢查明確要求的「訊息印 experimental」：
+     `role_aware=True` 時 stderr 印一行警示＋`analysis.json.warnings` 也留一條（否則使用者
+     只在當下看得到，重開 JSON 看不出這筆結果是實驗路徑跑的）。`compute_materials_confidence()`／
+     `scene_cues` 計算／CLIP 門檻 0.4／`ROLE_MATERIAL_CANDIDATES`／`classify_region_material()`
+     一行未動（`git diff` 只有 `config.py`/`cli.py`/`pipeline.py` 三個檔、共 +26/-3 行，
+     範圍未外溢）。
+  3. **介面測試**：新增 `scripts/test_t46_role_flag.py`（未動 `test_output_gate.py`，兩個範圍
+     選項擇一）。樁 `surfaces_from_preprocess` 錄 kwargs，驗證預設呼叫
+     `role_aware=False`、明確傳 `True` 時旗標路徑正確、`analysis.json.role_aware` 與呼叫值
+     一致、`--help`／CLI 互斥檢查有 `--role-aware`。**對舊碼（T-46 之前，`git stash` 出
+     5520b83 之後的 HEAD）實測診斷力**：`git stash push` 只 stash 三個 src 檔後重跑，
+     案例 A 正確 fail（`recorded={'role_aware': True}`，非 `False`）＋CLI 相關兩項也 fail＋
+     `config.ROLE_AWARE_MATERIALS_DEFAULT` 直接 `AttributeError`（舊碼沒有這個常數）；
+     `git stash pop` 復原後重跑全過。
+  4. **13 張基線變化表**：新增 `scripts/t46_role_flag_baseline.py`（真實 CLI，不打樁，
+     `--force-low-confidence --no-viz` 各跑一次預設／`--role-aware`），輸出
+     `output/role_flag/{REPORT.md,tables.md}`＋`runs/<name>__{default,role_aware}/`。
+     **13 張全數**：預設模式的六面材質＋來源與 `round11_remap_baseline` 逐值相同、
+     `materials_confidence` 與 `EXPECTED_GATE`（T-28-A／T-36 凍結表）逐值相同、
+     `bathroom_tiled`／`bedroom_ai_generated` 均回到 **BLOCK**；`--role-aware` 模式的六面
+     材質＋來源與 `round17` 逐值相同（旗標路徑沒壞）。已知錯誤案例清單（表 4 的 5 張照片）
+     兩模式 gate 對照：**只有 `bathroom_tiled` 從 BLOCK→pass**，其餘 4 張兩模式皆 BLOCK
+     （`bedroom_ai_generated`／`site_photo_gym`／`site_photo_restaurant`／
+     `RacquetballCourt4`）——與 REPORT_T44.md §5 記錄的唯一「已知錯誤放行」案例吻合。
+     ⚠️ **意外發現、已誠實寫進 `output/role_flag/REPORT.md`「殘留風險」段，供 T-47 參考、
+     本卡不處理**：
+       - `role_aware` 會透過既有的 `scene_cues["out_of_domain"]` 機制**間接**影響
+         `geometry_confidence`（`site_photo_department_store`：floor 在窄候選集下被判成
+         `object_closeup`（OOD）而觸發 `apply_scene_cue_confidence()` 降級，medium→low）。
+         這條路徑（材質判定回頭影響幾何信心）在 T-44 round17 上線時就存在，只是 T-44 自己
+         的評測 harness 從未跑過真實 CLI 兩模式並排比較，本卡第一次跑出來才被看見。
+         `gate 判定段／compute_materials_confidence()／scene_cues／門檻 0.4` 全部零改動
+         （範圍紅線），此處不處理，寫進 T-47 的輸入。
+       - `EXPECTED_GATE`（T-28-A／T-36 凍結表，`t36_clip_accuracy.py` 等多支腳本共用）的
+         geometry 欄位**疑似部分過期**：`TunnelToHell` 實測 `geometry_confidence=low`，
+         表列 `medium`；T-37（equirect 誤判修正）的動機案例正是 `TunnelToHell.jpg`，該表
+         未見對應更新痕跡。**本卡不外推其他 11 張、不重新校準**，原樣寫進 T-47 前置。
+     （原始設計曾把這兩點當硬性斷言，實測 fail 後判斷屬本卡範圍外，改記錄不攔停——
+     見上方腳本 docstring 的說明。）
+  5. `test_t44_role_partition.py` 重跑全過（分區表與 `role=None` 不變量確認未受影響）。
+  6. **自我檢查逐項結果**：全部 19 支 `scripts/test_*.py` 逐支 `EXIT=0`（含新增
+     `test_t46_role_flag.py`）；`git diff -- src/image_reverb/ir_metrics.py` 為空；
+     六條交付 IR MD5 全中——T-14 兩條由 `test_ir_synth.py` 內建斷言確認
+     （`f3a763be…`／`f24353b5…`）；T-20 兩條手動重生比對（`2adbaa75…`／`2dd19b6e…`）；
+     T-21 兩條手動重生比對（`a1c21bcc…`／`9a94ffdf…`）——後四條逐位元相符，比對後已刪除
+     暫存輸出，未污染 git 狀態；`bathroom_tiled` 真實 CLI（非樁）：預設
+     `python -m src.image_reverb assets/photos/bathroom_tiled.png --no-viz` → **exit 3**
+     （BLOCK，overall confidence low）；加 `--role-aware` → **exit 0**，stderr 與
+     `analysis.json.warnings` 皆含 `experimental` 字樣；產物已清除、未留在 `output/`。
+     `git diff` 限縮在範圍清單（`config.py`/`cli.py`/`pipeline.py` 三個 src 檔，
+     `output/clip_treatment/REPORT_T44.md` 已獨立 commit，新增
+     `scripts/test_t46_role_flag.py`／`scripts/t46_role_flag_baseline.py`／
+     `output/role_flag/{REPORT.md,tables.md}`）。
+  7. **下一步**：T-42（gate 交易式輸出，前置已改 T-46，本卡完成後可開）。T-47 執行時請
+     先讀本卡「意外發現」兩點（geometry 側通道＋`EXPECTED_GATE` 疑似過期），可能是
+     四樣證據之外的第五個訊號，或需要先把 `EXPECTED_GATE` 的 geometry 欄位重新實測一輪
+     再談校準——不確定屬於「新基準率」證據的一部分還是需要獨立標記，留給 Fable／T-47
+     執行者判斷。
 
 ### T-47 gate 校準複審量測（量測卡；裁決 T-45-A 執行卡 2/5；`src/` 零改動）
 - **狀態**：⬜ 未開始

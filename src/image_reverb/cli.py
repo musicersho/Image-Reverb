@@ -79,6 +79,11 @@ def main(argv: list[str] | None = None) -> int:
         help="（僅照片輸入）連室內陳設偵測都跳過（預設仍會偵測，只是不套用），"
         "用於 A/B 對照或陳設偵測結果有問題時的退路。與 --furnishings 互斥",
     )
+    parser.add_argument(
+        "--role-aware",
+        action="store_true",
+        help="實驗性：T-44 role-aware 候選子集，產品採用暫停（裁決 T-45-A）；預設關閉",
+    )
     args = parser.parse_args(argv)
 
     error = pipeline.check_mutual_exclusion(args.photo, args.text, args.scene)
@@ -100,11 +105,12 @@ def main(argv: list[str] | None = None) -> int:
         or args.force_low_confidence
         or args.furnishings
         or args.no_furnishings
+        or args.role_aware
     )
     if photo_only_flags_used and args.photo is None:
         print(
             "錯誤：--override-dims/--override-material/--force-low-confidence/"
-            "--furnishings/--no-furnishings 只能搭配照片輸入使用",
+            "--furnishings/--no-furnishings/--role-aware 只能搭配照片輸入使用",
             file=sys.stderr,
         )
         return 2
@@ -118,6 +124,7 @@ def main(argv: list[str] | None = None) -> int:
             force_low_confidence=args.force_low_confidence,
             furnishings=args.furnishings,
             no_furnishings=args.no_furnishings,
+            role_aware=args.role_aware,
         )
     if args.text is not None:
         return pipeline.run_text(args.text, no_viz=args.no_viz)
