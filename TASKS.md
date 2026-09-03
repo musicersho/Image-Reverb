@@ -197,6 +197,10 @@
 
 ### T-04 收集測試素材與對照 IR
 - **狀態**：✅ 通過（素材部分，2026-08-16）｜🚧 **照片來源連結待使用者補**（自我檢查第 2 項未達成）
+- **四軸狀態（裁決 T-45-A 回溯標記，2026-09-03；原「狀態」欄保留不改，語義見 WORKFLOW §3）**：
+  工程：**未結案**（自我檢查第 2 項「SOURCES.md 每一項都有來源連結」未達成——9 張照片來源網址等使用者補；素材與 8 組對照 IR 部分已驗證）｜實驗：不適用｜產品：不適用｜MVP：不適用
+  - `verdict_under_original_criteria: 未達（自檢 2 項只完成 1 項）`。原「✅ 通過（素材部分）」的綠色總狀態依裁決 T-45-A **不再代表本卡結案**。
+    結案條件維持裁決 E：補齊來源網址，或由使用者明確決定「維持未結案」並在 T-17-R2 REPORT 標明缺項——兩者擇一，不得以附註豁免。
 - **前置**：T-00
 - **對應 SPEC**：§7 驗收標準
 - **產出**：`assets/photos/` 內 5 類空間照片、`assets/reference_irs/` 內 ≥ 3 個 OpenAIR 真實 IR、`assets/SOURCES.md`
@@ -243,6 +247,8 @@
 
 ### T-05 深度估計模型測試
 - **狀態**：✅ 通過（Opus 驗證 2026-08-16）｜⚠️ **產出重大負面結論，影響 MVP 路線**
+- **四軸狀態（裁決 T-45-A 回溯標記，2026-09-03；原「狀態」欄保留不改，語義見 WORKFLOW §3）**：
+  工程：已驗證｜實驗：🔴 **負向**（相對深度不能估房間體積）｜產品：🚫 **不採用**（相對深度路線已於 T-08 改為 metric depth）｜MVP：不適用
 - **前置**：T-00、T-04（需要測試照片）
 - **對應 SPEC**：F-02
 - **產出**：`scripts/test_depth.py`、`output/depth/`（每張照片的深度圖 PNG）、`output/depth/REPORT.md`
@@ -291,6 +297,8 @@
 
 ### T-06 語意分割模型測試
 - **狀態**：✅ 通過（Opus 驗證 2026-08-16）｜⚠️ **產出重大負面結論，影響材質模組設計**
+- **四軸狀態（裁決 T-45-A 回溯標記，2026-09-03；原「狀態」欄保留不改，語義見 WORKFLOW §3）**：
+  工程：已驗證｜實驗：🔴 **負向**（ADE20K 的 floor／wall 材質語意不可信、車內無對應類別）｜產品：🚫 **不採用**（「分割即材質」假設不成立；已改兩階段：分割管角色、CLIP 管材質）｜MVP：不適用
 - **前置**：T-05（環境已含 torch/transformers）
 - **對應 SPEC**：F-03
 - **產出**：`scripts/test_segmentation.py`、`output/seg/`（分割疊圖 PNG）、`output/seg/REPORT.md`
@@ -566,6 +574,22 @@
   歷程：🔴 卡關（2026-08-18，判準 A 未通過：走廊 −57%，根因是模型量程 ~20m 天花板）
   → Fable 定案路線（2026-08-25，見「Fable 路線決策」）→ Sonnet 執行決策補丁（2026-08-26，
   Steinman 對照組卡關）→ Fable 裁決（2026-08-27）→ **Opus 驗證通過（2026-08-27）**。
+- **四軸狀態（裁決 T-45-A 回溯標記，2026-09-03；原「狀態」欄保留不改，語義見 WORKFLOW §3）**：
+  工程：已驗證（依 SPEC v0.3 域內判準，8531356）｜實驗：**雙 verdict 並列**——原域（一般室內含 ~30m 走廊，±30%）**FAIL**（走廊 −57%）／SPEC v0.3 域內（≤10m）**PASS**（浴室 +24%、域外全部 low）｜產品：🚀 預設啟用（自動幾何限 ≤10m；域外 low＋手動尺寸／環景出口）｜MVP：**待重驗**（T-48 針對性重驗「≤10m 判定與域外出口無誤放」；最終由 T-17-R2 覆蓋）
+- **不可變欄位（裁決 T-45-A 回溯建立；只能追加不得刪改）**：
+  ```text
+  criteria_version: v1（原卡步驟 5：一般室內〔浴室、走廊近端〕±30%）→ v2（SPEC v0.3：適用域 ≤10m，±30% 數字不動）→ v2.1（Steinman 對照組預期由 medium 改 low，規則不動）
+  criteria_commit: v1＝T-08 細化（2026-08-16）；v2＝e14873c（2026-08-25）；v2.1＝bca6b61（2026-08-27）
+  criteria_locked_at: v1 早於首次結果（fc688cd，2026-08-24）；v2／v2.1 皆晚於首次結果
+  dataset_manifest_sha256: 未建立（9 張照片＋已知尺寸 4 場地；T-48 補建並回填）
+  implementation_commit: fc688cd（與 T-12 混提，WORKFLOW §4 違規已由 Opus 記錄）→ 40bfb2f（決策補丁）
+  result_commit: fc688cd（首次評測：走廊 −57%）→ 40bfb2f（補丁後 A'/B'）
+  reviewer: Opus（2026-08-27，8531356）
+  verdict_under_original_criteria: FAIL（判準 A：走廊 −57% 未達 ±30%）
+  verdict_under_current_criteria: PASS（v2.1：A' 浴室 +24%；B' 走廊／車內／體育館／Steinman 全部 low）
+  criteria_changed_after_first_result: yes
+  change_record: e14873c（Fable 路線決策：改適用域不改數字，理由＝模型量程 ~20m 實證；核准＝Fable 自行裁決）；bca6b61（Steinman 實測牆距超標→預期改 low；核准＝Fable）；裁決 T-45-A（2026-09-03）：原域 FAIL 永久並列，域外出口是否誤放由 T-48 實測
+  ```
 - **前置**：T-10
 - **對應 SPEC**：F-02、F-09（尺寸覆寫）
 - **產出**：`src/image_reverb/geometry.py`、`output/geometry/REPORT.md`（評測報告）
@@ -814,6 +838,22 @@
 - **狀態**：✅ 通過（Opus 驗證 2026-08-25）— per-wall 材質實測進到 pyroomacoustics 房間物件內部、
   獨立量測 T30 證實鐵筒子頻譜特徵消失（低/高頻比 49.0→1.1 倍）、CLIP 信心值可重現非 hardcode。
   詳見下方「Opus 驗證結果（2026-08-25）」。
+- **四軸狀態（裁決 T-45-A 回溯標記，2026-09-03；原「狀態」欄保留不改，語義見 WORKFLOW §3）**：
+  工程：已驗證（85d0493；per-wall 進 pra 內部、鐵筒子頻譜特徵消失、使用者試聽通過）｜實驗：**雙 verdict 並列**——步驟 6a 字面條件（IR 實測 125Hz RT60 ≈0.35s ±20%）**未達**（實測 T30 0.748s）／Sabine 對 Sabine（0.348s）**達成**｜產品：🚀 預設啟用（逐表面材質）｜MVP：不適用
+- **不可變欄位（裁決 T-45-A 回溯建立；只能追加不得刪改）**：
+  ```text
+  criteria_version: v1（原卡步驟 6a：量測 125Hz RT60 ≈ 0.35s ±20%）→ v2（裁決 T-45-A 於 T-48 卡事前鎖定：v2-a 公式層 Sabine 125Hz＝0.348s ±20%；v2-b IR 實測層改量 T-18 聯合帶 T30，判準見 T-48 卡）
+  criteria_commit: v1＝T-08 細化（2026-08-16）；v2＝本裁決 commit（2026-09-03，早於 T-48 任何量測）
+  criteria_locked_at: v1 早於首次結果（fc688cd）；v2 早於 T-48 執行
+  dataset_manifest_sha256: 不適用（合成房間 4×3×2.5m，floor=carpet／其餘 gypsum_board；對照組六面 gypsum、六面 carpet）
+  implementation_commit: fc688cd
+  result_commit: fc688cd（Sabine 0.348s／實測 T30 0.748s）；f1c32ce（使用者試聽通過）
+  reviewer: Opus（2026-08-25，85d0493）
+  verdict_under_original_criteria: 未達（字面條件：實測 0.748s，偏差 +115%）
+  verdict_under_current_criteria: 待 T-48（v2 尚未量測；85d0493 附註 3 的豁免不得當 PASS 用）
+  criteria_changed_after_first_result: yes（85d0493 附註 3 以「0.35s 是 Sabine 值」解釋豁免，未改卡、未另版——依 WORKFLOW §7 屬驗證者豁免字面條件）
+  change_record: 裁決 T-45-A（2026-09-03）：豁免附註不再視為通過依據；原字面條件「未達」永久保留；v2 由 Fable 事前鎖定於 T-48 卡，T-48 只量不改
+  ```
 - **前置**：T-10（可與 T-11 並行）
 - **對應 SPEC**：F-03、§6、F-09（材質覆寫）
 - **產出**：`src/image_reverb/materials.py`（材質表模組）、`src/image_reverb/surfaces.py`
@@ -1729,6 +1769,23 @@
 - **狀態**：🔵 待 Fable 裁決（四項標準全部有結果，2026-08-30）。
   **§7-1 未達標 2/5、§7-2 未達標、§7-3 ✅ 通過、§7-4 已執行並記錄。**
   依 **裁決 E**（照片來源網址未補齊）＋兩項未達標，狀態最高停在 🔵，不得改 ✅。
+- **四軸狀態（裁決 T-45-A 回溯標記，2026-09-03；原「狀態」欄保留不改，語義見 WORKFLOW §3）**：
+  工程：已驗證（驗收流程四項全部執行、三支腳本重跑逐位元一致、`ir_metrics.py` 零 diff）｜實驗：不適用｜產品：不適用｜MVP：**FAIL**（§7-1 盲聽 2/5＜4/5；§7-2 自動組 0/8、手動組 0/5；§7-3 通過；§7-4 已執行）。**本結果為 MVP 首驗，永久保留、不得覆寫；重驗一律另開 T-17-R2，結果另存 `output/mvp_acceptance_r2/`。**
+  - 原「🔵 待 Fable 裁決」自裁決 T-45-A 起結束：裁決＝MVP FAIL（首驗）。T-38／T-39／T-44 的工程完成狀態不得替代本 gate。
+- **不可變欄位（裁決 T-45-A 回溯建立；只能追加不得刪改）**：
+  ```text
+  criteria_version: v1（SPEC §7 四項）＋裁決 B（125/250Hz → 88.4–353.6Hz 聯合帶 T30 <20%）＋裁決 C（達標率依 dims_source 分組）＋裁決 E（照片來源為結案前置）
+  criteria_commit: 3586bb0（2026-08-30，事前裁決，早於 T-17 開工）
+  criteria_locked_at: 2026-08-30（早於首次結果 e21ed3a）
+  dataset_manifest_sha256: 盲測素材＝output/mvp_acceptance/blind_test/MANIFEST.json（git_revision d958b3c、shuffle_seed 20260830；含 5 張照片／IR／wet 的 sha256）；8 場地對照 IR 未進版控、無 manifest（T-43 前置補）
+  implementation_commit: 不適用（驗收卡；src/ 零改動，已實測 git diff 為空）
+  result_commit: e21ed3a（§7-2）→ d958b3c（§7-1／§7-3／§7-4 使用者回饋）→ a98624a（外部 bug 查證＋兩處自我更正）
+  reviewer: Opus 主導執行；盲聽／試聽由使用者提供（2026-08-30）
+  verdict_under_original_criteria: MVP FAIL
+  verdict_under_current_criteria: MVP FAIL（判準未變）
+  criteria_changed_after_first_result: no（3586bb0 為事前修正，且修正後仍 FAIL）
+  change_record: 無。裁決 T-45-A（2026-09-03）只改狀態呈現（🔵 待裁決 → MVP FAIL 首驗），不改任何判準與數字
+  ```
 - **📄 產出**：[`output/mvp_acceptance/REPORT.md`](output/mvp_acceptance/REPORT.md)
   ＋ `tables.md`（完整誤差表）、`rt60_table.json`（原始量測）、
   `blind_test/`（§7-1 素材＋作答表）、`listening/`（§7-4 九個 wet 檔）
@@ -3283,6 +3340,7 @@
 
 ### T-26 低信心／域外輸入的輸出 gate（REPORT §2.6 缺陷 E）
 - **狀態**：✅ 通過（Opus 驗證 2026-08-30）
+- **🔮 裁決 T-45-A 補註（2026-09-03）**：本卡 gate 的校準前提是「固定門檻 0.4＋全域 12 候選 softmax」。T-44 的 role-aware 候選子集改變了 softmax 分佈（實證：`bathroom_tiled` 由 BLOCK 變 pass 且 floor 判錯；`bedroom_ai_generated.floor` top-1 信心 0.2436→0.3394 近失），該前提已不成立。**gate 規則本體維持不動**，但 BLOCK／pass 的校準須由 **T-47（gate 校準複審量測卡）** 依裁決 T-36-A 要求的四樣證據重新量測後再裁決（T-47-A）；T-47 裁決前 `role_aware` 預設維持 `False`（T-46 執行）。
 - **前置**：**T-25（要用 overall confidence 當判準）**
 - **問題**：`pipeline.py:225-239` 從幾何直接進聲學→合成→`export_ir()`→wet preview，
   **沒有任何一行檢查 `est.confidence` 或域外狀態**。T-17 §7-1 的實際後果：
@@ -3609,6 +3667,7 @@
   **⚠️ 後續更新（2026-08-31，裁決 T-33-A，見 T-33 卡尾）**：裁決一的「不可能性
   證明」已作廢並由新依據取代（區辨訊號已存在但不合格）；裁決三的複評時點重新
   錨定到 T-36（CLIP 準確度診斷）交回時就地定案，附硬性終止條款。
+- **🔮 裁決 T-45-A 補註（2026-09-03）**：本卡 gate 的校準前提是「固定門檻 0.4＋全域 12 候選 softmax」。T-44 的 role-aware 候選子集改變了 softmax 分佈（實證：`bathroom_tiled` 由 BLOCK 變 pass 且 floor 判錯；`bedroom_ai_generated.floor` top-1 信心 0.2436→0.3394 近失），該前提已不成立。**gate 規則本體維持不動**，但 BLOCK／pass 的校準須由 **T-47（gate 校準複審量測卡）** 依裁決 T-36-A 要求的四樣證據重新量測後再裁決（T-47-A）；T-47 裁決前 `role_aware` 預設維持 `False`（T-46 執行）。
 - **發現者**：Opus 規劃者，2026-08-30 T-26 驗收通過後的獨立複驗
 - **📊 實測數據**：T-26 的 gate 上線後，**專案裡 13 張照片全部 exit 3 被擋**——
   §7-2 的 8 個對照場地 8/8、§7-1 的 5 張盲聽照片 5/5，無一例外。
@@ -4217,6 +4276,8 @@
 - **狀態**：✅ 通過（Opus 驗證，2026-08-31；三層標準全過。附兩則**必須補**的文件修正，
   不影響本卡結論與 Fable 決策，見下方「Opus 驗證紀錄」§修正事項；**兩則已於
   2026-08-31 補齊，見下方「文件修正紀錄」**）
+- **四軸狀態（裁決 T-45-A 回溯標記，2026-09-03；原「狀態」欄保留不改，語義見 WORKFLOW §3）**：
+  工程：已驗證（診斷完成、量測可重現、兩則文件修正已補）｜實驗：🔴 **負向**（陳設等效吸音預設套用對 §7-2 式達標率淨效果為負：自動組 22%→10%、手動組 20%→12%）｜產品：🚫 **不採用**（已改預設觀測模式，T-35；`--furnishings` 才套用）｜MVP：不適用
 - **前置**：T-31、T-32 皆 ✅（程式定稿後才能量；量測期間 `src/` 一行不許改）
 - **目標**：產出裁決 T-28-A 裁決三要的「新基準率」，交 Fable 複評 gate 規則。
   本卡是量測卡：**只寫 `scripts/` 的量測腳本與 `output/` 的報告，`src/` 零改動**。
@@ -4801,6 +4862,9 @@ T-34 與 T-35 都動 `pipeline.py`／`cli.py`，依序做避免衝突；T-36 是
   複驗過程見下方「🧾 Opus 複驗紀錄（2026-08-31）」；退回輪的原始驗證紀錄與 Sonnet
   的退回修正紀錄一併保留，不刪改。下一步：開 Fable 視窗依裁決 T-33-A 裁決 C 終止
   條款做 gate 規則**就地定案**（[HANDOFF_T36.md](HANDOFF_T36.md) §4.4 有現成 Prompt）。
+- **四軸狀態（裁決 T-45-A 回溯標記，2026-09-03；原「狀態」欄保留不改，語義見 WORKFLOW §3）**：
+  工程：已驗證（診斷完成；ground truth 由使用者逐面確認）｜實驗：🔴 **負向**（CLIP 真判定準確率 11/21＝52.4%；floor 角色 30.8%）｜產品：不適用（診斷卡；**不是產品通過**）｜MVP：不適用
+- **🔮 裁決 T-45-A 補註（2026-09-03）**：卡尾裁決 T-36-A 的「gate 規則就地定案、議題關閉」建立在**全域候選集**的量測上；T-44 role-aware 已改變該量測前提。裁決 T-36-A 的「重開需四樣證據」條款照用——由 T-47 產出四樣證據後另下裁決 T-47-A，在此之前 gate 規則零改動、`role_aware` 預設 False。
 - **前置**：T-35 ✅（程式定稿後才能量；量測期間 `src/` 一行不許改）；
   **需使用者參與**（ground truth 逐面確認，約 13 張 × 6 面）
 - **📄 執行交接**：[HANDOFF_T36.md](HANDOFF_T36.md)——五個階段的流程與要貼的
@@ -5287,7 +5351,7 @@ T-34 與 T-35 都動 `pipeline.py`／`cli.py`，依序做避免衝突；T-36 是
 
 **執行順序固定（2026-09-01 裁決 T-38B-A 後更新）：T-36 文件修正 ✅ → T-37 ✅ →
 T-40 ✅ → T-41 ✅ → T-38A ✅ → T-38B ✅（否定結論） → T-39 ✅（否定結論） →
-T-44 🔵 待驗證（正面結論，已採用） → T-42 → T-43 → 回 Fable 收尾複評**
+T-44 🟠 退回＋🧪 產品採用暫停（裁決 T-45-A，2026-09-03） → **改走 Phase 1.9-R 順序：T-46 → T-42 → T-43 → T-47 → T-48 → T-44-R1 → T-17-R2**（卡片在檔尾「Phase 1.9-R」節；原「回 Fable 收尾複評」併入 T-47 裁決與 T-17-R2 前複評）**
 （T-38 原卡已由 Fable 2026-09-01 拆成 T-38A／T-38B，見 T-38 卡的拆卡裁決；
 T-38B 否定結論的收尾裁決 T-38B-A 見 T-38B 卡尾）。
 T-36 文件修正是純文件小卡（不另開卡號，範圍見下）；T-37 動 `preprocess.py`、
@@ -5582,6 +5646,22 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
   現行工作樹的 `surfaces.py` 未提交改動（carpet 提示詞一行）sha256 與
   round6 相同＝round6 的提示詞快照，處置方式寫死在 T-38A 步驟裡，
   **在那之前不得 reset／checkout／清除**。
+- **四軸狀態（裁決 T-45-A 回溯標記，2026-09-03；原「狀態」欄保留不改，語義見 WORKFLOW §3）**：
+  工程：🟠 **退回／改版**（原卡設計錯誤，拆為 T-38A／T-38B）｜實驗：🔴 **負向**（round0～round5 六輪無一同時達成原卡三門檻；最佳 round4 僅持平）｜產品：🚫 不採用｜MVP：不適用
+- **不可變欄位（裁決 T-45-A 回溯建立；只能追加不得刪改）**：
+  ```text
+  criteria_version: v1（原卡三門檻：overall↑、floor↑且 in-set 不升，對 round0_baseline；達不到＝🔴 卡關）→ v2（a0fe24e 拆卡：工程完成＝跑滿預算＋誠實報告；三門檻改列產品採用門檻）
+  criteria_commit: v1＝9311025（2026-08-31）；v2＝a0fe24e（2026-09-01）
+  criteria_locked_at: v1 早於 round1；v2 晚於 round0～round5 全部結果
+  dataset_manifest_sha256: data/material_ground_truth.json（T-36 版，= T-38B 結果 commit 73aaa3b 之版本 a4116632e61d90ebcb8cd985fca889762dc57a5c9ad1873b2095f03a70c8b20c）；round1～round5 提示詞字串已遺失只剩 surfaces.py sha256（標不可恢復，不得倒填）
+  implementation_commit: 未提交（round1～round5 逐輪覆寫工作樹）；歷史補記＝5ec3610（T-38A）
+  result_commit: 5ec3610（T-38A 補齊 round1～round6 歷史紀錄）
+  reviewer: Fable（拆卡裁決 2026-09-01）
+  verdict_under_original_criteria: FAIL（六輪無一達標）
+  verdict_under_current_criteria: 不適用於原卡（改由 T-38A／T-38B 各自判定）
+  criteria_changed_after_first_result: yes
+  change_record: a0fe24e（理由：把不可保證的模型實驗寫成必達工程卡；核准者＝Fable 自行裁決，**未經使用者或獨立審查者事前核准**——稽核 P0；依裁決 T-45-A／WORKFLOW §7 第 4 條，日後此類結果後改標準須由使用者或獨立審查者核准）
+  ```
 - **原卡驗收門檻（保留供追溯；產品採用條件由 T-38B 原文繼承）**：
   1. overall 正確率必須上升；2. floor 必須上升且 in-set 誤判不得上升；
   3. 分組數字照列；4. 基線變化表＋gate 放行變化清單；5. 臥室紅旗。
@@ -5845,6 +5925,22 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
 
 ### T-38B 有界提示詞實驗（拆卡 2/2；實驗卡）
 - **狀態**：✅ 通過（Opus 驗證，2026-09-01）——**實驗否定結論成立，工程任務完成**
+- **四軸狀態（裁決 T-45-A 回溯標記，2026-09-03；原「狀態」欄保留不改，語義見 WORKFLOW §3）**：
+  工程：已驗證（PLAN 先行、四輪預算跑滿、誠實 REPORT、`surfaces.py` 還原經密碼學＋無快取重跑雙重證實）｜實驗：🔴 **負向**（round7～round10 對 round0_baseline 無一輪同時達成三門檻，且逐輪劣化 in-set 誤判 9→26）｜產品：🚫 **不採用**（提示詞改動全部還原）｜MVP：**FAIL**（沿用 T-17 首驗）
+- **不可變欄位（裁決 T-45-A 回溯建立；只能追加不得刪改）**：
+  ```text
+  criteria_version: T-38B v1（a0fe24e：工程完成＝跑滿預算＋誠實報告；產品採用＝原 T-38 三門檻對 round0_baseline）
+  criteria_commit: a0fe24e（卡，2026-09-01）＋ca029ee（PLAN.md 假設先寫，2026-09-01）
+  criteria_locked_at: 早於 round7（ca029ee 早於各輪）
+  dataset_manifest_sha256: data/material_ground_truth.json@73aaa3b = a4116632e61d90ebcb8cd985fca889762dc57a5c9ad1873b2095f03a70c8b20c（T-36 原版，T-39 重對映前）
+  implementation_commit: 73aaa3b（含還原）
+  result_commit: 73aaa3b
+  reviewer: Opus（2026-09-01，046b985）
+  verdict_under_original_criteria: 產品採用 FAIL（原 T-38 三門檻）
+  verdict_under_current_criteria: 工程 PASS（T-38B v1）
+  criteria_changed_after_first_result: no（本卡自身門檻在 round7 前鎖定；但本卡的存在源於 T-38 結果後改版，見 T-38 change_record）
+  change_record: 無
+  ```
 - **前置**：T-38A ✅（harness 可重現＋歷史紀錄補齊＋`surfaces.py` 已還原
   baseline）
 - **性質聲明（寫進 REPORT 開頭）**：本卡是**模型實驗**，結果不可事前保證。
@@ -6089,6 +6185,22 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
 
 ### T-39 候選材質集擴充（裁決 T-36-A 執行卡 3/3；需使用者參與；🔮 已由 Fable 依裁決 T-38B-A 改版 2026-09-01）
 - **狀態**：✅ 通過（Opus 驗證，2026-09-02）——**實驗否定結論成立，工程任務完成**（加候選集未採用、materials.json 資料與 ground truth 重對映保留）
+- **四軸狀態（裁決 T-45-A 回溯標記，2026-09-03；原「狀態」欄保留不改，語義見 WORKFLOW §3）**：
+  工程：已驗證（兩段式基線、PLAN 先行、預算跑滿、候選集還原、資料保留）｜實驗：🔴 **負向**（round14 24/76 ＜ round11_remap_baseline 30/76；兩個新候選的目標面在 ADE20K 分割階段結構性不可達）｜產品：🚫 **不採用**（`surfaces.py` 還原 12 候選；`materials.json` 3 筆新材質與 ground truth 重對映保留）｜MVP：**FAIL**（沿用 T-17 首驗）
+- **不可變欄位（裁決 T-45-A 回溯建立；只能追加不得刪改）**：
+  ```text
+  criteria_version: v1（原卡：端到端正確率與非 proxy 正確率不得下降＝工程完成條件）→ v2（a42066c：該條改列產品採用門檻；工程完成＝資料有出處、重對映有確認、PLAN 先行、預算內、敏感度重跑、誠實報告）
+  criteria_commit: v1＝9311025（2026-08-31）；v2＝a42066c（2026-09-01）＋103674c（PLAN_T39.md）
+  criteria_locked_at: v2 早於本卡任何輪次（round11 起）；但 v2 的定義來自 T-38 結果後的改版（見 T-38 change_record）
+  dataset_manifest_sha256: data/material_ground_truth.json@4395277 = 965e51ac19e2d25a61b89bb8b94c01e4f34e3e41d6300002627d212abfc430c7（重對映後）
+  implementation_commit: 3d2d9c2 → 625c596（還原）
+  result_commit: 4395277
+  reviewer: Opus（2026-09-02，9afe3cc）
+  verdict_under_original_criteria: FAIL（正確率 30→24 下降）
+  verdict_under_current_criteria: 工程 PASS／產品採用 FAIL
+  criteria_changed_after_first_result: no（對本卡自身輪次）；yes（相對原卡文字，改於開跑前）
+  change_record: a42066c（裁決 T-38B-A；核准者＝Fable 自行裁決）
+  ```
 - **前置**：T-38B ✅（2026-09-01 以「跑滿預算＋否定結論」通過，正式解鎖
   本卡——涵蓋率天花板正是否定結論指向這裡的理由）；**需使用者參與**
   （16 個 proxy 面的 ground truth 重對映確認——比 T-36 的 78 面小很多，
@@ -6413,6 +6525,23 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
     列為明確議題**（例如門檻隨候選集大小調整、或 `compute_materials_confidence()`
     區分收窄與未收窄），本卡不動手是對的。
 
+- **四軸狀態（裁決 T-45-A，2026-09-03；原「狀態」欄保留不改，語義見 WORKFLOW §3）**：
+  工程：**待複驗**（🟠 退回中：REPORT §7 敏感度摘要與表 7' 矛盾，純文件；由 **T-46** 修並複驗）｜實驗：🟢 **相對指標正向**（round17 對 round11：overall 30→32、floor 4→5、in-set 9→8）｜產品：🧪 **暫停採用**（裁決 T-45-A：三個相對門檻不含安全與絕對下限；`pipeline.py` 現行 `role_aware=True` 由 T-46 改回預設 `False`＋feature flag；重新驗證另開 **T-44-R1**）｜安全：**已知錯誤放行 1 件**（`bathroom_tiled` BLOCK→pass，floor 判 `carpet` 而 gt=`gypsum_board`，CLI exit 0 且真的輸出 WAV）＋**近失 1 件**（`bedroom_ai_generated.floor` top-1 信心 0.2436→0.3394，距門檻 0.06）｜MVP：**FAIL**（沿用 T-17 首驗）
+  - 卡片原文「產品採用門檻（分離，另判）」三條**保留為 v1 紀錄**；產品採用自 2026-09-03 起改依 WORKFLOW §5.4.3（含安全門檻），本卡 v1 的「三門檻達成」不覆寫、但不再構成採用依據。
+- **不可變欄位（裁決 T-45-A 建立；只能追加不得刪改）**：
+  ```text
+  criteria_version: v1（a42066c 卡：工程完成＝介面＋不變量測試＋分區表＋預算內＋三角色敏感度＋誠實 REPORT；產品採用＝overall↑、floor↑、in-set 不升，對 round11_remap_baseline）→ v2（裁決 T-45-A：v1 全部保留，另加安全門檻——已知錯誤 BLOCK→pass＝0、bathroom_tiled 續擋或實證正確、bedroom 近失入回歸測試、候選集改變後重新校準信心、逐張 BLOCK↔pass 表、held-out 照片、絕對品質下限事前鎖定；見 T-44-R1 卡）
+  criteria_commit: v1＝a42066c（2026-09-01）＋f22c2d1（PLAN_T44.md，2026-09-02，單獨 commit）；v2＝本裁決 commit（2026-09-03）
+  criteria_locked_at: v1 早於 round15；v2 晚於 round15～17 全部結果（結果後改標準——因此 v1 verdict 永久保留，v2 只用於 T-44-R1，不回頭改判 round17）
+  dataset_manifest_sha256: data/material_ground_truth.json@5520b83 = 965e51ac19e2d25a61b89bb8b94c01e4f34e3e41d6300002627d212abfc430c7；PLAN_T44.md sha256 = 8421eb1223167f716bd30aa6045a47c66095bb7e3076d87e340450018a2b0678；round17 快取指紋 13/13 對 HEAD 相符（Opus 實測）
+  implementation_commit: 23f2aba（介面）→ eebf71a（round15～17）→ 5520b83（pipeline role_aware=True）
+  result_commit: 5520b83＋d255d39（交接）
+  reviewer: Opus（2026-09-02，99f9f62，🟠 退回：唯一阻擋為 REPORT §7 文件錯誤；其餘 15 項實測通過）
+  verdict_under_original_criteria: 工程＝退回（文件）；產品採用 v1 三門檻＝達成
+  verdict_under_current_criteria: 產品採用＝FAIL（v2 安全門檻：已知錯誤放行 1 件 ≠ 0）；工程＝待 T-46 複驗
+  criteria_changed_after_first_result: yes
+  change_record: 裁決 T-45-A（2026-09-03；理由：Opus 驗證與外部稽核均指出相對門檻不含安全與絕對下限，bathroom_tiled 由「誠實 fallback」變「自信錯答」且輸出 WAV；核准者＝使用者 2026-09-03 提交補救方案 REMEDIATION_AND_REREVIEW_PLAN_T00_T44.md；執行＝Fable）。v1 的「三門檻達成」紀錄不覆寫。
+  ```
 - **前置**：T-39 ✅（分區表要對擴充後的最終候選集做一次，不是做兩次；
   T-39 量出的新候選副作用是分區設計的證據輸入）
 - **性質聲明（寫進 PLAN 與 REPORT 開頭）**：與 T-38B 同型的**實驗卡**——
@@ -7170,6 +7299,7 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
 ### T-42 low-confidence gate 交易式輸出與舊產物隔離（插卡 3/4）
 
 - **狀態**：⬜ 未開始
+- **🔮 裁決 T-45-A 更新前置（2026-09-03）**：前置改為 **T-46 ✅（工程）**——T-44 停在 🟠 退回＋產品採用暫停，不再以「T-44 ✅」為前置；其餘內容不變。本卡在 Phase 1.9-R 順序中排 T-46 之後（見檔尾）。
 - **前置**：T-44 ✅（治療輪主線先走完；2026-09-01 裁決 T-38B-A 把 T-44 插在
   T-39 之後，本卡前置隨之順延。例外條款見插卡裁決並經裁決 T-38B-A 延伸——
   T-39 **或 T-44** 因等使用者／卡關停滯期間可提前，檔案範圍不相交，
@@ -7329,3 +7459,296 @@ T-40～T-43 的 REPORT 回 Fable，一次議決：
    T-42＋T-43 ✅ 之後**——現存盲測素材是 `d958b3c` 產的（MANIFEST 明載），
    舊 §7-1 的 2/5 不能宣稱屬於現行碼；重生素材前必須先有交易式輸出
    （T-42，保證正式位置不混舊檔）與產物溯源（T-43，素材自證生成 revision）。
+
+---
+
+## Phase 1.9-R — 審查制度修正與重新驗證輪（Fable 規劃 2026-09-03；依裁決 T-45-A）
+
+**背景（一句話）**：外部稽核 `REVIEW_STANDARD_AUDIT_T00_T44.md`（2026-09-03）與使用者
+提交的補救方案 `REMEDIATION_AND_REREVIEW_PLAN_T00_T44.md`（兩份在
+`~/Documents/Codex/2026-09-02/bug-2-5-mvp-t-17/outputs/`）指出三件事：①專案用單一
+`✅ 通過` 同時表達工程交付、實驗結果、產品採用與 MVP 驗收；②T-38 在六輪不達標**之後**
+改變 ✅ 的含義（a0fe24e）並延伸到 T-39／T-44（a42066c）；③T-44 的產品採用門檻只有
+相對改善、沒有安全與絕對下限，導致已知錯誤案例 `bathroom_tiled` 從 BLOCK 變自信放行。
+Fable 已逐項對照 git 歷史核實（見 T-45 卡「裁決 T-45-A」），全部屬實。
+
+**執行順序固定（不得跳號）：T-45 ✅（Fable 已執行）→ T-46 → T-42 → T-43 → T-47
+→ T-48 → T-44-R1（需使用者核准門檻＋提供 held-out 照片）→ T-17-R2 → 回 Fable。**
+原 Phase 1.9「收尾複評」不再單獨舉行：治療效果總結併入 T-47 裁決（T-47-A）；
+MINC/DMS 模型卡與陳設公式修正輪的評估併入 T-17-R2 前的 Fable 複評。
+
+**本輪共同鐵則**：Phase 1.9 共同鐵則 1～8 全部沿用（測試全 exit 0／六條交付 IR MD5
+／`ir_metrics.py` 零 diff／凍結目錄／新測試診斷力／gate 規則零改動／臥室紅旗／
+基線變化表），另加：
+9. **狀態一律四軸**（WORKFLOW §3）：收工與驗證都不得只寫 `✅ 通過`；驗證輸出格式照
+   WORKFLOW §2.2 v2。
+10. **變更控制**（WORKFLOW §7）：結果出來後不得改同版門檻；改標準＝新版號＋獨立
+    `criteria:` commit＋理由＋核准者，原 verdict 保留。
+11. **舊結果唯讀**：T-17 首驗（`output/mvp_acceptance/`）、T-44 round15～17、
+    `output/clip_accuracy/`、`output/material_round/` 一個 bit 不改；重驗結果一律寫
+    新目錄（`output/mvp_acceptance_r2/`、`output/clip_treatment/rounds/r1_*/`、
+    `output/gate_calibration/`、`output/geometry_r2/`、`output/material_r2/`）。
+12. **已知錯誤案例清單（安全 guard 的基準）**：`bathroom_tiled`（T-44 放行且判錯）、
+    `bedroom_ai_generated`（T-17 §7-1 sample_4 唯一未被攔下的錯誤輸出；臥室紅旗）、
+    `RacquetballCourt4`（T-17 必測反例）、`arena_ntsu_linkou`／`site_photo_gym`
+    （體育館尺度做反）、`car_interior_suv`（車內域外）。任何卡使其中任一張由 BLOCK
+    變 pass，都必須逐例證明材質／幾何正確，否則＝🔴 停。
+
+### T-45 審查制度修正（🔮 Fable 卡，已執行 2026-09-03）
+- **狀態**：✅ 工程：已執行（Fable，2026-09-03，本 commit）｜實驗：不適用｜產品：不適用｜MVP：不適用
+- **🔮 裁決 T-45-A（2026-09-03）——稽核核實與處置**
+  1. **稽核事實逐項核實（Fable 對照 git，全部屬實）**：
+     - `WORKFLOW.md` 自 026fa69 起 diff 為空（本裁決前從未改過）→ 狀態模型從未跟上；
+     - a9d2ee7（T-04）：自檢 2 項只完成 1 項仍標 ✅（素材部分）；
+     - e14873c／bca6b61（T-11）：走廊 −57% 失敗後改適用域；數字未放寬、有理由、有出口，
+       但只剩一個 ✅，原域 FAIL 未並列；
+     - 85d0493（T-12）：步驟 6a 字面條件未達（0.748s vs 0.35s），驗證者以附註 3 豁免；
+     - 3586bb0（T-17）：裁決 B 為事前修正，修正後仍 FAIL、未標 ✅——**此段未被洗白**；
+     - a0fe24e（T-38）：round0～5 六輪不達標**之後**改「✅ 的充分條件」為跑滿預算＋誠實報告，
+       Fable 自改自批；a42066c 延伸到 T-39／T-44；
+     - T-44：三個相對門檻達成，但 `bathroom_tiled` BLOCK→pass 且判錯、exit 0 出 WAV
+       （Opus 99f9f62 實跑證實）；REPORT §7 摘要與表 7' 相反（已退回）。
+  2. **處置（本 commit 全部完成）**：
+     - `WORKFLOW.md` v2：§3 四軸狀態模型＋圖示固定語義＋回溯規則；§2.2 Opus Prompt 改輸出
+       四軸；§5.4 四種驗收分開判；§7 變更控制九條；§8 實驗卡不可變欄位；紅旗 6／7。
+     - `CLAUDE.md`／`AGENTS.md` Opus 一句同步（禁止只寫 ✅ 通過）。
+     - `TASKS.md` 回溯重標 12 張卡（T-04／T-05／T-06／T-11／T-12／T-17／T-33／T-36／
+       T-38／T-38B／T-39／T-44）：原「狀態」欄一字不改，加「四軸狀態」；7 張實驗卡補
+       不可變欄位；T-26／T-28／T-36 補「gate 校準前提已變」註記；T-42 前置改 T-46。
+     - 新開 T-46／T-47／T-48／T-44-R1／T-17-R2（本節）。
+     - `HANDOFF.md`／`TODO.md`／`DEV_LOG.md`／`ROADMAP.md`／`HANDOFF_T39.md` 同步。
+  3. **明確不做（留給執行卡）**：不改 `REPORT_T44.md`（T-46）、不動 `src/`（T-46）、
+     不改任何原始量測數字、不改 SPEC。
+  4. **T-44 role-aware 的裁決**：實作保留；`pipeline.py` 預設回 `role_aware=False`，
+     以 feature flag（CLI `--role-aware`，標 experimental）保留研究路徑（🧪）；
+     預設啟用（🚀）的條件＝T-44-R1 PASS **且** T-17-R2 PASS。
+  5. **T-17 的裁決**：首驗定為 **MVP FAIL**，永久保留；重驗＝T-17-R2，結果另存。
+  6. **gate 議題有條件重開**：裁決 T-36-A 的「議題關閉」建立在全域候選集；T-44 改變前提。
+     重開只走 T-47 的四樣證據，T-47-A 前 gate 規則零改動。
+- **完成修正的判定（補救方案 §八；本卡只完成前半，後半由後續卡兌現）**：
+  - [x] 專案中不再出現無限定語的 `✅ 通過`（WORKFLOW／CLAUDE 規則層；舊卡以四軸並列覆蓋）
+  - [x] 任一負向實驗一眼看得出「負向／不採用」（T-05／T-06／T-33／T-36／T-38／T-38B／T-39）
+  - [x] 原 criteria 與新版 criteria 的 verdict 都能追溯（不可變欄位）
+  - [ ] T-04 的來源缺口完成或明確維持未結案（等使用者）
+  - [ ] T-44 不再放行已知錯誤（T-46 改預設 False 後兌現；或 T-44-R1 端到端證明可安全放行）
+  - [x] `HANDOFF.md` 與最新 TASKS 狀態一致（本 commit）
+  - [ ] T-17-R2 使用新盲測與 frozen manifests（T-43／T-17-R2）
+  - [ ] 只有 T-17-R2 完整硬門檻全部達成時才顯示 `MVP PASS`
+
+### T-46 T-44 收尾修正：REPORT §7 事實修正＋role-aware 回 feature flag（Sonnet 卡；裁決 T-45-A 執行卡 1/5）
+- **狀態**：⬜ 未開始
+- **四軸狀態**：工程：未開始｜實驗：不適用｜產品：本卡完成後 T-44 為 🧪 feature flag｜MVP：不適用
+- **前置**：T-45 ✅
+- **目標**：把 T-44 的兩個懸案收掉——①Opus 退回的 REPORT §7 文件錯誤；②依裁決 T-45-A
+  把 `role_aware` 從預設 True 改回預設 False，以 feature flag 保留研究路徑，並用程式證明
+  預設路徑回到 T-44 前的 13 張基線（`bathroom_tiled` 回到 BLOCK）。
+- **範圍（只准動）**：`output/clip_treatment/REPORT_T44.md`（只改 §7 三段＋檔頭加一段日期
+  註記）、`src/image_reverb/config.py`（加常數）、`src/image_reverb/cli.py`（加旗標）、
+  `src/image_reverb/pipeline.py`（`run_photo()` 加參數＋單一呼叫點改讀參數＋`analysis.json`
+  加一欄）、`scripts/test_output_gate.py` 或新 `scripts/test_t46_role_flag.py`、新
+  `scripts/t46_role_flag_baseline.py`、`output/role_flag/REPORT.md`。
+- **執行步驟**：
+  1. **REPORT §7 修正（照 Opus 退回原文，逐項）**：
+     - floor 段改為與表 7' 一致：門檻 0.30 → **放行 2 面、答對 0、答錯 2**（0.35 起才是 0 面）；
+       正確結論「調低到 0.30 **會**多放行 2 面且兩面皆錯」；
+     - `bedroom_ai_generated.floor`：top-1 是 `concrete` 0.339，`wood_panel` 0.220 是
+       ground truth 兼第二名；`SteinmanHall.floor`：top-1 `concrete` 0.331，gt `gypsum_board`；
+     - wall 段改寫：表 7' **有**完整 wall 敏感度表（0.20→27 面／1 對、0.25→22／1、
+       0.30→20／1、0.35→**7 面／0 對**、0.40→0），並補「0.35 會放行 7 面且 0 面答對」；
+     - 補上未閉合的括號。**表 7' 的數字一個都不准改**（表是對的，錯的是摘要）。
+     - 檔頭（性質聲明之前）加一段：「⚠️ 2026-09-03 裁決 T-45-A：產品採用暫停，`pipeline.py`
+       預設改回 `role_aware=False`（T-46）；本報告的量測數據與 round17 結論不改。」
+       標題「正面結論，已採用」不改字（那是 2026-09-02 的事實），由該段說明現況。
+     - 先單獨 commit：`docs: T-44 修正 REPORT 第七節門檻敏感度摘要`。
+  2. **feature flag**：
+     - `config.py` 加 `ROLE_AWARE_MATERIALS_DEFAULT = False`（中文註解寫明裁決 T-45-A 與
+       解除條件＝T-44-R1 PASS 且 T-17-R2 PASS）；
+     - `cli.py` 加 `--role-aware`（store_true；help 標「實驗性：T-44 role-aware 候選子集，
+       產品採用暫停（裁決 T-45-A）；預設關閉」）；
+     - `run_photo()` 加 `role_aware: bool = config.ROLE_AWARE_MATERIALS_DEFAULT`，唯一呼叫點改
+       `surfaces_from_preprocess(summary, role_aware=role_aware)`；`analysis.json` 加
+       `"role_aware": <bool>`（照片管線限定；`--text`／`--scene` 不動）；
+     - gate 判定段、`compute_materials_confidence()`、scene_cues、門檻 0.4、
+       `ROLE_MATERIAL_CANDIDATES`、`classify_region_material()` **零改動**（分區表與介面保留）。
+  3. **介面測試（修 bug 類，對舊碼必須 fail）**：樁 `surfaces_from_preprocess` 錄下 kwargs——
+     預設呼叫 `role_aware=False`；`role_aware=True` 傳入時為 True；`analysis.json` 欄位與之一致。
+     對 `git worktree` 的 HEAD 舊碼（5520b83 之後、本卡之前）實測：預設路徑錄到 True → fail。
+  4. **13 張基線變化表（鐵則 8，程式產出）**：`scripts/t46_role_flag_baseline.py` 用
+     `--out-dir output/role_flag/` 跑 13 張 ×2 模式（預設／`--role-aware`），輸出
+     `output/role_flag/REPORT.md`＋`tables.md`：
+     - 預設模式：三軸 confidence／gate／六面材質與 `round11_remap_baseline` **逐值相同**
+       （`bathroom_tiled` 回 BLOCK、`bedroom_ai_generated` BLOCK）——任一不同＝🔴 停；
+     - `--role-aware` 模式：與 round17 逐值相同（旗標路徑沒壞）；
+     - 表尾由程式列「已知錯誤案例清單」（鐵則 12）五張在兩模式的 gate 結果。
+     腳本任一斷言不成立 exit 非 0。
+  5. `test_t44_role_partition.py` 照舊全過（分區表與 `role=None` 不變量不動）。
+- **自我檢查**：全部 `scripts/test_*.py`（19 支）逐支 exit 0；六條交付 IR MD5 全中；
+  `ir_metrics.py` 零 diff；`git diff` 限縮在範圍清單；步驟 3 舊碼 fail 實測輸出貼交接筆記；
+  步驟 4 REPORT 由程式產生；抽 `bathroom_tiled` 實跑 CLI 預設 → exit 3（BLOCK）、
+  加 `--role-aware` → exit 0（實驗路徑，訊息印 experimental）。
+- **Opus 驗證重點（四軸輸出）**：紅旗：用改門檻／改 gate 讓 `bathroom_tiled` 回 BLOCK 而不是
+  關旗標；紅旗：動了表 7' 數字；紅旗：刪掉 `ROLE_MATERIAL_CANDIDATES` 或分區測試；紅旗：
+  預設路徑與 round11 有任何一值不同；紅旗：只寫 ✅ 通過。通過後 T-44 四軸改
+  「工程：已驗證（經 T-46 複驗）｜實驗：相對指標正向｜產品：🧪 feature flag｜MVP：FAIL」。
+- **交接筆記**：
+
+### T-47 gate 校準複審量測（量測卡；裁決 T-45-A 執行卡 2/5；`src/` 零改動）
+- **狀態**：⬜ 未開始
+- **四軸狀態**：工程：未開始｜實驗：待量測｜產品：待裁決（T-47-A）｜MVP：不適用
+- **前置**：T-46 ✅、T-42 ✅、T-43 ✅（量測產物要走交易式輸出與 provenance）
+- **為什麼**：T-26 gate、裁決 T-28-A、裁決 T-36-A 的 BLOCK／pass 校準全建立在「固定門檻
+  0.4＋全域 12 候選 softmax」；T-44 候選子集收窄後 softmax 濃縮，`bathroom_tiled` 越過門檻
+  被放行且判錯、`bedroom.floor` 近失。裁決 T-36-A 規定重開 gate 議題需四樣證據——本卡
+  就是產出那四樣證據（兩種模式各一份），交 Fable 下裁決 T-47-A。
+- **產出**：`scripts/t47_gate_calibration.py`（唯讀重用 `t44_role_eval.py`／`eval_cache.py`／
+  `t36_clip_accuracy.py` 機制，`--out-dir output/gate_calibration/`）、
+  `output/gate_calibration/REPORT.md`＋`tables.md`（表格由程式產生——地雷 #15）。
+- **量測內容（兩種模式 `role_aware=False`／`True` 各一份，13 張全量）**：
+  1. **新基準率**：13 張三軸 confidence＋gate 結果（證據①）；
+  2. **被放行案例清單**：每張 pass 的照片逐面材質 vs ground truth 正誤（證據②）；
+  3. **其中 T-17 已知錯誤輸出佔比**（證據③；已知錯誤清單＝鐵則 12）；
+  4. **臥室續擋**（證據④）；
+  5. **信心膨脹量化**：每面 top-1 機率在兩模式的位移、與 0.4 的距離、距門檻 <0.05 的面清單
+     （按角色分）；
+  6. **門檻敏感度**（表 7' 型）按角色、按模式各一張；
+  7. **唯讀模擬（不改碼）**：(a) 門檻隨候選數 n 調整的候選公式（例如等效於全域 12 候選的
+     機率門檻）對 13 張 gate 的影響；(b) `compute_materials_confidence()` 規則 4 若加
+     「候選集收窄的 clip 面不得直接 medium」對 13 張的影響。只算不採用。
+- **紅線**：`src/` 零 diff（含 gate 與門檻）；不得用舊快取（T-40 指紋，寫新目錄）；
+  不得只跑一種模式；REPORT 數字全由程式產生。
+- **自我檢查**：全部測試 exit 0；六條交付 IR MD5 全中；`git diff src/ data/` 為空；
+  兩模式 13 張快取指紋對 HEAD 相符；REPORT 四樣證據 ×2 模式齊全。
+- **Opus 驗證重點（四軸輸出）**：紅旗：任何 `src/` diff；紅旗：手打數字；紅旗：只跑一種模式；
+  紅旗：REPORT 對「該不該調門檻」下結論（那是 Fable 的裁決，不是量測卡的結論）。
+- **交接筆記**：
+
+### T-48 T-11／T-12 判準第二版針對性重驗（量測卡；裁決 T-45-A 執行卡 3/5；`src/` 零改動）
+- **狀態**：⬜ 未開始
+- **四軸狀態**：工程：未開始｜實驗：待量測（雙 verdict 的第二個）｜產品：不適用｜MVP：不適用
+- **前置**：T-46 ✅（預設路徑穩定）；可與 T-47 同期由不同視窗執行（檔案不相交），但一次只給
+  一個視窗一張卡。
+- **性質**：本卡**只量不改**。判準 v2 已由 Fable 在本卡事前鎖定（criteria_commit＝本裁決
+  commit，早於任何量測）；量到什麼寫什麼，未達＝如實記 FAIL，**不得再改 v2**。
+- **A 部分——T-11 域外出口無誤放（回填 T-11 `verdict_under_current_criteria` 的域外項）**：
+  1. 對 13 張照片跑幾何（預設路徑，`--no-viz`），程式產表：估計三維／最大維、是否觸發
+     `GEOMETRY_SCOPE_MAX_M` 量程規則、觸發的是哪條規則、`geometry_confidence`、已知實際尺寸
+     （有的才填：浴室 2.5–3.5m、走廊 ~30m、車內 ~2m、體育館 ~150m、壁球場 12.19×6.10×6.10、
+     Steinman 牆距 12.2/10.4/5.25/11.1m）；
+  2. 判準 v2（T-11 域外項，事前鎖定）：**每張實際最大維 >10m 的照片，`geometry_confidence`
+     必須為 low**，且 gate 訊息含 `--override-dims` 導引（T-30）；實際 ≤10m 且有 ground truth
+     的照片誤差 ≤ ±30%（目前只有浴室）。任一域外照片拿到 medium／high＝**域外出口誤放**，
+     記 FAIL 並逐張列出；
+  3. 建 `output/geometry_r2/DATASET_MANIFEST.json`（13 張 sha256＋已知尺寸表）並回填 T-11
+     不可變欄位 `dataset_manifest_sha256`。
+- **B 部分——T-12 判準 v2 量測（回填 T-12 `verdict_under_current_criteria`）**：
+  1. 用 `scripts/gen_ir_manual.py` 重生三條 IR：per-wall（4×3×2.5m，floor=carpet／其餘
+     gypsum_board）、對照組六面 gypsum_board、對照組六面 carpet（與 T-12 交接筆記同設定）；
+  2. **v2-a（公式層）**：`compute_acoustics()`／Sabine 125Hz 對 per-wall 房間＝0.348s ±20%
+     （重跑確認，預期達成）；
+  3. **v2-b（IR 實測層，聯合帶）**：用 T-18 `t30_low_combined()`（88.4–353.6Hz）量三條 IR。
+     判準：per-wall IR 的聯合帶 T30 與六面 gypsum 對照組差異 **≤ ±20%**，且六面 carpet 對照組
+     的聯合帶 T30 **≥ per-wall 的 3 倍**（鐵筒子特徵消失的量化版；T-12 當時 125Hz 八度量測為
+     0.748 vs 0.772 vs 3.952，聯合帶預期同向，但必須真量）；
+  4. 原 v1 字面條件（125Hz 八度 T30 ≈0.35s ±20%）**照量照列**，預期仍未達（裁決 B 已證八度
+     量測受鄰帶耦合污染），只記錄不當門檻；
+  5. `output/material_r2/REPORT.md`（程式產表）＋`CRITERIA_T12_v2.md`（把本卡 v2 原文複製
+     一份放進去，方便追溯；內容不得與本卡不同）。
+- **紅線**：`src/` 零 diff、`ir_metrics.py` 零 diff、`data/` 零 diff；六條交付 IR MD5 不變；
+  不得調整 v2 數字；不得重用 `output/` 舊 IR（三條 IR 本卡重生，寫 `output/material_r2/`）。
+- **自我檢查**：全部測試 exit 0；A／B 兩份 REPORT 由程式產生；T-11／T-12 不可變欄位的
+  `verdict_under_current_criteria` 與 `dataset_manifest_sha256` 以「追加」方式回填（不刪原文）。
+- **Opus 驗證重點（四軸輸出）**：紅旗：v2 數字被改；紅旗：域外誤放被寫成「預期行為」而非 FAIL；
+  紅旗：聯合帶量測不是走 `t30_low_combined()`；紅旗：手打數字。
+- **交接筆記**：
+
+### T-44-R1 role-aware 安全門檻重新驗證（實驗卡；裁決 T-45-A 執行卡 4/5；需使用者）
+- **狀態**：⬜ 未開始（**等使用者兩件事**：核准絕對品質下限、提供 held-out 照片）
+- **四軸狀態**：工程：未開始｜實驗：待驗證｜產品：🧪 feature flag（T-46 後）→ 本卡決定是否升
+  「候選預設啟用」（正式 🚀 仍須 T-17-R2 PASS）｜MVP：不適用
+- **前置（全部硬性）**：T-46 ✅、T-43 ✅（provenance）、裁決 T-47-A 已下（門檻是否隨候選集
+  調整已定，本卡依之執行）、`output/clip_treatment/CRITERIA_T44R1.md` 經**使用者核准**並
+  **單獨 commit**（`criteria: T-44-R1 v2 …`）、held-out 照片 ≥5 張（使用者提供、**未曾用於
+  T-36～T-44 任何調參**、逐面 ground truth 依 T-36 手法由使用者確認、進
+  `data/material_ground_truth_heldout.json`）。
+- **性質聲明**：本卡是**驗證**不是調參——round17 的 `ROLE_MATERIAL_CANDIDATES` **凍結**，
+  一輪跑完即結案；不得為了過門檻調分區表（那要回 Fable 開新卡、重新鎖門檻）。
+- **硬門檻 v2（裁決 T-45-A 事前鎖定；數值項待使用者核准後填入 CRITERIA 檔）**：
+  1. 原三項相對門檻全部保留（對 `round11_remap_baseline`：overall↑、floor↑、in-set 不升）；
+  2. **已知錯誤 BLOCK→pass＝0**（鐵則 12 清單，13 張＋held-out）；
+  3. `bathroom_tiled` 必須保持 BLOCK，或其 floor 材質／端到端 RT60 已實證正確（逐例證明）；
+  4. `bedroom_ai_generated` 的近失納入回歸測試：任一模式下 floor top-1 信心若跨過門檻而判錯
+     ＝FAIL（測試進 `scripts/test_*.py`，真模型，慢，允許 `--skip-slow` 但驗證時必跑）；
+  5. 候選集改變後的信心校準依裁決 T-47-A（不得沿用未校準的固定 0.4 宣稱安全）；
+  6. 逐張列出所有 BLOCK↔pass 變化及每張正誤（程式產表）；
+  7. held-out 結果與 13 張方向一致（overall／floor 的變化方向相同；任一反向＝不確定，不得採用）；
+  8. **絕對品質下限（使用者核准後鎖定；Fable 建議候選值，未核准前不得跑）**：
+     - 選項 A（內部準確率下限）：overall 真判定 ≥ 50%、每角色 ≥ 40%、held-out overall 不低於
+       13 張 −10 個百分點；
+     - 選項 B（Fable 建議）：不設內部百分比下限，以 T-17-R2 端到端（RT60／盲聽不退步）為絕對
+       下限——理由：補救方案自陳「避免為追一個內部百分比而犧牲聲學結果」。
+     使用者二選一（或改數字）後寫進 CRITERIA 檔。
+- **產出**：`output/clip_treatment/CRITERIA_T44R1.md`、`output/clip_treatment/rounds/r1_role_validation/`
+  （13 張＋held-out，兩模式）、`output/clip_treatment/REPORT_T44R1.md`、
+  `data/material_ground_truth_heldout.json`、新回歸測試。
+- **結果處置**：全部達成 → T-44 產品軸改「候選預設啟用（待 T-17-R2）」，旗標仍預設關；
+  任一未達 → 記 `實驗：負向／不確定`、產品維持 🧪、REPORT 誠實寫明哪一條未達，交 Fable。
+- **不可變欄位（開跑前執行者填前四欄）**：
+  ```text
+  criteria_version: v2（裁決 T-45-A；數值項由使用者核准）
+  criteria_commit: 〈CRITERIA_T44R1.md 的單獨 commit〉
+  criteria_locked_at:
+  dataset_manifest_sha256: 〈13 張＋held-out 照片與兩份 ground truth 的 sha256 清單〉
+  implementation_commit: 不適用（分區表凍結於 round17）
+  result_commit:
+  reviewer:
+  verdict_under_original_criteria: 不適用（本卡即 v2 首跑）
+  verdict_under_current_criteria:
+  criteria_changed_after_first_result: no（改了就是新卡）
+  change_record: 無
+  ```
+- **Opus 驗證重點（四軸輸出）**：紅旗：CRITERIA 檔 commit 晚於任何 r1 產物；紅旗：held-out
+  照片曾出現在 T-36～T-44 的任何快取；紅旗：分區表與 round17 有 diff；紅旗：BLOCK→pass 表
+  缺任何一張；紅旗：REPORT 只報 13 張不報 held-out。
+- **交接筆記**：
+
+### T-17-R2 MVP 重新驗收（SPEC §7 四項；Opus 主導；裁決 T-45-A 執行卡 5/5）
+- **狀態**：⬜ 未開始
+- **四軸狀態**：工程：未開始｜實驗：不適用｜產品：不適用｜MVP：**待重驗**（T-17 首驗 FAIL 永久保留）
+- **前置（全部硬性，缺一不跑）**：T-42 ✅、T-43 ✅、T-46 ✅、裁決 T-47-A、T-48 ✅、
+  T-44-R1 結案（PASS→以 `--role-aware` 試用；FAIL／未跑→預設 `role_aware=False`，REPORT 標明
+  用哪一種）、T-04 來源網址補齊**或**使用者明確決定「維持未結案」（REPORT 標明缺項）、
+  §7-1 用 **held-out 五類照片**（使用者提供、未曾用於任何調參；若無法提供，§7-1 沿用舊五張但
+  REPORT 必須標「非 held-out、聽者可能記得答案」並降級證據力）。
+- **判準（v1 原文不變＋新增報告項；驗收現場任何改判準提案＝WORKFLOW §5 紅旗 3）**：
+  1. §7-1 盲聽 ≥4/5——**新盲測**：新 `SHUFFLE_SEED`、新 sample 編號、素材由 T-43 provenance
+     自證屬於當前 HEAD、MANIFEST 逐項複製來源 provenance；
+  2. §7-2 500Hz–4kHz 逐頻段＋88.4–353.6Hz 聯合帶皆 <20%（裁決 B）；達標率依 `dims_source`
+     分組（裁決 C），in-domain 場地事前定義（≤10m 自動路徑）；
+  3. §7-3 外部 convolution reverb 可載入；
+  4. §7-4 使用者試聽無重大 artifact；
+  5. **新增報告項（不是新門檻，是防「全部擋掉」的安全假象）**：in-domain coverage（in-domain
+     照片有幾張過 gate）、錯誤放行率（pass 的輸出中材質／幾何已知錯誤的比例）、域外輸入全部
+     BLOCK 且出口訊息可操作、手動出口成績另列；
+  6. 素材來源與授權可追溯（`assets/SOURCES.md`）。
+- **產出**：`output/mvp_acceptance_r2/`（REPORT.md、tables.md、rt60_table.json、
+  blind_test/、listening/、播放頁）——**`output/mvp_acceptance/` 一個 bit 不改**。
+- **判定**：只有 1～4 全部達成才寫 `MVP：PASS`；否則 `MVP：FAIL（R2）`，T-17 首驗 FAIL 照樣保留。
+  結果寫進本卡不可變欄位；`ir_metrics.py` 零 diff。
+- **不可變欄位（開跑前填前四欄）**：
+  ```text
+  criteria_version: v1（T-17 原判準＋裁決 B／C／E）＋R2 報告項（裁決 T-45-A）
+  criteria_commit: 3586bb0（判準）＋本裁決 commit（報告項）
+  criteria_locked_at: 2026-08-30／2026-09-03（皆早於 R2 任何量測）
+  dataset_manifest_sha256: 〈盲測 MANIFEST＋8 場地對照 IR 清單＋held-out 照片清單〉
+  implementation_commit: 不適用（驗收卡）
+  result_commit:
+  reviewer:
+  verdict_under_original_criteria: 〈R2 結果〉
+  verdict_under_current_criteria: 〈同上；判準未變〉
+  criteria_changed_after_first_result: no
+  change_record: 無
+  ```
+- **Opus 驗證重點（四軸輸出）**：紅旗：任何素材 provenance 與 HEAD 不符仍納入；紅旗：重用
+  `d958b3c` 盲測素材；紅旗：分組達標率被合併；紅旗：域外照片被算進自動組達標；紅旗：REPORT
+  寫「通過」但四項有任一未達；紅旗：動了 `output/mvp_acceptance/`。
+- **交接筆記**：

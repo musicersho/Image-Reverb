@@ -1,5 +1,30 @@
 # Dev Log
 
+## 2026-09-03 (91)
+
+- **🔮 Fable：裁決 T-45-A（審查制度修正，純文件）**。依外部稽核
+  `REVIEW_STANDARD_AUDIT_T00_T44.md` 與使用者提交的補救方案
+  `REMEDIATION_AND_REREVIEW_PLAN_T00_T44.md`，逐項對照 git 核實（WORKFLOW 自
+  026fa69 未改；a9d2ee7 T-04 自檢未完成仍 ✅；e14873c/bca6b61 T-11 失敗後改域；
+  85d0493 T-12 附註豁免；a0fe24e T-38 結果後改 ✅ 定義並由 a42066c 延伸；T-44
+  bathroom_tiled BLOCK→pass 且判錯）——全部屬實。
+- **規則層**：`WORKFLOW.md` v2——§3 四軸狀態（工程／實驗／產品／MVP）＋圖示固定
+  語義；§2.2 Opus Prompt 改輸出四軸、禁止只寫 ✅；§5.4 四種驗收分開判；§7 變更
+  控制九條（結果後改門檻＝新版號＋獨立 commit＋核准者，舊 verdict 不覆寫）；§8
+  實驗卡不可變欄位。`CLAUDE.md`／`AGENTS.md` Opus 一句同步。
+- **回溯重標 12 卡**（原「狀態」欄一字不改，加「四軸狀態」；7 張補不可變欄位）：
+  T-04 未結案；T-05／T-06／T-33／T-36／T-38／T-38B／T-39 負向・不採用；T-11／T-12
+  雙 verdict 並列；T-17 定 **MVP FAIL（首驗，永久保留）**；T-44 工程待複驗・產品
+  **暫停採用**（安全：已知錯誤放行 1＋近失 1）；T-26／T-28／T-36 補 gate 校準前提
+  已變註記；T-42 前置改 T-46。
+- **新開卡（Phase 1.9-R）**：T-46（REPORT §7 修正＋role-aware 回 feature flag、預設
+  False、13 張基線證明回 round11）、T-47（gate 校準複審量測：兩模式 × 裁決 T-36-A
+  四樣證據）、T-48（T-11／T-12 判準 v2 針對性重驗，v2 已事前鎖定）、T-44-R1（安全
+  門檻重驗，需使用者核准絕對下限＋held-out 照片）、T-17-R2（MVP 重驗：新盲測、
+  frozen manifests、結果另存）。順序 T-46 → T-42 → T-43 → T-47 → T-48 → T-44-R1
+  → T-17-R2。⚠️ HEAD `pipeline.py` 仍 `role_aware=True`，T-46 才改回。
+  下一步：開 Sonnet 視窗執行 T-46。
+
 ## 2026-09-02 (90)
 
 - **T-44 role-aware 材質候選子集（🔵 待驗證，正面結論，已採用）**。
