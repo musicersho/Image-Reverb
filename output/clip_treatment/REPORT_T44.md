@@ -1,5 +1,8 @@
 # T-44 REPORT — role-aware 材質候選子集（正面結論，已採用）
 
+⚠️ 2026-09-03 裁決 T-45-A：產品採用暫停，`pipeline.py` 預設改回
+`role_aware=False`（T-46）；本報告的量測數據與 round17 結論不改。
+
 ## 性質聲明（裁決 T-38B-A，寫在最前面）
 
 本卡與 T-38B／T-39 同型：「跑滿預算、誠實報告」＝工程完成（✅ 的充分條件），
@@ -250,21 +253,32 @@ round11 完全相同，**未觸發**「從擋變放」（詳見下節），依�
 [`rounds/round17/tables.md`](rounds/round17/tables.md) 表 7'。摘要：
 
 - **floor**（round17 候選集：6 材質＋4 OOD）：僅 2 個 fallback 面可分析
-  （`bedroom_ai_generated.floor` top-1 `wood_panel` 0.220、`SteinmanHall.floor`
-  top-1 `gypsum_board`／`concrete`——門檻降到 0.30 都不會放行任何一面，
-  現行門檻 0.4 對 floor 是穩定的，調低不會製造新的搶答。
+  （`bedroom_ai_generated.floor`、`SteinmanHall.floor`）。門檻 0.20／0.25／0.30
+  三檔皆會放行這 2 面，**放行後答對 0、答錯 2**；門檻 0.35 起才變回 0 面放行。
+  即：**調低到 0.30 會多放行 2 面且兩面皆答錯**，現行門檻 0.4 對 floor 是安全
+  邊界，但 0.30 不是「零影響」的調降空間。
+  逐面明細：`bedroom_ai_generated.floor` top-1 是 `concrete` 0.339，
+  `wood_panel` 0.220 是次高候選、也是 ground truth；`SteinmanHall.floor`
+  top-1 是 `concrete` 0.331，ground truth 是 `gypsum_board`。
 - **ceiling**（4 材質＋4 OOD）：round17 已無 fallback 面可分析（原本
-  `stairwell_tiled.ceiling` 在 round15 就已轉正）。
-- **wall**（全域 12 材質＋4 OOD，等同未收窄）：`round11_remap_baseline`
-  是用 `t38_treatment_eval.py` 跑的，該腳本的輪次表格本來就不含表 7（門檻
-  敏感度只在最終 `t36_clip_accuracy.py` 的 `REPORT.md` 產生），沒有舊表可
-  直接拿來對照。但 `ROLE_MATERIAL_CANDIDATES["wall"]` 已還原成與
-  `CLIP_MATERIAL_PROMPTS` 完全相同的 12 條、相同插入順序（見第三節
-  round16 記錄），`classify_region_material()` 對 wall 角色送進 CLIP 的
-  候選字典因此與 `role=None` 逐字相同——這是程式碼層級的保證（同一份
-  候選字典餵給同一個模型必然算出同一組 softmax 值），不需要額外的舊表格
-  比對就能確認 wall 的門檻敏感度就是「role-aware 之前」的真實敏感度，
-  未被本卡以任何方式扭曲。
+  `stairwell_tiled.ceiling` 在 round15 就已轉正），五檔候選門檻皆 0 面放行。
+- **wall**（全域 12 材質＋4 OOD，等同未收窄）：`ROLE_MATERIAL_CANDIDATES["wall"]`
+  已還原成與 `CLIP_MATERIAL_PROMPTS` 完全相同的 12 條、相同插入順序（見第三節
+  round16 記錄），`classify_region_material()` 對 wall 角色送進 CLIP 的候選
+  字典因此與 `role=None` 逐字相同——這是程式碼層級的保證（同一份候選字典
+  餵給同一個模型必然算出同一組 softmax 值），round17 表 7' 量出的敏感度就是
+  「role-aware 之前」的真實敏感度，未被本卡以任何方式扭曲：
+
+  | 候選門檻 | 放行面數 | 放行後答對 | 放行後答錯 |
+  |---|---|---|---|
+  | 0.20 | 27 | 1 | 26 |
+  | 0.25 | 22 | 1 | 21 |
+  | 0.30 | 20 | 1 | 19 |
+  | 0.35 | **7** | **0** | **7** |
+  | 0.40（現行） | 0 | 0 | 0 |
+
+  即：**調低到 0.35 會放行 7 面且 0 面答對**；完整 27 面逐面明細見
+  [`rounds/round17/tables.md`](rounds/round17/tables.md) 表 7'。
 
 三個角色分別重跑，未只跑一份全域敏感度表（Opus 驗證重點）。
 
