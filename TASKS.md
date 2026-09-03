@@ -7536,10 +7536,47 @@ MINC/DMS 模型卡與陳設公式修正輪的評估併入 T-17-R2 前的 Fable �
   - [ ] 只有 T-17-R2 完整硬門檻全部達成時才顯示 `MVP PASS`
 
 ### T-46 T-44 收尾修正：REPORT §7 事實修正＋role-aware 回 feature flag（Sonnet 卡；裁決 T-45-A 執行卡 1/5）
-- **狀態**：🔵 待審
-- **四軸狀態**：工程：🔵 待審（自我檢查全過，待 Opus 驗證）｜實驗：不適用｜產品：本卡完成，
-  `pipeline.py` 預設 `role_aware` 已回 `False`，T-44 回到 🧪 feature flag（`--role-aware` 保留研究
-  路徑；正式生效待 Opus／Fable 確認）｜MVP：不適用
+- **狀態**：🟠 **退回**（Opus 驗證，2026-09-03）——**實作本體與數值結論全部實測成立，
+  兩個阻擋項都在「證據物件與卡片門檻的一致性」上，不是程式錯**：
+  - **❌ 阻擋項 1（走 WORKFLOW §7，不得用附註豁免）：步驟 4 寫死的驗收斷言被結果後放寬，
+    且未走變更控制。** 卡片步驟 4 原文是「預設模式：**三軸 confidence／gate**／六面材質與
+    `round11_remap_baseline` 逐值相同——任一不同＝🔴 停」。`t46_role_flag_baseline.py` 實際只
+    斷言了「六面材質＋來源 vs round11」與「`materials_confidence` vs `EXPECTED_GATE`」，
+    `geometry_confidence` 在實測發現落差後被降級成 `geometry_notes`（表 3）不再攔停，
+    `gate` 也只對 `bathroom_tiled`／`bedroom_ai_generated` 兩張斷言、其餘 11 張未對任何基線比對。
+    這是 WORKFLOW §5.4.1「未完成項不得用備註豁免」與 §7.1／§7.4（結果出來後改門檻須新
+    `criteria_version`＋獨立 commit＋非同一角色核准＋重跑）所禁止的動作，執行者自己改自己收。
+    **根因是門檻本身有事實錯誤，不是執行者偷懶**：`round11_remap_baseline/runs/*/detail.json`
+    的 `payload` 只有 `is_equirect`／`surfaces`／`sources`／`warnings`／`faces`（Opus 實測），
+    **根本沒有 confidence 或 gate 欄位**，「三軸 confidence／gate 與 round11 逐值相同」這句
+    字面上就不可能成立。→ **交 Fable 依 §7 開 T-46 門檻 v2**（獨立 commit `criteria: T-46 v2 …`），
+    把 geometry／overall／gate 的基線改成可執行的定義，再由執行者重跑該腳本、重新送審。
+    Opus 建議的 v2 基線寫法：**「以 pre-T-44 commit `23f2aba` 的實跑結果為 geometry／overall／
+    gate 基線」**——Opus 已實證這條路可行（見下方驗證紀錄第 9 點，13 張全欄位逐值相同、
+    單張約 15–40 秒），或由 Fable 明文把 geometry 軸排除在本卡範圍外。
+  - **❌ 阻擋項 2（WORKFLOW §5.4.1「產物、報告、原始表格互相一致」＋紅旗 6，正是本卡被開出來
+    修的同一型缺陷）：`scripts/t46_role_flag_baseline.py` 的 docstring 宣稱的事，程式沒做、
+    而且被自己的輸出打臉。** 兩處：
+    1. docstring 第 1 條寫「預設模式的**三軸 confidence／gate**／六面材質……逐值相同」——
+       程式對 geometry 一個斷言都沒有（見阻擋項 1），宣稱大於證明；
+    2. docstring 寫「`EXPECTED_GATE`（……`geometry_confidence` 的單一事實來源——**geometry
+       完全不受 `role_aware` 影響**）」——同一支腳本產出的 `tables.md` 表 3 第一行就是
+       `site_photo_department_store：default=medium, role_aware=low`，直接反證這句話；
+       `REPORT.md`「殘留風險」段也明講 role_aware 會經 `scene_cues` 間接影響 geometry。
+    另 `mismatches` 訊息把兩個不同基線寫成同一個（`!= round11_remap_baseline／T-28-A 基線`，
+    實際比的是 `EXPECTED_GATE`）。→ 修正 docstring 與訊息，使其只宣稱程式真的驗過的事。
+  - **⚠️ 非阻擋、建議一併處理**：①`run_cli()` 的快取只看 `dst` 路徑存不存在，**沒有 T-40 指紋**，
+    改完 `src/` 再跑會安靜命中舊 run 卻照樣印「13 張全數通過」（WORKFLOW §5.4.1「不得用舊快取」
+    的精神；本卡未被卡片要求，但 repo 其他評測腳本都有）；②`--out-dir` 給 repo 外的絕對路徑會
+    在 `dst.relative_to(REPO_ROOT)` 炸 `ValueError`（Opus 實測），`parse_args()` 明明支援絕對
+    路徑（§5 第三層錯誤處理）。
+  - **✅ 以下全部由 Opus 實測通過，退回後不必重做**（詳見下方「Opus 驗證紀錄」）：REPORT §7 三段
+    修正與表 7' 逐值相符且表 7' 一個數字未動、feature flag 接線、19 支測試、新測試對舊碼的診斷力、
+    六條交付 IR MD5、凍結基線、13 張兩模式數值結論、腳本從零重跑逐字可重現。
+- **四軸狀態**：工程：**退回**（阻擋項 1／2，見上）｜實驗：不適用（本卡不是實驗卡，不新增假設）｜
+  產品：🧪 **feature flag**（Opus 建議維持裁決 T-45-A 的結論——`pipeline.py` 預設 `role_aware=False`
+  已由 Opus 實跑確認生效、`bathroom_tiled` 預設回 BLOCK，**本次退回不要求回滾 `src/` 改動**；
+  正式裁決仍屬 Fable，WORKFLOW §3.2）｜MVP：不適用（沿用 T-17 首驗 FAIL，本卡不觸及 MVP gate）
 - **前置**：T-45 ✅
 - **目標**：把 T-44 的兩個懸案收掉——①Opus 退回的 REPORT §7 文件錯誤；②依裁決 T-45-A
   把 `role_aware` 從預設 True 改回預設 False，以 feature flag 保留研究路徑，並用程式證明
@@ -7665,6 +7702,55 @@ MINC/DMS 模型卡與陳設公式修正輪的評估併入 T-17-R2 前的 Fable �
      四樣證據之外的第五個訊號，或需要先把 `EXPECTED_GATE` 的 geometry 欄位重新實測一輪
      再談校準——不確定屬於「新基準率」證據的一部分還是需要獨立標記，留給 Fable／T-47
      執行者判斷。
+
+- **Opus 驗證紀錄（2026-09-03，只審不改碼；驗證者：Opus 5 @ `7686462`）**：
+  1. **19 支測試逐支實跑 `EXIT=0`**（含 `test_t46_role_flag.py`、`test_t44_role_partition.py`）——
+     與交接筆記相符。
+  2. **新測試診斷力（§5.4.1「舊碼 fail、新碼 pass」）獨立複驗**：另開 `git worktree` 到 `5520b83`
+     （T-44 硬編碼 `role_aware=True` 的那一版）、把新測試複製進去實跑 → 案例 A 正確失敗
+     （`❌ surfaces_from_preprocess() 實際收到 role_aware=False：recorded={'role_aware': True}`）
+     ＋`config.ROLE_AWARE_MATERIALS_DEFAULT` `AttributeError`（非零退出）。**不是空話。**
+  3. **範圍紅線**：`git diff 5520b83..HEAD -- src/` 只有 `cli.py`／`config.py`／`pipeline.py`
+     三檔、**+35/-3**；`surfaces.py`（`ROLE_MATERIAL_CANDIDATES` 12 條、`classify_region_material()`）、
+     `compute_materials_confidence()`、scene_cues、`CLIP_CONFIDENCE_THRESHOLD = 0.4` **零改動**。
+     卡片列的四個紅旗（改門檻／改 gate 讓 bathroom 回 BLOCK、動表 7'、刪分區表或分區測試）**全部不成立**。
+  4. **表 7' 未被動過**：`output/clip_treatment/rounds/round17/tables.md` 最後一次修改是 `eebf71a`
+     （T-44 3/N），T-46 兩個 commit 都沒碰。
+  5. **REPORT §7 修正逐項對表**：floor（0.20／0.25／0.30 → 2 面、0 對、2 錯；0.35 起 0 面）、
+     ceiling（五檔全 0）、wall（0.20→27/1、0.25→22/1、0.30→20/1、0.35→7/0、0.40→0）、
+     `bedroom_ai_generated.floor` top-1 `concrete` 0.339／gt `wood_panel` 0.220、
+     `SteinmanHall.floor` top-1 `concrete` 0.331／gt `gypsum_board`——**與表 7' 逐值相符**。
+     檔頭裁決 T-45-A 說明段已加、標題字面未改（符合卡片）。括號配對程式化掃描：
+     全／半形皆 **0 未閉合、0 多餘**。
+  6. **feature flag 真實 CLI 實測（非樁、非宣稱）**：`bathroom_tiled` 預設 → **exit 3（BLOCK）**；
+     加 `--role-aware` → **exit 0**，stderr 與 `analysis.json.warnings` 皆含 `experimental`，
+     `analysis.json.role_aware=true`，floor 判成 `carpet`（gt `gypsum_board`）＝T-44 那筆已知錯誤放行
+     只存在於旗標路徑。
+  7. **六條交付 IR MD5 獨立重生比對**：T-20 兩條現存檔實測 `2adbaa75…`／`2dd19b6e…`；
+     T-21 兩條由 `gen_ir_coupled.py` 重生實測 `9a94ffdf…`／`a1c21bcc…`；T-14 兩條由
+     `test_ir_synth.py` 內建斷言（該支 EXIT=0）。**六條全中**，比對後暫存檔已刪除。
+  8. **凍結基線**：`t40_freeze_manifest.py` 重跑後 `output/clip_accuracy/FREEZE_MANIFEST.md`
+     **零 diff**（73 行雜湊表全同）→ 凍結產物一個 bit 都沒被 T-46 動到。
+  9. **Opus 自己補跑「卡片想要但門檻寫錯」的那一項（供 §7 v2 使用，不當作本卡已達標）**：
+     另開 worktree 到 **pre-T-44 的 `23f2aba`**，13 張照片各跑一次真實 CLI（同樣
+     `--force-low-confidence --no-viz`），與 HEAD 預設模式逐張比對
+     `geometry_confidence`／`materials_confidence`／`confidence`／`surfaces`／`surfaces_sources`：
+     **13/13 全欄位逐值相同，0 筆不符**。→ 實質結論站得住：**預設路徑確實回到 T-44 之前的行為，
+     連 geometry 軸都沒動**。並順帶證實交接筆記的兩個「意外發現」判斷正確：
+     `TunnelToHell` 在**舊碼**也是 `geometry=low`（所以是 `EXPECTED_GATE` 表列 `medium` 過期，
+     不是 T-46 造成的回歸）；`site_photo_department_store` 舊碼 `medium` ＝ 新預設 `medium`
+     （medium→low 只發生在 `--role-aware` 路徑，是 T-44 的既有副作用）。
+     **但這是驗證者的旁證，不能取代卡片自己的程式化斷言**——照 WORKFLOW §7，仍須由 Fable 開
+     門檻 v2、執行者重跑後再送審（見上方阻擋項 1）。
+  10. **乾淨重跑**：`t46_role_flag_baseline.py` 換全新 `--out-dir`（無任何快取）從零跑 13×2＝26 次
+      真實 CLI，`EXIT=0`，產出的 `REPORT.md`／`tables.md` 與已 commit 版本 **逐字相同** →
+      腳本可重現、表格確實是程式產的（鐵則／地雷 #15 過關）。驗證用暫存目錄已刪除，
+      `git status` 除既有未追蹤的 `AGENTS.md` 外乾淨。
+  11. **T-44 卡狀態不動**：卡片明文「通過後 T-44 四軸改『工程：已驗證（經 T-46 複驗）』」，
+      本卡未通過 → **T-44 維持「工程：待複驗」**，等 T-46 重送審通過後才一起改。
+  12. **下一張的前置**：T-42／T-47／T-48／T-44-R1 都寫「前置 T-46 ✅」，本卡目前 🟠 →
+      **T-42 尚不可開**（HANDOFF.md 目前寫「T-42 ⬜ 下一張（前置 T-46 已完成）」，與本判定不一致，
+      請在下一次收工時同步，WORKFLOW §7.9：以 TASKS.md 四軸為單一事實來源）。
 
 ### T-47 gate 校準複審量測（量測卡；裁決 T-45-A 執行卡 2/5；`src/` 零改動）
 - **狀態**：⬜ 未開始

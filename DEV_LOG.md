@@ -1,5 +1,27 @@
 # Dev Log
 
+## 2026-09-03 (93)
+
+- **T-46 Opus 驗證 → 🟠 退回**（四軸：工程 退回｜實驗 不適用｜產品 🧪 feature flag（建議維持，
+  不回滾 `src/`）｜MVP 不適用）。**程式本體與數值結論全部實測成立**：19 支測試 EXIT=0、新測試
+  對舊碼 `5520b83`（worktree）實測正確 fail、`git diff` 只有三個 src 檔 +35/-3、表 7' 未被動、
+  REPORT §7 三段與表 7' 逐值相符、括號 0 未閉合、`bathroom_tiled` 真實 CLI 預設 exit 3／
+  `--role-aware` exit 0＋experimental、六條交付 IR MD5 全中（T-21 兩條由 Opus 重生比對）、
+  FREEZE_MANIFEST 零 diff、腳本換新 out-dir 從零重跑 26 次 CLI 產出與已 commit 版逐字相同。
+- **兩個阻擋項**：①步驟 4 寫死的「三軸 confidence／gate vs round11 逐值相同，任一不同＝🔴 停」
+  被結果後降級成只記錄不攔停（geometry 軸零斷言），未走 §7 變更控制——**根因是門檻本身有誤**：
+  `round11_remap_baseline` 的 `detail.json` 只有 surfaces／sources／warnings／faces，
+  沒有 confidence／gate 欄位，該句字面不可能成立 → 交 Fable 開 T-46 門檻 v2（獨立 commit）；
+  ②`t46_role_flag_baseline.py` docstring 宣稱「三軸……逐值相同」「geometry 完全不受 role_aware
+  影響」，被自己產出的 tables.md 表 3 反證（§5.4.1 產物／報告一致性、紅旗 6）。
+- **Opus 補跑的旁證（給 §7 v2 用，不當本卡已達標）**：另開 worktree 到 pre-T-44 `23f2aba`，
+  13 張照片真實 CLI 與 HEAD 預設模式比對 geometry／materials／overall／surfaces／sources
+  → **13/13 全欄位逐值相同**；並證實 `EXPECTED_GATE` 的 `TunnelToHell` geometry 欄位確實過期
+  （舊碼也是 low），`department_store` 的 medium→low 只發生在 `--role-aware` 路徑。
+- **下一步**：Fable 開 T-46 門檻 v2 → Sonnet 重跑並修 docstring → 重送 Opus。**T-42 尚不可開**
+  （前置 T-46 未 ✅）。T-44 維持「工程：待複驗」，不隨本次改動。
+
+
 ## 2026-09-03 (92)
 
 - **T-46 T-44 收尾修正（🔵 待審，裁決 T-45-A 執行卡 1/5）**。REPORT_T44.md §7

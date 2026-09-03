@@ -21,7 +21,8 @@
 - **gate 校準前提已變**（T-26／T-28／T-36-A）→ T-47 重量四樣證據後裁決 T-47-A。
 - [x] **T-45 審查制度修正 ✅（Fable 2026-09-03）**：WORKFLOW v2、CLAUDE/AGENTS 同步、
       12 卡回溯重標、新卡 T-46～T-48／T-44-R1／T-17-R2、HANDOFF/TODO/DEV_LOG/ROADMAP 同步。
-- [x] **T-46 🔵 待審（Sonnet 自檢通過 2026-09-03）**：REPORT_T44 §7 事實修正（含補一處未閉合
+- [ ] **T-46 🟠 退回（Opus 驗證 2026-09-03；待 Fable 依 WORKFLOW §7 開門檻 v2 → Sonnet 重跑重送審）**
+      — 原 Sonnet 自檢紀錄（2026-09-03）：REPORT_T44 §7 事實修正（含補一處未閉合
       括號）；`role_aware` 回 feature flag（`config.ROLE_AWARE_MATERIALS_DEFAULT=False`、
       `cli.py --role-aware`、`pipeline.py` 唯一呼叫點改讀參數＋`analysis.json` 加欄＋
       `role_aware=True` 時 stderr／warnings 印 experimental）；13 張基線變化表

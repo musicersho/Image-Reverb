@@ -1,6 +1,6 @@
 # 交接文件 — 給下一個視窗
 
-> 最後更新：2026-09-03（Sonnet 視窗：**T-46 完成，🔵 待審**——REPORT_T44.md §7
+> 最後更新：2026-09-03（Opus 驗證視窗：**T-46 🟠 退回**；原 Sonnet 視窗紀錄如下：**T-46 完成，🔵 待審**——REPORT_T44.md §7
 > 事實修正（floor/wall 門檻敏感度摘要改為與表 7' 一致，補一處未閉合括號）；
 > `pipeline.py` 的 `role_aware` 從硬編碼 `True` 改回 `config.ROLE_AWARE_MATERIALS_
 > DEFAULT`（`False`），CLI 新增 `--role-aware`（實驗路徑，啟用時 stderr／
@@ -16,7 +16,8 @@
 > 凍結表）的 geometry 欄位疑似部分過期（`TunnelToHell` 實測 low、表列 medium，
 > T-37 equirect 修正之後未見對應更新）。細節見 TASKS.md T-46 卡交接筆記。
 > **HEAD 的 `pipeline.py` 現在預設 `role_aware=False`（已確認，非宣稱）**。
-> 下一步：**T-46 待 Opus 驗證**；驗證通過後開 Sonnet 視窗執行 **T-42**
+> **⛔ 2026-09-03 Opus 驗證：T-46 🟠 退回**（兩個阻擋項都在證據物件／門檻一致性，程式本體與數值結論實測成立——詳見 TASKS.md T-46 卡「狀態」欄與「Opus 驗證紀錄」）。
+> 下一步：**先交 Fable 依 WORKFLOW §7 開 T-46 門檻 v2**（步驟 4 的「三軸 confidence／gate vs round11」字面不可能成立：round11 的 detail.json 沒有 confidence／gate 欄位），再由 Sonnet 重跑＋修 docstring 後重送審；**T-42 尚不可開**（前置 T-46 未 ✅）
 > （TASKS.md 檔尾 Phase 1.9-R 節）。
 > **新視窗請先讀 [CLAUDE.md](CLAUDE.md) 知道自己的角色，再讀本檔知道現在的狀況。**
 >
@@ -283,8 +284,8 @@ T-21 ✅（四輪迭代）｜T-17 §7-4 ✅ 已執行（無鐵筒子 artifact；
 | T-39 | 候選材質集擴充 | ✅ 工程已驗證｜🔴 實驗負向｜🚫 不採用（Opus 2026-09-02） |
 | T-44 | role-aware 材質候選子集 | 🟠 工程退回（文件）｜🟢 相對正向｜🧪 產品採用暫停（裁決 T-45-A）｜安全缺口 1＋1 |
 | T-45 | 審查制度修正（Fable 卡） | ✅ 已執行（Fable 2026-09-03） |
-| T-46 | T-44 收尾：REPORT §7 修正＋role-aware 回 feature flag | 🔵 待審（Sonnet 自檢通過 2026-09-03） |
-| T-42 | gate 交易式輸出與舊產物隔離（插卡 3/4） | ⬜ **下一張**（前置 T-46 已完成） |
+| T-46 | T-44 收尾：REPORT §7 修正＋role-aware 回 feature flag | 🟠 **退回**（Opus 驗證 2026-09-03；待 Fable 開門檻 v2） |
+| T-42 | gate 交易式輸出與舊產物隔離（插卡 3/4） | ⬜ 未開始（**前置 T-46 🟠 未達成，尚不可開**） |
 | T-43 | T-17 產物溯源（插卡 4/4） | ⬜ |
 | T-47 | gate 校準複審量測（量測卡） | ⬜ |
 | T-48 | T-11／T-12 判準 v2 針對性重驗（量測卡） | ⬜ |
