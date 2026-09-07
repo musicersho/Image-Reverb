@@ -1,5 +1,32 @@
 # Dev Log
 
+## 2026-09-07 (95)
+
+- **T-44 Opus 第二輪複驗 → 🟠 退回**（四軸：工程 退回｜實驗 不適用（本輪未動實驗
+  數據）｜產品 不適用（沿用裁決 T-45-A 暫停採用）｜MVP 不適用（沿用 T-17 首驗 FAIL））。
+- **第一輪阻擋項確認解除**：`REPORT_T44.md` §7 與 `rounds/round17/tables.md` 表 7'
+  及 `runs/bedroom_ai_generated|SteinmanHall/detail.json` 逐位元核對一致（floor
+  0.20/0.25/0.30 各放行 2 面 0 對 2 錯、0.35 起 0 面；top-1 `concrete` 0.3394／
+  0.3309；ground truth `wood_panel`／`gypsum_board` 由 `data/material_ground_truth.json`
+  確認；wall 五檔 27/22/20/7/0 由表 7' 27 筆逐面信心自行重算全部吻合）。
+  交接筆記用詞修正亦判定準確——`compute_materials_confidence()`（`surfaces.py:412`）
+  只讀 `sources`／`warnings`／材質 id，不讀數值信心，故「gate 兩輪相同」有機制根據。
+- **新的阻擋項（本輪自己引入，紅旗 #6 同型）**：`REPORT_T44.md` §5 新增「同型近失」
+  段落結尾稱 `bedroom_ai_generated.floor`（0.3394，距門檻 0.06）是「13 張裡離門檻
+  最近／下一個最接近的候選」，但同報告 §7 的 wall 表「0.35→7 面」那一列裡就有 7 面
+  比它更近，最近的 `SteinmanHall.north` 只差 **0.0059**。§5 是誠實揭露殘留風險的
+  章節，這句把安全邊界講大了約十倍。修法：限定到「候選集實際被收窄的 floor／ceiling」
+  （該範圍內只有 2 面，bedroom 確為最近，說法成立），並補記 wall 側最近的
+  `SteinmanHall.north` 0.3941 兩輪逐位元相同、屬本卡之前既存風險。
+- **次要**：卡內「狀態」（🔵 待驗證）與「四軸狀態」（工程 待複驗／🟠 退回中，且仍寫
+  「由 T-46 修並複驗」）互相打架；依 §7.9 四軸才是單一事實來源，`TODO.md` 同步錯了
+  對象。且 §7 修正實際落在 `1121293`（早於 T-46 工作 commit `7686462`），T-46 本身
+  仍是 🟠 退回。已於 TASKS.md 狀態欄寫明修法。
+- **範圍與測試**：`git diff 37e07fe..98f1ace --stat` 僅四份文件，`src/`／`scripts/`／
+  `data/`／`rounds/` 零 diff（path-limited diff 實測）；19 支 `scripts/test_*.py`
+  逐支實跑全部 EXIT=0。第一輪退回全文逐字保留未遭刪改（與 `37e07fe:TASKS.md` diff 確認）。
+- **下一步**：Sonnet 修 §5 那一句＋四軸／TODO 一致性，再送第三輪複驗；T-46 仍 🟠 退回，另辦。
+
 ## 2026-09-07 (94)
 
 - **T-44 Opus 退回修正輪收工**（純文件；狀態 🟠 退回 → 🔵 待驗證）。核對確認

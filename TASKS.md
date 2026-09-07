@@ -6413,8 +6413,66 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
     其比較基線＝`round11_remap_baseline`（因新候選未採用，該輪即最終狀態）。
 
 ### T-44 role-aware 材質候選子集（裁決 T-38B-A 執行卡；設計＋實驗卡）
-- **狀態**：🔵 待驗證（Opus 退回已於 2026-09-07 修正，見下方「退回修正紀錄」；
-  原退回全文保留於下，供對照）——**只有一項阻擋，且是純文件修正，
+- **狀態**：🟠 退回（Opus 第二輪複驗，2026-09-07）——**第一輪退回的唯一阻擋項（REPORT
+  §7 摘要與表 7' 矛盾）已確認修好、逐位元核對無誤；但本輪自己新增的 REPORT §5 段落
+  引入了同一類（紅旗 #6）的新矛盾，故不放行。以下為第二輪退回理由；第一輪退回全文
+  原封保留在本行之下，不覆寫（WORKFLOW §7.3）。**
+
+  - **✅ 已修復並經 Opus 實跑核對（第一輪阻擋項解除）**：`REPORT_T44.md` §7 與
+    `rounds/round17/tables.md` 表 7' 及 `runs/*/detail.json` 逐位元一致——floor
+    0.20／0.25／0.30 三檔皆放行 2 面且 0 對 2 錯、0.35 起 0 面；
+    `bedroom_ai_generated.floor` top-1 `concrete` 0.3394（報告寫 0.339），次高
+    `wood_panel` 0.2202（報告寫 0.220）＝ground truth（`data/material_ground_truth.json`
+    確認 `wood_panel`）；`SteinmanHall.floor` top-1 `concrete` 0.3309（報告寫
+    0.331），ground truth `gypsum_board`（確認）；wall 表 0.20→27(1/26)／
+    0.25→22(1/21)／0.30→20(1/19)／0.35→7(0/7)／0.40→0 與表 7' 逐格相同，且我把
+    表 7' 的 27 筆逐面信心自行重算門檻計數，五檔全部吻合。
+  - **✅ 交接筆記用詞修正（第 3 點）判定為準確且未美化**：`bedroom_ai_generated`
+    round11 vs round17 的 `surfaces`／`sources` 逐鍵相同、四面牆 face 物件完全相同，
+    只有 `floor.top3`（`generic_wall` 0.2436 → `concrete` 0.3394）與 warnings 內嵌的
+    數字有變；且 `compute_materials_confidence()`（`surfaces.py:412`）只讀
+    `sources`／`warnings`／六面材質 id、**不讀數值信心**，規則 1 先命中（floor 為
+    fallback）→ 兩輪 gate 同為 `low`，所以「gate 與 round11 相同」有機制層級的根據，
+    不只是比對字串。這一項把原本過強的「逐位元完全相同」改弱成事實，方向是對的。
+  - **❌ 阻擋項（本輪新增，紅旗 #6 同型）：`REPORT_T44.md` §5 新增的「同型近失」
+    段落，最後一句與本報告 §7 自己的 wall 表互相矛盾，且方向是把風險講小。**
+    原文：「…而是本卡 13 張測試集裡**離門檻最近的那一張先中**：`bathroom_tiled`
+    已經跨過門檻放行，`bedroom_ai_generated.floor` 是下一個最接近的候選。」
+    實測 round17 全部 fallback 面依 top-1 信心排序，比 `bedroom_ai_generated.floor`
+    的 0.3394 更接近 0.4 門檻的有 **7 面**：`SteinmanHall.north` 0.3941（距門檻僅
+    **0.0059**）、`SteinmanHall.south` 0.3895、`stairwell_tiled` 四面各 0.3784、
+    `SteinmanHall.east` 0.3578（再往下還有 `site_photo_restaurant.west` 0.3471）。
+    這 7 面就寫在同一份報告 §7 的 wall 表「0.35→7 面」那一列裡，讀者只要把兩節對讀
+    就會發現摘要與表格打架——這正是第一輪退回的同一種病。
+    影響不是純文字：§5 是「必須誠實揭露的已知殘留風險」章節，寫成「最近的一張距門檻
+    0.06」會讓讀者以為安全邊界有 0.06，實際上最近的一面只有 0.0059。
+    **要怎麼改（只改一句、不必重跑任何一輪）**：把該句限定到「候選集**實際被收窄**的
+    角色（floor／ceiling）」——在該範圍內 bedroom 的說法是成立的，我實測 round17
+    floor／ceiling 的 fallback 面只有 2 個（bedroom 0.3394、SteinmanHall 0.3309），
+    bedroom 確實是最接近的；同時補一句點名 wall 側最接近的是 `SteinmanHall.north`
+    0.3941，並註明該面 round11／round17 **逐位元相同**（我已核對：0.3941 兩輪一致，
+    wall 未收窄），屬於本卡之前就存在的風險、非本卡造成。這樣才同時做到不誇大也不遮蔽。
+  - **⚠️ 次要（一併修，不單獨構成阻擋）：卡內兩個狀態欄互相打架。**
+    本輪把「狀態」改成 🔵 待驗證，但下方「四軸狀態」那一行仍寫
+    「工程：**待複驗**（🟠 退回中：REPORT §7 敏感度摘要與表 7' 矛盾，純文件；由 **T-46**
+    修並複驗）」。依 WORKFLOW §7.9，TASKS.md 四軸是單一事實來源，等於這張卡權威欄位
+    仍宣告退回中；而 `TODO.md` 改成「工程 🔵 待驗證」是跟著「狀態」欄走的，同步錯了對象。
+    另外「由 T-46 修並複驗」現已與事實不符：§7 的修正落在 `1121293`（2026-09-03，
+    早於 T-46 的工作 commit `7686462`），而 T-46 本身在 `37e07fe` 仍是 🟠 退回。
+    修法：把四軸的工程軸改成「待審」（§3.2 允許執行者寫到待審），並把「由 T-46 修」
+    改成「§7 修正於 1121293；2026-09-07 本卡自行複核＋補 §5、修交接筆記用詞」。
+  - **✅ 其餘全部通過**：`git diff 37e07fe..98f1ace --stat` 只有 `TASKS.md`／
+    `DEV_LOG.md`／`TODO.md`／`REPORT_T44.md` 四檔，`src/`／`scripts/`／`data/`／
+    `output/clip_treatment/rounds/` **零 diff**（已實跑 path-limited diff 確認）；
+    19 支 `scripts/test_*.py` 逐支實跑 **全部 EXIT=0**（含非本卡範圍的
+    `test_t46_role_flag.py`）；第一輪退回全文逐字保留未刪改（已與 `37e07fe:TASKS.md`
+    做 diff，除狀態欄首行外零差異）；「🔧 退回修正紀錄」四點與實際改動相符；
+    DEV_LOG.md 第 94 筆與 TODO.md 均已更新。
+
+  ---
+
+  **（以下為 2026-09-02 第一輪 Opus 退回全文，原封保留）**
+  🟠 退回（Opus 驗證，2026-09-02）——**只有一項阻擋，且是純文件修正，
   不必重跑任何一輪、不必動任何程式碼**。以下每一項都由 Opus 實跑核對，非採信交接筆記。
 
   - **❌ 阻擋項（唯一）：REPORT_T44.md 第七節「門檻敏感度」的 floor 段落，
