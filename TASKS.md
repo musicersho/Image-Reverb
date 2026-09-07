@@ -6413,7 +6413,8 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
     其比較基線＝`round11_remap_baseline`（因新候選未採用，該輪即最終狀態）。
 
 ### T-44 role-aware 材質候選子集（裁決 T-38B-A 執行卡；設計＋實驗卡）
-- **狀態**：🟠 退回（Opus 驗證，2026-09-02）——**只有一項阻擋，且是純文件修正，
+- **狀態**：🔵 待驗證（Opus 退回已於 2026-09-07 修正，見下方「退回修正紀錄」；
+  原退回全文保留於下，供對照）——**只有一項阻擋，且是純文件修正，
   不必重跑任何一輪、不必動任何程式碼**。以下每一項都由 Opus 實跑核對，非採信交接筆記。
 
   - **❌ 阻擋項（唯一）：REPORT_T44.md 第七節「門檻敏感度」的 floor 段落，
@@ -6524,6 +6525,31 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
     **請 Fable 收尾複評時把「候選集收窄後的信心膨脹 vs 門檻 0.4 是否還成立」
     列為明確議題**（例如門檻隨候選集大小調整、或 `compute_materials_confidence()`
     區分收窄與未收窄），本卡不動手是對的。
+
+- **🔧 退回修正紀錄（Sonnet，2026-09-07，Opus 退回修正輪，純文件）**：
+  1. `REPORT_T44.md` 第七節門檻敏感度摘要已於 2026-09-03（commit
+     `1121293`，先於本輪）修正並與 `rounds/round17/tables.md` 表 7' 逐項
+     核對一致：floor 段落改為「調低到 0.30 會多放行 2 面且兩面皆答錯，
+     0.35 起才變回 0 面」；`bedroom_ai_generated.floor` top-1 更正為
+     `concrete` 0.339（`wood_panel` 0.220 為次高候選兼 ground truth）；
+     `SteinmanHall.floor` top-1 更正為 `concrete` 0.331（`gypsum_board`
+     為 ground truth）；wall 段落補上完整敏感度表（0.20→27／0.25→22／
+     0.30→20／0.35→7／0.40→0，答對恆為 0 或 1）；括號未閉合已修。
+     本輪（2026-09-07）逐字對照 `tables.md` 表 7' 與
+     `runs/bedroom_ai_generated/detail.json`／`runs/SteinmanHall/detail.json`
+     重新核對，數字一字不差，**無需再改**。
+  2. 本輪新增：`REPORT_T44.md` 第五節補記 `bedroom_ai_generated.floor`
+     top-1 信心從 round11 `generic_wall` 0.2436 升到 round17 `concrete`
+     0.3394（僅差 0.06 越過門檻），說明候選集收窄→信心膨脹不是
+     `bathroom_tiled` 孤例。
+  3. 本輪修正：本卡「交接筆記」對 `bedroom_ai_generated` 紅旗未觸發的
+     用詞，從「逐位元核對後與 round11 完全相同」改為「surfaces／sources／
+     gate 與 round11 相同」，並註明 floor 面 top3 機率實際有變動（僅信心
+     值變動，材質與 gate 結論不變）。
+  4. 範圍確認：本輪只動 `REPORT_T44.md` 第五、七節與本卡「交接筆記」／
+     狀態欄／本節；`src/`／`scripts/`／`data/`／`rounds/` 零 diff（見
+     `git diff --stat`）；`scripts/test_*.py` 全部 EXIT=0（實跑紀錄見
+     DEV_LOG.md）。
 
 - **四軸狀態（裁決 T-45-A，2026-09-03；原「狀態」欄保留不改，語義見 WORKFLOW §3）**：
   工程：**待複驗**（🟠 退回中：REPORT §7 敏感度摘要與表 7' 矛盾，純文件；由 **T-46** 修並複驗）｜實驗：🟢 **相對指標正向**（round17 對 round11：overall 30→32、floor 4→5、in-set 9→8）｜產品：🧪 **暫停採用**（裁決 T-45-A：三個相對門檻不含安全與絕對下限；`pipeline.py` 現行 `role_aware=True` 由 T-46 改回預設 `False`＋feature flag；重新驗證另開 **T-44-R1**）｜安全：**已知錯誤放行 1 件**（`bathroom_tiled` BLOCK→pass，floor 判 `carpet` 而 gt=`gypsum_board`，CLI exit 0 且真的輸出 WAV）＋**近失 1 件**（`bedroom_ai_generated.floor` top-1 信心 0.2436→0.3394，距門檻 0.06）｜MVP：**FAIL**（沿用 T-17 首驗）
@@ -6638,7 +6664,10 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
     規則 1 → low → 擋下輸出）；round17 候選集收窄後同一面變成 clip（真的
     判出一個答案，但判錯了），不再觸發規則 1，落入規則 4 → medium → 放行。
     13 張裡**只有這一張**出現這個型態；`bedroom_ai_generated`（共同鐵則 7
-    明文點名的紅旗）逐位元核對後與 round11 完全相同，**未觸發**從擋變放。
+    明文點名的紅旗）**surfaces／sources／gate** 與 round11 相同，**未觸發**
+    從擋變放（用詞修正，2026-09-07：原「逐位元相同」不精確——floor 面
+    top3 機率其實從 `generic_wall` 0.2436 變成 `concrete` 0.3394，僅信心值
+    變動，材質判定與 gate 結論不變）。
     卡片明文的三個產品採用門檻不含這一項，依卡片規則本卡判定為採用，但
     這個新型態的風險與臥室紅旗背後的精神相同（信心分數變高、判定沒有變準），
     已建議 Fable 收尾複評時考慮是否需要後續處理，本卡未動

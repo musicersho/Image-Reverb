@@ -182,6 +182,15 @@ round11 完全相同，**未觸發**「從擋變放」（詳見下節），依�
 沒有變準**，這正是本卡機制本身（候選集收窄→softmax 濃縮→更容易越過信心
 門檻）在「fallback 預設值剛好答對」這類面上的必然副作用，不是實作疏漏。
 
+**同型近失（Opus 退回修正輪補記，2026-09-07）**：`bedroom_ai_generated.floor`
+的 material_id／gate 兩輪皆為 fallback `gypsum_board`（未觸發從擋變放，
+見共同鐵則 7），但 top-1 信心從 round11 的 `generic_wall` 0.2436 升到
+round17 的 `concrete` 0.3394（`round11_remap_baseline`／round17
+`detail.json` 逐位元核對），僅差 0.06 就會越過 0.4 門檻改用 clip 判定。
+這說明「候選集收窄→softmax 濃縮→信心膨脹」不是 `bathroom_tiled` 的孤例，
+而是本卡 13 張測試集裡**離門檻最近的那一張先中**：`bathroom_tiled`
+已經跨過門檻放行，`bedroom_ai_generated.floor` 是下一個最接近的候選。
+
 **本卡的立場**：三個產品採用門檻是卡片明文寫死、PLAN 跑之前就承諾的驗收
 標準，round17 三項都達成，依卡片規則本卡判定為**採用**；但這個殘留風險
 不應該被本報告的正面結論蓋過去，**明確建議 Fable 收尾複評時考慮是否要

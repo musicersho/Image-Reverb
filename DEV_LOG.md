@@ -1,5 +1,29 @@
 # Dev Log
 
+## 2026-09-07 (94)
+
+- **T-44 Opus 退回修正輪收工**（純文件；狀態 🟠 退回 → 🔵 待驗證）。核對確認
+  `REPORT_T44.md` 第七節門檻敏感度摘要（commit `1121293`，T-46 收尾修正輪當時
+  一併做的）已與 `rounds/round17/tables.md` 表 7' 逐字相符：floor（0.30→放行
+  2 面皆錯，0.35 起才 0 面）、`bedroom_ai_generated.floor`／`SteinmanHall.floor`
+  top-1 正確標為 `concrete` 0.339／0.331（原第二名／ground truth 誤植為 top-1
+  已修正）、wall 完整敏感度表已補（0.35→7 面 0 對），括號已補閉合——本輪逐項
+  對照 `tables.md` 與 `runs/bedroom_ai_generated|SteinmanHall/detail.json` 重新
+  核對，數字一字不差，**無需再改**。
+- **本輪實際新增兩處**：①`REPORT_T44.md` 第五節補記
+  `bedroom_ai_generated.floor` top-1 信心 round11→round17 由 `generic_wall`
+  0.2436 升到 `concrete` 0.3394（近失，距門檻 0.06），說明候選集收窄→信心
+  膨脹不是 `bathroom_tiled` 孤例，而是 13 張裡離門檻最近的那一張先中；
+  ②T-44 卡「交接筆記」對 bedroom 紅旗未觸發的用詞從「逐位元核對後與 round11
+  完全相同」改為「surfaces／sources／gate 與 round11 相同」（floor 面 top3
+  機率其實有變動，只是材質判定與 gate 結論不變）。
+- **範圍**：只動 `TASKS.md`／`REPORT_T44.md`（`git diff --stat` 確認）；
+  `src/`／`scripts/`／`data/`／`rounds/` 零變動；19 支 `scripts/test_*.py`
+  （含 T-46 新增、非本卡新增的 `test_t46_role_flag.py`）逐支 EXIT=0。
+- **下一步**：T-44 狀態回 🔵 待驗證，待 Opus 複驗此輪文件修正；T-46
+  （feature flag 與另一版 REPORT §7／docstring 問題）仍是 🟠 退回，不受本輪
+  影響，須另開修正輪處理。
+
 ## 2026-09-03 (93)
 
 - **T-46 Opus 驗證 → 🟠 退回**（四軸：工程 退回｜實驗 不適用｜產品 🧪 feature flag（建議維持，
