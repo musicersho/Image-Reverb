@@ -26,6 +26,10 @@
   `data/`／`rounds/` 零 diff（path-limited diff 實測）；19 支 `scripts/test_*.py`
   逐支實跑全部 EXIT=0。第一輪退回全文逐字保留未遭刪改（與 `37e07fe:TASKS.md` diff 確認）。
 - **下一步**：Sonnet 修 §5 那一句＋四軸／TODO 一致性，再送第三輪複驗；T-46 仍 🟠 退回，另辦。
+- **交接文件**：新增 [HANDOFF_T44_FIX.md](HANDOFF_T44_FIX.md)（自足：逐字替換文字、
+  Opus 已實跑核對的 fallback 面距門檻排序表、48 個 wall 面兩輪逐位元相同的證據、
+  可複製的自我檢查指令、收工程序、給第三輪 Opus 的複驗重點）；`HANDOFF.md` 頂部與
+  「一分鐘進入狀況」的 T-44／T-46 狀態同步，過期的「T-46 🔵 待審已完成」已標註。
 
 ## 2026-09-07 (94)
 
