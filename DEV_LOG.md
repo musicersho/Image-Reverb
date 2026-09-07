@@ -26,7 +26,14 @@
   `data/`／`rounds/` 零 diff（path-limited diff 實測）；19 支 `scripts/test_*.py`
   逐支實跑全部 EXIT=0。第一輪退回全文逐字保留未遭刪改（與 `37e07fe:TASKS.md` diff 確認）。
 - **下一步**：Sonnet 修 §5 那一句＋四軸／TODO 一致性，再送第三輪複驗；T-46 仍 🟠 退回，另辦。
-- **交接文件**：新增 [HANDOFF_T44_FIX.md](HANDOFF_T44_FIX.md)（自足：逐字替換文字、
+- **交接文件（階段層）**：新增 [HANDOFF_PHASE_1.9R.md](HANDOFF_PHASE_1.9R.md)——
+  Phase 1.9-R（T-46→T-17-R2 共 7 張卡）的階段交接：四軸狀態總表、依賴圖（**T-46 是
+  全域瓶頸**，T-44 修正輪不擋任何下游可平行）、三個卡點（Fable 開 T-46 門檻 v2／
+  使用者三件事／T-46 docstring 修正）、可立刻平行的三條線與開工 Prompt、共同紅線 1–12、
+  已知文件不一致清單、以及一個交 Fable 裁決的排程問題（T-48 可否早於 T-42/T-43）。
+  已核對 `23f2aba` 實為 T-44 系列中間 commit 但 `pipeline.py` 當時仍 `role_aware=False`，
+  文件中已註明正確描述，避免下一位對不上。
+- **交接文件（單卡層）**：新增 [HANDOFF_T44_FIX.md](HANDOFF_T44_FIX.md)（自足：逐字替換文字、
   Opus 已實跑核對的 fallback 面距門檻排序表、48 個 wall 面兩輪逐位元相同的證據、
   可複製的自我檢查指令、收工程序、給第三輪 Opus 的複驗重點）；`HANDOFF.md` 頂部與
   「一分鐘進入狀況」的 T-44／T-46 狀態同步，過期的「T-46 🔵 待審已完成」已標註。
