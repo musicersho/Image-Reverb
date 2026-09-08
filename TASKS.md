@@ -7801,6 +7801,32 @@ MINC/DMS 模型卡與陳設公式修正輪的評估併入 T-17-R2 前的 Fable �
   產品：🧪 **feature flag**（Opus 建議維持裁決 T-45-A 的結論——`pipeline.py` 預設 `role_aware=False`
   已由 Opus 實跑確認生效、`bathroom_tiled` 預設回 BLOCK，**本次退回不要求回滾 `src/` 改動**；
   正式裁決仍屬 Fable，WORKFLOW §3.2）｜MVP：不適用（沿用 T-17 首驗 FAIL，本卡不觸及 MVP gate）
+- **🔮 門檻 v2（Fable 2026-09-08，依 WORKFLOW §7；獨立 commit `criteria: T-46 v2 …`）**：
+  步驟 4 的 v1 文字「三軸 confidence／gate／六面材質與 `round11_remap_baseline` 逐值相同」對
+  geometry／overall／gate 三項**不可執行**（round11 的 `detail.json` 沒有這些欄位，Opus `37e07fe` 實測），
+  v1 該三項依 §7.5 標 **inconclusive（門檻不可執行）**、不得改為 PASS；v1 原文保留在下方步驟 4，不覆寫。
+  **v2 全文＝[`output/role_flag/CRITERIA_T46_v2.md`](output/role_flag/CRITERIA_T46_v2.md)（單一事實來源，執行者不得改一字）**，要點：
+  1. 預設路徑基線改為 **B0＝commit `23f2aba`（role_aware 尚未預設啟用的最後狀態；是 T-44 系列中間 commit，
+     不要寫 pre-T-44）的真實 CLI 實跑 `analysis.json`**，由程式在 `git worktree` 重建、產出程式生成的
+     `output/role_flag/baseline_23f2aba/BASELINE.md`（含 worktree HEAD 全長雜湊＋照片與 JSON sha256）；
+     B0 自證守門：其六面材質＋來源須等於 round11、`materials_confidence` 須等於 `EXPECTED_GATE` materials 欄，
+     不等＝🔴 停回 Fable。
+  2. 預設模式 13 張硬斷言 A1～A7：`role_aware=false`、geometry／materials／overall／gate／六面材質＋來源逐張＝B0、
+     `bathroom_tiled`／`bedroom_ai_generated` 與鐵則 12 五張預設全 BLOCK；任一不成立 exit 非 0 且不寫 REPORT。
+  3. `--role-aware` 模式：`role_aware=true`＋六面材質＋來源＝round17（B1／B2）；geometry／overall／gate 只報告不斷言（無可執行基線，T-47 量）。
+  4. `EXPECTED_GATE` geometry 欄**明文排除**於本卡斷言（`TunnelToHell` 在 `23f2aba` 也是 low → 表過期，交 T-47／裁決 T-47-A）；只以表 3 資訊性列出。
+  5. 送審結果一律 `--fresh` 從零跑；快取須帶指紋（HEAD＋六個 `src` 檔＋照片 sha256）；`--out-dir` 絕對路徑不得炸；docstring／訊息只宣稱程式真的斷言的事（阻擋項 2）。
+  6. 範圍新增允許 `BASELINE.md`；B0 建置寫在同一支 `t46_role_flag_baseline.py`，不另開腳本；`src/` 本修正輪零改動。
+  - **變更紀錄（§8 適用欄位，追加不刪改）**：
+    ```text
+    criteria_version: v1（96e7716，2026-09-03）→ v2（本 commit，2026-09-08）
+    criteria_commit: v1＝96e7716；v2＝本 commit（criteria: T-46 v2 …；早於任何 v2 結果）
+    criteria_locked_at: v1＝2026-09-03；v2＝2026-09-08
+    verdict_under_original_criteria: 工程退回（37e07fe）；步驟 4 三軸／gate 三項 inconclusive（門檻不可執行，§7.5）
+    verdict_under_current_criteria: 待執行者依 v2 重跑、Opus 複驗後填
+    criteria_changed_after_first_result: yes
+    change_record: 本 commit／理由＝v1 基線物件無 confidence／gate 欄位，字面不可執行／提案 Opus（37e07fe）、起草 Fable、核准 使用者（2026-09-08 指示）＋Opus 複驗核對
+    ```
 - **前置**：T-45 ✅
 - **目標**：把 T-44 的兩個懸案收掉——①Opus 退回的 REPORT §7 文件錯誤；②依裁決 T-45-A
   把 `role_aware` 從預設 True 改回預設 False，以 feature flag 保留研究路徑，並用程式證明
