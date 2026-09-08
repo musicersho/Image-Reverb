@@ -23,7 +23,7 @@
 - **gate 校準前提已變**（T-26／T-28／T-36-A）→ T-47 重量四樣證據後裁決 T-47-A。
 - [x] **T-45 審查制度修正 ✅（Fable 2026-09-03）**：WORKFLOW v2、CLAUDE/AGENTS 同步、
       12 卡回溯重標、新卡 T-46～T-48／T-44-R1／T-17-R2、HANDOFF/TODO/DEV_LOG/ROADMAP 同步。
-- [ ] **T-46 🟠 退回（Opus 驗證 2026-09-03；待 Fable 依 WORKFLOW §7 開門檻 v2 → Sonnet 重跑重送審）**
+- [ ] **T-46 🟠 退回（Opus 驗證 2026-09-03）→ 門檻 v2 已由 Fable 開立（`2be2453`，[CRITERIA_T46_v2.md](output/role_flag/CRITERIA_T46_v2.md)）→ 待 Sonnet 依 v2 §4 重跑重送審**
       — 原 Sonnet 自檢紀錄（2026-09-03）：REPORT_T44 §7 事實修正（含補一處未閉合
       括號）；`role_aware` 回 feature flag（`config.ROLE_AWARE_MATERIALS_DEFAULT=False`、
       `cli.py --role-aware`、`pipeline.py` 唯一呼叫點改讀參數＋`analysis.json` 加欄＋
@@ -38,7 +38,7 @@
       部分過期（`TunnelToHell`，T-37 之後未見更新）。詳見 TASKS.md T-46 卡交接筆記。
 - [ ] **T-42 → T-43**（下一張；產物可信度：交易式輸出、provenance）
 - [ ] **T-47** gate 校準複審量測（兩模式 ×四樣證據）→ 🔮 裁決 T-47-A
-- [ ] **T-48** T-11／T-12 判準 v2 針對性重驗（只量不改）
+- [ ] **T-48** T-11／T-12 判準 v2 針對性重驗（只量不改；裁決 T-48-S 2026-09-08：前置只有 T-46 ✅，可與 T-42／T-43 平行）
 - [ ] **T-44-R1**（等使用者：核准絕對下限選項 A／B、提供 ≥5 張 held-out 照片並逐面確認）
 - [ ] **T-17-R2** MVP 重新驗收（新盲測種子與編號、T-43 provenance、結果寫 `output/mvp_acceptance_r2/`）
 - [ ] 🔮 待裁決（本輪不開卡）：外部 bug 掃描 `IMAGE_REVERB_BUG_SCAN_AFTER_T39.md` 的 B-01

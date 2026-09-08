@@ -1,6 +1,8 @@
 # HANDOFF_PHASE_1.9R — Phase 1.9-R 階段交接（從 T-46 到 T-17-R2）
 
 > 建立者：Opus（驗證視窗，2026-09-07）｜基準：DEV_LOG `2026-09-07 (95)`、commit `a6a2dc5`
+> **2026-09-08 Fable 更新**：卡點 A 已解決（criteria v2＝`2be2453`，[CRITERIA_T46_v2.md](output/role_flag/CRITERIA_T46_v2.md)）；
+> §7 排程問題已裁決（裁決 T-48-S：T-48 可與 T-42／T-43 平行）。T-44 另於 2026-09-08 被 Opus 第三輪退回（見 DEV_LOG (97)）。
 > 適用範圍：**T-45 之後、回 Fable 收尾之前的全部 7 張卡**。
 > 單卡層級的交接另見：[HANDOFF_T44_FIX.md](HANDOFF_T44_FIX.md)（T-44 第二輪退回修正）。
 >
@@ -14,12 +16,12 @@
 | 卡 | 工程 | 實驗 | 產品 | MVP | 卡在誰身上 |
 |---|---|---|---|---|---|
 | T-45 審查制度修正 | ✅ 已執行 | — | — | — | 結案 |
-| **T-46** 收尾修正（§7＋feature flag） | 🟠 **退回** | 不適用 | 🧪 flag | 不適用 | **Fable（門檻 v2）→ Sonnet** |
+| **T-46** 收尾修正（§7＋feature flag） | 🟠 **退回** | 不適用 | 🧪 flag | 不適用 | ~~Fable（門檻 v2）~~ **v2 已開（`2be2453`）→ Sonnet 修正輪** |
 | **T-44** role-aware | 🟠 **退回**（第二輪） | 🟢 相對正向 | 🧪 暫停採用 | FAIL | **Sonnet**（見 HANDOFF_T44_FIX.md） |
 | T-42 gate 交易式輸出 | ⬜ 未開始 | — | — | — | 等 T-46 ✅ |
 | T-43 產物溯源 provenance | ⬜ 未開始 | — | — | — | 等 T-42 ✅ |
 | T-47 gate 校準複審量測 | ⬜ 未開始 | 待量測 | 待裁決 T-47-A | 不適用 | 等 T-46／T-42／T-43 ✅ |
-| T-48 T-11／T-12 判準 v2 重驗 | ⬜ 未開始 | 待量測 | 不適用 | 不適用 | 等 T-46 ✅ |
+| T-48 T-11／T-12 判準 v2 重驗 | ⬜ 未開始 | 待量測 | 不適用 | 不適用 | 等 T-46 ✅（裁決 T-48-S：**不必等 T-42／T-43**） |
 | T-44-R1 安全門檻重驗 | ⬜ 未開始 | 待驗證 | 待升級判定 | 不適用 | **使用者 ×2** ＋ 裁決 T-47-A |
 | T-17-R2 MVP 重新驗收 | ⬜ 未開始 | 不適用 | 不適用 | **待重驗** | 上面全部 |
 | T-04 素材來源 | 未結案 | — | — | — | **使用者**（9 張照片網址） |
@@ -52,6 +54,13 @@
 ## 3. 三個卡點（不解決就前進不了）
 
 ### 🔮 卡點 A（最急）：Fable 要開 **T-46 門檻 v2**，這件事不能由執行者自己做
+
+> ✅ **已解決（Fable 2026-09-08，commit `2be2453`）**：採**選項 1**，全文在
+> [output/role_flag/CRITERIA_T46_v2.md](output/role_flag/CRITERIA_T46_v2.md)。基線 B0＝`23f2aba`
+> （寫法照下方 ⚠️ 警告：「role_aware 尚未預設啟用的最後狀態」，不寫 pre-T-44），由程式在 worktree 重建並產出
+> `BASELINE.md`；預設模式 A1～A7 硬斷言；`--role-aware` 只斷言材質＋來源 vs round17；`EXPECTED_GATE` geometry 欄
+> 明文排除、交 T-47。卡點 C 的 docstring 修正已併入 v2 §2.5 第 4 條。**下一步：Sonnet 依 v2 §4 執行修正輪。**
+> 以下為原始問題描述，保留供追溯。
 
 **問題**：T-46 卡片步驟 4 寫死的驗收斷言**字面上不可能成立**——它要求
 「預設模式：**三軸 confidence／gate**／六面材質與 `round11_remap_baseline` 逐值相同」，
@@ -110,7 +119,7 @@ B1／B2 現在就可以請使用者處理，不必等 T-46——**這是目前�
 | 線 | 角色 | 做什麼 | 開工 Prompt |
 |---|---|---|---|
 | 1 | **Sonnet** | T-44 第二輪退回修正 | 「執行 TASKS.md 的 T-44 修正輪。先讀 CLAUDE.md，再**逐字照做 [HANDOFF_T44_FIX.md](HANDOFF_T44_FIX.md)**，最後照 WORKFLOW §4 收工（狀態寫四軸）。」 |
-| 2 | **Fable** | 開 T-46 門檻 v2 | 「你是規劃者。請讀 CLAUDE.md、WORKFLOW.md §7、TASKS.md 的 T-46 卡與其 Opus 退回全文，依 §7 為 T-46 開 criteria v2（獨立 commit `criteria: T-46 v2 …`，寫明理由與核准者），解決『三軸 confidence／gate 與 round11 逐值相同』字面不可能成立的問題。Opus 建議以 pre-T-44 commit `23f2aba` 實跑結果為基線。」 |
+| 2 | ~~Fable~~ → **Sonnet** | ~~開 T-46 門檻 v2~~ **已開（`2be2453`）→ T-46 修正輪** | 「執行 TASKS.md 的 T-46 修正輪。先讀 CLAUDE.md、T-46 卡的 Opus 退回全文與『🔮 門檻 v2』段，再**逐字照做 [output/role_flag/CRITERIA_T46_v2.md](output/role_flag/CRITERIA_T46_v2.md) §4**（不得改該檔一字），最後照 WORKFLOW §4 收工（狀態寫四軸）。」 |
 | 3 | **使用者** | B1 核准絕對下限、B2 準備 held-out 照片 | 見 §3 卡點 B |
 
 **T-46 門檻 v2 落地後**：Sonnet 依 v2 重跑 `t46_role_flag_baseline.py` ＋ 修 docstring →
@@ -149,9 +158,14 @@ Opus 複驗 → T-46 ✅ → 才輪到 T-42。
 | `HANDOFF.md`「接下來的固定順序」 | 寫「T-46 🔵 待審已完成」——**過期**，T-46 已退回 | 已在該檔頂部與「一分鐘進入狀況」標註；以本檔 §2 為準 |
 | `TASKS.md` T-42 卡「前置」 | 卡內同時有「前置：T-44 ✅」與上方裁決更新「前置改為 T-46 ✅」 | **以裁決 T-45-A 那行為準**（T-46 ✅）；原文保留不覆寫（§3.4） |
 | `TASKS.md` T-44 卡「四軸狀態」工程軸 | 仍寫「由 **T-46** 修並複驗」，與事實不符 | 修法已寫進 HANDOFF_T44_FIX.md §3 |
-| `EXPECTED_GATE` 凍結表 geometry 欄 | 疑似部分過期（`TunnelToHell` 實測 low、表列 medium） | 交 Fable 在 T-46 v2 或 T-47 一併處理（見 §3 卡點 A 末） |
+| `EXPECTED_GATE` 凍結表 geometry 欄 | 疑似部分過期（`TunnelToHell` 實測 low、表列 medium） | **已裁決**（criteria v2 §2.4）：不作 T-46 斷言，表不動；T-47 量測後由裁決 T-47-A 決定是否更新 |
 
 ## 7. 待 Fable 確認的一個排程問題（Opus 提出，不自行決定）
+
+> ✅ **已裁決（裁決 T-48-S，Fable 2026-09-08，寫進 TASKS.md T-48 卡與 T-42 卡）**：**不適用，T-48 可與 T-42／T-43 平行**。
+> 理由：T-47 量的正是 gate 輸出行為（T-42 會改），T-48 量的是幾何值／Sabine／IR T30（T-42／T-43 紅線不碰）。
+> 條件：T-48 自帶溯源（HEAD＋乾淨工作樹＋照片與 IR sha256，T-43 之後不回頭補章）；T-42 不得改 `--override-dims`
+> 導引語意、不得動幾何／聲學／合成模組；T-17-R2 前用 `git diff <T-48 result_commit>..HEAD --stat` 對量測路徑程式化判定要不要重跑。
 
 **T-48 可不可以在 T-42／T-43 之前跑？** T-48 卡的前置只寫「T-46 ✅」，
 但 T-47 的前置明確要求 T-42／T-43 ✅，理由是「量測產物要走交易式輸出與 provenance」。

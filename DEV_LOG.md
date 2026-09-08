@@ -1,5 +1,27 @@
 # Dev Log
 
+## 2026-09-08 (98)
+
+- **Fable 規劃視窗：T-46 門檻 v2 開立（WORKFLOW §7）＋排程裁決 T-48-S**。不動 `src/`／`scripts/`／`data/`／任何量測數字。
+- **criteria v2（獨立 commit `2be2453`，只含門檻不含結果，§7.2）**：全文
+  [output/role_flag/CRITERIA_T46_v2.md](output/role_flag/CRITERIA_T46_v2.md)。理由：v1 步驟 4「三軸 confidence／gate
+  與 round11 逐值相同」對 geometry／overall／gate 不可執行（round11 `detail.json` 無該欄位，Opus `37e07fe` 實測）；
+  依 §7.5 該三項標 inconclusive、不得改 PASS，v1 原文保留。v2：預設路徑基線 B0＝`23f2aba`（role_aware 尚未預設啟用的
+  最後狀態；**不是** pre-T-44，是 T-44 系列中間 commit）真實 CLI 實跑，由程式在 `git worktree` 重建、產出程式生成的
+  `BASELINE.md`（worktree HEAD 全長雜湊＋照片／JSON sha256）；B0 自證守門（材質＋來源＝round11、materials＝`EXPECTED_GATE`）；
+  預設模式 A1～A7 硬斷言逐張比 B0；`--role-aware` 只斷言材質＋來源 vs round17；`EXPECTED_GATE` geometry 欄明文排除
+  （`TunnelToHell` 在 `23f2aba` 也是 low → 表過期，交 T-47／裁決 T-47-A）；送審一律 `--fresh`、快取帶指紋、`--out-dir`
+  絕對路徑不得炸、docstring／訊息只宣稱程式真的斷言的事（Opus 阻擋項 2＋兩個非阻擋建議全部併入）。
+  提案 Opus（`37e07fe`）／起草 Fable／核准 使用者（2026-09-08 指示）＋Opus 複驗核對。T-46 卡加「🔮 門檻 v2」段與 §8 變更紀錄欄位。
+- **裁決 T-48-S（排程）**：回應 HANDOFF_PHASE_1.9R.md §7——**T-48 可與 T-42／T-43 平行**，前置維持 T-46 ✅ 單項。
+  理由：T-47 量的正是 gate 輸出行為（T-42 會改），T-48 量的是幾何值／Sabine／IR 聯合帶 T30（T-42 卡明文 gate 判定與
+  `preprocess_image()` 零改動、IR bytes MD5 前後相同）。條件寫進 T-48 卡：自帶溯源（HEAD＋`git status --porcelain -- src data scripts`
+  必須為空＋照片／IR sha256，T-43 之後不回頭補章）；T-42 卡追加紅線（不得改 `--override-dims` 導引語意、不得動
+  `geometry.py`／`acoustics.py`／`ir_synth.py`／`ir_metrics.py`／`GEOMETRY_SCOPE_MAX_M`，收工 grep 實跑）；T-17-R2 前用
+  `git diff <T-48 result_commit>..HEAD --stat` 對量測路徑程式化判定是否重跑。Phase 1.9-R 標頭「不得跳號」對 T-48 放寬。
+- **同步**：HANDOFF.md 頂部新段、HANDOFF_PHASE_1.9R.md §1／§3 卡點 A／§4／§6／§7 標註已解決、TODO.md T-46／T-48 兩行。
+- **下一步**：Sonnet 開 T-46 修正輪（Prompt 見 HANDOFF_PHASE_1.9R.md §4 第 2 線）；T-44 第三輪修正輪可平行。
+
 ## 2026-09-08 (97)
 
 - **T-44 Opus 第三輪複驗 → 🟠 仍退回（純文件，只需改三句）**。四軸：

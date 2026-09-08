@@ -1,5 +1,14 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔮 2026-09-08 Fable：T-46 門檻 v2 已開（`2be2453`）＋ 排程裁決 T-48-S
+>
+> - **T-46 現在可以開 Sonnet 修正輪**：逐字照做 [output/role_flag/CRITERIA_T46_v2.md](output/role_flag/CRITERIA_T46_v2.md) §4
+>   （基線 B0＝`23f2aba` 實跑、A1～A7 硬斷言、`--fresh`、快取指紋、docstring 只宣稱程式真的驗的事）。開工 Prompt 見
+>   [HANDOFF_PHASE_1.9R.md](HANDOFF_PHASE_1.9R.md) §4 第 2 線。
+> - **T-48 不必等 T-42／T-43**（裁決 T-48-S，條件在 TASKS.md T-48 卡）；T-47 仍要等。
+> - T-44 修正輪（第三輪退回，純文件三句）與 T-46 修正輪可平行、檔案不相交。
+> - 驗證本段是否過期：DEV_LOG 最上面應是 `2026-09-08 (98)`。
+
 > ## 🔴 2026-09-07 最新：現在該做的是「T-44 第二輪退回修正」
 >
 > **Sonnet 請直接讀 [HANDOFF_T44_FIX.md](HANDOFF_T44_FIX.md)（自足，含逐字替換文字、

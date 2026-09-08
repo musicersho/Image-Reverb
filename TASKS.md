@@ -7524,6 +7524,10 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
 
 - **狀態**：⬜ 未開始
 - **🔮 裁決 T-45-A 更新前置（2026-09-03）**：前置改為 **T-46 ✅（工程）**——T-44 停在 🟠 退回＋產品採用暫停，不再以「T-44 ✅」為前置；其餘內容不變。本卡在 Phase 1.9-R 順序中排 T-46 之後（見檔尾）。
+- **🔮 裁決 T-48-S 追加紅線（2026-09-08）**：T-48 可能在本卡之前或同期跑（見 T-48 卡）。本卡與 T-43 **不得**：
+  改 gate 訊息中「幾何不可信 → 用 `--override-dims` 手動指定房間尺寸」導引的語意（T-48 A-2 判準依賴；文案其他
+  部分照原卡改寫）；動 `geometry.py`／`acoustics.py`／`ir_synth.py`／`ir_metrics.py`／`config.GEOMETRY_SCOPE_MAX_M`。
+  自我檢查加一條：收工前 `grep -n "override-dims" src/image_reverb/pipeline.py` 實跑，導引仍在 gate 訊息內。
 - **前置**：T-44 ✅（治療輪主線先走完；2026-09-01 裁決 T-38B-A 把 T-44 插在
   T-39 之後，本卡前置隨之順延。例外條款見插卡裁決並經裁決 T-38B-A 延伸——
   T-39 **或 T-44** 因等使用者／卡關停滯期間可提前，檔案範圍不相交，
@@ -7701,6 +7705,11 @@ Fable 已逐項對照 git 歷史核實（見 T-45 卡「裁決 T-45-A」），�
 原 Phase 1.9「收尾複評」不再單獨舉行：治療效果總結併入 T-47 裁決（T-47-A）；
 MINC/DMS 模型卡與陳設公式修正輪的評估併入 T-17-R2 前的 Fable 複評。
 
+**🔮 排程裁決 T-48-S（Fable 2026-09-08）**：上一行「不得跳號」對 **T-48 放寬**——T-48 前置只有
+T-46 ✅，**可在 T-42／T-43 之前開跑、與其平行**（條件見 T-48 卡「裁決 T-48-S」）。關鍵路徑改為
+T-46 → {T-42 → T-43 → T-47｜T-48} → 裁決 T-47-A → T-44-R1 → T-17-R2；T-47 的前置（T-42／T-43 ✅）
+**不變**。
+
 **本輪共同鐵則**：Phase 1.9 共同鐵則 1～8 全部沿用（測試全 exit 0／六條交付 IR MD5
 ／`ir_metrics.py` 零 diff／凍結目錄／新測試診斷力／gate 規則零改動／臥室紅旗／
 基線變化表），另加：
@@ -7801,7 +7810,7 @@ MINC/DMS 模型卡與陳設公式修正輪的評估併入 T-17-R2 前的 Fable �
   產品：🧪 **feature flag**（Opus 建議維持裁決 T-45-A 的結論——`pipeline.py` 預設 `role_aware=False`
   已由 Opus 實跑確認生效、`bathroom_tiled` 預設回 BLOCK，**本次退回不要求回滾 `src/` 改動**；
   正式裁決仍屬 Fable，WORKFLOW §3.2）｜MVP：不適用（沿用 T-17 首驗 FAIL，本卡不觸及 MVP gate）
-- **🔮 門檻 v2（Fable 2026-09-08，依 WORKFLOW §7；獨立 commit `criteria: T-46 v2 …`）**：
+- **🔮 門檻 v2（Fable 2026-09-08，依 WORKFLOW §7；獨立 commit `2be2453` `criteria: T-46 v2 …`）**：
   步驟 4 的 v1 文字「三軸 confidence／gate／六面材質與 `round11_remap_baseline` 逐值相同」對
   geometry／overall／gate 三項**不可執行**（round11 的 `detail.json` 沒有這些欄位，Opus `37e07fe` 實測），
   v1 該三項依 §7.5 標 **inconclusive（門檻不可執行）**、不得改為 PASS；v1 原文保留在下方步驟 4，不覆寫。
@@ -7819,13 +7828,13 @@ MINC/DMS 模型卡與陳設公式修正輪的評估併入 T-17-R2 前的 Fable �
   6. 範圍新增允許 `BASELINE.md`；B0 建置寫在同一支 `t46_role_flag_baseline.py`，不另開腳本；`src/` 本修正輪零改動。
   - **變更紀錄（§8 適用欄位，追加不刪改）**：
     ```text
-    criteria_version: v1（96e7716，2026-09-03）→ v2（本 commit，2026-09-08）
-    criteria_commit: v1＝96e7716；v2＝本 commit（criteria: T-46 v2 …；早於任何 v2 結果）
+    criteria_version: v1（96e7716，2026-09-03）→ v2（2be2453，2026-09-08）
+    criteria_commit: v1＝96e7716；v2＝2be2453（criteria: T-46 v2 …；早於任何 v2 結果）
     criteria_locked_at: v1＝2026-09-03；v2＝2026-09-08
     verdict_under_original_criteria: 工程退回（37e07fe）；步驟 4 三軸／gate 三項 inconclusive（門檻不可執行，§7.5）
     verdict_under_current_criteria: 待執行者依 v2 重跑、Opus 複驗後填
     criteria_changed_after_first_result: yes
-    change_record: 本 commit／理由＝v1 基線物件無 confidence／gate 欄位，字面不可執行／提案 Opus（37e07fe）、起草 Fable、核准 使用者（2026-09-08 指示）＋Opus 複驗核對
+    change_record: 2be2453／理由＝v1 基線物件無 confidence／gate 欄位，字面不可執行／提案 Opus（37e07fe）、起草 Fable、核准 使用者（2026-09-08 指示）＋Opus 複驗核對
     ```
 - **前置**：T-45 ✅
 - **目標**：把 T-44 的兩個懸案收掉——①Opus 退回的 REPORT §7 文件錯誤；②依裁決 T-45-A
@@ -8037,6 +8046,28 @@ MINC/DMS 模型卡與陳設公式修正輪的評估併入 T-17-R2 前的 Fable �
 - **四軸狀態**：工程：未開始｜實驗：待量測（雙 verdict 的第二個）｜產品：不適用｜MVP：不適用
 - **前置**：T-46 ✅（預設路徑穩定）；可與 T-47 同期由不同視窗執行（檔案不相交），但一次只給
   一個視窗一張卡。
+- **🔮 裁決 T-48-S（排程，Fable 2026-09-08；回應 HANDOFF_PHASE_1.9R.md §7）**：**T-48 可在 T-42／T-43
+  之前開跑、與其平行**，前置維持「T-46 ✅（工程）」單項。
+  - **為什麼 T-47 要等 T-42／T-43 而 T-48 不用**：T-47 量的**正是 gate 的輸出行為**（BLOCK 時寫了什麼檔、
+    訊息是否屬實、被放行案例的產物），T-42 會改那個行為，先量後改＝白量。T-48 量的是幾何估計值／
+    `geometry_confidence`／Sabine 公式／IR 聯合帶 T30；T-42 只動 `run_photo()` 的輸出編排段與 gate 訊息字串
+    （卡片明文 gate 判定條件、`preprocess_image()` 本體零改動，且自我檢查要求「照片管線 IR bytes MD5 本卡前後相同」），
+    T-43 只加 `provenance` 欄位——兩者對 T-48 量的數值零影響。
+  - **條件（硬性，全部納入本卡自我檢查與 Opus 驗證重點）**：
+    (a) **自帶溯源代替 T-43**：A／B 兩份 REPORT 檔頭與 `output/geometry_r2/DATASET_MANIFEST.json` 由程式記
+        `git rev-parse HEAD`、`git status --porcelain -- src data scripts` **必須為空**（dirty＝不得送審）、
+        13 張照片 sha256、三條重生 IR 的 sha256。T-43 落地後**不得回頭補蓋章**（同 `d958b3c` MANIFEST 原則，
+        歷史標記誠實）。
+    (b) **A-2「gate 訊息含 `--override-dims` 導引」判定於當時 HEAD**；對應紅線寫進 T-42 卡（不得改該導引語意、
+        不得動 `geometry.py`／`acoustics.py`／`ir_synth.py`／`ir_metrics.py`／`config.GEOMETRY_SCOPE_MAX_M`）。
+    (c) **重跑規則（程式化判定，不靠人記）**：T-17-R2 開跑前執行
+        `git diff <T-48 result_commit>..HEAD --stat -- src/image_reverb/geometry.py src/image_reverb/acoustics.py src/image_reverb/ir_synth.py src/image_reverb/ir_metrics.py src/image_reverb/config.py data/`
+        ——有任何一行 → T-48 A／B 須在 HEAD 重跑（寫新子目錄，原結果唯讀）；只動 `cli.py`／`pipeline.py`／
+        `preprocess.py` 的輸出寫入層或 `provenance` → 不必重跑，T-17-R2 REPORT 記「T-48 verdict 量於 <commit>，
+        其後 diff 未觸及量測路徑（附上述指令輸出為空）」。
+    (d) 「一次只給一個視窗一張卡」不變；T-48 與 T-42 檔案不相交（T-48 `src/` 零改動、只寫 `output/geometry_r2/`
+        ／`output/material_r2/`＋回填 TASKS.md T-11／T-12 不可變欄位）；兩視窗若同時收工，TASKS.md 衝突由後收工者
+        rebase 解，不得覆寫對方卡片。
 - **性質**：本卡**只量不改**。判準 v2 已由 Fable 在本卡事前鎖定（criteria_commit＝本裁決
   commit，早於任何量測）；量到什麼寫什麼，未達＝如實記 FAIL，**不得再改 v2**。
 - **A 部分——T-11 域外出口無誤放（回填 T-11 `verdict_under_current_criteria` 的域外項）**：
