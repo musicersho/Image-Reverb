@@ -6611,9 +6611,22 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
      狀態欄／本節；`src/`／`scripts/`／`data/`／`rounds/` 零 diff（見
      `git diff --stat`）；`scripts/test_*.py` 全部 EXIT=0（實跑紀錄見
      DEV_LOG.md）。
+  5. 本輪（2026-09-08，第二輪退回修正）：`REPORT_T44.md` 第五節「同型近失」
+     末兩句改為限定範圍——只在候選集實際收窄的 floor／ceiling 角色裡（round17
+     剩 `bedroom_ai_generated.floor` 0.3394、`SteinmanHall.floor` 0.3309 兩個
+     fallback 面可比）成立「bedroom 是下一個最接近門檻的候選」，不能推論成
+     「全測試集最接近門檻」；並點名 wall 側依第七節 wall 表有 7 面比它更接近
+     0.4 門檻（最近 `SteinmanHall.north` 0.3941，僅差 0.0059），註明這 7 面
+     round11 與 round17 逐位元相同、屬本卡之前既有風險，非本卡造成。同步修正
+     「四軸狀態」行的工程軸：從「🟠 退回中…由 T-46 修並複驗」改為「待審」並補
+     修正沿革說明；`TODO.md` 對應條目同步為「🔵 待驗證」。範圍確認：`src/`／
+     `scripts/`／`data/`／`output/clip_treatment/rounds/` 零 diff；
+     `scripts/test_*.py` 19 支全部 EXIT=0（實跑紀錄見 DEV_LOG.md）。
 
 - **四軸狀態（裁決 T-45-A，2026-09-03；原「狀態」欄保留不改，語義見 WORKFLOW §3）**：
-  工程：**待複驗**（🟠 退回中：REPORT §7 敏感度摘要與表 7' 矛盾，純文件；由 **T-46** 修並複驗）｜實驗：🟢 **相對指標正向**（round17 對 round11：overall 30→32、floor 4→5、in-set 9→8）｜產品：🧪 **暫停採用**（裁決 T-45-A：三個相對門檻不含安全與絕對下限；`pipeline.py` 現行 `role_aware=True` 由 T-46 改回預設 `False`＋feature flag；重新驗證另開 **T-44-R1**）｜安全：**已知錯誤放行 1 件**（`bathroom_tiled` BLOCK→pass，floor 判 `carpet` 而 gt=`gypsum_board`，CLI exit 0 且真的輸出 WAV）＋**近失 1 件**（`bedroom_ai_generated.floor` top-1 信心 0.2436→0.3394，距門檻 0.06）｜MVP：**FAIL**（沿用 T-17 首驗）
+  工程：**待審**（第一輪阻擋項「REPORT §7 敏感度摘要與表 7' 矛盾」已於 `1121293`
+  修正並經 Opus 2026-09-07 逐位元複核確認；第二輪退回的 §5 措辭已於本輪修正，
+  待第三輪複驗。歷史沿革：原記「由 T-46 修並複驗」與事實不符，T-46 未處理此項且自身仍 🟠 退回）｜實驗：🟢 **相對指標正向**（round17 對 round11：overall 30→32、floor 4→5、in-set 9→8）｜產品：🧪 **暫停採用**（裁決 T-45-A：三個相對門檻不含安全與絕對下限；`pipeline.py` 現行 `role_aware=True` 由 T-46 改回預設 `False`＋feature flag；重新驗證另開 **T-44-R1**）｜安全：**已知錯誤放行 1 件**（`bathroom_tiled` BLOCK→pass，floor 判 `carpet` 而 gt=`gypsum_board`，CLI exit 0 且真的輸出 WAV）＋**近失 1 件**（`bedroom_ai_generated.floor` top-1 信心 0.2436→0.3394，距門檻 0.06）｜MVP：**FAIL**（沿用 T-17 首驗）
   - 卡片原文「產品採用門檻（分離，另判）」三條**保留為 v1 紀錄**；產品採用自 2026-09-03 起改依 WORKFLOW §5.4.3（含安全門檻），本卡 v1 的「三門檻達成」不覆寫、但不再構成採用依據。
 - **不可變欄位（裁決 T-45-A 建立；只能追加不得刪改）**：
   ```text

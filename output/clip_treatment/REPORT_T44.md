@@ -187,9 +187,19 @@ round11 完全相同，**未觸發**「從擋變放」（詳見下節），依�
 見共同鐵則 7），但 top-1 信心從 round11 的 `generic_wall` 0.2436 升到
 round17 的 `concrete` 0.3394（`round11_remap_baseline`／round17
 `detail.json` 逐位元核對），僅差 0.06 就會越過 0.4 門檻改用 clip 判定。
-這說明「候選集收窄→softmax 濃縮→信心膨脹」不是 `bathroom_tiled` 的孤例，
-而是本卡 13 張測試集裡**離門檻最近的那一張先中**：`bathroom_tiled`
-已經跨過門檻放行，`bedroom_ai_generated.floor` 是下一個最接近的候選。
+這說明「候選集收窄→softmax 濃縮→信心膨脹」不是 `bathroom_tiled` 的孤例。
+**但這句話必須限定範圍才誠實**：在**候選集實際被收窄**的角色（floor／ceiling）裡，
+round17 只剩 2 個 fallback 面可比（`bedroom_ai_generated.floor` 0.3394、
+`SteinmanHall.floor` 0.3309），`bathroom_tiled` 已跨過門檻放行，
+`bedroom_ai_generated.floor` 確實是這個範圍內下一個最接近門檻的候選。
+**不能推論成「全測試集裡最接近門檻的一面」**——依本報告第七節的 wall 表
+（0.35 → 7 面），wall 側有 7 面比它更接近 0.4，最近的 `SteinmanHall.north`
+只差 **0.0059**（0.3941），其次 `SteinmanHall.south` 0.3895、`stairwell_tiled`
+四面各 0.3784、`SteinmanHall.east` 0.3578。這 7 面**不是本卡造成的**：wall 的候選集
+在 round16 已完全還原成與全域相同的 12 條，實測 `round11_remap_baseline` 與 round17
+的 48 個 wall 面 face 物件**逐位元完全相同**，屬本卡之前就存在的既有風險。
+兩件事要分開講：本卡新增的膨脹風險集中在 floor／ceiling；而整個系統離 gate 門檻
+最近的一面其實只有 0.0059 的餘裕，這是 T-47 gate 校準複審應該一併看的既有議題。
 
 **本卡的立場**：三個產品採用門檻是卡片明文寫死、PLAN 跑之前就承諾的驗收
 標準，round17 三項都達成，依卡片規則本卡判定為**採用**；但這個殘留風險

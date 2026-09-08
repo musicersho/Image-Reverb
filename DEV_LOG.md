@@ -1,5 +1,37 @@
 # Dev Log
 
+## 2026-09-08 (96)
+
+- **T-44 第二輪退回修正（純文件，依 [HANDOFF_T44_FIX.md](HANDOFF_T44_FIX.md) 執行）**。
+  只動 `REPORT_T44.md`／`TASKS.md`／`TODO.md` 三檔，`src/`／`scripts/`／`data/`／
+  `output/clip_treatment/rounds/` 零 diff。
+- **改了什麼（阻擋項）**：`REPORT_T44.md` §5「同型近失」段落最後兩句，從「離門檻
+  最近的那一張先中：bathroom_tiled 已跨過門檻放行，bedroom_ai_generated.floor 是
+  下一個最接近的候選」改為限定範圍——只在候選集**實際被收窄**的 floor／ceiling
+  角色裡（round17 剩 `bedroom_ai_generated.floor` 0.3394、`SteinmanHall.floor`
+  0.3309 兩個 fallback 面可比）成立，不能推論成「全測試集最接近門檻」；並點名
+  wall 側依第七節 wall 表有 7 面比它更接近 0.4 門檻（`SteinmanHall.north` 0.3941，
+  僅差 0.0059；`SteinmanHall.south` 0.3895；`stairwell_tiled` 四面各 0.3784；
+  `SteinmanHall.east` 0.3578），並註明這 7 面 round11 與 round17 逐位元相同、
+  屬本卡之前既有風險、非本卡造成。第七節與交接筆記那兩處經第二輪確認正確，本輪未動。
+- **改了什麼（次要，四軸／TODO 一致性）**：`TASKS.md` 四軸狀態行的工程軸從
+  「待複驗（🟠 退回中：REPORT §7 敏感度摘要與表 7' 矛盾，純文件；由 T-46 修並
+  複驗）」改為「待審」，並補上修正沿革（§7 阻擋項已於 `1121293` 修正並經 Opus
+  2026-09-07 逐位元複核確認；第二輪退回的 §5 措辭已於本輪修正；原記「由 T-46
+  修並複驗」與事實不符，T-46 未處理此項且自身仍 🟠 退回）；「🔧 退回修正紀錄」
+  補第 5 點如實記錄本輪改動。`TODO.md` 對應條目工程軸改為「🔵 待驗證（第二輪
+  退回已修：§5 措辭限定範圍＋補記 wall 側最近面；四軸／TODO 一致性已修）」，
+  跟著四軸走（而非跟著「狀態」欄走）。實驗／產品／安全／MVP 四欄與兩份退回全文
+  （2026-09-02 第一輪、2026-09-07 第二輪）一字未動、原封保留。
+- **實跑檢查**：
+  - `git diff --stat -- src/ scripts/ data/ output/clip_treatment/rounds/` → 無輸出（零 diff）。
+  - `git status --porcelain` → 只有 `TASKS.md`／`TODO.md`／`output/clip_treatment/REPORT_T44.md`
+    三份（另有既有未追蹤的 `AGENTS.md`，未動）。
+  - `grep -n "離門檻最近的那一張先中\|下一個最接近的候選" output/clip_treatment/REPORT_T44.md` → 無輸出。
+  - `grep -n "由 \*\*T-46\*\* 修並複驗" TASKS.md` → 無輸出。
+  - `scripts/test_*.py` 19 支逐支實跑，全部 `EXIT=0`。
+- **下一步**：待第三輪 Opus 複驗；重點見 [HANDOFF_T44_FIX.md](HANDOFF_T44_FIX.md) §8。
+
 ## 2026-09-07 (95)
 
 - **T-44 Opus 第二輪複驗 → 🟠 退回**（四軸：工程 退回｜實驗 不適用（本輪未動實驗
