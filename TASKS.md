@@ -6413,7 +6413,127 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
     其比較基線＝`round11_remap_baseline`（因新候選未採用，該輪即最終狀態）。
 
 ### T-44 role-aware 材質候選子集（裁決 T-38B-A 執行卡；設計＋實驗卡）
-- **狀態**：🟠 退回（Opus 第二輪複驗，2026-09-07）
+- **狀態**：🟠 退回（Opus 第三輪複驗，2026-09-08）
+  ——**第二輪的阻擋項（§5 末句與 §7 wall 表矛盾）已確認修好、我逐面實測核對無誤；
+  但同一份 REPORT 仍有三處無限定的「逐位元相同」敘述，與本輪新增的 §5 段落
+  直接互相矛盾，且矛盾方向同樣是把風險講小（紅旗 #6 同型）。這三處第一輪就已
+  明文點名要在 REPORT 改，兩輪過去只改了 TASKS.md 的交接筆記、REPORT 沒改。
+  仍然只需改文字、不必重跑任何一輪、不必動任何程式碼。以下為第三輪退回理由；
+  第一、二輪退回全文原封保留在其下，不覆寫（WORKFLOW §7.3）。**
+
+  - **✅ 第二輪阻擋項已解除（我實跑逐面核對，非採信交接筆記）**：`REPORT_T44.md`
+    §5 新段落現在的四項事實我全部獨立重算相符——①「候選集實際被收窄的角色
+    （floor／ceiling）round17 只剩 2 個 fallback 面」：實測 round17 `method=="fallback"`
+    的面，floor 恰為 `bedroom_ai_generated.floor` 0.3394 與 `SteinmanHall.floor` 0.3309，
+    ceiling 0 面（另 3 面為 `out_of_domain`），bedroom 確實是該範圍內最接近門檻者；
+    ②`SteinmanHall.north` top-1 0.3941、距門檻 0.0059 ✔；③其次 south 0.3895、
+    `stairwell_tiled` 四面各 0.3784、east 0.3578 ✔；④「round11 與 round17 的 48 個
+    wall 面 face 物件逐位元完全相同」——我把兩輪 `detail.json` 的 48 個 wall face
+    物件序列化後逐一比對，**差異 0 筆**，且 `ROLE_MATERIAL_CANDIDATES["wall"]` 與
+    `CLIP_MATERIAL_PROMPTS` 的 12 條與**插入順序完全相同**（程式層保證）。
+    §7 的 floor／ceiling／wall 三張表與 `rounds/round17/tables.md` 表 7' 逐格相同，
+    我另從 27 筆 wall fallback 面的原始信心重算五檔門檻計數（27／22／20／7／0），
+    五檔全部吻合。§5 這一段本身沒有再和 §7 打架。
+
+  - **❌ 阻擋項（第三輪，紅旗 #6 同型）：`REPORT_T44.md` 有三處說
+    `bedroom_ai_generated`／其餘面「逐位元相同／不變」，與本報告 §5 自己新增的
+    「top-1 信心 0.2436→0.3394」直接矛盾，而且是同一份文件、其中兩處還在同一節。**
+    我逐位元核對 `round11_remap_baseline` 與 round17 的
+    `runs/bedroom_ai_generated/detail.json`：`surfaces`／`sources` 與五個非 floor 面
+    確實完全相同，但 `faces.floor` **不同**——`confidence` 0.2436→0.3394、
+    `top3` 由 `[generic_wall 0.2436, concrete 0.1659, wood_panel 0.1076]` 變成
+    `[concrete 0.3394, wood_panel 0.2202, marble 0.1343]`、`note` 內嵌數字亦變。
+    三處問題敘述（行號為現行 HEAD）：
+    - `REPORT_T44.md:142`（§4）「round17 逐位元核對 `bedroom_ai_generated`
+      **全部 6 面**與 round11 完全相同」→ 假，floor 那面不同。
+    - `REPORT_T44.md:178`（§5 首段）「`bedroom_ai_generated` … 在 round17
+      **逐位元核對後與 round11 完全相同**」→ 假，同上；而且同一節第 189 行
+      自己就寫「top-1 信心從 0.2436 升到 0.3394」，**節內自我矛盾**。
+    - `REPORT_T44.md:122`（§3 鐵則 8 表標題）「78 面裡有變動的 10 面，
+      **其餘 68 面逐位元不變**」→ 該表統計的是材質判定／來源的變動，
+      bedroom.floor 因材質與來源沒變而不在表內，但它的 `confidence`／`top3`
+      **有變**，所以「逐位元不變」這個字面宣稱不成立。
+    這不是純措辭：§5 是「必須誠實揭露的殘留風險」章節，而 `bedroom_ai_generated`
+    正是共同鐵則 7 明文點名的紅旗案例。寫成「逐位元完全相同」會讓收尾複評的
+    Fable（只讀 REPORT、不會翻 detail.json）以為 role-aware 對紅旗案例零擾動，
+    實際上它把該面的信心推高了 0.0958、只差 0.06 就會跨過門檻——方向同樣是
+    把風險講小，與第一、二輪退回是同一種病。
+    **另外：第一輪退回第 14 點已明文寫「下輪 REPORT 請改用『surfaces／sources／
+    gate 相同』而非『逐位元相同』」。**「🔧 退回修正紀錄」第 3 點只把這個修正
+    套用到 TASKS.md 的「交接筆記」，REPORT 本體沒改——修正紀錄本身沒有謊報
+    （它寫的就是「本卡交接筆記」），但第一輪明確要求的 REPORT 修正確實漏做了。
+    **要怎麼改（只改三句、不必重跑任何一輪、不准動程式碼與表格數字）**：
+    142／178 兩處把「逐位元相同／全部 6 面完全相同」改成
+    「`surfaces`／`sources`／`materials_confidence` gate 與 round11 相同（floor 那面的
+    `confidence`／`top3` 有變動，見本節『同型近失』）」；122 的表標題把
+    「其餘 68 面逐位元不變」改成「其餘 68 面的材質判定與來源不變（其中
+    `bedroom_ai_generated.floor` 的信心值有變動，見第五節）」。
+
+  - **⚠️ 次要（同一次編輯順手修，不單獨構成阻擋）：§5 的「wall 側有 7 面比它
+    更接近 0.4」低估了。** 「7」是 §7 wall 表「門檻 0.35 → 7 面」那一列，指的是
+    信心 ≥0.35 的面；但比 `bedroom_ai_generated.floor` 的 **0.3394** 更接近 0.4 的
+    wall fallback 面，實測是 **11 面**——除了已點名的 7 面，還有
+    `site_photo_restaurant` 四面各 0.3471（落在 0.3394 與 0.35 之間，所以不在
+    「≥0.35」那一列裡）。建議改成「wall 側有 11 面比它更接近 0.4（其中 7 面
+    ≥0.35，見第七節 wall 表；另 4 面為 `site_photo_restaurant` 各 0.3471）」。
+    **這個數字的來源是第二輪退回文字本身**（第二輪我方寫「有 7 面」並在括號裡
+    補了 `site_photo_restaurant.west` 0.3471），Sonnet 照抄不算造假，是我方前一輪
+    的數字要修正；方向仍是把風險講小，所以一併改掉。
+
+  - **⚠️ 次要（可改可不改，不構成阻擋）：四軸的「產品」軸有一句已過期。**
+    現行寫「`pipeline.py` 現行 `role_aware=True` 由 T-46 改回預設 `False`」，
+    但 HEAD 上 `config.py:144` 已是 `ROLE_AWARE_MATERIALS_DEFAULT = False`、
+    `pipeline.py:171` 讀該常數——T-46 的這一項已經落地（雖然 T-46 整卡仍 🟠 退回）。
+    建議改成「T-46 已於 `7686462` 落地 `ROLE_AWARE_MATERIALS_DEFAULT=False`＋
+    feature flag（T-46 本卡仍 🟠 退回，該項若隨 T-46 修正輪變動須回頭同步）」。
+    「狀態」欄與「四軸」欄本輪方向相反（狀態 🟠／四軸 待審）我不視為問題：
+    §7.3 要求舊 verdict 不覆寫，四軸才是 §7.9 的單一事實來源，`TODO.md` 也跟著
+    四軸走，這次同步正確。
+
+  - **✅ 其餘全部實測通過，退回後不必重做（本輪我重新獨立驗過，不是引用前兩輪）**：
+    1. **範圍**：`git diff --stat 4315e96..HEAD` 只有 `DEV_LOG.md`／`HANDOFF.md`／
+       `HANDOFF_PHASE_1.9R.md`／`HANDOFF_T44_FIX.md`／`TASKS.md`／`TODO.md`／
+       `REPORT_T44.md` 七檔；path-limited diff 對 `src/`／`scripts/`／`data/`／
+       `output/clip_treatment/rounds/` **零 diff**（本輪沒有偷改程式或原始輪次資料）。
+    2. **分區表沒有偷壓天花板**：我獨立對 `data/material_ground_truth.json` 的
+       **78 面**重算每個角色的 reachable 材質集合 → floor 需要
+       `{audience_seating, carpet, concrete, gypsum_board, marble, wood_panel}`＋
+       `rubber_flooring`、ceiling 需要 `{concrete, curtain_fabric, generic_wall,
+       gypsum_board}`＋`metal_roof_deck`／`vinyl_panel`／`unknown`、wall 9 種。
+       扣掉**不在 12 條提示詞宇宙內**的 `rubber_flooring`／`metal_roof_deck`／
+       `vinyl_panel`／`unknown`（本來就選不到，不是分區表排除的）後，
+       **「該角色 gt 出現過卻被分區表排除」＝0 項**；floor／ceiling 的候選集
+       與可達集合**恰好相等**，wall 是全域 12 種。
+    3. **沒有角色缺 OOD**：`surfaces.py:228` `all_prompts = {**material_prompts,
+       **CLIP_OOD_PROMPTS}` 無條件合併，收窄只作用在 `material_prompts`；
+       `CLIP_OOD_PROMPTS` 與 pre-T-44 的 `63c536c` **逐字元相同**。
+    4. **既有 12 條提示詞零 diff（無字串變體偷渡）**：我把 HEAD 與 `63c536c` 的
+       `CLIP_MATERIAL_PROMPTS` 整段取出比對，**完全相同、12 條、順序相同**。
+    5. **`role=None` 逐位元等價**：`role is None` 時 `material_prompts` 直接就是
+       `CLIP_MATERIAL_PROMPTS` 物件本身（`surfaces.py:224-227`），不是重建的副本；
+       `analyse_image()` 在 `role_aware=False` 時走的呼叫式**字面上不帶 `role`
+       關鍵字**（`surfaces.py:288-296` 的 if/else 兩支）。
+    6. **`compute_materials_confidence()` 零 diff**：我把 HEAD 與 `63c536c` 的
+       函式本體整段取出比對 → **完全相同**；`config.py`／`ir_metrics.py` 在
+       T-44 範圍 `63c536c..5520b83` 內零 diff（HEAD 上 `config.py` 的 diff 屬 T-46，
+       非本卡）。門檻 0.4 未動。
+    7. **輪次預算**：`output/clip_treatment/rounds/` 內屬本卡的只有
+       `round15_role_partition`／`round16`／`round17` ＝ 首輪＋2 輪，無第 18 輪。
+       `PLAN_T44.md` 由 `f22c2d1` **單檔單獨 commit**，早於程式與跑輪。
+    8. **基線用對**：`scripts/t44_role_eval.py:56`
+       `BASELINE_LABEL = "round11_remap_baseline"` 寫死；全檔未出現
+       `round0_baseline`／`round12`～`14` 作為基線（只在註解裡寫明「不是」）。
+    9. **測試**：`scripts/test_*.py` **19 支逐支實跑，全部 EXIT=0**
+       （含 `test_t44_role_partition.py` 與非本卡的 `test_t46_role_flag.py`）。
+    10. **否定結論沒被誤標**：本卡是正面結論、狀態走 🟠／🔵 而非 🔴 卡關，正確；
+        實驗軸相對指標正向的三項（32>30、5>4、8<9）與 §3 的 10 面變動表對帳
+        （3 修正 − 1 倒退 ＝ +2）一致。
+    11. **前兩輪退回全文保留未刪改**，符合 WORKFLOW §7.3。
+
+  ---
+
+  **（以下為 2026-09-07 第二輪 Opus 退回全文，原封保留）**
+  🟠 退回（Opus 第二輪複驗，2026-09-07）
   📄 **修正這一輪請讀 [HANDOFF_T44_FIX.md](HANDOFF_T44_FIX.md)**——自足交接文件，
   含逐字替換文字、Opus 已核對好的數據附錄、可複製的自我檢查指令。
   ——**第一輪退回的唯一阻擋項（REPORT
@@ -6624,9 +6744,10 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
      `scripts/test_*.py` 19 支全部 EXIT=0（實跑紀錄見 DEV_LOG.md）。
 
 - **四軸狀態（裁決 T-45-A，2026-09-03；原「狀態」欄保留不改，語義見 WORKFLOW §3）**：
-  工程：**待審**（第一輪阻擋項「REPORT §7 敏感度摘要與表 7' 矛盾」已於 `1121293`
+  工程：**退回**（第三輪，Opus 2026-09-08：REPORT §3／§4／§5 三處無限定的「逐位元相同」
+  與 §5 自己的「0.2436→0.3394」矛盾，紅旗 #6 同型，純文件、只改三句）。歷史沿革：第一輪阻擋項「REPORT §7 敏感度摘要與表 7' 矛盾」已於 `1121293`
   修正並經 Opus 2026-09-07 逐位元複核確認；第二輪退回的 §5 措辭已於本輪修正，
-  待第三輪複驗。歷史沿革：原記「由 T-46 修並複驗」與事實不符，T-46 未處理此項且自身仍 🟠 退回）｜實驗：🟢 **相對指標正向**（round17 對 round11：overall 30→32、floor 4→5、in-set 9→8）｜產品：🧪 **暫停採用**（裁決 T-45-A：三個相對門檻不含安全與絕對下限；`pipeline.py` 現行 `role_aware=True` 由 T-46 改回預設 `False`＋feature flag；重新驗證另開 **T-44-R1**）｜安全：**已知錯誤放行 1 件**（`bathroom_tiled` BLOCK→pass，floor 判 `carpet` 而 gt=`gypsum_board`，CLI exit 0 且真的輸出 WAV）＋**近失 1 件**（`bedroom_ai_generated.floor` top-1 信心 0.2436→0.3394，距門檻 0.06）｜MVP：**FAIL**（沿用 T-17 首驗）
+  第三輪複驗結果＝仍退回（見上）。另記：原記「由 T-46 修並複驗」與事實不符，T-46 未處理此項且自身仍 🟠 退回）｜實驗：🟢 **相對指標正向**（round17 對 round11：overall 30→32、floor 4→5、in-set 9→8）｜產品：🧪 **暫停採用**（裁決 T-45-A：三個相對門檻不含安全與絕對下限；`pipeline.py` 現行 `role_aware=True` 由 T-46 改回預設 `False`＋feature flag；重新驗證另開 **T-44-R1**）｜安全：**已知錯誤放行 1 件**（`bathroom_tiled` BLOCK→pass，floor 判 `carpet` 而 gt=`gypsum_board`，CLI exit 0 且真的輸出 WAV）＋**近失 1 件**（`bedroom_ai_generated.floor` top-1 信心 0.2436→0.3394，距門檻 0.06）｜MVP：**FAIL**（沿用 T-17 首驗）
   - 卡片原文「產品採用門檻（分離，另判）」三條**保留為 v1 紀錄**；產品採用自 2026-09-03 起改依 WORKFLOW §5.4.3（含安全門檻），本卡 v1 的「三門檻達成」不覆寫、但不再構成採用依據。
 - **不可變欄位（裁決 T-45-A 建立；只能追加不得刪改）**：
   ```text

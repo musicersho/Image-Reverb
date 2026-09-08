@@ -1,5 +1,39 @@
 # Dev Log
 
+## 2026-09-08 (97)
+
+- **T-44 Opus 第三輪複驗 → 🟠 仍退回（純文件，只需改三句）**。四軸：
+  工程：**退回**｜實驗：🟢 相對指標正向｜產品：🧪 暫停採用（沿用裁決 T-45-A）｜
+  MVP：**FAIL**（沿用 T-17 首驗）。
+- **第二輪阻擋項已解除**：`REPORT_T44.md` §5 新段落的四項事實我全部獨立重算相符
+  （floor／ceiling round17 只剩 2 個 fallback 面＝bedroom 0.3394／SteinmanHall.floor
+  0.3309；`SteinmanHall.north` 0.3941 距門檻 0.0059；48 個 wall face 物件 round11
+  vs round17 差異 0 筆；`ROLE_MATERIAL_CANDIDATES["wall"]` 與 `CLIP_MATERIAL_PROMPTS`
+  12 條同順序）。§7 三張表與 `round17/tables.md` 表 7' 逐格相同，我另從 27 筆 wall
+  fallback 面原始信心重算五檔門檻計數（27／22／20／7／0）全部吻合。
+- **新阻擋項（紅旗 #6 同型）**：`REPORT_T44.md` 三處無限定的「逐位元相同」與 §5
+  自己新增的「top-1 信心 0.2436→0.3394」直接矛盾——`REPORT_T44.md:142`（§4「全部
+  6 面完全相同」）、`:178`（§5 首段，與同節第 189 行自我矛盾）、`:122`（§3 表標題
+  「其餘 68 面逐位元不變」）。實測 bedroom.floor 的 `confidence`／`top3`／`note`
+  兩輪確實不同（`surfaces`／`sources`／gate 才相同）。方向同樣是把風險講小，且
+  第一輪退回第 14 點就已明文要求「下輪 REPORT 改用 surfaces／sources／gate 相同」，
+  兩輪只改了 TASKS.md 交接筆記、REPORT 沒改。
+- **次要（同一次編輯順手修）**：§5「wall 側有 7 面比它更接近 0.4」低估——實測是
+  **11 面**（多出 `site_photo_restaurant` 四面各 0.3471，落在 0.3394 與 0.35 之間）；
+  「7」是 §7 表「≥0.35」那一列，不等於「比 0.3394 更接近門檻」。此數字源自第二輪
+  退回文字本身，屬我方前一輪要修正的數字。四軸「產品」軸「`pipeline.py` 現行
+  `role_aware=True`」已過期（HEAD `config.py:144` 已是 `False`，T-46 `7686462` 落地）。
+- **其餘實測全通過**：分區表「該角色 gt 出現過卻被排除」＝0 項（78 面重算，扣掉不在
+  12 條宇宙內的 `rubber_flooring`／`metal_roof_deck`／`vinyl_panel`／`unknown`）；
+  三角色皆保留 4 個 OOD；`CLIP_MATERIAL_PROMPTS` 與 `compute_materials_confidence()`
+  對 `63c536c` **整段字元相同**；`role=None` 走不帶 `role` 關鍵字的呼叫式；輪次
+  15／16／17 共 3 輪未超預算；`BASELINE_LABEL="round11_remap_baseline"`；
+  `scripts/test_*.py` **19 支逐支實跑全部 EXIT=0**；本輪 path-limited diff 對
+  `src/`／`scripts/`／`data/`／`rounds/` 零 diff。
+- **下一步**：Sonnet 開修正輪，只改 `REPORT_T44.md` 三句＋§5 的「7 面→11 面」一句，
+  不准重跑任何一輪、不准動程式碼與表格數字；改完 commit
+  `docs: T-44 修正 REPORT 逐位元措辭（第三輪退回）`，狀態回 🔵 待驗證。
+
 ## 2026-09-08 (96)
 
 - **T-44 第二輪退回修正（純文件，依 [HANDOFF_T44_FIX.md](HANDOFF_T44_FIX.md) 執行）**。
