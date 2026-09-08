@@ -1,5 +1,25 @@
 # Dev Log
 
+## 2026-09-08 (99)
+
+- **Sonnet 執行視窗：T-46 依 criteria v2 修正輪（`output/role_flag/CRITERIA_T46_v2.md` §4 逐字執行，
+  該檔一字未改）**。只改 `scripts/t46_role_flag_baseline.py`；`src/` 零改動。
+- **腳本修正**：新增 B0 建置（`git worktree` 重建 commit `23f2aba` 的真實 CLI 結果＋自證守門＋程式產出
+  `BASELINE.md`）；移除 v1 的 `geometry_notes` 降級，改為 A2／A4／A5 對 B0 的硬斷言；快取指紋（主 repo
+  HEAD＋六個 `src` 檔 sha256＋照片 sha256）；`--out-dir` 絕對路徑不再炸 `ValueError`；docstring／訊息
+  只宣稱程式真的斷言的事。
+- **執行結果**（`--fresh`，13 張 B0＋13×2 兩模式＝39 次真實 CLI）：B0 自證守門 13/13、預設模式
+  A1～A7 13/13、`--role-aware` 模式 B1／B2 13/13 全部成立；表 1 三項比對（與 B0／round11／round17）
+  **13/13 全綠燈**；`bathroom_tiled`／`bedroom_ai_generated` 與鐵則 12 五張已知錯誤案例預設全部
+  `BLOCK`；`bathroom_tiled` 僅在 `--role-aware` 模式 `BLOCK→pass`（T-44 已知放行，處置屬 T-44-R1）。
+- **自我檢查**：19 支 `scripts/test_*.py` 全 `EXIT=0`；六條交付 IR MD5 全中（T-14 內建、T-20／T-21
+  手動重生比對相符）；`git diff -- src/` 空；`git worktree` 用畢即刪、無殘留。
+- **中途發現並修正兩處與 v2 文字不完全吻合**（各重跑一次 `--fresh` 才送審，未以「差不多」版本結案）：
+  REPORT 對 `CRITERIA_T46_v2.md` 的相對連結多退了兩層；表 1 漏了 v2 §2.5.5 明文要求的「與 round11
+  相符」第三欄，同時補上 §2.5.1 要求的 REPORT 檔頭欄位。
+- **狀態**：T-46 四軸「工程：🔵 待審（依 criteria v2）」，交 Opus 複驗（依 v2 §5 六點）。
+- **下一步**：Opus 複驗 T-46；通過後 T-42 前置滿足可開；T-44 修正輪（另一視窗）可平行進行。
+
 ## 2026-09-08 (98)
 
 - **Fable 規劃視窗：T-46 門檻 v2 開立（WORKFLOW §7）＋排程裁決 T-48-S**。不動 `src/`／`scripts/`／`data/`／任何量測數字。

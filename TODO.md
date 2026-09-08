@@ -23,7 +23,14 @@
 - **gate 校準前提已變**（T-26／T-28／T-36-A）→ T-47 重量四樣證據後裁決 T-47-A。
 - [x] **T-45 審查制度修正 ✅（Fable 2026-09-03）**：WORKFLOW v2、CLAUDE/AGENTS 同步、
       12 卡回溯重標、新卡 T-46～T-48／T-44-R1／T-17-R2、HANDOFF/TODO/DEV_LOG/ROADMAP 同步。
-- [ ] **T-46 🟠 退回（Opus 驗證 2026-09-03）→ 門檻 v2 已由 Fable 開立（`2be2453`，[CRITERIA_T46_v2.md](output/role_flag/CRITERIA_T46_v2.md)）→ 待 Sonnet 依 v2 §4 重跑重送審**
+- [ ] **T-46 🔵 待審（依 criteria v2，Sonnet 2026-09-08 已重跑完成）→ 交 Opus 複驗**
+      — v2 修正輪（2026-09-08）：`t46_role_flag_baseline.py` 新增 B0 建置（`git worktree` 重建
+      commit `23f2aba` 真實 CLI 結果＋自證守門＋程式產出 `BASELINE.md`）、移除 v1 的
+      `geometry_notes` 降級改為 A2／A4／A5 硬斷言、快取指紋、`--out-dir` 絕對路徑修正、
+      docstring／訊息只宣稱真的斷言的事；`--fresh` 全新跑（39 次真實 CLI）：B0 自證守門
+      13/13、A1～A7／B1～B2 13/13 全成立、表 1 三項比對（與 B0／round11／round17）13/13
+      全綠燈；19 支測試 exit 0、六條交付 IR MD5 全中、`src/` 零 diff。詳見 TASKS.md T-46
+      卡「交接筆記（v2 修正輪）」。
       — 原 Sonnet 自檢紀錄（2026-09-03）：REPORT_T44 §7 事實修正（含補一處未閉合
       括號）；`role_aware` 回 feature flag（`config.ROLE_AWARE_MATERIALS_DEFAULT=False`、
       `cli.py --role-aware`、`pipeline.py` 唯一呼叫點改讀參數＋`analysis.json` 加欄＋
@@ -330,9 +337,10 @@
       **🔮 裁決 T-45-A（Fable 2026-09-03）**：`bathroom_tiled` gate flip 判定為已知
       錯誤放行（安全缺口），產品採用暫停，T-44 REPORT §7 退回修正；順序改
       T-46 → T-42 → T-43 → T-47 → T-48 → T-44-R1 → T-17-R2（見上方⛔區塊）。
-      **T-46 🔵 待審（2026-09-03）已完成**：REPORT §7 修正＋`role_aware` 回
-      feature flag（預設 False）＋13 張基線程式化證明回到 round11；下一步：
-      T-42。
+      **T-46 過期記錄（下段已被取代，勿信）**：~~🔵 待審（2026-09-03）已完成：REPORT §7 修正＋
+      `role_aware` 回 feature flag（預設 False）＋13 張基線程式化證明回到 round11；下一步 T-42。~~
+      該筆在 `37e07fe` 被 Opus 退回（v1 步驟 4 門檻對 geometry／overall／gate 不可執行）；
+      Fable 開 criteria v2（`2be2453`）後 Sonnet 已重跑（2026-09-08），現況見上方第 26 行。
 - [ ] **🔮 Phase 1.9 插卡（Fable 規劃 2026-08-31）：產物可信度修正輪
       T-40～T-43（卡片與裁決全文在 TASKS.md「Phase 1.9 插卡」節）**——
       外部掃描五項缺陷逐項對碼核實屬實後插卡：**T-40**（評測快取指紋與

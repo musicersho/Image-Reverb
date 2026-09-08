@@ -7806,7 +7806,9 @@ T-46 → {T-42 → T-43 → T-47｜T-48} → 裁決 T-47-A → T-44-R1 → T-17-
   - **✅ 以下全部由 Opus 實測通過，退回後不必重做**（詳見下方「Opus 驗證紀錄」）：REPORT §7 三段
     修正與表 7' 逐值相符且表 7' 一個數字未動、feature flag 接線、19 支測試、新測試對舊碼的診斷力、
     六條交付 IR MD5、凍結基線、13 張兩模式數值結論、腳本從零重跑逐字可重現。
-- **四軸狀態**：工程：**退回**（阻擋項 1／2，見上）｜實驗：不適用（本卡不是實驗卡，不新增假設）｜
+- **四軸狀態**：工程：🔵 **待審（依 criteria v2，Sonnet 2026-09-08 重跑完成，見下方新交接筆記）**
+  （原阻擋項 1／2 已依 v2 修正：阻擋項 1 用 B0＝`23f2aba` 取代不可執行的 round11 基線；阻擋項 2 已改
+  docstring／訊息只宣稱程式真的斷言的事；待 Opus 複驗定案）｜實驗：不適用（本卡不是實驗卡，不新增假設）｜
   產品：🧪 **feature flag**（Opus 建議維持裁決 T-45-A 的結論——`pipeline.py` 預設 `role_aware=False`
   已由 Opus 實跑確認生效、`bathroom_tiled` 預設回 BLOCK，**本次退回不要求回滾 `src/` 改動**；
   正式裁決仍屬 Fable，WORKFLOW §3.2）｜MVP：不適用（沿用 T-17 首驗 FAIL，本卡不觸及 MVP gate）
@@ -7832,7 +7834,9 @@ T-46 → {T-42 → T-43 → T-47｜T-48} → 裁決 T-47-A → T-44-R1 → T-17-
     criteria_commit: v1＝96e7716；v2＝2be2453（criteria: T-46 v2 …；早於任何 v2 結果）
     criteria_locked_at: v1＝2026-09-03；v2＝2026-09-08
     verdict_under_original_criteria: 工程退回（37e07fe）；步驟 4 三軸／gate 三項 inconclusive（門檻不可執行，§7.5）
-    verdict_under_current_criteria: 待執行者依 v2 重跑、Opus 複驗後填
+    verdict_under_current_criteria: 工程：Sonnet 已依 v2 全部重跑（--fresh，39 次真實 CLI），B0 自證守門、
+      A1～A7、B1～B2 共 13 張全數成立，13/13 三項比對（與 B0／與 round11／與 round17）皆相符；
+      待 Opus 複驗定案（見 2026-09-08「交接筆記（v2 修正輪）」）
     criteria_changed_after_first_result: yes
     change_record: 2be2453／理由＝v1 基線物件無 confidence／gate 欄位，字面不可執行／提案 Opus（37e07fe）、起草 Fable、核准 使用者（2026-09-08 指示）＋Opus 複驗核對
     ```
@@ -8010,6 +8014,70 @@ T-46 → {T-42 → T-43 → T-47｜T-48} → 裁決 T-47-A → T-44-R1 → T-17-
   12. **下一張的前置**：T-42／T-47／T-48／T-44-R1 都寫「前置 T-46 ✅」，本卡目前 🟠 →
       **T-42 尚不可開**（HANDOFF.md 目前寫「T-42 ⬜ 下一張（前置 T-46 已完成）」，與本判定不一致，
       請在下一次收工時同步，WORKFLOW §7.9：以 TASKS.md 四軸為單一事實來源）。
+
+- **交接筆記（v2 修正輪，Sonnet，2026-09-08；依 [`CRITERIA_T46_v2.md`](output/role_flag/CRITERIA_T46_v2.md) §4 逐字執行，該檔一字未改）**：
+  1. **改了哪些檔案**：只改 `scripts/t46_role_flag_baseline.py`（本修正輪允許範圍內）；`src/` **零改動**。
+     產出（程式生成）：`output/role_flag/{REPORT.md,tables.md}`（重生，覆蓋 v1 版本）、新增
+     `output/role_flag/baseline_23f2aba/{BASELINE.md,runs/<name>__b0/}`（v2 §3 新增允許範圍）。
+  2. **腳本改了什麼（對照 v2 §4 步驟 2～4）**：
+     - 新增 `build_baseline_b0()`：`git worktree add --detach <tmp> 23f2aba` 重建 B0，13 張真實 CLI（照片
+       用主 repo絕對路徑），worktree HEAD 比對 `git rev-parse 23f2aba` 全長雜湊相符才繼續；跑完
+       `git worktree remove` 清掉暫存目錄；B0 自證守門（六面材質＋來源＝round11、`materials_confidence`
+       ＝`EXPECTED_GATE` materials 欄）不成立就直接 exit 1、不寫任何產物。
+     - 新增 `write_baseline_md()`：程式產生 `BASELINE.md`（13 張表格＋manifest：worktree HEAD、主 repo HEAD、
+       產生時間、逐張照片與 `analysis.json` sha256）。
+     - **移除**v1 的 `geometry_notes` 降級邏輯，改為 A2（geometry）／A4（overall）／A5（gate）對 B0 的
+       硬斷言；`--role-aware` 模式的 geometry／overall／gate 維持只報告不斷言（B3），表 3 只留 v2 §2.4
+       允許的兩類資訊性觀察（`site_photo_department_store` 兩模式 geometry 不同、`TunnelToHell` vs
+       `EXPECTED_GATE` 不同）。
+     - 快取指紋（§2.5.2）：`run_cli()` 快取寫在 `<run 目錄>/.fingerprint.json`，內容含照片 sha256＋主 repo
+       HEAD＋`{cli,config,pipeline,surfaces,geometry,preprocess}.py` 逐檔 sha256；B0 的快取指紋只需照片
+       sha256（該 commit 程式碼固定）。指紋不符即視為快取失效、忽略既有輸出重新真跑。
+     - `--out-dir` 給 repo 外絕對路徑（§2.5.3）：新增 `_display_path()`，`relative_to()` 炸 `ValueError`
+       時退回印絕對路徑，不再 crash。
+     - docstring／`mismatches` 訊息（§2.5.4）：全文重寫，不再出現「三軸 confidence／gate 與 round11
+       逐值相同」「geometry 完全不受 role_aware 影響」；每個 `!=` 訊息都寫明是對 B0／round11／round17／
+       `EXPECTED_GATE` 哪一個基線。
+     - REPORT／表 1（§2.5.1／§2.5.5）：REPORT 檔頭加表格記錄主 repo HEAD、B0 commit 全長、
+       `criteria_version: v2`、criteria commit（`git log` 查得，不手抄）、是否 `--fresh`；表 1 補齊
+       「與 B0 相符」「與 round11 相符」「與 round17 相符」三欄（v1/第一次修正版本只有兩欄，中途發現
+       v2 §2.5.5 明文要求三欄，已補上重跑）。
+  3. **執行結果**（`python scripts/t46_role_flag_baseline.py --out-dir output/role_flag/ --fresh`，
+     13 張 B0＋13×2 兩模式＝39 次真實 CLI，單張 13.2–33.8 秒）：
+     - B0 自證守門：13/13 通過（六面材質＋來源＝round11、`materials_confidence`＝`EXPECTED_GATE`，全數相符）；
+     - 預設模式 A1～A7：13/13 全部成立（`role_aware=false`；geometry／materials／overall／gate／六面材質＋
+       來源逐張＝B0；`bathroom_tiled`／`bedroom_ai_generated`／鐵則 12 五張已知錯誤案例預設全部 `BLOCK`）；
+     - `--role-aware` 模式 B1／B2：13/13 全部成立（`role_aware=true`；六面材質＋來源逐張＝round17）；
+     - 表 1 三項比對（與 B0／與 round11／與 round17）：**13/13 全綠燈**；
+     - 表 2：`bathroom_tiled` 在 `--role-aware` 模式仍 `BLOCK→pass`（T-44 已記錄的已知錯誤放行，僅存在旗標
+       路徑，處置屬 T-44-R1，本卡不處理）；其餘 4 張兩模式皆 `BLOCK`；
+     - `BASELINE.md` manifest：worktree `git rev-parse HEAD` = `23f2abada92aa9d46b1da0ac1ba2a7f1dc178872`
+       （＝`23f2aba` 全長雜湊，相符）；產生時主 repo HEAD = `c8f6be9b60fbb7030a27687436c4dd5fbe97c495`。
+  4. **自我檢查逐項結果**：
+     - 全部 19 支 `scripts/test_*.py`（含 `test_t46_role_flag.py`）逐支實跑 `EXIT=0`；
+     - 六條交付 IR MD5 全中：T-14 兩條由 `test_ir_synth.py`【6】內建斷言（`f3a763be…`／`f24353b5…`，
+       隨鐵則 1 一起過）；T-20 兩條手動重生比對相符（`chk_bath`＝`2adbaa75eb698772a8c9aa693179ec47`、
+       `chk_church`＝`2dd19b6e6d351d713887636fe45cd67e`，比對後已刪除暫存輸出）；T-21 兩條手動重生比對
+       相符（`coupled_neighbor_voices`＝`9a94ffdf5d8295aee7889729c39c9cd8`、`coupled_stadium_corridor`＝
+       `a1c21bcc3fd9aa3480df203a89c8cd05`，屬 `output/`，`.gitignore` 已排除不進版控）；
+     - `git diff --stat -- src/` 輸出 0 行（本修正輪對 `src/` 零改動，符合 v2 §3）；
+     - `git worktree list` 只剩主 repo，暫存 `git worktree` 用畢即 `remove`，無殘留；
+     - `git status --porcelain` 只有 `scripts/t46_role_flag_baseline.py`（改）、
+       `output/role_flag/{REPORT.md,tables.md}`（改，程式重生）、`output/role_flag/baseline_23f2aba/`
+       （新增）、既有未追蹤的 `AGENTS.md`（本卡未觸碰）——範圍未外溢。
+  5. **踩到的坑（給下一位）**：跑完第一輪後才發現兩處與 v2 文字不完全吻合，各重跑一次修正，
+     供之後類似「依文件逐字執行」的任務參考——**不是「差不多就好」，是文件明寫的字面要求**：
+     - REPORT 連結一開始寫成 `../../output/role_flag/CRITERIA_T46_v2.md`（從 `output/role_flag/REPORT.md`
+       起算多退了兩層，連結會指到 repo 外），改成同目錄相對路徑 `CRITERIA_T46_v2.md`；
+     - 表 1 一開始只做了「與 B0 相符」「與 round17 相符」兩欄，漏了 v2 §2.5.5 明文要求的「與 round11
+       相符」第三欄（B0 雖然已在 §2.1 自證守門對過 round11，但卡片要求表格本身要再顯式列一次）；
+       也順便在 REPORT 補了 §2.5.1 要求但一開始漏掉的檔頭欄位（主 repo HEAD／B0 commit／
+       criteria_version／criteria_commit／是否 `--fresh`）。兩處都在 commit 前發現並修正、重新
+       `--fresh` 全跑一次，未曾以「差不多」的版本送審。
+  6. **下一步**：交 Opus 複驗（依 v2 §5 六點：核對 criteria commit 早於結果、自行重建 B0 逐字相同、
+     13×A1～A7／13×B1～B2／B4 全部成立、docstring 與實際斷言一致、五個紅旗、通過後 T-44 四軸依
+     v2 §5.6 改判）。複驗通過後：T-46 四軸工程改「已驗證」、T-44 四軸工程依原文改「已驗證（經 T-46
+     複驗）」；下一張是 T-42（前置已改 T-46 ✅）。
 
 ### T-47 gate 校準複審量測（量測卡；裁決 T-45-A 執行卡 2/5；`src/` 零改動）
 - **狀態**：⬜ 未開始
