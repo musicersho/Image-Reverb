@@ -10,7 +10,10 @@
 > DEV_LOG `2026-09-08 (99)`。下面 §1 表格與 §2～§4 提到「Sonnet 修正輪」處視為已完成，等 Opus
 > 複驗結果更新前，T-42／T-47／T-48／T-44-R1 仍暫掛在「等 Opus 確認 T-46 ✅」。
 > 適用範圍：**T-45 之後、回 Fable 收尾之前的全部 7 張卡**。
-> 單卡層級的交接另見：[HANDOFF_T44_FIX.md](HANDOFF_T44_FIX.md)（T-44 第二輪退回修正）。
+> 單卡層級的交接另見：[HANDOFF_T44_FIX.md](HANDOFF_T44_FIX.md)（T-44 第二輪退回修正）、
+> [HANDOFF_T46_VERIFY.md](HANDOFF_T46_VERIFY.md)（T-46 v2 修正輪複驗交接，Sonnet 2026-09-09
+> 建立，結果 commit `545ec5e`；含複驗清單、已核對資料、`analysis.json sha256` 不逐字相同的
+> 已知限制說明）。
 >
 > ⚠️ **本檔取代 [HANDOFF.md](HANDOFF.md)「接下來的固定順序」那一段**——該段寫
 > 「T-46 🔵 待審已完成」是**過期的**，T-46 在 `37e07fe` 已被退回。
@@ -22,7 +25,7 @@
 | 卡 | 工程 | 實驗 | 產品 | MVP | 卡在誰身上 |
 |---|---|---|---|---|---|
 | T-45 審查制度修正 | ✅ 已執行 | — | — | — | 結案 |
-| **T-46** 收尾修正（§7＋feature flag） | 🔵 **待審（依 v2，Sonnet 已重跑完成 2026-09-08）** | 不適用 | 🧪 flag | 不適用 | ~~Fable（門檻 v2）~~ ~~Sonnet（修正輪）~~ **Opus（複驗，依 v2 §5）** |
+| **T-46** 收尾修正（§7＋feature flag） | 🔵 **待審（依 v2，Sonnet 已重跑完成 2026-09-08）** | 不適用 | 🧪 flag | 不適用 | ~~Fable（門檻 v2）~~ ~~Sonnet（修正輪）~~ **Opus（複驗，見 [HANDOFF_T46_VERIFY.md](HANDOFF_T46_VERIFY.md)）** |
 | **T-44** role-aware | 🟠 **退回**（第二輪） | 🟢 相對正向 | 🧪 暫停採用 | FAIL | **Sonnet**（見 HANDOFF_T44_FIX.md） |
 | T-42 gate 交易式輸出 | ⬜ 未開始 | — | — | — | 等 T-46 ✅ |
 | T-43 產物溯源 provenance | ⬜ 未開始 | — | — | — | 等 T-42 ✅ |

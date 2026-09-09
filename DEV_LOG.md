@@ -1,5 +1,23 @@
 # Dev Log
 
+## 2026-09-09 (100)
+
+- **Sonnet 執行視窗：寫好 T-46 v2 修正輪的複驗交接文件**——
+  [HANDOFF_T46_VERIFY.md](HANDOFF_T46_VERIFY.md)（純文件，`src/`／腳本零改動）。
+- 內容：複驗清單逐條對照 [CRITERIA_T46_v2.md](output/role_flag/CRITERIA_T46_v2.md) §5 六點、
+  已核對好的六條交付 IR MD5／19 支測試資料、五個紅旗的查法、通過後的四軸連動（T-46／T-44）。
+- **一個必須先講清楚的已知限制（複驗前必讀）**：獨立真跑同一張照片兩次（`CathedralRoom`，
+  同一份未改動的 commit）逐欄位 diff，只有 `analysis.json.elapsed_s`（本次真跑耗時）不同，
+  其餘欄位（含連續浮點值 `dims_m`／`closed_loop.t30_measured_s`）逐位元完全相同。這代表
+  `BASELINE.md` manifest 裡「每份 analysis.json sha256」欄位**不會**在兩次 `--fresh` 重跑之間
+  逐字相同，即使結果完全正確——不是斷言失敗，criteria v2 的 A2～A6 比對的是離散欄位（腳本直接
+  讀 dict key），不受 `elapsed_s` 波動影響。已在 HANDOFF_T46_VERIFY.md §3 第 2 點詳細寫明判法，
+  避免 Opus 誤判成紅旗或做無謂的重試。
+- **狀態不變**：T-46 仍是「工程：🔵 待審（依 criteria v2）」，本次只是把複驗要看什麼、去哪裡看
+  寫成自足文件，不影響任何判定。
+- **下一步**：開 Opus 視窗，貼 HANDOFF.md 最上方的標準 Prompt，先讀 HANDOFF_T46_VERIFY.md
+  再依裡面清單複驗。
+
 ## 2026-09-08 (99)
 
 - **Sonnet 執行視窗：T-46 依 criteria v2 修正輪（`output/role_flag/CRITERIA_T46_v2.md` §4 逐字執行，

@@ -1,5 +1,20 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔵 2026-09-09 Sonnet：T-46 v2 複驗交接文件已寫好，開 Opus 視窗請先讀它
+>
+> **[HANDOFF_T46_VERIFY.md](HANDOFF_T46_VERIFY.md)** 是給 Opus 複驗 T-46 v2 修正輪
+> （結果 commit `545ec5e`）的自足交接文件：複驗清單逐條對照 criteria v2 §5、已核對好的
+> 六條 IR MD5／19 支測試資料、五個紅旗的查法，以及**一個必讀的重要澄清**——重跑後
+> `BASELINE.md` 裡「每份 analysis.json sha256」欄位不會逐字相同（`analysis.json` 內建
+> `elapsed_s` 計時欄位，每次真跑必然不同），不是斷言失敗，複驗時改看該 json 裡的離散欄位
+> 是否與 `BASELINE.md` 表格相符即可。**開 Opus 視窗請直接貼：**
+>
+> ```
+> 你是驗證者，只審查不修改程式碼。請先讀 HANDOFF_T46_VERIFY.md，再依裡面的複驗清單
+> 與 output/role_flag/CRITERIA_T46_v2.md §5 六點審查 T-46 v2 修正輪（結果 commit 545ec5e）。
+> 完成後把判定寫進 TASKS.md T-46 卡。
+> ```
+
 > ## 🔵 2026-09-08 Sonnet：T-46 v2 修正輪已完成，待 Opus 複驗
 >
 > **T-46 依 [CRITERIA_T46_v2.md](output/role_flag/CRITERIA_T46_v2.md) §4 重跑完成**：`--fresh`
