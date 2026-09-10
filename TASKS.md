@@ -7896,6 +7896,12 @@ T-46 → {T-42 → T-43 → T-47｜T-48} → 裁決 T-47-A → T-44-R1 → T-17-
   - [ ] 只有 T-17-R2 完整硬門檻全部達成時才顯示 `MVP PASS`
 
 ### T-46 T-44 收尾修正：REPORT §7 事實修正＋role-aware 回 feature flag（Sonnet 卡；裁決 T-45-A 執行卡 1/5）
+- **狀態（🔮 門檻 v3 已開，Fable 2026-09-10；不覆寫下方兩輪退回全文）**：
+  criteria v3＝[`output/role_flag/CRITERIA_T46_v3.md`](output/role_flag/CRITERIA_T46_v3.md)，
+  獨立 commit **`5807716`**（`criteria: T-46 v3 …`，只含該檔，早於任何 v3 結果）。
+  **四軸**：工程：🟡 **待 Sonnet 依 v3 §4 `--fresh` 重跑**（v1 `37e07fe`、v2 `6efa6ba` 兩個退回 verdict 永久保留，
+  v2 結果 `545ec5e` **不得依 v3 補判 PASS**，v3 §6）｜實驗：不適用｜產品：🧪 feature flag（維持裁決 T-45-A）｜
+  MVP：不適用（沿用 T-17 FAIL）。**下一步＝開 Sonnet 視窗跑 v3 修正輪**（Prompt 見 HANDOFF.md 頂部）。
 - **狀態（第二輪複驗，Opus 2026-09-10，依 criteria v2；不覆寫下方 `37e07fe` 第一輪退回全文）**：
   🟠 **退回**——**退回的原因不是執行者做錯**。criteria v2 的 13 項實質斷言（A1～A7、B1～B2、B4、
   表 3、五個紅旗、19 支測試、六條 IR MD5）我全部自己重跑並確認成立，**沒有發現任何造假、放寬、
@@ -7967,6 +7973,38 @@ T-46 → {T-42 → T-43 → T-47｜T-48} → 裁決 T-47-A → T-44-R1 → T-17-
   已由 Opus 兩輪實跑確認生效、`bathroom_tiled` 預設回 BLOCK（不加 `--force-low-confidence` 實跑 exit 3），
   **本次退回不要求回滾 `src/` 改動**；正式裁決仍屬 Fable，WORKFLOW §3.2）｜
   MVP：不適用（沿用 T-17 首驗 FAIL，本卡不觸及 MVP gate）
+- **🔮 門檻 v3（Fable 2026-09-10，依 WORKFLOW §7；獨立 commit `5807716` `criteria: T-46 v3 …`，只含該檔）**：
+  v2 §5.2「`BASELINE.md` 與已 commit 版本逐字相同」與同版 §2.1（該檔須含產生時間／產生當下主 repo HEAD／每份
+  `analysis.json` 原始 sha256）互相矛盾，Opus `6efa6ba` 依 §7.5 標 **inconclusive（門檻不可執行）**；v2 verdict 保留、不得改 PASS。
+  **v3 全文＝[`output/role_flag/CRITERIA_T46_v3.md`](output/role_flag/CRITERIA_T46_v3.md)（單一事實來源，執行者不得改一字；
+  v2 檔原樣保留，全文逐字附於 v3 附錄 B，v1 步驟 4 原文附於附錄 A）**，要點：
+  1. **canonical stable projection（§2.2.1）**：`analysis.stable.json`＝`analysis.json` 以固定清單移除 8 個鍵
+     （`elapsed_s`／`time_budget_s`／`elapsed_note`＋`input`／`output_dir`／`ir_mono.path`／`ir_stereo.path`／`wet_preview.path`；
+     後五個絕對路徑欄是 Fable 靜態掃描 39 份實檔另發現、Opus 提案未涵蓋——同機重跑看不出、換機器必炸）後
+     `json.dumps(sort_keys=True, ensure_ascii=False, indent=2)+"\n"` 正規化，`analysis_stable_sha256`＝該 bytes 的 sha256。
+     參考實作已用 13 張 B0 實檔驗證（對 `elapsed_s`／鍵序不敏感、對 `surfaces` 敏感）。
+  2. **`BASELINE.stable.md`（§2.2.2，進 git）＝§5.2 唯一硬比對物件**：表 S1 13×6 離散欄、B0 commit 全長、photo sha256、
+     `analysis_stable_sha256`；不得含任何 volatile 值。**`BASELINE.md`（§2.2.3）＝S 段逐字＋P 段 provenance**
+     （主 repo HEAD／產生時間／環境／原始 sha／`elapsed_s`）**只記錄不比對，不得據此判失敗或通過**。
+  3. **硬斷言不放寬（§2.2.4／§2.3～§2.5）**：geometry／materials／overall／gate／六面 surfaces＋sources 逐張＝B0、B0 commit、
+     照片 sha256、A1～A7／B1～B4／`EXPECTED_GATE` geometry 排除全部維持 v2 原文。
+  4. **產物寫到 `output/role_flag/v3/`**（§2.6）；v2 三份已 commit 產物原樣保留；腳本開跑守門 criteria commit 存在、
+     寫檔自檢、`test_t46_role_flag.py` 加投影單元測試；`src/` 零改動（`elapsed_s` 留著，比對時投影排除，不刪欄）。
+  5. **§2.7 分層判定表**：S1 同＋S2 同＝成立；S1 同、S2 異＝inconclusive（環境差異，附逐葉 diff 回 Fable）；
+     S1 異＝inconclusive（B0 不可重現，回 Fable）；B0 commit／照片 hash 異＝🔴 停。驗證者只能填其中一列。
+  6. **§6 舊結果處置**：v1（`7686462`）／v2（`545ec5e`）不得依 v3 補判 PASS，必須由 Sonnet 依 v3 §4 `--fresh` 重跑產生新結果 commit。
+  - **變更紀錄（追加，2026-09-10 Fable 開 v3；§8「只能追加、不得刪改」）**：
+    ```text
+    criteria_version: v1（96e7716，2026-09-03）→ v2（2be2453，2026-09-08）→ v3（5807716，2026-09-10）
+    criteria_commit: v3＝5807716（criteria: T-46 v3 …；只含 CRITERIA_T46_v3.md；早於任何 v3 結果）
+    criteria_locked_at: v3＝2026-09-10
+    verdict_under_original_criteria（v1）: 工程退回（37e07fe）；三項 inconclusive——永久保留
+    verdict_under_v2: 工程退回（6efa6ba）；§5.2 inconclusive（門檻不可執行）——永久保留，不得改 PASS
+    verdict_under_current_criteria（v3）: 尚無；須由 Sonnet 依 v3 §4 --fresh 重跑產生新結果 commit，Opus 依 v3 §5 複驗後填
+    criteria_changed_after_first_result: yes（v1→v2→v3）
+    change_record: 5807716／理由＝v2 §5.2 與 §2.1 同版自我矛盾（BASELINE.md 含 volatile 欄卻要求逐字相同）／
+      提案 Opus（6efa6ba 驗證紀錄第 8 點）、起草 Fable、核准 使用者（2026-09-10 指示，六項要求逐條落實於 v3 §1.3）
+    ```
 - **🔮 門檻 v2（Fable 2026-09-08，依 WORKFLOW §7；獨立 commit `2be2453` `criteria: T-46 v2 …`）**：
   步驟 4 的 v1 文字「三軸 confidence／gate／六面材質與 `round11_remap_baseline` 逐值相同」對
   geometry／overall／gate 三項**不可執行**（round11 的 `detail.json` 沒有這些欄位，Opus `37e07fe` 實測），

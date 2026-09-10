@@ -17,6 +17,12 @@
 > **卡點回到 Fable：要開 criteria v3**（提案見 TASKS.md T-46 卡「Opus 驗證紀錄（第二輪）」
 > 第 8 點）。`HANDOFF_T46_VERIFY.md` 的「建議判法」三項豁免**不是有效門檻**，不得據此放行。
 > T-42／T-47／T-48／T-44-R1 仍全數掛在「等 T-46 ✅」。
+> **2026-09-10 Fable 更新（本檔最新一筆，優先於上面三筆）**：**criteria v3 已開**——獨立 commit `5807716`
+> 只含 [CRITERIA_T46_v3.md](output/role_flag/CRITERIA_T46_v3.md)（提案 Opus、起草 Fable、核准 使用者）。
+> v3 把 §5.2 的比對物件改成 `BASELINE.stable.md`（canonical stable projection：固定清單排除 3 個計時欄＋5 個絕對
+> 路徑欄後正規化雜湊），主 repo HEAD／產生時間／原始 JSON sha 降為 provenance 只記錄不比對；硬斷言一項不放寬；
+> 產物寫 `output/role_flag/v3/`；**v1／v2 舊結果不得依 v3 補判 PASS，必須由 Sonnet 依 v3 §4 `--fresh` 重跑**。
+> 卡點從 Fable 移到 **Sonnet（v3 修正輪）**，Prompt 見 HANDOFF.md 頂部。
 > 適用範圍：**T-45 之後、回 Fable 收尾之前的全部 7 張卡**。
 > 單卡層級的交接另見：[HANDOFF_T44_FIX.md](HANDOFF_T44_FIX.md)（T-44 第二輪退回修正）、
 > [HANDOFF_T46_VERIFY.md](HANDOFF_T46_VERIFY.md)（T-46 v2 修正輪複驗交接，Sonnet 2026-09-09
@@ -33,7 +39,7 @@
 | 卡 | 工程 | 實驗 | 產品 | MVP | 卡在誰身上 |
 |---|---|---|---|---|---|
 | T-45 審查制度修正 | ✅ 已執行 | — | — | — | 結案 |
-| **T-46** 收尾修正（§7＋feature flag） | 🟠 **退回（Opus 第二輪複驗 2026-09-10：實質斷言 13/13 成立，門檻 v2 §5.2 自我矛盾、不可執行）** | 不適用 | 🧪 flag | 不適用 | ~~Fable（門檻 v2）~~ ~~Sonnet（修正輪）~~ ~~Opus（複驗）~~ **Fable（開 criteria v3）** |
+| **T-46** 收尾修正（§7＋feature flag） | 🟡 **criteria v3 已開（Fable 2026-09-10，`5807716`）→ 待 Sonnet 依 v3 §4 `--fresh` 重跑**（v1 `37e07fe`／v2 `6efa6ba` 兩個退回 verdict 永久保留） | 不適用 | 🧪 flag | 不適用 | ~~Fable（門檻 v2）~~ ~~Sonnet（修正輪）~~ ~~Opus（複驗）~~ ~~Fable（開 criteria v3）~~ **Sonnet（v3 修正輪，見 HANDOFF.md 頂部 Prompt）** |
 | **T-44** role-aware | 🟠 **退回**（第二輪） | 🟢 相對正向 | 🧪 暫停採用 | FAIL | **Sonnet**（見 HANDOFF_T44_FIX.md） |
 | T-42 gate 交易式輸出 | ⬜ 未開始 | — | — | — | 等 T-46 ✅ |
 | T-43 產物溯源 provenance | ⬜ 未開始 | — | — | — | 等 T-42 ✅ |

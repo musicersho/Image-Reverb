@@ -1,5 +1,33 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔮 2026-09-10 Fable：T-46 門檻 v3 已開（`5807716`）——**現在該做的是開 Sonnet 視窗跑 v3 修正輪**
+>
+> 依 WORKFLOW §7，Opus 提案（`6efa6ba` 驗證紀錄第 8 點）、Fable 起草、使用者核准，
+> 單獨 commit `5807716` 只含 [output/role_flag/CRITERIA_T46_v3.md](output/role_flag/CRITERIA_T46_v3.md)，
+> 早於任何 v3 結果。v2 檔原樣保留（全文逐字附於 v3 附錄 B）；v1／v2 兩個退回 verdict 永久保留，
+> **v2 結果 `545ec5e` 不得依 v3 補判 PASS**（v3 §6）。
+>
+> **v3 改了什麼**（細節以 v3 檔為準）：
+> - `analysis.stable.json`＝`analysis.json` 以固定清單移除 8 個鍵（`elapsed_s`／`time_budget_s`／`elapsed_note`
+>   ＋ `input`／`output_dir`／`ir_mono.path`／`ir_stereo.path`／`wet_preview.path`——後五個絕對路徑欄是 Fable
+>   掃描 39 份實檔另發現的，同機重跑看不出、換機器必炸）後 `sort_keys` 正規化；`analysis_stable_sha256`＝其 sha256。
+> - `BASELINE.stable.md`（進 git）＝§5.2 **唯一硬比對物件**（13×6 離散欄、B0 commit 全長、photo sha256、
+>   `analysis_stable_sha256`）；`BASELINE.md`＝同一段＋provenance 段（主 repo HEAD／時間／環境／原始 sha／`elapsed_s`）
+>   **只記錄不比對，驗證者不得據此判失敗、也不得據此判通過**。
+> - 硬斷言一項不放寬：geometry／materials／overall／gate／六面 surfaces＋sources 逐張＝B0、B0 commit、照片 hash、
+>   A1～A7／B1～B4 全維持 v2 原文。§2.7 分層判定表讓每種重跑結果都有唯一處置（成立／inconclusive 環境差異／
+>   inconclusive B0 不可重現／🔴 停）。
+> - 產物寫到 **`output/role_flag/v3/`**；v2 三份已 commit 產物與 `src/` **零改動**；腳本加開跑守門（criteria commit 必須存在）、
+>   寫檔自檢、`test_t46_role_flag.py` 加投影單元測試。
+>
+> **開 Sonnet 視窗貼這段**：
+> 「執行 TASKS.md 的 T-46 v3 修正輪。先讀 CLAUDE.md、T-46 卡『🔮 門檻 v3』段與兩輪退回全文，再**逐字照做
+> [output/role_flag/CRITERIA_T46_v3.md](output/role_flag/CRITERIA_T46_v3.md) §4**（不得改該檔一字、不得改 `src/`、
+> 不得動 v2 三份產物），最後照 WORKFLOW §4 收工（狀態寫四軸；結果 commit 不得與 criteria commit 同一筆）。」
+>
+> 之後 Opus 依 v3 §5 複驗（§2.7 只能填一列）。T-42／T-47／T-48／T-44-R1 仍掛在「等 T-46 ✅」。
+> `HANDOFF_T46_VERIFY.md` 先留著（v3 結案後可刪）。
+
 > ## 🟠 2026-09-10 Opus：T-46 第二輪複驗 **退回**——門檻自我矛盾，**不是執行者做錯**
 >
 > 我依 `output/role_flag/CRITERIA_T46_v2.md` §5 六點自己重跑：
@@ -414,8 +442,8 @@ T-21 ✅（四輪迭代）｜T-17 §7-4 ✅ 已執行（無鐵筒子 artifact；
 | T-39 | 候選材質集擴充 | ✅ 工程已驗證｜🔴 實驗負向｜🚫 不採用（Opus 2026-09-02） |
 | T-44 | role-aware 材質候選子集 | 🟠 工程退回（文件）｜🟢 相對正向｜🧪 產品採用暫停（裁決 T-45-A）｜安全缺口 1＋1 |
 | T-45 | 審查制度修正（Fable 卡） | ✅ 已執行（Fable 2026-09-03） |
-| T-46 | T-44 收尾：REPORT §7 修正＋role-aware 回 feature flag | 🔵 **待審（依 criteria v2，Sonnet 2026-09-08 已重跑，交 Opus 複驗）** |
-| T-42 | gate 交易式輸出與舊產物隔離（插卡 3/4） | ⬜ 未開始（前置 T-46 ✅ 待 Opus 複驗確認，尚不可開） |
+| T-46 | T-44 收尾：REPORT §7 修正＋role-aware 回 feature flag | 🟡 **criteria v3 已開（Fable 2026-09-10，`5807716`）→ 待 Sonnet 依 v3 §4 `--fresh` 重跑**（v1／v2 退回 verdict 保留） |
+| T-42 | gate 交易式輸出與舊產物隔離（插卡 3/4） | ⬜ 未開始（前置 T-46 ✅ 尚未滿足，尚不可開） |
 | T-43 | T-17 產物溯源（插卡 4/4） | ⬜ |
 | T-47 | gate 校準複審量測（量測卡） | ⬜ |
 | T-48 | T-11／T-12 判準 v2 針對性重驗（量測卡） | ⬜ |

@@ -1,5 +1,32 @@
 # Dev Log
 
+## 2026-09-10 (104)
+
+- **T-46 criteria v3 已開（Fable，依 WORKFLOW §7）**：獨立 commit `5807716`
+  `criteria: T-46 v3 …`，**只含** [`output/role_flag/CRITERIA_T46_v3.md`](output/role_flag/CRITERIA_T46_v3.md)，
+  早於任何 v3 結果。**提案者 Opus**（`6efa6ba` 驗證紀錄第 8 點）、**起草者 Fable**、**核准者 使用者**
+  （2026-09-10 指示，六項要求逐條落實於 v3 §1.3）。
+- **讀了什麼才動手**：Opus 第二輪 verdict（`6efa6ba`）、`CRITERIA_T46_v2.md`、`HANDOFF_T46_VERIFY.md`、
+  WORKFLOW §3／§7／§8、`t46_role_flag_baseline.py` 的 `write_baseline_md()`／`run_cli()`、
+  `pipeline.py:89 _elapsed_payload()`。確認 Opus 的判定成立：v2 §5.2「逐字相同」與 §2.1 三個 volatile 欄同版矛盾。
+- **v3 的核心定義**：`analysis.stable.json`＝`analysis.json` 以固定清單移除 8 個鍵後
+  `json.dumps(sort_keys=True, ensure_ascii=False, indent=2)+"\n"` 正規化，`analysis_stable_sha256`＝其 sha256；
+  `BASELINE.stable.md`（進 git）＝§5.2 唯一硬比對物件；`BASELINE.md`＝S 段逐字＋P 段 provenance 只記錄不比對。
+- **Fable 額外發現（Opus 提案未涵蓋）**：靜態掃描 39 份 `analysis.json` 全部葉節點，除 3 個計時欄外另有
+  **5 個絕對路徑欄**（`input`／`output_dir`／`ir_mono.path`／`ir_stereo.path`／`wet_preview.path`），同機重跑相同、
+  換機器必異；v3 一併排除，照片內容仍由 photo sha256 硬比對。參考實作已在 scratchpad 用 13 張 B0 實檔驗證：
+  投影不含路徑／耗時字串，對 `elapsed_s` 與鍵序不敏感，對 `surfaces` 變動敏感。
+- **不放寬的部分**：geometry／materials／overall／gate／六面 surfaces＋sources 逐張＝B0、B0 commit 全長、照片 sha256、
+  A1～A7／B1～B4／`EXPECTED_GATE` geometry 排除，全部維持 v2 原文。新增 §2.7 分層判定表（成立／inconclusive 環境差異／
+  inconclusive B0 不可重現／🔴 停），驗證者只能填一列，不得自創第四種。
+- **舊結果處置（使用者要求 5）**：v1（`7686462`）／v2（`545ec5e`）verdict 永久保留、**不得依 v3 補判 PASS**；
+  必須由 Sonnet 依 v3 §4 `--fresh` 重跑產生新結果 commit。`src/` 零改動、v2 三份已 commit 產物零改動，
+  v3 產物寫到 `output/role_flag/v3/`（`.gitignore` 已允許 `*.md` 進 git）。
+- **同步**：TASKS.md T-46 卡新增「狀態（🔮 門檻 v3 已開）」＋「🔮 門檻 v3」段＋§8 變更紀錄追加；TODO／HANDOFF／
+  HANDOFF_PHASE_1.9R 狀態改「🟡 待 Sonnet 依 v3 重跑」；HANDOFF.md 頂部附 Sonnet 標準 Prompt。
+- **四軸**：工程 🟡 待 Sonnet v3 重跑｜實驗 不適用｜產品 🧪 feature flag｜MVP 不適用（沿用 T-17 FAIL）。
+  T-44 不因本輪變動（`6c405a1` 已獨立驗證通過）。T-42／T-47／T-48／T-44-R1 仍掛「等 T-46 ✅」。
+
 ## 2026-09-10 (103)
 
 - **T-46 第二輪複驗（Opus，依 criteria v2）→ 🟠 退回，但不是執行者做錯**。自己跑

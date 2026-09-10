@@ -25,7 +25,13 @@
 - **gate 校準前提已變**（T-26／T-28／T-36-A）→ T-47 重量四樣證據後裁決 T-47-A。
 - [x] **T-45 審查制度修正 ✅（Fable 2026-09-03）**：WORKFLOW v2、CLAUDE/AGENTS 同步、
       12 卡回溯重標、新卡 T-46～T-48／T-44-R1／T-17-R2、HANDOFF/TODO/DEV_LOG/ROADMAP 同步。
-- [ ] **T-46 🟠 退回（Opus 第二輪複驗 2026-09-10，依 criteria v2）→ 交 Fable 開 criteria v3**
+- [ ] **T-46 🟡 criteria v3 已開（Fable 2026-09-10，`5807716`）→ 交 Sonnet 依 [CRITERIA_T46_v3.md](output/role_flag/CRITERIA_T46_v3.md) §4 `--fresh` 重跑**
+      — v3 核心：`analysis.stable.json`／`BASELINE.stable.md`（固定清單排除 `elapsed_s` 等 3 個計時欄＋5 個絕對路徑欄後
+      正規化雜湊）＝§5.2 唯一硬比對物件；主 repo HEAD／產生時間／原始 JSON sha 降為 provenance 只記錄不比對；
+      硬斷言（geometry／materials／overall／gate／surfaces／sources、B0 commit、照片 hash、A1～A7／B1～B4）一項不放寬；
+      產物寫 `output/role_flag/v3/`，v2 三份產物與 `src/` 零改動；**v1／v2 舊結果不得依 v3 補判 PASS**。
+      提案 Opus、起草 Fable、核准 使用者。
+      — 上一輪：**T-46 🟠 退回（Opus 第二輪複驗 2026-09-10，依 criteria v2）→ 交 Fable 開 criteria v3**
       — **不是執行者做錯**：criteria v2 的 13 項實質斷言 Opus 全部獨立重跑成立（`--fresh` 39 次
       真實 CLI、19 支測試 EXIT=0、四條 IR MD5 全中、五個紅旗全不成立、`tables.md` 逐字相同）。
       退回唯一原因＝**v2 §5.2「`BASELINE.md` 逐字相同」與同版 §2.1（要求該檔含產生時間／
