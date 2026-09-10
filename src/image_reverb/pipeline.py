@@ -13,9 +13,11 @@
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 import sys
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -101,6 +103,92 @@ def _make_out_dir(name: str) -> Path:
     out_dir = OUTPUT_ROOT / name
     out_dir.mkdir(parents=True, exist_ok=True)
     return out_dir
+
+
+# ------------------------------------------------------------
+# T-42：照片管線輸出交易化——archive-first 隔離舊產物＋staging 暫存＋
+# 成功才原子發布（插卡 3/4；只動 run_photo() 的輸出編排段，gate 判定條件
+# 一行不動）。`run_text()`／`run_scene()` 不受影響，仍用 `_make_out_dir()`。
+# ------------------------------------------------------------
+STAGING_ROOT = OUTPUT_ROOT / ".staging"
+ARCHIVE_ROOT = OUTPUT_ROOT / ".archive"
+
+
+def _clear_stale_staging(staging_root: Path) -> None:
+    """啟動時若偵測到上次中止殘留的 staging（同一 stem 上次執行沒跑完），
+    清掉並印 note——不清掉的話這次的 preprocess/final 子樹會跟殘留物混在一起。"""
+    if staging_root.exists():
+        shutil.rmtree(staging_root, ignore_errors=True)
+        print(f"  （偵測到上次中止殘留的 staging，已清除：{staging_root}）")
+
+
+def _archive_existing_outputs(stem: str) -> Path | None:
+    """archive-first（可回復）：開始 preprocess 之前，把既有
+    `output/preprocess/<stem>/` 與 `output/<stem>/` 移動（不刪除）到
+    `output/.archive/<stem>/<時間戳>/`。沒有舊檔就回傳 None，不建立空目錄。"""
+    existing_preprocess = OUTPUT_ROOT / "preprocess" / stem
+    existing_final = OUTPUT_ROOT / stem
+    if not existing_preprocess.exists() and not existing_final.exists():
+        return None
+    timestamp = datetime.now().strftime("%Y%m%dT%H%M%S%f")
+    archive_dir = ARCHIVE_ROOT / stem / timestamp
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    if existing_preprocess.exists():
+        existing_preprocess.rename(archive_dir / "preprocess")
+    if existing_final.exists():
+        existing_final.rename(archive_dir / "final")
+    return archive_dir
+
+
+def _archive_note(archive_dir: Path | None) -> str | None:
+    """gate 擋下／例外中止時要印的真話：舊輸出沒被刪，搬去哪裡、怎麼拿回來。"""
+    if archive_dir is None:
+        return None
+    return (
+        f"  本次執行前的舊輸出未遭刪除，已隔離備份至 {archive_dir}"
+        "（如需取回，把其中的 preprocess/／final/ 子目錄手動搬回 output/ 對應位置）。"
+    )
+
+
+def _rewrite_meta_json_paths(staging_stem_dir: Path, public_stem_dir: Path) -> None:
+    """`preprocess_image()` 本體不改（範圍紅線）：它寫 `meta.json` 時內嵌的
+    `cropped`／`views/*/path` 等路徑字串是呼叫當下傳入的 `output_dir`（本卡
+    傳的是 staging），發布後這些字串要改成正式位置，不能繼續指向即將消失的
+    staging。用字串前綴替換做發布前修正（`meta_path` 欄位本身尚未寫進檔案
+    內容，見 preprocess.py：先寫檔、後才把 `meta_path` 加進回傳的 dict）。
+    測試用樁掉的 `preprocess_image()` 不會真的寫檔，這裡安全略過（無 side effect）。
+    """
+    meta_path = staging_stem_dir / "meta.json"
+    if not meta_path.exists():
+        return
+    text = meta_path.read_text(encoding="utf-8")
+    text = text.replace(str(staging_stem_dir), str(public_stem_dir))
+    meta_path.write_text(text, encoding="utf-8")
+
+
+def _public_path(staging_path: Path, staging_final_dir: Path, public_out_dir: Path) -> str:
+    """生成期間檔案實體在 staging、`analysis.json` 記錄的字串要寫發布後的正式
+    位置——這裡只轉寫字串，不動檔案（讀寫仍用呼叫端手上的 staging Path）。"""
+    return str(public_out_dir / staging_path.relative_to(staging_final_dir))
+
+
+def _publish_staging(stem: str, staging_root: Path) -> None:
+    """成功才發布：把 staging 的 `preprocess/`／`final/` 兩個子樹分別原子
+    rename 到正式位置（同一檔案系統內 `Path.rename()`），發布完清掉 staging
+    外殼。子樹若不存在（例如測試樁掉 `preprocess_image()` 未真的寫檔）就跳過
+    ——不是這次執行寫出來的東西不需要發布。"""
+    staging_preprocess_stem_dir = staging_root / "preprocess" / stem
+    staging_final_dir = staging_root / "final"
+    public_preprocess_dir = OUTPUT_ROOT / "preprocess" / stem
+    public_final_dir = OUTPUT_ROOT / stem
+
+    if staging_preprocess_stem_dir.exists():
+        public_preprocess_dir.parent.mkdir(parents=True, exist_ok=True)
+        staging_preprocess_stem_dir.rename(public_preprocess_dir)
+    if staging_final_dir.exists():
+        public_final_dir.parent.mkdir(parents=True, exist_ok=True)
+        staging_final_dir.rename(public_final_dir)
+    shutil.rmtree(staging_root, ignore_errors=True)
 
 
 def _maybe_visualize(analysis: dict[str, Any], out_dir: Path, no_viz: bool) -> None:
@@ -190,11 +278,26 @@ def run_photo(
             print(f"錯誤：{e}", file=sys.stderr)
             return 2
 
+    # T-42：輸入驗證（上面兩個 return 2）已通過，才算「真正開始 preprocess」，
+    # 交易政策從這裡起生效——archive-first 隔離舊檔 → staging 暫存本次所有產物。
+    stem = photo_path.stem
+    staging_root = STAGING_ROOT / stem
+    _clear_stale_staging(staging_root)
+    archive_dir = _archive_existing_outputs(stem)
+    archive_note = _archive_note(archive_dir)
+    staging_preprocess_root = staging_root / "preprocess"
+    staging_final_dir = staging_root / "final"
+
     try:
-        summary = preprocess_image(photo_path)
+        summary = preprocess_image(photo_path, output_dir=staging_preprocess_root)
     except UnidentifiedImageError:
         print(f"錯誤：無法辨識為圖片檔 {photo_path}", file=sys.stderr)
+        if archive_note:
+            print(archive_note, file=sys.stderr)
+        shutil.rmtree(staging_root, ignore_errors=True)
         return 2
+
+    _rewrite_meta_json_paths(staging_preprocess_root / stem, OUTPUT_ROOT / "preprocess" / stem)
 
     print(f"=== 照片：{photo_path} ===")
     print(f"環景判定：{'是' if summary['is_equirect'] else '否'}")
@@ -267,9 +370,12 @@ def run_photo(
         if overall_confidence == "low":
             if not force_low_confidence:
                 print(
-                    "錯誤：overall confidence 為 low，已擋下輸出（不會寫出任何 WAV／JSON）。",
+                    "錯誤：overall confidence 為 low，已擋下輸出"
+                    "（T-42：本次執行的暫存產物已清除，不會在 output/ 留下任何新的 WAV／JSON）。",
                     file=sys.stderr,
                 )
+                if archive_note:
+                    print(archive_note, file=sys.stderr)
                 print(
                     f"  原因：geometry={est.confidence}, materials={materials_confidence}"
                     "——幾何和/或材質推測很可能不可信，直接輸出容易讓使用者盲聽配錯空間。",
@@ -347,6 +453,7 @@ def run_photo(
                     "（結果會標記 forced_low_confidence=true，不建議當常規路徑）",
                     file=sys.stderr,
                 )
+                shutil.rmtree(staging_root, ignore_errors=True)
                 return 3
             forced_low_confidence = True
             print(
@@ -390,9 +497,17 @@ def run_photo(
         left, right, seed_right = ir_synth.synthesize_stereo(ac, materials_data)
     except (ValueError, KeyError, FileNotFoundError) as e:
         print(f"錯誤：{e}", file=sys.stderr)
+        if archive_note:
+            print(archive_note, file=sys.stderr)
+        shutil.rmtree(staging_root, ignore_errors=True)
         return 2
 
-    out_dir = _make_out_dir(photo_path.stem)
+    # T-42：成功路徑起——寫檔目標是 staging（`out_dir` 變數維持原名，只是指到
+    # staging final 子樹，下面 ir_synth.export_ir()／_write_stereo()／
+    # _run_wet_preview()／analysis.json／_maybe_visualize() 的呼叫與參數全部
+    # 不變，只有寫入位置從正式位置改成 staging）。
+    out_dir = staging_final_dir
+    out_dir.mkdir(parents=True, exist_ok=True)
     mono_wav, mono_json = ir_synth.export_ir(mono, out_dir / "ir_mono")
     stereo_wav = _write_stereo(out_dir, left, right)
     wet_wav = _run_wet_preview(DRY_DEFAULT, mono_wav, out_dir, mix=0.6)
@@ -460,10 +575,14 @@ def run_photo(
             "使用者強制輸出，結果可信度未知。"
         )
 
+    # T-42：analysis.json 的路徑字串一律寫「正式位置」——生成當下檔案實體在
+    # staging，但字串記錄的是本次成功後 _publish_staging() 會 rename 過去的
+    # 正式位置；讀寫（上面）用的仍是 staging 的 Path 物件，這裡只轉寫字串。
+    public_out_dir = OUTPUT_ROOT / photo_path.stem
     analysis: dict[str, Any] = {
         "input_type": "photo",
         "input": str(photo_path),
-        "output_dir": str(out_dir),
+        "output_dir": str(public_out_dir),
         "dims_source": est.dims_source,
         "confidence": overall_confidence,
         "geometry_confidence": est.confidence,
@@ -480,14 +599,17 @@ def run_photo(
         "rt60_bands_target_sabine": [round(v, 4) for v in ac.rt60_bands_sabine],
         "furnishings": furnishings_payload,
         "closed_loop": mono_payload["closed_loop"],
-        "ir_mono": {"path": str(mono_wav)},
+        "ir_mono": {"path": _public_path(mono_wav, staging_final_dir, public_out_dir)},
         "ir_stereo": {
-            "path": str(stereo_wav),
+            "path": _public_path(stereo_wav, staging_final_dir, public_out_dir),
             "note": "簡單 decorrelation：早期反射共用（決定性相同），晚期噪音左右各自不同 seed",
             "seed_left": mono.noise_seed,
             "seed_right": seed_right,
         },
-        "wet_preview": {"path": str(wet_wav) if wet_wav else None, "mix": 0.6},
+        "wet_preview": {
+            "path": _public_path(wet_wav, staging_final_dir, public_out_dir) if wet_wav else None,
+            "mix": 0.6,
+        },
         "notes": notes,
         "warnings": warnings,
         **_elapsed_payload(t0),
@@ -497,9 +619,17 @@ def run_photo(
     )
     _maybe_visualize(analysis, out_dir, no_viz)
 
-    print(f"已輸出：{mono_wav.name}、{stereo_wav.name}、analysis.json → {out_dir}")
+    # T-42（成功才發布）：所有產物在 staging 完整寫出後，才把 preprocess/final
+    # 兩個子樹原子 rename 到正式位置——在此之前任何失敗都不會讓正式位置出現
+    # 新舊混合的半套。
+    _publish_staging(stem, staging_root)
+
+    print(f"已輸出：{mono_wav.name}、{stereo_wav.name}、analysis.json → {public_out_dir}")
     if wet_wav:
-        print(f"🎧 試聽檔：{wet_wav}（mix=0.6；數字合理 ≠ 聽起來對，請實聽）")
+        print(
+            f"🎧 試聽檔：{public_out_dir / wet_wav.name}"
+            "（mix=0.6；數字合理 ≠ 聽起來對，請實聽）"
+        )
     for w in warnings:
         print(f"  ⚠️ {w}")
     return 0

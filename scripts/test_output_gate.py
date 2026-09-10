@@ -39,9 +39,27 @@ T-13 聲學計算、T-14 IR 合成／匯出、wet preview 全部走**真實程�
   （C 額外用 `ir_synth.synthesize_ir` 呼叫次數佐證：A 呼叫 0 次、B/C 呼叫 1 次——
   gate 確實擋在合成之前，不是算完才丟棄結果）
 
+T-42（插卡 3/4；輸出交易化——archive-first 隔離舊產物＋staging 暫存＋成功才
+原子發布）新增三案例，皆為修 bug 類，對舊碼（T-42 之前）必須實測 fail：
+  G. 真實 preprocess（程式合成的小張非環景圖，preprocess 不需要模型；
+     surfaces／geometry 仍照既有手法樁掉讓 gate 觸發）→ gate 擋下（exit 3）後，
+     斷言 `output/preprocess/<stem>/` 與 `output/<stem>/` 都沒有本次殘留
+     （staging 已清除，正式位置從未被寫入過）。
+  H. 預先放假的舊 `analysis.json`＋舊 WAV 進兩個正式位置
+     （`output/preprocess/<stem>/meta.json` 與 `output/<stem>/{analysis.json,
+     ir_mono.wav}`）→ 跑一個被 gate 擋下的 run → 斷言舊檔已不在正式位置、
+     已完整搬到 `output/.archive/<stem>/<時間戳>/` 且 bytes 逐位元相同
+     （archive-first 可回復性，不是刪除）。
+  I. 成功 run（樁到底，同 B/C 手法）→ 斷言發布後正式位置完整：
+     `analysis.json` 的 `output_dir`／`ir_mono.path`／`ir_stereo.path`／
+     `wet_preview.path` 全部指向**正式位置**（不是生成期間實際寫入的 staging
+     路徑）且檔案在該正式位置真的存在；`output/.staging/<stem>/` 執行完後
+     不存在（發布是原子 rename，不留殘骸）。
+
 跑法：`python scripts/test_output_gate.py`；全部通過 exit 0，任一失敗 exit 1。
-會在 `output/` 底下建立／清除 `_test_t26_gate_*` 三個暫存資料夾，不影響任何
-既有交付檔案。
+會在 `output/` 底下建立／清除 `_test_t26_gate_*`／`_test_t30_gate_*`／
+`_test_t34_gate_*`／`_test_t42_gate_*` 暫存資料夾（含 `output/preprocess/`
+與 `output/.archive/` 下同名 stem 的殘留），不影響任何既有交付檔案。
 
 診斷力：這支測試在加 gate 前的舊碼上必須 fail（低信心輸入照樣寫出 wav、
 exit 0）——自我檢查已用 `git stash` 實測並附輸出。
@@ -56,6 +74,9 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+
+import numpy as np
+from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -162,6 +183,35 @@ def _restore_stubs(orig_preprocess, orig_surfaces) -> None:
     surfaces_mod.surfaces_from_preprocess = orig_surfaces
 
 
+def _install_surfaces_stub_only(surf: SurfaceMaterials):
+    """T-42 案例 G／H 用：只樁 `surfaces_from_preprocess`，`preprocess_image`
+    走真實程式碼（不需要模型，純幾何/影像處理）。回傳給非環景照的 `detail`
+    結構要有 `class_ratios.single`／`views.single`（即使是空的）——
+    `run_photo()` 對非環景照會讀這兩個鍵算 `scene_cues`，全樁掉的
+    `fake_surfaces_from_preprocess`（回傳 `{}`）在這裡會 KeyError。
+    """
+
+    def fake_surfaces_from_preprocess(preprocess_summary, threshold=None, role_aware=False):
+        return surf, {"class_ratios": {"single": {}}, "views": {"single": {}}}
+
+    orig_surfaces = surfaces_mod.surfaces_from_preprocess
+    surfaces_mod.surfaces_from_preprocess = fake_surfaces_from_preprocess
+    return orig_surfaces
+
+
+def _restore_surfaces_stub(orig_surfaces) -> None:
+    surfaces_mod.surfaces_from_preprocess = orig_surfaces
+
+
+def _make_real_photo(path: Path, width: int = 64, height: int = 48, seed: int = 7) -> None:
+    """T-42 案例 G：程式合成一張真的小圖（隨機紋理，非 2:1 長寬比 → 真實
+    `preprocess_image()` 會判定非環景、走黑邊裁切分支），不需要任何模型。
+    紋理用亂數而非純色，避免 `detect_and_crop_border()` 把整張圖裁掉。"""
+    rng = np.random.default_rng(seed)
+    arr = rng.integers(0, 256, size=(height, width, 3), dtype=np.uint8)
+    Image.fromarray(arr, mode="RGB").save(path)
+
+
 def _check_cli_wiring() -> None:
     print("【0】CLI 參數接線（subprocess，不跑模型——在 check_mutual_exclusion 之後、"
           "任何管線呼叫之前就會回傳）")
@@ -203,11 +253,21 @@ def main() -> int:
         mixed_geom_photo = Path(tmp) / "_test_t30_gate_mixed_geom.png"
         uniform_photo = Path(tmp) / "_test_t34_gate_uniform.png"
         low_geom_photo = Path(tmp) / "_test_t34_gate_low_geom.png"
+        # T-42（插卡 3/4）新增三案例的 stem／假照片路徑：
+        g_stem = "_test_t42_gate_g_real_preprocess"
+        h_stem = "_test_t42_gate_h_archive_recover"
+        i_stem = "_test_t42_gate_i_publish"
+        g_photo = Path(tmp) / f"{g_stem}.png"
+        h_photo = Path(tmp) / f"{h_stem}.png"
+        i_photo = Path(tmp) / f"{i_stem}.png"
         for p in (
             low_photo, low_forced_photo, medium_photo, mixed_geom_photo,
             uniform_photo, low_geom_photo,
         ):
             p.write_bytes(b"")
+        h_photo.write_bytes(b"")
+        i_photo.write_bytes(b"")
+        _make_real_photo(g_photo)  # 案例 G 要真的可被 PIL 開啟的圖片
 
         out_dirs = [
             OUTPUT_ROOT / p.stem
@@ -215,8 +275,18 @@ def main() -> int:
                 low_photo, low_forced_photo, medium_photo, mixed_geom_photo,
                 uniform_photo, low_geom_photo,
             )
-        ]
+        ] + [OUTPUT_ROOT / s for s in (g_stem, h_stem, i_stem)]
         for d in out_dirs:
+            if d.exists():
+                shutil.rmtree(d)
+        # T-42 三案例還會動到 output/preprocess/<stem>／output/.staging/<stem>／
+        # output/.archive/<stem>，先確保乾淨起跑（真正的清除斷言在各案例內）。
+        t42_extra_dirs = [
+            OUTPUT_ROOT / sub / stem
+            for stem in (g_stem, h_stem, i_stem)
+            for sub in ("preprocess", ".staging", ".archive")
+        ]
+        for d in t42_extra_dirs:
             if d.exists():
                 shutil.rmtree(d)
 
@@ -443,9 +513,166 @@ def main() -> int:
                 "--override-material" not in stderr_f,
                 f"stderr={stderr_f!r}",
             )
+
+            # --- 案例 G（T-42）：真實 preprocess → gate 擋下後正式位置無殘留 ----
+            print(
+                "【G】真實 preprocess（非環景合成圖）→ gate 擋下 → "
+                "output/preprocess／output/<stem> 皆無本次殘留"
+            )
+            g_final_dir = OUTPUT_ROOT / g_stem
+            g_preprocess_dir = OUTPUT_ROOT / "preprocess" / g_stem
+            g_staging_dir = OUTPUT_ROOT / ".staging" / g_stem
+
+            g_surf = _make_surf("fallback")  # 任一面 fallback → materials=low → gate 觸發
+            orig_surfaces_g = _install_surfaces_stub_only(g_surf)
+            try:
+                rc = pipeline.run_photo(str(g_photo), override_dims="4x3x2.5", no_viz=True)
+            finally:
+                _restore_surfaces_stub(orig_surfaces_g)
+
+            check(
+                "exit code == 3（真實 preprocess，materials=low 觸發 gate）", rc == 3, f"rc={rc}"
+            )
+            check(
+                "output/preprocess/<stem>/ 沒有本次殘留（真實 preprocess 寫進 staging，"
+                "gate 擋下後已清除，不是留在正式位置）",
+                not g_preprocess_dir.exists(),
+                f"exists={g_preprocess_dir.exists()}",
+            )
+            check(
+                "output/<stem>/ 沒有本次殘留（gate 擋在合成之前，staging final 從未建立）",
+                not g_final_dir.exists(),
+                f"exists={g_final_dir.exists()}",
+            )
+            check(
+                "output/.staging/<stem>/ 已清除（gate 擋下：刪 staging）",
+                not g_staging_dir.exists(),
+                f"exists={g_staging_dir.exists()}",
+            )
+
+            # --- 案例 H（T-42）：archive-first 可回復性 ------------------------
+            print(
+                "【H】預先放假的舊 analysis.json＋舊 WAV → 跑一個被 gate 擋下的 run "
+                "→ 舊檔隔離到 archive、可回復（bytes 相同）"
+            )
+            h_final_dir = OUTPUT_ROOT / h_stem
+            h_preprocess_dir = OUTPUT_ROOT / "preprocess" / h_stem
+            h_archive_stem_dir = OUTPUT_ROOT / ".archive" / h_stem
+
+            h_preprocess_dir.mkdir(parents=True, exist_ok=True)
+            old_meta_bytes = b'{"fake": "old meta.json from a previous run"}'
+            (h_preprocess_dir / "meta.json").write_bytes(old_meta_bytes)
+
+            h_final_dir.mkdir(parents=True, exist_ok=True)
+            old_analysis_bytes = b'{"fake": "old analysis.json from a previous run"}'
+            old_wav_bytes = b"RIFF_FAKE_OLD_WAV_BYTES_NOT_REAL_AUDIO"
+            (h_final_dir / "analysis.json").write_bytes(old_analysis_bytes)
+            (h_final_dir / "ir_mono.wav").write_bytes(old_wav_bytes)
+
+            h_surf = _make_surf("fallback")
+            orig_stubs_h = _install_stubs(h_surf)  # 同 A-F 手法：preprocess／surfaces 都樁
+            try:
+                rc = pipeline.run_photo(str(h_photo), override_dims="4x3x2.5", no_viz=True)
+            finally:
+                _restore_stubs(*orig_stubs_h)
+
+            check("exit code == 3（H：帶舊產物的 run 仍被 gate 擋下）", rc == 3, f"rc={rc}")
+            check(
+                "output/preprocess/<stem>/ 的舊檔已不在正式位置（搬去 archive，不是刪除）",
+                not h_preprocess_dir.exists(),
+                f"exists={h_preprocess_dir.exists()}",
+            )
+            check(
+                "output/<stem>/ 的舊檔已不在正式位置",
+                not h_final_dir.exists(),
+                f"exists={h_final_dir.exists()}",
+            )
+
+            archive_runs = (
+                sorted(h_archive_stem_dir.glob("*")) if h_archive_stem_dir.exists() else []
+            )
+            check(
+                "output/.archive/<stem>/ 下恰產生一個時間戳子目錄",
+                len(archive_runs) == 1,
+                f"archive_runs={archive_runs!r}",
+            )
+            if archive_runs:
+                run_dir = archive_runs[0]
+                archived_meta = run_dir / "preprocess" / "meta.json"
+                archived_analysis = run_dir / "final" / "analysis.json"
+                archived_wav = run_dir / "final" / "ir_mono.wav"
+                check(
+                    "archive 內 meta.json 存在且 bytes 與舊檔逐位元相同（可回復性）",
+                    archived_meta.exists() and archived_meta.read_bytes() == old_meta_bytes,
+                    f"exists={archived_meta.exists()}",
+                )
+                check(
+                    "archive 內 analysis.json 存在且 bytes 與舊檔逐位元相同（可回復性）",
+                    archived_analysis.exists()
+                    and archived_analysis.read_bytes() == old_analysis_bytes,
+                    f"exists={archived_analysis.exists()}",
+                )
+                check(
+                    "archive 內 ir_mono.wav 存在且 bytes 與舊檔逐位元相同（可回復性）",
+                    archived_wav.exists() and archived_wav.read_bytes() == old_wav_bytes,
+                    f"exists={archived_wav.exists()}",
+                )
+
+            # --- 案例 I（T-42）：成功 run 發布後，路徑字串與實體皆指向正式位置 --
+            print(
+                "【I】成功 run（樁到底）→ 發布後 analysis.json 路徑字串指向正式位置、"
+                "staging 不殘留"
+            )
+            i_final_dir = OUTPUT_ROOT / i_stem
+            i_staging_dir = OUTPUT_ROOT / ".staging" / i_stem
+
+            i_surf = _make_surf("manual")  # medium，不觸發 gate（同案例 C 手法）
+            orig_stubs_i = _install_stubs(i_surf)
+            try:
+                rc = pipeline.run_photo(str(i_photo), override_dims="4x3x2.5", no_viz=True)
+            finally:
+                _restore_stubs(*orig_stubs_i)
+
+            check("exit code == 0（I：medium 不受 gate 影響）", rc == 0, f"rc={rc}")
+            check(
+                "output/.staging/<stem>/ 執行完後不存在（發布是原子 rename，不留殘骸）",
+                not i_staging_dir.exists(),
+                f"exists={i_staging_dir.exists()}",
+            )
+            analysis_i = _read_json(i_final_dir / "analysis.json")
+            check(
+                "analysis.json: output_dir 指向正式位置",
+                analysis_i.get("output_dir") == str(i_final_dir),
+                f"output_dir={analysis_i.get('output_dir')!r}",
+            )
+            ir_mono_path = analysis_i.get("ir_mono", {}).get("path")
+            check(
+                "analysis.json: ir_mono.path 指向正式位置（不是 staging）且檔案實存",
+                ir_mono_path == str(i_final_dir / "ir_mono.wav")
+                and Path(ir_mono_path).exists(),
+                f"ir_mono.path={ir_mono_path!r}",
+            )
+            ir_stereo_path = analysis_i.get("ir_stereo", {}).get("path")
+            check(
+                "analysis.json: ir_stereo.path 指向正式位置且檔案實存",
+                ir_stereo_path == str(i_final_dir / "ir_stereo.wav")
+                and Path(ir_stereo_path).exists(),
+                f"ir_stereo.path={ir_stereo_path!r}",
+            )
+            wet_preview_path = analysis_i.get("wet_preview", {}).get("path")
+            check(
+                "analysis.json: wet_preview.path 指向正式位置且檔案實存",
+                wet_preview_path is not None
+                and wet_preview_path == str(i_final_dir / "wet_preview.wav")
+                and Path(wet_preview_path).exists(),
+                f"wet_preview.path={wet_preview_path!r}",
+            )
         finally:
             ir_synth.synthesize_ir = real_synthesize_ir
             for d in out_dirs:
+                if d.exists():
+                    shutil.rmtree(d)
+            for d in t42_extra_dirs:
                 if d.exists():
                     shutil.rmtree(d)
 
