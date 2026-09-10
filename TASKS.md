@@ -7649,7 +7649,12 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
 
 ### T-42 low-confidence gate 交易式輸出與舊產物隔離（插卡 3/4）
 
-- **狀態（Sonnet 執行，2026-09-10）**：
+- **狀態（Opus 複驗，2026-09-10）**：
+  **四軸**：工程：**✅ 已驗證**（結果 commit `cf1f1ba`；Opus 依 WORKFLOW §5 實跑複驗，
+  紀錄見下方「Opus 驗證紀錄」）｜實驗：不適用｜產品：不適用（本卡是輸出可信度基礎建設，
+  非模型/門檻實驗）｜MVP：不適用（沿用 T-17 FAIL）。
+  **T-43 前置「T-42 ✅」自此滿足。**
+- **狀態（Sonnet 執行，2026-09-10，原文保留）**：
   **四軸**：工程：🔵 **待審**（前置 T-46 ✅ 已於 `ec1a7bf` 滿足；結果 commit `cf1f1ba`，
   等 Opus 開新視窗依 WORKFLOW §5 複驗）｜實驗：不適用｜產品：不適用（本卡是輸出可信度基礎建設，
   非模型/門檻實驗）｜MVP：不適用（沿用 T-17 FAIL）。
@@ -7713,6 +7718,96 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
        `git worktree list` 只剩主 repo，無殘留 `.staging`／測試用 `.archive` 目錄。
   - **下一步**：開 Opus 新視窗依 WORKFLOW §2.2 v2 複驗，「結果 commit」填 `cf1f1ba`。
     通過後 T-43 前置（「T-42 ✅」）才算滿足。
+- **Opus 驗證紀錄（2026-09-10，依 WORKFLOW §5；對象＝結果 commit `cf1f1ba`）**：
+  以下每一項都是本視窗**實跑**的結果，不是轉述 Sonnet 交接筆記。
+  1. **gate 判定條件零改動（鐵則 6 / 本卡最大紅旗）— ✅**：`git diff ec1a7bf HEAD -- src/image_reverb/pipeline.py`
+     全數 changed line 中，只有一行與 gate 相關（gate 訊息字串）。把 gate 區塊
+     （`if overall_confidence == "low":` 到 `return 3`）舊碼／新碼各切出來逐行 `diff`，
+     差異只有三處：① 訊息字串改寫、② `if archive_note:` 印 archive 位置、③ `return 3` 前
+     `shutil.rmtree(staging_root)`——**判定條件本身一行未動**。
+     `compute_materials_confidence()` 所在的 `surfaces.py` 零 diff（門檻 0.4 隨之零改動）；
+     `scene_cues` 段落零 diff；`geometry.py`／`acoustics.py`／`ir_synth.py`／`ir_metrics.py`／
+     `config.py`（含 `GEOMETRY_SCOPE_MAX_M = 10.0`）以 `git diff ec1a7bf HEAD --stat` 實測**全零 diff**。
+  2. **裁決 T-48-S 紅線 — ✅**：`grep -n "override-dims" src/image_reverb/pipeline.py` 實跑得
+     `353`／`404` 兩行；把兩行文字與 `ec1a7bf` 版 `grep` 結果 `diff`，**文字逐字相同**
+     （只有行號因新增函式而位移）。T-48 A-2 判準所依賴的
+     「幾何不可信 → 用 `--override-dims` 手動指定房間尺寸」導引語意未被更動。
+  3. **archive-first 是移動不是刪除 — ✅（端到端實跑，非只看測試）**：
+     ① `python scripts/test_output_gate.py` 新碼 EXIT=0，【H】三項 bytes 斷言全過；
+     ② 另外自己跑真實 CLI：`output/site_photo_gym/` 已發布產物先記 md5，不刪除直接重跑一次
+     → 新產物發布到正式位置，**舊的 5 個檔（analysis.json／ir_mono.json／ir_mono.wav／
+     ir_stereo.wav／wet_preview.wav）＋ preprocess/meta.json 全部出現在
+     `output/.archive/site_photo_gym/20260910T170733249153/{final,preprocess}/`，6 個 md5 逐位元相同**；
+     ③ 再用 `bathroom_tiled` 的複本（stem `_opus_t42_gate`）預放假舊檔跑**不加 `--force`** 的真實
+     gate BLOCK：exit 3、正式位置兩處皆不存在、`output/.staging/<stem>/` 不存在、
+     archive 內三檔 md5 與預放值逐位元相同，並印出 archive 位置＋回復方式。
+  4. **成功才原子發布 — ✅**：13 張已發布的 `analysis.json` 全部程式化核對——
+     `output_dir`／`ir_mono.path`／`ir_stereo.path`／`wet_preview.path` 皆指正式位置、
+     字串不含 `.staging`、且該路徑檔案實存；`output/preprocess/<stem>/meta.json` 抽查兩張
+     （equirect 的 `CathedralRoom`、非 equirect 的 `site_photo_gym`）亦不含 `.staging` 字串，
+     `cropped`／`views[*].path` 都指 `output/preprocess/<stem>/`。13 張 `output/.staging/<stem>/` 皆不存在。
+     例外中止出口另外實跑一次：拿非圖片檔（內容 `this is not an image` 的 `.png`）配預放舊檔
+     → `UnidentifiedImageError` → **exit 2**、印 archive 位置與回復方式、staging 清空、
+     正式位置乾淨、舊檔完整在 archive。exit code 語義 2／3／0 三種本視窗皆實測到。
+  5. **【G】【H】對舊碼確實 fail — ✅（本視窗自己重現）**：`git checkout ec1a7bf -- src/image_reverb/pipeline.py`
+     後跑新版 `test_output_gate.py`，實測 **4 項失敗**，與交接筆記所述完全一致：
+     【G】`output/preprocess/<stem>/ 沒有本次殘留`、【H】`舊檔已不在正式位置`（preprocess）、
+     【H】`舊檔已不在正式位置`（final）、【H】`archive 下恰產生一個時間戳子目錄`（實測 `archive_runs=[]`）。
+     舊碼下【I】仍過（成功路徑本來就寫得出來），符合卡片預期。舊碼 stderr 亦可見舊文案
+     「不會寫出任何 WAV／JSON」，反證新碼文案確實已改。事後 `git checkout cf1f1ba -- src/image_reverb/pipeline.py`
+     還原，md5 回到 `b7d9842d595c6c653a94689c93ed4c0a`，`git status` 乾淨。
+  6. **`--text`／`--scene` 未受影響 — ✅**：`run_text()`／`run_scene()` 兩個函式區塊舊碼／新碼
+     逐行 `diff` **ZERO DIFF**；兩者仍走 `_make_out_dir()`（`pipeline.py:668`／`:737`），
+     未被順手交易化（範圍蔓延紅旗排除）。實跑四條 CLI 全 EXIT=0（見第 7 點）。
+  7. **測試套件／六條 IR／13 張基線 — ✅**：
+     - 19 支 `scripts/test_*.py` 逐支實跑，**全部 EXIT=0**。
+     - 六條交付 IR MD5：T-14 兩條由 `test_ir_synth.py` `T14_DELIVERED_MD5` 硬編碼比對（該支 EXIT=0）；
+       T-20 兩條本視窗用 `--text 浴室`／`--text 大教堂` 重生，實測
+       `2adbaa75eb698772a8c9aa693179ec47`／`2dd19b6e6d351d713887636fe45cd67e` **相符**；
+       T-21 兩條用 `--scene neighbor_voices/stadium_corridor` 重生，實測
+       `9a94ffdf5d8295aee7889729c39c9cd8`／`a1c21bcc3fd9aa3480df203a89c8cd05` **相符**。
+     - 13 張基線：`output/transactional_output/tables.md` 的 geometry／materials／overall／gate
+       四欄，與本視窗直接讀 13 個 `output/<stem>/analysis.json` 程式化重算的結果**逐張逐值相同**
+       （REPORT 摘要與程式產出的表不矛盾，T-44 §7 型紅旗排除）；`bedroom_ai_generated`
+       仍 `medium/low/low/BLOCK`——**臥室紅旗未鬆動**（鐵則 7）。
+       另外**不採信腳本自報**，本視窗自建 `git worktree` 釘在 `ec1a7bf`（改動前）對
+       `bedroom_ai_generated`（紅旗）／`CathedralRoom`（equirect）／`site_photo_gym`（非 equirect）
+       三張各跑一次真實 CLI 新舊對照：三軸 confidence／gate 逐值相同、`ir_mono.wav` md5
+       逐位元相同（`989b9f35…`／`cf5a196f…`／`e1fdd3fc…`），且這三個 md5 與 `cf1f1ba` 當時
+       產出的檔案相同——交叉印證其餘 10 張的表格數值可信。
+  8. **收尾**：`git worktree list` 只剩主 repo；`git status` 只有既有未追蹤的 `AGENTS.md`；
+     本視窗建立的 `_opus_t42_gate`／`_opus_t42_notimage` 測試 archive 已刪除。
+- **🟡 Opus 附帶發現（不影響本卡判定，屬新需求，依 WORKFLOW §7 交 Fable 開卡，禁止在此當豁免用）**：
+  1. **`scripts/t42_transactional_baseline.py` 的「改動前」參照沒有釘 commit（送 T-43 前必修）**：
+     腳本用 `git worktree add --detach <dir> HEAD`，docstring 明寫「本卡的改動此時仍未 commit，
+     HEAD 就是改動前」。這個前提在收工 commit 之後**就不成立了**——現在（HEAD＝`6c50daa`）
+     再跑 `--fresh`，兩邊都是新碼，13 張必然全過，並會把 REPORT.md 的
+     「改動前參照」覆寫成 `6c50daa`（一個**假的綠燈**）。本卡**已產出的** REPORT 記的是
+     `ec1a7bfd62e…`（＝`cf1f1ba` 的 parent），內容經上述第 7 點交叉印證屬實，故不影響本卡判定；
+     但腳本本身不可重跑，違反 WORKFLOW §5 第一層「乾淨環境重跑」的精神，也與同 repo 既有作法
+     不一致——`scripts/t46_role_flag_baseline.py` 就有釘死的 `B0_COMMIT` 常數。
+     **建議**：T-43（明寫「同 T-42 抽查手法」）動工前，先把參照改成釘死的 commit 常數，
+     並在 REPORT 內印出雙邊 `git rev-parse HEAD`（T-40 指紋精神）。
+  2. **未被攔截的例外會讓舊輸出「無聲消失」**：`run_photo()` 只攔
+     `UnidentifiedImageError` 與 `(ValueError, KeyError, FileNotFoundError)`。其他例外
+     （例：`_run_wet_preview()` 的 `subprocess.run(..., check=True)` 丟 `CalledProcessError`）
+     會直接往上拋——此時舊輸出**已經**被 archive 走、正式位置空的、staging 留著，而使用者
+     只看到 traceback，**沒有** archive 位置與回復方式的訊息。可回復（下次執行會印 stale staging note，
+     檔案也還在 `.archive/`），且卡片政策只列三個出口、實作與政策一致，故不是本卡未達項；
+     但建議 T-43／T-47 補一個總 `except` 或 `try/finally` 把 archive_note 補印出來。
+  3. **`.archive` 只增不減，成長速度是實測數字**：本視窗結束時 `du -sh output/.archive` ＝ **82M**
+     （13 張基線＋幾次複驗，equirect 的六視角 PNG 佔大宗）。政策明訂「不許永久刪除使用者舊檔、
+     清理策略未來另議」，實作正確；只是提醒 Fable 這個「未來」有實際壓力，宜在 Phase 1.9-R 收尾時排卡。
+  4. **卡片自我檢查用字與鐵則 8 互相打架（建議 Fable 改後續卡的措辭，非本卡未達項）**：
+     自我檢查寫「`git diff` 限縮在 `pipeline.py`＋`test_output_gate.py`」，但同卡「產出」要求
+     `output/transactional_output/REPORT.md`，而鐵則 8 要求該表**由程式產出**（地雷 #15：不得手打）
+     ——兩者不可能同時字面成立，必然多出一支產表腳本。本卡多出的
+     `scripts/t42_transactional_baseline.py`＋`tables.md` 正是鐵則 8 與「產出」欄所要求的東西，
+     且與 T-37（`t37_rebaseline.py`）／T-46（`t46_role_flag_baseline.py`）既有先例一致；
+     該自我檢查句的實質用意（凍結模組零 diff）已於第 1 點逐項實測成立。
+     **這不是對未達項的豁免**——本卡列出的驗收條件本身沒有一項未達；是措辭本身有內部矛盾，
+     依 WORKFLOW §7 建議 Fable 在 T-43／T-47 卡改寫成「`src/` 的 diff 限縮在 `pipeline.py`；
+     `scripts/` 只得新增測試與鐵則 8 產表腳本」。
 - **🔮 裁決 T-45-A 更新前置（2026-09-03）**：前置改為 **T-46 ✅（工程）**——T-44 停在 🟠 退回＋產品採用暫停，不再以「T-44 ✅」為前置；其餘內容不變。本卡在 Phase 1.9-R 順序中排 T-46 之後（見檔尾）。
 - **🔮 裁決 T-48-S 追加紅線（2026-09-08）**：T-48 可能在本卡之前或同期跑（見 T-48 卡）。本卡與 T-43 **不得**：
   改 gate 訊息中「幾何不可信 → 用 `--override-dims` 手動指定房間尺寸」導引的語意（T-48 A-2 判準依賴；文案其他

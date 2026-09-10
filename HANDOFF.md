@@ -1,5 +1,39 @@
 # 交接文件 — 給下一個視窗
 
+> ## ✅ 2026-09-10 Opus：T-42 複驗**通過**——工程軸 ✅ 已驗證，下一步開 **T-43**（插卡 4/4）
+>
+> 對象＝結果 commit `cf1f1ba`。依 WORKFLOW §5 實跑複驗（不是轉述交接筆記）：
+>
+> - **gate 判定條件零改動**：gate 區塊舊／新逐行 diff，差異只有①訊息字串改寫、
+>   ②印 archive 位置、③`return 3` 前清 staging；`surfaces.py`（`compute_materials_confidence`／
+>   門檻 0.4）／`geometry.py`／`acoustics.py`／`ir_synth.py`／`ir_metrics.py`／`config.py` **全零 diff**。
+> - **裁決 T-48-S 紅線**：`--override-dims` 導引兩行文字與 `ec1a7bf` 版**逐字相同**（只有行號位移）。
+> - **archive 是移動不是刪除**：端到端實跑三種出口（gate BLOCK exit 3／非圖片 exit 2／成功 exit 0），
+>   舊檔以**逐位元相同**的 bytes 出現在 `output/.archive/<stem>/<時間戳>/`，staging 全清、正式位置正確。
+> - **【G】【H】對舊碼實測 fail 4 項**（本視窗自行 `git checkout ec1a7bf -- pipeline.py` 重現，已還原）。
+> - **19 支測試全 EXIT=0；六條交付 IR MD5 全中；13 張基線逐值相同、臥室紅旗仍 BLOCK**
+>   （另釘 `ec1a7bf` worktree 對三張照片新舊對照，IR md5 逐位元相同，交叉印證表格）。
+> - **`--text`／`--scene` 零 diff**，未被順手交易化。
+>
+> ### 🟡 開 T-43 之前請先看（Opus 附帶發現，依 WORKFLOW §7 交 Fable，不是本卡未達項）
+>
+> 1. **必修**：`scripts/t42_transactional_baseline.py` 用 `git worktree add --detach <dir> HEAD`
+>    當「改動前」參照，前提是改動尚未 commit。收工 commit 之後（現在 HEAD 已是 `6c50daa`）
+>    再跑 `--fresh` 會變成**新碼比新碼**、13 張必然全過，還會把 REPORT 的「改動前參照」
+>    覆寫成錯的 commit——一個假綠燈。T-43 卡明寫「同 T-42 抽查手法」，動工前請先改成釘死的
+>    commit 常數（`scripts/t46_role_flag_baseline.py` 的 `B0_COMMIT` 就是既有正確作法），
+>    並在 REPORT 印出雙邊 `git rev-parse HEAD`（T-40 指紋精神）。
+>    ⚠️ 本卡**已產出**的 REPORT 記的是 `ec1a7bfd62e…`（＝`cf1f1ba` 的 parent），內容經交叉印證屬實，
+>    所以不影響 T-42 的判定；問題只在腳本日後不可重跑。
+> 2. 未攔截的例外（如 `_run_wet_preview()` 的 `CalledProcessError`）會讓舊輸出被 archive 走、
+>    正式位置空掉，但只丟 traceback、不印回復方式——建議補 `try/finally`。
+> 3. `output/.archive` 實測已 **82M** 且只增不減（政策明訂不許刪使用者舊檔），清理策略宜排卡。
+> 4. 卡片自我檢查「`git diff` 限縮在兩檔」與鐵則 8「表由程式產出」字面互斥，建議 Fable 改寫
+>    T-43／T-47 的措辭為「`src/` 限縮在 `pipeline.py`；`scripts/` 只得新增測試與鐵則 8 產表腳本」。
+>
+> 四軸：**工程：✅ 已驗證｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）**。
+> 詳見 TASKS.md T-42 卡「Opus 驗證紀錄」與「🟡 Opus 附帶發現」。
+
 > ## 🔵 2026-09-10 Sonnet：T-42 執行完成——**現在該做的是開 Opus 新視窗複驗**，結果 commit `cf1f1ba`
 >
 > 前置 T-46 ✅ 已於 `ec1a7bf` 滿足。依裁決 T-45-A 執行卡（插卡 3/4），把

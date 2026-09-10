@@ -1,5 +1,26 @@
 # Dev Log
 
+## 2026-09-10 (109)
+
+- **T-42 Opus 複驗通過——工程軸 ✅ 已驗證**（對象＝結果 commit `cf1f1ba`；依 WORKFLOW §5）。
+  本視窗實跑而非轉述：gate 區塊舊／新逐行 diff，差異只有訊息字串＋archive note＋清 staging
+  三處，判定條件一行未動；`surfaces.py`／`geometry.py`／`acoustics.py`／`ir_synth.py`／
+  `ir_metrics.py`／`config.py` 全零 diff；`--override-dims` 導引文字逐字相同（裁決 T-48-S 紅線）。
+- 端到端實跑三種出口：真實 gate BLOCK（exit 3）、非圖片 `UnidentifiedImageError`（exit 2）、
+  成功發布（exit 0）——三者的 staging 皆清空、正式位置狀態正確，舊檔全部以**逐位元相同**的
+  bytes 出現在 `output/.archive/<stem>/<時間戳>/`（archive 是移動不是刪除，實測 6 檔 md5 相符）。
+- `git checkout ec1a7bf -- pipeline.py` 自行重現：舊碼下【G】【H】實測 **4 項 fail**，與交接筆記一致；
+  還原後 md5 回到 `b7d9842d…`。19 支 `scripts/test_*.py` 全 EXIT=0；六條交付 IR MD5 全中
+  （T-20／T-21 四條本視窗重生實測相符）；13 張 `analysis.json` 與 `tables.md` 逐值相同、
+  臥室紅旗仍 BLOCK；另釘 `ec1a7bf` worktree 對三張照片新舊對照，confidence 與 IR md5 逐位元相同。
+- **附帶發現（不影響判定，依 §7 交 Fable 開卡）**：① `t42_transactional_baseline.py` 的「改動前」
+  參照用 `HEAD` 而非釘死 commit，收工後再跑會變成新碼比新碼的**假綠燈**並覆寫 REPORT，
+  T-43 動工前必修（`t46_role_flag_baseline.py` 的 `B0_COMMIT` 是既有正確作法）；
+  ② 未攔截的例外（如 `_run_wet_preview` 的 `CalledProcessError`）會讓舊輸出無聲搬走、
+  不印回復方式；③ `output/.archive` 實測已 82M，清理策略宜排卡；
+  ④ 卡片自我檢查「diff 限縮兩檔」與鐵則 8「表由程式產出」字面互斥，建議改寫後續卡措辭。
+- **下一步**：T-43（插卡 4/4）前置「T-42 ✅」**自此滿足**，但請先修上述 ①。
+
 ## 2026-09-10 (108)
 
 - **T-42 執行（Sonnet，依裁決 T-45-A 執行卡插卡 3/4）完成，結果 commit `cf1f1ba`**——

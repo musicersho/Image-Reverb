@@ -69,7 +69,12 @@
       role_aware 會透過 `scene_cues["out_of_domain"]` 間接影響 geometry_confidence
       （`site_photo_department_store`）；`EXPECTED_GATE` 凍結表的 geometry 欄位疑似
       部分過期（`TunnelToHell`，T-37 之後未見更新）。詳見 TASKS.md T-46 卡交接筆記。
-- [ ] **T-42 🔵 待審（Sonnet 2026-09-10，結果 commit `cf1f1ba`）→ 開 Opus 新視窗複驗** → T-43
+- [x] **T-42 ✅ 工程已驗證（Opus 複驗 2026-09-10，對象 commit `cf1f1ba`）→ T-43 前置自此滿足**
+      ⚠️ Opus 附帶發現（交 Fable，T-43 動工前必修）：`scripts/t42_transactional_baseline.py`
+      的「改動前」參照用 `HEAD` 而非釘死 commit，收工 commit 後再跑會變成新碼比新碼的
+      假綠燈並覆寫 REPORT。另三項（未攔截例外不印回復方式、`.archive` 已 82M 待訂清理策略、
+      卡片「diff 限縮兩檔」與鐵則 8 措辭互斥）詳見 TASKS.md T-42 卡「🟡 Opus 附帶發現」。
+- [x] ~~**T-42 🔵 待審（Sonnet 2026-09-10，結果 commit `cf1f1ba`）→ 開 Opus 新視窗複驗** → T-43~~
       — archive-first 隔離舊產物＋staging 暫存＋成功才原子發布；只動
       `pipeline.py` 的 `run_photo()` 輸出編排段，gate 判定條件／
       `compute_materials_confidence()`／`scene_cues`／門檻 0.4／`geometry.py`／
