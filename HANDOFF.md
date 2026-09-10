@@ -1,5 +1,30 @@
 # 交接文件 — 給下一個視窗
 
+> ## ✅ 2026-09-10 Opus：T-46 第四輪複驗**通過**——工程軸 ✅ 已驗證（依 criteria v3），下一步開 **T-42**
+>
+> 對象＝結果 commit `7b1384e`。四軸：**工程 ✅ 已驗證（依 criteria v3）**｜實驗 不適用｜
+> 產品 🧪 feature flag（維持裁決 T-45-A）｜MVP 不適用（沿用 T-17 FAIL）。
+>
+> **criteria v3 §2.7 分層判定：情形 ①（§5.2 成立），只填這一列。** Opus 自己 `--fresh` 從零跑
+> 39 次真實 CLI（exit 0，約 12 分鐘）後，
+> `git diff -- output/role_flag/v3/baseline_23f2aba/BASELINE.stable.md output/role_flag/v3/tables.md`
+> **完全為空**；`BASELINE.md`／`REPORT.md` 的 diff 逐行確認**全部**落在 §2.2.4 表列的 provenance 項
+> （主 repo HEAD／產生時間／13 筆原始 JSON sha256／`elapsed_s`），硬區五欄與整個 S 段一字未動。
+> §5.3 獨立重算（自寫實作、不 import 專案腳本）13/13 三者一致；兩輪 B0 逐葉比對
+> **唯一差異都是 `.elapsed_s`**。§5.4 另寫程式重驗 A1～A7／B1～B2 全部 13/13、表 2 相同、表 3 恰兩條。
+> 19 支測試逐支 EXIT=0、六條 IR MD5 全中、`bathroom_tiled` 不加 force 實跑 EXIT=3；§3.3 紅線
+> 加上新增的第八項紅旗（驗證者拿 provenance 差異判失敗或判通過）全部不成立。
+>
+> **連帶效果**：`T-42`／`T-43`／`T-47`／`T-48`／`T-44-R1` 的「前置 T-46 ✅（工程）」**自此滿足**；
+> T-44 工程軸已於 `6c405a1` 獨立通過，不因本卡改寫；v1 `37e07fe`／v2 `6efa6ba` 兩個退回 verdict
+> 與 v1／v2 舊結果**永久保留、不得補判 PASS**。
+>
+> **下一步**：依 Phase 1.9-R 順序開 Sonnet 視窗做 **T-42**（T-48 另有裁決 T-48-S 的平行條款）。
+> **交下一位的兩件小事**：(i) `CRITERIA_T46_v3.md` §0 的 `verdict_under_current_criteria` 仍寫
+> 「尚無」——該欄依 §0／§6 指定由 Opus 補填，但該檔在 §3.3 是唯讀紅線物件，本視窗未擅自改動，
+> 請使用者裁示由誰補；(ii) `HANDOFF_T46_VERIFY.md` 依 v3 §5.8 結案後可刪，本視窗未刪。
+> 詳見 TASKS.md T-46 卡「狀態（第四輪複驗，Opus）」與 DEV_LOG `2026-09-10 (107)`。
+
 > ## 🔵 2026-09-10 Sonnet：T-46 第四輪執行完成——**現在該做的是開 Opus 新視窗複驗**，結果 commit `7b1384e`
 >
 > 依上一則（Opus 第三輪複驗中止）留下的處置四步執行：先清掉中斷輪留下的未進 git 殘留

@@ -25,14 +25,20 @@
 - **gate 校準前提已變**（T-26／T-28／T-36-A）→ T-47 重量四樣證據後裁決 T-47-A。
 - [x] **T-45 審查制度修正 ✅（Fable 2026-09-03）**：WORKFLOW v2、CLAUDE/AGENTS 同步、
       12 卡回溯重標、新卡 T-46～T-48／T-44-R1／T-17-R2、HANDOFF/TODO/DEV_LOG/ROADMAP 同步。
-- [ ] **T-46 🔵 待審（Sonnet 第四輪執行 2026-09-10，依 criteria v3 §4；結果 commit `7b1384e`）→ 開 Opus 新視窗複驗**
+- [x] **T-46 ✅ 工程已驗證（Opus 第四輪複驗 2026-09-10，依 criteria v3 §5；結果 commit `7b1384e`）**
+      — §2.7 分層判定＝**情形 ①**（只填一列）：Opus 自行 `--fresh` 39 次真實 CLI 後，
+      `BASELINE.stable.md`／`tables.md` 的 `git diff` **完全為空**；`BASELINE.md`／`REPORT.md`
+      的 diff 逐行確認全部落在 §2.2.4 provenance 項。§5.3 獨立重算 13/13、§5.4 A1～A7／B1～B2 全 13/13、
+      19 支測試 EXIT=0、六條 IR MD5 全中、`bathroom_tiled` 不加 force EXIT=3、§3.3 紅線＋第八項紅旗全不成立。
+      **T-42／T-43／T-47／T-48／T-44-R1 的「前置 T-46 ✅」自此滿足。**
+      — 上一輪（執行輪原文保留）：**Sonnet 第四輪執行 2026-09-10，依 criteria v3 §4，結果 commit `7b1384e`**
       — `--fresh` 39 次真實 CLI 一次跑完（未中斷）：13/13 三項比對（與 B0／round11／round17）全 ✅，
       `bathroom_tiled`／`bedroom_ai_generated`／鐵則 12 五張已知錯誤案例預設模式全部 `BLOCK`；
       `v3/tables.md` 與已 commit 的 v2 版本除「criteria v2→v3」文字外逐字相同（純標籤更新）；
       19 支測試 EXIT=0、六條交付 IR MD5 全中、`src/` 零 diff、v2 三份已 commit 產物零被動、
       `git worktree list` 只剩主 repo。`baseline_stable_sha256`＝
       `68edb28d6c218e7a620d3c65950c1cbab787e83c00c011ff85c27afddf10bc7a`。詳見 TASKS.md T-46 卡
-      「狀態（第四輪執行）」。**T-42／T-43／T-47／T-48／T-44-R1 的「前置 T-46 ✅」尚未滿足**（等 Opus 複驗）。
+      「狀態（第四輪執行）」。（該輪當時「前置 T-46 ✅ 尚未滿足」的註記已由本輪複驗解除。）
       — 上一輪：**第三輪複驗中止（Opus 2026-09-10）**——執行輪中途被打斷、v3 無結果 commit 可審，
       不是退回也不是通過；本輪（第四輪）依其留下的處置步驟重跑補完。
       — 更早一輪：**T-46 🟠 退回（Opus 第二輪複驗 2026-09-10，依 criteria v2）→ 交 Fable 開 criteria v3**

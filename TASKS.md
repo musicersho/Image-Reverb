@@ -7896,6 +7896,95 @@ T-46 → {T-42 → T-43 → T-47｜T-48} → 裁決 T-47-A → T-44-R1 → T-17-
   - [ ] 只有 T-17-R2 完整硬門檻全部達成時才顯示 `MVP PASS`
 
 ### T-46 T-44 收尾修正：REPORT §7 事實修正＋role-aware 回 feature flag（Sonnet 卡；裁決 T-45-A 執行卡 1/5）
+- **狀態（第四輪複驗，Opus 2026-09-10，依 criteria v3 §5；不覆寫下方任何一輪全文）**：
+  **四軸**：工程：✅ **已驗證（依 criteria v3；結果 commit `7b1384e`）**｜
+  實驗：**不適用**（v3 §2.4 B3／§2.3 明文：`--role-aware` 的 geometry／overall／gate 只報告不斷言，
+  本卡不產生任何實驗假設判定）｜產品：🧪 **feature flag**（維持裁決 T-45-A，本輪無新證據；
+  §5.4.3／§7.8 缺絕對下限與安全 guard，Opus 只能建議、不得自行升級）｜
+  MVP：**不適用**（沿用 T-17 FAIL；`MVP PASS` 只能由 T-17 系列驗收卡寫）。
+  - **§2.7 分層判定表：情形 ①（`§5.2 成立`），只填這一列。** 表 S1（13×6 離散欄）逐字相同、
+    表 S2 `analysis_stable_sha256` 13/13 相同。②③④ 均不成立，不填。
+  - **§5.1 門檻未被動：成立。** `git log -- output/role_flag/CRITERIA_T46_v3.md` 只有一筆
+    `5807716`（`criteria: T-46 v3 …`，`--stat` 實測**只含該一個檔**，549 insertions），時間
+    2026-09-10 14:09:32，**早於**結果 commit `7b1384e`（14:59:12）；`CRITERIA_T46_v2.md` 仍只有
+    `2be2453`；兩份 criteria 工作區 `git diff` 為空。v2 三份已 commit 產物
+    （`output/role_flag/{REPORT.md,tables.md,baseline_23f2aba/BASELINE.md}`）自 `545ec5e` 之後
+    `git log 2be2453..HEAD --` 無任何 commit 觸及、工作區 diff 亦為空＝零被動。
+  - **§5.2 自行 `--fresh` 重建：`git diff` 為空。** Opus 本視窗實跑
+    `python scripts/t46_role_flag_baseline.py --out-dir output/role_flag/v3/ --fresh`，
+    39 次真實 CLI（13 張 B0＋13×2 兩模式）exit 0，約 12 分鐘；
+    `git diff -- output/role_flag/v3/baseline_23f2aba/BASELINE.stable.md output/role_flag/v3/tables.md`
+    **完全為空**（逐位元相同）。`BASELINE.md`／`REPORT.md` 的 diff 逐行檢查，**每一行都是
+    §2.2.4 表列的 provenance 項**，無一行落在硬欄位：
+    - `BASELINE.md`：`產生時主 repo HEAD`（`0227d78`→`332b754`）、`產生時間（UTC）`、
+      表 P1 的 13 筆原始 `analysis.json` sha256 與 13 筆 `elapsed_s`。**未變動**的有
+      `baseline_stable_sha256`、`環境`、`criteria_commit`、以及整個 S 段。
+    - `REPORT.md`：`主 repo HEAD`、`產生時間（UTC）` 兩列。硬區五欄
+      （`criteria_version=v3`／`criteria_commit=580771684c4d8c03b67b994171e43d46b50e9fd1`／
+      B0 全長 `23f2abada92aa9d46b1da0ac1ba2a7f1dc178872`／跑法 `--fresh`／
+      `baseline_stable_sha256=68edb28d…bc7a`）**一字未動**。
+    - 本輪 provenance 差異**只作記錄**，未被用來判失敗、也未被用來判通過（見下方紅旗第 8 項）。
+  - **§5.3 投影可獨立重算：13/13 三者一致。** 不 import 專案腳本，另寫獨立程式照 §2.2.1 文字
+    （8 個排除鍵、`json.dumps(sort_keys=True, ensure_ascii=False, indent=2)+"\n"`、utf-8）重算，
+    「自算值＝`analysis.stable.json` 檔案 sha256＝表 S2」13/13 全中；對執行者殘留產物與 Opus
+    自建產物**各跑一次都是 13/13，且兩邊 13 筆值完全相同**。
+    另做交叉實證：執行者 B0 與 Opus 重建 B0 的 `analysis.json` 逐葉攤平比對（89–108 個葉節點／張），
+    **13/13 唯一差異都是 `.elapsed_s`**（與第二輪 `6efa6ba` 的 10 張實證一致）；13 份
+    `analysis.stable.json` 內 grep 不到任何絕對路徑或耗時字串。13 張照片 sha256 亦由 Opus 自行
+    `hashlib` 重算，與表 S2 逐字相同 13/13。
+  - **§5.4 實質斷言：全部成立（不採信腳本自報，另寫獨立程式從 39 份 `analysis.json` 重驗）。**
+    A1 13/13、A2 13/13、A3 13/13、A4 13/13、A5 13/13、A6 13/13；
+    A7：`bathroom_tiled`／`bedroom_ai_generated`＋鐵則 12 五張 `KNOWN_ERROR_PHOTOS` 預設模式
+    gate 全部 `BLOCK`（7 個目標無一例外）；B1 13/13、B2 13/13（vs round17）。
+    B0 自證守門另行獨立重驗：六面 `surfaces`／`surfaces_sources` vs round11 13/13、
+    `materials_confidence` vs `EXPECTED_GATE` 13/13。表 2 五張兩模式 gate 與已 commit `tables.md`
+    逐值相同（`bathroom_tiled` role-aware 仍是 `pass`，**只列不判**，處置屬 T-44-R1）。
+    表 3 **恰為兩條**資訊性描述（`site_photo_department_store` 兩模式不同、`TunnelToHell` vs
+    `EXPECTED_GATE` 不同），符合 §2.5，只列不判。
+    旁證：`v3/tables.md` 與 v2 結果 `545ec5e` 的 `output/role_flag/tables.md` 逐字比對，
+    **全檔只差表 3 標題的「criteria v2 §2.4」→「criteria v3 §2.5」一行**，其餘數值完全相同
+    ——跨 criteria 版本、跨執行輪、跨驗證者三次獨立實跑結果一致。
+  - **§5.5 docstring／訊息與程式實際斷言一致：成立。** 全檔 grep：不存在未限定的
+    「`BASELINE.md` 逐字相同」宣稱；三處「逐字相同」分別是 (i) docstring 敘述 v3 取代 v2 該句的
+    歷史說明、(ii) `_S_MARKER` 的「與 `BASELINE.stable.md` 逐字相同」（已限定到 S 段，
+    且程式在 `write_baseline_files()` 真的 bytes 比對）、(iii) 該比對失敗時的 `RuntimeError` 訊息。
+    殘留的「v2」字樣全部是「維持 v2 §X 原文」的沿革引用，非現行宣稱。`mismatches` 每則訊息都寫明
+    基線來源（B0／round17／`EXPECTED_GATE`）。`STABLE_PROJECTION_EXCLUDED_PATHS` 與 §2.2.1 的
+    8 個鍵**逐字相同、順序相同**，`stable_projection()` 逐字採用 criteria 參考實作。
+  - **§5.6 測試與抽驗：全部成立。** §2.6.8 的 D 段測試存在（`scripts/test_t46_role_flag.py`
+    `_check_stable_projection()`），(a)(b)(c)(d) 四項＋「排除鍵數量恰為 8」全部 ✅；
+    19 支 `scripts/test_*.py` 由 Opus 逐支實跑，**EXIT=0 ×19**。六條交付 IR MD5 全中：
+    T-14 兩條由 `test_ir_synth.py`【6】內建比對 `f3a763bed13cf4d6f49dbacddee6313f`／
+    `f24353b5dbecf0f6073ca65a7be44ad3`；T-20 兩條 Opus 手動重生＝
+    `2adbaa75eb698772a8c9aa693179ec47`／`2dd19b6e6d351d713887636fe45cd67e`；
+    T-21 兩條重生＝`9a94ffdf5d8295aee7889729c39c9cd8`／`a1c21bcc3fd9aa3480df203a89c8cd05`。
+    `bathroom_tiled` 不加 `--force-low-confidence` 實跑 `python -m src.image_reverb
+    assets/photos/bathroom_tiled.png --no-viz`＝**EXIT=3**（BLOCK），A5 的 gate 定義等價性抽驗成立。
+    另補驗 §2.6.3：`--out-dir` 指到 repo 外絕對路徑 `parse_args`／`_display_path` 不炸 `ValueError`。
+  - **§5.7 紅旗：八項全部不成立。** ① `git diff -- src/` 為空、`git diff 545ec5e HEAD -- src/` 亦為空
+    ＝`src/` 一字未動；② 兩份 criteria 零 diff、各只有一筆 criteria commit；③ v2 三份產物零被動；
+    ④ v3 四份產物皆程式產生——最強證據就是 Opus 獨立 `--fresh` 重建後
+    `BASELINE.stable.md`／`tables.md` 逐位元相同，手打不可能達成；結果 commit `7b1384e`
+    `--stat` 實測只含 6 個檔（2 支 script＋4 份 v3 產物），與 §3.2 允許清單一致；
+    ⑤ 非舊快取——REPORT 硬區「跑法」欄由 `argv` 程式產生為 `--fresh`，Opus 自己也是 `--fresh`
+    從零跑、B0 13 筆 `elapsed_s` 皆為本輪新值；⑥ `scripts/t36_clip_accuracy.py`（`EXPECTED_GATE`）
+    與 `round17/tables.md`（表 7'）`git diff` 為空且 `5807716..HEAD` 無 commit 觸及；
+    ⑦ 排除鍵恰 8 個、未多排除任何鍵（測試亦硬性斷言數量＝8）；
+    ⑧ **「驗證者自己用 provenance 差異判失敗或判通過」——兩個方向都沒發生**：本輪判定完全建立在
+    §2.2.4「硬」列（表 S1／表 S2／B0 commit／照片 sha256／`BASELINE.stable.md`／`tables.md`／
+    REPORT 硬區四欄）之上；`BASELINE.md`／`REPORT.md` 的 provenance 差異只逐行列出並確認其歸屬，
+    既未當成退回理由，也未當成通過理由。`git worktree list` 只剩主 repo。
+  - **§5.8 連帶效果**：T-42／T-43／T-47／T-48／T-44-R1 的「前置 T-46 ✅（工程）」自此滿足。
+    T-44 工程軸已於 `6c405a1`（第四輪）獨立驗證通過，**不因本卡改寫**（v2 §5.6「以較晚一筆為準、
+    互不覆寫」）。v1 `37e07fe`、v2 `6efa6ba` 兩個退回 verdict 與 v1／v2 舊結果**永久保留、
+    不得依 v3 補判 PASS**（v3 §6）——本輪只對 `7b1384e` 這個新結果 commit 判定。
+  - **未處理／交下一位**（不阻擋本卡）：(i) `CRITERIA_T46_v3.md` §0 的
+    `verdict_under_current_criteria` 欄仍寫「尚無」；依 §0／§6 該欄指定由 Opus 補填，但該檔在
+    §3.3 是唯讀紅線物件，本視窗**未擅自改動**，請使用者裁示由誰補填（TASKS.md 四軸依
+    WORKFLOW §7.9 為單一事實來源，不影響本判定）。(ii) 依 §5.8，`HANDOFF_T46_VERIFY.md`
+    結案後可刪（其三項豁免自 `6efa6ba` 起即非有效門檻），本視窗未刪。
+    (iii) 本輪重跑覆蓋到的 `v3/REPORT.md`／`BASELINE.md` provenance 段已 `git checkout` 還原回
+    `7b1384e` 版本，工作區乾淨（僅剩與本卡無關的未追蹤檔 `AGENTS.md`，2026-09-03 產生）。
 - **狀態（第四輪執行，Sonnet 2026-09-10，依 criteria v3 §4；不覆寫下方任何一輪全文）**：
   **四軸**：工程：🔵 **待審（依 criteria v3；結果 commit `7b1384e`，等 Opus 開新視窗複驗）**｜
   實驗：不適用（v3 §2.4 B3 明文只報告不斷言）｜產品：🧪 feature flag（維持裁決 T-45-A，本輪無新證據）｜

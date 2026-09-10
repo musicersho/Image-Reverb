@@ -1,5 +1,35 @@
 # Dev Log
 
+## 2026-09-10 (107)
+
+- **T-46 第四輪複驗（Opus，依 criteria v3 §5）＝工程 ✅ 已驗證**，對象＝結果 commit `7b1384e`。
+  四軸：工程 ✅ 已驗證（依 criteria v3）｜實驗 不適用（§2.4 B3 只報告不斷言）｜
+  產品 🧪 feature flag（維持裁決 T-45-A）｜MVP 不適用（沿用 T-17 FAIL）。
+- **§2.7 分層判定：情形 ①（§5.2 成立），只填一列。** Opus 自己 `--fresh` 從零跑 39 次真實 CLI
+  （約 12 分鐘，exit 0）後，`git diff -- v3/baseline_23f2aba/BASELINE.stable.md v3/tables.md`
+  **完全為空**；`BASELINE.md`／`REPORT.md` 的 diff 逐行檢查，全部落在 §2.2.4 表列的 provenance 項
+  （主 repo HEAD、產生時間 UTC、13 筆原始 `analysis.json` sha256 與 `elapsed_s`），
+  硬區五欄與整個 S 段一字未動。
+- **§5.3 獨立重算 13/13 三者一致**（自寫實作、不 import 專案腳本）：自算值＝`analysis.stable.json`
+  檔案 sha256＝表 S2，且對執行者殘留產物與 Opus 自建產物兩邊各 13/13、值完全相同。
+  交叉實證：兩輪 B0 `analysis.json` 逐葉攤平比對（89–108 葉／張），**13/13 唯一差異都是 `.elapsed_s`**。
+  13 張照片 sha256 自行重算亦 13/13 相符。
+- **§5.4 實質斷言全成立**（另寫獨立程式從 39 份 `analysis.json` 重驗，不採信腳本自報）：
+  A1～A6 各 13/13、A7 七個目標全 `BLOCK`、B1／B2 各 13/13；B0 自證守門 vs round11／
+  `EXPECTED_GATE` 各 13/13；表 2 五張與已 commit 版逐值相同；表 3 恰兩條、只列不判。
+  旁證：`v3/tables.md` 與 v2 結果 `545ec5e` 的 `tables.md` 全檔只差表 3 標題一行文字。
+- **§5.5／§5.6**：無未限定的「`BASELINE.md` 逐字相同」宣稱（三處皆已限定到 S 段且程式真的 bytes 比對）；
+  排除鍵與 §2.2.1 逐字相同、恰 8 個。19 支 `scripts/test_*.py` 逐支實跑 **EXIT=0 ×19**（含 §2.6.8 D 段
+  四項）；六條交付 IR MD5 全中；`bathroom_tiled` 不加 `--force-low-confidence` 實跑 **EXIT=3**。
+- **§5.7 紅旗八項全不成立**，含新增的第八項「驗證者自己用 provenance 差異判失敗或判通過」——
+  本輪判定只建立在 §2.2.4「硬」列，provenance 差異僅逐行記錄歸屬，兩個方向都沒拿來當理由。
+- **連帶**：T-42／T-43／T-47／T-48／T-44-R1 的「前置 T-46 ✅（工程）」自此滿足；T-44 工程軸
+  已於 `6c405a1` 獨立通過，不因本卡改寫。v1 `37e07fe`／v2 `6efa6ba` 兩個退回 verdict 與舊結果
+  永久保留、不補判 PASS。
+- **交下一位**：`CRITERIA_T46_v3.md` §0 的 `verdict_under_current_criteria` 仍寫「尚無」——該欄依
+  §0／§6 指定由 Opus 補填，但該檔在 §3.3 是唯讀紅線物件，本視窗未擅自改動，請使用者裁示；
+  `HANDOFF_T46_VERIFY.md` 依 §5.8 結案後可刪，本視窗未刪。
+
 ## 2026-09-10 (106)
 
 - **T-46 第四輪執行（Sonnet，依 criteria v3 §4）完成，結果 commit `7b1384e`**——依上一則（Opus
