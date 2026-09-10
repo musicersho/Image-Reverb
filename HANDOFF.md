@@ -1,5 +1,33 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔵 2026-09-10 Opus：T-46 第三輪複驗 **中止**——執行輪跑到一半被中斷，**沒有 v3 結果 commit 可審**
+>
+> 不是退回、也不是通過。`HEAD` 仍是 `03599ec`，`5807716` 之後**沒有任何** v3 結果 commit，
+> v3 §5.1 的「早於**結果 commit**」缺比較對象、§8 `result_commit` 無值、§6 明文不准在該 commit 之前填 verdict。
+> 複驗開始時 `ps` 抓到執行中的 `--fresh`（14:22 起跑，正在跑 `RacquetballCourt4`），隨後被中斷。
+>
+> **⚠️ 下一位 Sonnet 注意：`output/role_flag/v3/` 現在是一份「跑到一半」的殘留產物**——
+> B0 13/13＋`BASELINE.stable.md`／`BASELINE.md` 已寫出，但兩模式 run 只有 **25/26**，
+> **`v3/tables.md` 與 `v3/REPORT.md` 完全不存在**；`scripts/t46_role_flag_baseline.py` 與
+> `scripts/test_t46_role_flag.py` 仍是**未 commit** 的工作區改動。**不要拿這批殘留產物送審**，
+> 要照 §2.6.1 重跑完整 `--fresh`（39 次真實 CLI，約 15–20 分鐘，**中途不要中斷**）。
+>
+> **我刻意不做的兩件事（做了就是紅旗）**：(1) 不跑 §5.2 的 `--fresh`——會撞執行者的 out-dir／worktree，
+> 且 v3 產物一份都沒進 git，對未追蹤檔跑 `git diff` **必然是空的**，那個「空」只代表沒有基準可比，
+> 拿它判 §5.2 成立＝以無效證據判通過；(2) 不填 §2.7 任何一列——①～④ 都以「已 commit 的
+> `BASELINE.stable.md`」為比較對象。
+>
+> **唯讀預檢（不構成 §5 複驗，正式輪要對結果 commit 重做）**：§5.1 可查核部分全成立
+> （v3 只有 `5807716` 一筆且只含該檔、v2 只有 `2be2453`、v2 三份產物零 diff）；
+> **§5.3 獨立重算 13/13 全等**（我另寫實作、不 import 執行者腳本，重算值＝`analysis.stable.json`
+> 檔案 sha256＝表 S2，檔案 bytes 恰為 canonical bytes，投影零殘留計時欄與 `/Users/` 路徑）——
+> **v3 的核心機制實作是對的**；§5.5 三處「BASELINE.md…逐字」全有限定；19 支測試檔與 §2.6.8 案例存在（未實跑）；
+> §3.3 靜態紅線未見觸犯，worktree 已清乾淨。
+>
+> **不需要開 criteria v4**（本輪未發現任何門檻錯誤）。下一步＝Sonnet 重跑→依 §4.6 commit
+> `T-46: 依 criteria v3 …(待驗證)`→再開 Opus，**Prompt 的「結果 commit」要填實際 hash**
+> （本輪收到的是未填的佔位字串 `<結果 commit>`）。詳見 TASKS.md T-46 卡最上方一段（`5b116e8`）。
+
 > ## 🔮 2026-09-10 Fable：T-46 門檻 v3 已開（`5807716`）——**現在該做的是開 Sonnet 視窗跑 v3 修正輪**
 >
 > 依 WORKFLOW §7，Opus 提案（`6efa6ba` 驗證紀錄第 8 點）、Fable 起草、使用者核准，
