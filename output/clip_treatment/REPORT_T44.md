@@ -119,7 +119,8 @@ round15 資料、wall 用 round16 資料、ceiling 不變，三角色候選集�
 三個產品採用門檻**同時達成**：①overall 32>30 ✅；②floor 5>4 ✅；
 ③in-set 誤判 8<9（不上升，實際下降）✅。
 
-**逐面完整清單**（78 面裡有變動的 10 面，其餘 68 面逐位元不變）：
+**逐面完整清單**（78 面裡有變動的 10 面，其餘 68 面的材質判定與來源不變
+（其中 `bedroom_ai_generated.floor` 的信心值有變動，見第五節））：
 
 | 照片 | 面 | ground truth | round11 | round17 | 對錯變化 |
 |---|---|---|---|---|---|
@@ -139,8 +140,10 @@ round15 資料、wall 用 round16 資料、ceiling 不變，三角色候選集�
 ## 四、誠實的預期管理兌現情況（對照 PLAN §0／§6 事前寫死的假設）
 
 - ✅ `bedroom_ai_generated` 四面牆的牆對牆混淆——依 PLAN §0 明文預期不治，
-  round17 逐位元核對 `bedroom_ai_generated` 全部 6 面與 round11 完全相同
-  （見第五節共同鐵則 7），**確實未治，符合預期，不是本卡失敗依據**。
+  round17 核對 `bedroom_ai_generated` 的 `surfaces`／`sources`／
+  `materials_confidence` gate 與 round11 相同（floor 那面的 `confidence`／
+  `top3` 有變動，見第五節『同型近失』；另見第五節共同鐵則 7），**確實未治，
+  符合預期，不是本卡失敗依據**。
 - ✅ `bathroom_tiled.ceiling`／`site_photo_gym.ceiling`（分割階段沒有
   ceiling 角色像素，CLIP 從未被呼叫）——結構性不可達，round17 的
   `detail.json` 對這兩面依然完全沒有 `ceiling` 鍵，未計入預期收益，
@@ -175,9 +178,10 @@ confidence()` 規則 1 命中「任一面 fallback → low」，`_overall_confid
 變成 `medium`／`medium` → `medium` → **放行輸出**。
 
 **13 張裡只有這一張出現這個型態**（見下方共同鐵則 8 全表）；`bedroom_ai_
-generated`（共同鐵則 7 明文點名的紅旗案例）在 round17 逐位元核對後與
-round11 完全相同，**未觸發**「從擋變放」（詳見下節），依卡片明文規則本卡
-**未違反任何一條寫死的紅線**。但 `bathroom_tiled` 這個新出現的型態與
+generated`（共同鐵則 7 明文點名的紅旗案例）的 `surfaces`／`sources`／
+`materials_confidence` gate 在 round17 與 round11 相同（floor 那面的
+`confidence`／`top3` 有變動，見本節下方『同型近失』），**未觸發**
+「從擋變放」（詳見下節），依卡片明文規則本卡**未違反任何一條寫死的紅線**。但 `bathroom_tiled` 這個新出現的型態與
 `bedroom` 紅旗背後的精神完全一樣——**材質判定的信心分數變高，但判定本身
 沒有變準**，這正是本卡機制本身（候選集收窄→softmax 濃縮→更容易越過信心
 門檻）在「fallback 預設值剛好答對」這類面上的必然副作用，不是實作疏漏。
@@ -192,12 +196,15 @@ round17 的 `concrete` 0.3394（`round11_remap_baseline`／round17
 round17 只剩 2 個 fallback 面可比（`bedroom_ai_generated.floor` 0.3394、
 `SteinmanHall.floor` 0.3309），`bathroom_tiled` 已跨過門檻放行，
 `bedroom_ai_generated.floor` 確實是這個範圍內下一個最接近門檻的候選。
-**不能推論成「全測試集裡最接近門檻的一面」**——依本報告第七節的 wall 表
-（0.35 → 7 面），wall 側有 7 面比它更接近 0.4，最近的 `SteinmanHall.north`
-只差 **0.0059**（0.3941），其次 `SteinmanHall.south` 0.3895、`stairwell_tiled`
-四面各 0.3784、`SteinmanHall.east` 0.3578。這 7 面**不是本卡造成的**：wall 的候選集
-在 round16 已完全還原成與全域相同的 12 條，實測 `round11_remap_baseline` 與 round17
-的 48 個 wall 面 face 物件**逐位元完全相同**，屬本卡之前就存在的既有風險。
+**不能推論成「全測試集裡最接近門檻的一面」**——wall 側有 **11 面**比它
+（0.3394）更接近 0.4，其中 **7 面**信心 ≥0.35（見第七節 wall 表「0.35 → 7 面」
+那一列）：最近的 `SteinmanHall.north` 只差 **0.0059**（0.3941），其次
+`SteinmanHall.south` 0.3895、`stairwell_tiled` 四面各 0.3784、
+`SteinmanHall.east` 0.3578；另 **4 面**信心介於 0.3394 與 0.35 之間、不在
+「≥0.35」那一列裡——`site_photo_restaurant` 四面各 0.3471。這 11 面
+**不是本卡造成的**：wall 的候選集在 round16 已完全還原成與全域相同的 12 條，
+實測 `round11_remap_baseline` 與 round17 的 48 個 wall 面 face 物件
+**逐位元完全相同**，屬本卡之前就存在的既有風險。
 兩件事要分開講：本卡新增的膨脹風險集中在 floor／ceiling；而整個系統離 gate 門檻
 最近的一面其實只有 0.0059 的餘裕，這是 T-47 gate 校準複審應該一併看的既有議題。
 

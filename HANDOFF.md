@@ -1,5 +1,21 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔵 2026-09-10 Sonnet：T-44 第三輪退回修正輪已完成，待 Opus 第四輪複驗
+>
+> 依 TASKS.md T-44 卡「Opus 第三輪複驗，2026-09-08」的退回理由（純文件、
+> 只改三句）修正 [REPORT_T44.md](output/clip_treatment/REPORT_T44.md)：
+> §3／§4／§5 三處無限定的「逐位元相同」改成限定敘述（`surfaces`／`sources`／
+> `materials_confidence` gate 相同，floor 那面 `confidence`／`top3` 有變動）；
+> §5「wall 側有 7 面比 bedroom 更接近 0.4」改成「11 面」（原 7 面 `≥0.35` 不變，
+> 另加 `site_photo_restaurant` 四面各 0.3471）。**未重跑任何一輪、未動
+> `src/`／`scripts/`／`data/`／`rounds/` 或任何表格數字**；`scripts/test_*.py`
+> 19 支全部 EXIT=0。細節見 TASKS.md T-44 卡「🔧 退回修正紀錄」第 6 點與
+> DEV_LOG `2026-09-10 (101)`。四軸工程軸已改「待審」（**不是**已驗證），
+> **下一步是開 Opus 視窗做第四輪複驗**（貼 WORKFLOW.md §2.2 的驗證 Prompt，
+> 任務編號 T-44）。第一、二、三輪 Opus 退回全文原封保留在 TASKS.md 該卡，未刪改。
+> 本檔下面所有更早的 T-44 相關段落（含 HANDOFF_T44_FIX.md 指引）皆為第二輪
+> 之前的舊狀態，已過期，僅供歷史脈絡參考。
+
 > ## 🔵 2026-09-09 Sonnet：T-46 v2 複驗交接文件已寫好，開 Opus 視窗請先讀它
 >
 > **[HANDOFF_T46_VERIFY.md](HANDOFF_T46_VERIFY.md)** 是給 Opus 複驗 T-46 v2 修正輪

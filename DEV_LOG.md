@@ -1,5 +1,32 @@
 # Dev Log
 
+## 2026-09-10 (101)
+
+- **T-44 第三輪退回修正（Sonnet，純文件）**——依 TASKS.md T-44 卡「Opus 第三輪
+  複驗，2026-09-08」的退回理由（紅旗 #6 同型：三處無限定「逐位元相同」與 §5
+  自己新增的「0.2436→0.3394」矛盾）修正 [REPORT_T44.md](output/clip_treatment/REPORT_T44.md)。
+- **改了什麼**：①§3 表標題「其餘 68 面逐位元不變」改成「其餘 68 面的材質判定與
+  來源不變（`bedroom_ai_generated.floor` 信心值有變動，見第五節）」；②§4「round17
+  逐位元核對全部 6 面與 round11 完全相同」與③§5「逐位元核對後與 round11 完全
+  相同」兩處都改成「`surfaces`／`sources`／`materials_confidence` gate 相同
+  （floor 那面 confidence／top3 有變動，見『同型近失』）」；④§5「wall 側有 7 面
+  比它更接近 0.4」改成「11 面」——原 7 面（≥0.35，見第七節表）不變，另加
+  `site_photo_restaurant` 四面各 0.3471（介於 0.3394～0.35 之間），文字明確區分
+  「11 面比 bedroom 更近」與「其中 7 面 ≥0.35」。
+- **核對**：對照 `output/clip_treatment/rounds/round17/tables.md` 逐面重算 wall
+  fallback 面信心，確認高於 0.3394 的共 11 面（`SteinmanHall.north` 0.394／
+  `south` 0.390、`stairwell_tiled` 四面各 0.378、`SteinmanHall.east` 0.358、
+  `site_photo_restaurant` 四面各 0.347），其中 7 面 ≥0.35，與新文字相符。
+- **同步**：TASKS.md T-44 卡「🔧 退回修正紀錄」新增第 6 點、「四軸狀態」工程軸
+  改為「待審」（待 Opus 第四輪複驗，不視為已驗證）＋修正產品軸過期的
+  `role_aware=True` 文字（T-46 已落地 `False`，「暫停採用」verdict 不變）；
+  TODO.md T-44 條目同步為「🔵 待驗證」。
+- **範圍**：本輪只動 `REPORT_T44.md`／`TASKS.md`／`TODO.md`／`DEV_LOG.md`／
+  `HANDOFF.md`；未重跑任何一輪、未動任何程式碼與表格數字——`git diff --stat`
+  對 `src/`／`scripts/`／`data/`／`output/clip_treatment/rounds/` 為空。
+- **測試**：`scripts/test_*.py` 19 支逐支實跑，全部 EXIT=0。
+- **下一步**：交 Opus 開第四輪複驗；若通過，工程軸才能改「已驗證」。
+
 ## 2026-09-09 (100)
 
 - **Sonnet 執行視窗：寫好 T-46 v2 修正輪的複驗交接文件**——

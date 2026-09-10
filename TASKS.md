@@ -6742,12 +6742,49 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
      修正沿革說明；`TODO.md` 對應條目同步為「🔵 待驗證」。範圍確認：`src/`／
      `scripts/`／`data/`／`output/clip_treatment/rounds/` 零 diff；
      `scripts/test_*.py` 19 支全部 EXIT=0（實跑紀錄見 DEV_LOG.md）。
+  6. 本輪（2026-09-10，第三輪退回修正）：`REPORT_T44.md` 三處無限定的「逐位元
+     相同」敘述（§3 表標題行 122、§4 行 141-143、§5 行 177-179，行號為修正前
+     HEAD）全部改為限定敘述——122 改成「其餘 68 面的材質判定與來源不變（其中
+     `bedroom_ai_generated.floor` 的信心值有變動，見第五節）」；141-143／177-179
+     兩處改成「`surfaces`／`sources`／`materials_confidence` gate 與 round11
+     相同（floor 那面的 `confidence`／`top3` 有變動，見第五節『同型近失』）」，
+     不再宣稱「全部 6 面／逐位元完全相同」。同步修正 §5「同型近失」段末句
+     低估的 wall 比較數：比 `bedroom_ai_generated.floor`（0.3394）更接近 0.4
+     的 wall fallback 面由「7 面」改為「**11 面**」——原點名的 7 面（信心
+     ≥0.35，見第七節 wall 表）不變，另加 `site_photo_restaurant` 四面各
+     0.3471（介於 0.3394 與 0.35 之間，不在「≥0.35」列內），並在文字中明確
+     區分「11 面比 bedroom 更近」與「其中 7 面 ≥0.35」（已對照
+     `rounds/round17/tables.md` 逐面重算核實：north 0.394／south 0.390／
+     stairwell_tiled 四面各 0.378／east 0.358／site_photo_restaurant 四面各
+     0.347，共 11 面高於 0.3394）。未重跑任何一輪、未動 `src/`／`scripts/`／
+     `data/`／`output/clip_treatment/rounds/` 或表格數字，只改
+     `REPORT_T44.md` 文字。同步四軸狀態行工程軸（見下）與 TODO.md／
+     DEV_LOG.md／HANDOFF.md；範圍確認：`git diff --stat` 只動
+     `REPORT_T44.md`／`TASKS.md`／`TODO.md`／`DEV_LOG.md`／`HANDOFF.md`，
+     `src/`／`scripts/`／`data/`／`output/clip_treatment/rounds/` 零 diff；
+     `scripts/test_*.py` 全部逐支實跑 EXIT=0（實跑紀錄見 DEV_LOG.md
+     `2026-09-10`）。
 
 - **四軸狀態（裁決 T-45-A，2026-09-03；原「狀態」欄保留不改，語義見 WORKFLOW §3）**：
-  工程：**退回**（第三輪，Opus 2026-09-08：REPORT §3／§4／§5 三處無限定的「逐位元相同」
-  與 §5 自己的「0.2436→0.3394」矛盾，紅旗 #6 同型，純文件、只改三句）。歷史沿革：第一輪阻擋項「REPORT §7 敏感度摘要與表 7' 矛盾」已於 `1121293`
-  修正並經 Opus 2026-09-07 逐位元複核確認；第二輪退回的 §5 措辭已於本輪修正，
-  第三輪複驗結果＝仍退回（見上）。另記：原記「由 T-46 修並複驗」與事實不符，T-46 未處理此項且自身仍 🟠 退回）｜實驗：🟢 **相對指標正向**（round17 對 round11：overall 30→32、floor 4→5、in-set 9→8）｜產品：🧪 **暫停採用**（裁決 T-45-A：三個相對門檻不含安全與絕對下限；`pipeline.py` 現行 `role_aware=True` 由 T-46 改回預設 `False`＋feature flag；重新驗證另開 **T-44-R1**）｜安全：**已知錯誤放行 1 件**（`bathroom_tiled` BLOCK→pass，floor 判 `carpet` 而 gt=`gypsum_board`，CLI exit 0 且真的輸出 WAV）＋**近失 1 件**（`bedroom_ai_generated.floor` top-1 信心 0.2436→0.3394，距門檻 0.06）｜MVP：**FAIL**（沿用 T-17 首驗）
+  工程：**待審**（Sonnet 已依第三輪退回理由完成純文件修正，2026-09-10：
+  `REPORT_T44.md` 三處無限定的「逐位元相同」改為限定敘述、§5「7 面→11 面」
+  一句同步修正，見上方「🔧 退回修正紀錄」第 6 點；未重跑任何一輪、未動
+  `src/`／`scripts/`／`data/`／`rounds/`；待 Opus 第四輪複驗，**不得視為
+  已驗證**）。歷史沿革：第一輪阻擋項「REPORT §7 敏感度摘要與表 7' 矛盾」
+  已於 `1121293` 修正並經 Opus 2026-09-07 逐位元複核確認；第二輪退回的
+  §5 措辭已於當輪修正；第三輪複驗（2026-09-08）判定仍退回（見上方「狀態」
+  欄與退回全文，原封保留）——三處無限定「逐位元相同」與 §5 wall 面數低估，
+  本輪（第三輪修正輪）已針對這兩項修正。另記：原記「由 T-46 修並複驗」與
+  事實不符，T-46 未處理此項且自身仍 🟠 退回）｜實驗：🟢 **相對指標正向**
+  （round17 對 round11：overall 30→32、floor 4→5、in-set 9→8）｜產品：🧪
+  **暫停採用**（裁決 T-45-A：三個相對門檻不含安全與絕對下限；T-46 已於
+  `7686462` 落地 `ROLE_AWARE_MATERIALS_DEFAULT=False`＋feature flag，
+  `pipeline.py` 現行預設 `role_aware=False`〔T-46 本卡仍 🟠 退回，該項若
+  隨 T-46 修正輪變動須回頭同步〕；重新驗證另開 **T-44-R1**）｜安全：
+  **已知錯誤放行 1 件**（`bathroom_tiled` BLOCK→pass，floor 判 `carpet`
+  而 gt=`gypsum_board`，CLI exit 0 且真的輸出 WAV）＋**近失 1 件**
+  （`bedroom_ai_generated.floor` top-1 信心 0.2436→0.3394，距門檻 0.06）｜
+  MVP：**FAIL**（沿用 T-17 首驗）
   - 卡片原文「產品採用門檻（分離，另判）」三條**保留為 v1 紀錄**；產品採用自 2026-09-03 起改依 WORKFLOW §5.4.3（含安全門檻），本卡 v1 的「三門檻達成」不覆寫、但不再構成採用依據。
 - **不可變欄位（裁決 T-45-A 建立；只能追加不得刪改）**：
   ```text
