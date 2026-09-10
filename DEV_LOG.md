@@ -1,5 +1,28 @@
 # Dev Log
 
+## 2026-09-10 (108)
+
+- **T-42 執行（Sonnet，依裁決 T-45-A 執行卡插卡 3/4）完成，結果 commit `cf1f1ba`**——
+  前置 T-46 ✅ 已於 `ec1a7bf` 滿足。`run_photo()` 輸出編排段改交易式：archive-first
+  （開始 preprocess 前把既有 `output/preprocess/<stem>/`／`output/<stem>/` 移動、不刪除，
+  到 `output/.archive/<stem>/<時間戳>/`）＋staging（本次所有產物先寫
+  `output/.staging/<stem>/{preprocess,final}/`）＋成功才原子發布（`Path.rename()`；
+  `meta.json`／`analysis.json` 路徑欄位寫正式位置，生成期間讀寫仍用 staging）；
+  gate 擋下／例外中止三出口都清掉 staging 並印 archive 位置與回復方式。
+- 只改 `pipeline.py`：gate 判定條件（`overall_confidence=="low"` 與 force 分支）一行不動、
+  `compute_materials_confidence()`／`scene_cues`／門檻 0.4／`geometry.py`／`acoustics.py`／
+  `ir_synth.py`／`ir_metrics.py`／`config.py` 全零 diff；`--override-dims` 導引原文保留
+  （裁決 T-48-S 紅線）；`--text`／`--scene` 不受影響。
+- `test_output_gate.py` 新增【G】【H】【I】三案例（真實 preprocess 無殘留、archive 可回復性
+  bytes 逐位元相同、發布後路徑字串指向正式位置），對舊碼 `git stash` 實測 fail 4 項。
+  新增 `t42_transactional_baseline.py`：13 張真實照片用 `git worktree` 在改動前 `HEAD`
+  與改動後各跑一次真實 CLI，geometry／materials／overall／gate 與 IR md5 全數相符，
+  `bedroom_ai_generated` 紅旗仍 `BLOCK`（`TunnelToHell` 與 `EXPECTED_GATE` geometry 欄不符
+  是已知表過期問題，同 T-46 v3 REPORT 記錄，非本卡回歸）。
+- 19 支測試 EXIT=0；六條交付 IR MD5 全中；`git diff` 限縮在 `pipeline.py`＋
+  `test_output_gate.py`；`git worktree list` 只剩主 repo。四軸：工程 🔵 待審｜實驗 不適用｜
+  產品 不適用｜MVP 不適用。下一步：開 Opus 新視窗複驗，結果 commit 填 `cf1f1ba`。
+
 ## 2026-09-10 (107)
 
 - **T-46 第四輪複驗（Opus，依 criteria v3 §5）＝工程 ✅ 已驗證**，對象＝結果 commit `7b1384e`。

@@ -1,5 +1,40 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔵 2026-09-10 Sonnet：T-42 執行完成——**現在該做的是開 Opus 新視窗複驗**，結果 commit `cf1f1ba`
+>
+> 前置 T-46 ✅ 已於 `ec1a7bf` 滿足。依裁決 T-45-A 執行卡（插卡 3/4），把
+> `run_photo()` 的輸出編排段改為交易式：**archive-first**（開始 preprocess 前把既有
+> `output/preprocess/<stem>/`／`output/<stem>/` 移動、不刪除，到
+> `output/.archive/<stem>/<時間戳>/`）＋**staging**（本次所有產物先寫
+> `output/.staging/<stem>/{preprocess,final}/`）＋**成功才原子發布**（`Path.rename()`
+> 到正式位置；`meta.json`／`analysis.json` 的路徑欄位寫正式位置，生成期間讀寫仍用
+> staging）；gate 擋下／例外中止三個出口都清掉 staging，並在有舊輸出時印出 archive
+> 位置與回復方式；exit code 語義（2／3／0）不變。
+>
+> **紅線全部守住**：只改 `src/image_reverb/pipeline.py`；gate 判定條件
+> （`overall_confidence=="low"` 與 force 分支）一行不動；`compute_materials_confidence()`／
+> `scene_cues`／門檻 0.4／`geometry.py`／`acoustics.py`／`ir_synth.py`／`ir_metrics.py`／
+> `config.py`（含 `GEOMETRY_SCOPE_MAX_M`）全部零 diff；`--override-dims 手動指定房間尺寸`
+> 導引原文逐字保留（裁決 T-48-S 紅線，`grep -n "override-dims"` 已核對）；`run_text()`／
+> `run_scene()`（`--text`／`--scene`）一行未動。
+>
+> `scripts/test_output_gate.py` 新增【G】【H】【I】三案例（修 bug 類）：G（真實 preprocess，
+> gate 後正式位置無殘留）、H（archive-first 可回復性，舊檔 bytes 逐位元相同）、I（成功
+> 發布後路徑字串與實體皆指向正式位置、staging 不殘留）；`git stash push -- pipeline.py`
+> 對舊碼實測 G／H 共 4 項斷言確實 fail。新增 `scripts/t42_transactional_baseline.py`
+> （程式產生 `output/transactional_output/{REPORT.md,tables.md}`）：13 張真實照片用
+> `git worktree` 在改動前 `HEAD`（`ec1a7bf`）與改動後各跑一次真實 CLI，geometry／
+> materials／overall／gate 與 `ir_mono.wav` md5 **逐值／逐位元相同**，`bedroom_ai_generated`
+> 紅旗仍 `BLOCK`；`TunnelToHell` 與 `EXPECTED_GATE` geometry 欄不符是已知表過期問題
+> （同 T-46 v3 REPORT 記錄，非本卡回歸）。
+>
+> 19 支 `scripts/test_*.py` EXIT=0；六條交付 IR MD5 全數逐位元相同（T-14 內建、
+> T-20／T-21 手動重生核對）；`git diff` 限縮在 `pipeline.py`＋`test_output_gate.py`；
+> `git worktree list` 只剩主 repo。
+>
+> **下一步**：開 Opus 新視窗，貼 WORKFLOW §2.2 v2 複驗 Prompt，**「結果 commit」填 `cf1f1ba`**。
+> 通過後 T-43 前置（「T-42 ✅」）才算滿足。詳見 TASKS.md T-42 卡「狀態（Sonnet 執行）」。
+
 > ## ✅ 2026-09-10 Opus：T-46 第四輪複驗**通過**——工程軸 ✅ 已驗證（依 criteria v3），下一步開 **T-42**
 >
 > 對象＝結果 commit `7b1384e`。四軸：**工程 ✅ 已驗證（依 criteria v3）**｜實驗 不適用｜
@@ -521,8 +556,8 @@ T-21 ✅（四輪迭代）｜T-17 §7-4 ✅ 已執行（無鐵筒子 artifact；
 | T-39 | 候選材質集擴充 | ✅ 工程已驗證｜🔴 實驗負向｜🚫 不採用（Opus 2026-09-02） |
 | T-44 | role-aware 材質候選子集 | 🟠 工程退回（文件）｜🟢 相對正向｜🧪 產品採用暫停（裁決 T-45-A）｜安全缺口 1＋1 |
 | T-45 | 審查制度修正（Fable 卡） | ✅ 已執行（Fable 2026-09-03） |
-| T-46 | T-44 收尾：REPORT §7 修正＋role-aware 回 feature flag | 🔵 **待審（Sonnet 第四輪執行 2026-09-10，依 criteria v3；結果 commit `7b1384e`）→ 待 Opus 複驗**（v1／v2 退回 verdict 保留） |
-| T-42 | gate 交易式輸出與舊產物隔離（插卡 3/4） | ⬜ 未開始（前置 T-46 ✅ 尚未滿足，尚不可開） |
+| T-46 | T-44 收尾：REPORT §7 修正＋role-aware 回 feature flag | ✅ **已驗證（Opus 第四輪複驗 2026-09-10，依 criteria v3；`ec1a7bf`）** |
+| T-42 | gate 交易式輸出與舊產物隔離（插卡 3/4） | 🔵 **待審（Sonnet 2026-09-10，結果 commit `cf1f1ba`）→ 待 Opus 複驗** |
 | T-43 | T-17 產物溯源（插卡 4/4） | ⬜ |
 | T-47 | gate 校準複審量測（量測卡） | ⬜ |
 | T-48 | T-11／T-12 判準 v2 針對性重驗（量測卡） | ⬜ |

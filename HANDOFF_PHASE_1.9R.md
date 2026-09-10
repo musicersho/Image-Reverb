@@ -27,7 +27,19 @@
 > 自此滿足**，卡點移到 **T-42**（T-48 另有裁決 T-48-S 的平行條款）。T-44 工程軸已於 `6c405a1`
 > 獨立通過，不因本卡改寫；v1／v2 兩個退回 verdict 與舊結果永久保留、不補判 PASS。
 > 細節見 TASKS.md T-46 卡「狀態（第四輪複驗，Opus）」、DEV_LOG `2026-09-10 (107)`。
-> **2026-09-10 Sonnet 更新（本檔最新一筆，優先於上面四筆）**：**T-46 v3 第四輪執行完成**，結果 commit
+> **2026-09-10 Sonnet 更新（本檔最新一筆，優先於下面全部）**：**T-42 執行完成**，結果 commit
+> `cf1f1ba`。前置 T-46 ✅ 已於 `ec1a7bf` 滿足後開跑。`run_photo()` 輸出編排段改交易式
+> （archive-first＋staging＋成功才原子發布）；gate 判定條件／`compute_materials_confidence()`／
+> `scene_cues`／門檻 0.4／`geometry.py`／`acoustics.py`／`ir_synth.py`／`ir_metrics.py`／
+> `config.py`／`--override-dims` 導引（裁決 T-48-S 紅線）全部零改動；`--text`／`--scene` 不受影響。
+> `test_output_gate.py` 新增【G】【H】【I】，對舊碼 `git stash` 實測 fail 4 項；新增
+> `t42_transactional_baseline.py`（13 張真實照片改動前後 `git worktree` 比對，geometry／
+> materials／overall／gate／IR md5 全數相符，臥室紅旗仍 BLOCK）。19 支測試 EXIT=0、六條交付
+> IR MD5 全中、`git diff` 限縮在 `pipeline.py`＋`test_output_gate.py`。四軸「工程：🔵 待審」。
+> **卡點移到 Opus（複驗）**，Prompt 見 HANDOFF.md 頂部（「結果 commit」填 `cf1f1ba`）。
+> T-43 前置「T-42 ✅」尚未滿足。細節見 TASKS.md T-42 卡「狀態（Sonnet 執行）」、
+> DEV_LOG `2026-09-10 (108)`。
+> **2026-09-10 Sonnet 更新（T-46 v3 執行）**：**T-46 v3 第四輪執行完成**，結果 commit
 > `7b1384e`（`T-46: 依 criteria v3 …(待驗證)`，與 criteria commit `5807716` 分開）。依上一輪
 > （Opus 第三輪複驗中止，執行輪跑到一半被打斷）留下的處置步驟重跑完整 `--fresh`（39 次真實 CLI，
 > 一次跑完未中斷）：13/13 三項比對（與 B0／round11／round17）全 ✅，`bathroom_tiled`／
@@ -58,9 +70,9 @@
 | 卡 | 工程 | 實驗 | 產品 | MVP | 卡在誰身上 |
 |---|---|---|---|---|---|
 | T-45 審查制度修正 | ✅ 已執行 | — | — | — | 結案 |
-| **T-46** 收尾修正（§7＋feature flag） | 🔵 **待審（Sonnet 第四輪執行 2026-09-10，結果 commit `7b1384e`，依 criteria v3）→ 待 Opus 複驗**（v1 `37e07fe`／v2 `6efa6ba` 兩個退回 verdict 永久保留） | 不適用 | 🧪 flag | 不適用 | ~~Fable（門檻 v2）~~ ~~Sonnet（修正輪）~~ ~~Opus（複驗）~~ ~~Fable（開 criteria v3）~~ ~~Sonnet（v3 修正輪）~~ **Opus（v3 複驗，見 HANDOFF.md 頂部 Prompt）** |
+| **T-46** 收尾修正（§7＋feature flag） | ✅ **已驗證（Opus 第四輪複驗 2026-09-10，依 criteria v3；`ec1a7bf`）** | 不適用 | 🧪 flag | 不適用 | 結案 |
 | **T-44** role-aware | 🟠 **退回**（第二輪） | 🟢 相對正向 | 🧪 暫停採用 | FAIL | **Sonnet**（見 HANDOFF_T44_FIX.md） |
-| T-42 gate 交易式輸出 | ⬜ 未開始 | — | — | — | 等 T-46 ✅ |
+| T-42 gate 交易式輸出 | 🔵 **待審（Sonnet 2026-09-10，結果 commit `cf1f1ba`）→ 待 Opus 複驗** | 不適用 | 不適用 | 不適用 | **Opus（複驗，見 HANDOFF.md 頂部 Prompt）** |
 | T-43 產物溯源 provenance | ⬜ 未開始 | — | — | — | 等 T-42 ✅ |
 | T-47 gate 校準複審量測 | ⬜ 未開始 | 待量測 | 待裁決 T-47-A | 不適用 | 等 T-46／T-42／T-43 ✅ |
 | T-48 T-11／T-12 判準 v2 重驗 | ⬜ 未開始 | 待量測 | 不適用 | 不適用 | 等 T-46 ✅（裁決 T-48-S：**不必等 T-42／T-43**） |

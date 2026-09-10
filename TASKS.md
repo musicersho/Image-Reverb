@@ -7649,7 +7649,70 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
 
 ### T-42 low-confidence gate 交易式輸出與舊產物隔離（插卡 3/4）
 
-- **狀態**：⬜ 未開始
+- **狀態（Sonnet 執行，2026-09-10）**：
+  **四軸**：工程：🔵 **待審**（前置 T-46 ✅ 已於 `ec1a7bf` 滿足；結果 commit `cf1f1ba`，
+  等 Opus 開新視窗依 WORKFLOW §5 複驗）｜實驗：不適用｜產品：不適用（本卡是輸出可信度基礎建設，
+  非模型/門檻實驗）｜MVP：不適用（沿用 T-17 FAIL）。
+  - **交接筆記**：
+    1. 只改 `src/image_reverb/pipeline.py` 的 `run_photo()` 輸出編排段——新增
+       `STAGING_ROOT`／`ARCHIVE_ROOT` 兩個模組常數＋五個私有輔助函式
+       （`_clear_stale_staging`／`_archive_existing_outputs`／`_archive_note`／
+       `_rewrite_meta_json_paths`／`_public_path`／`_publish_staging`）；**gate 判定條件
+       （`overall_confidence == "low"` 與 force 分支）一行不動**，`compute_materials_confidence()`／
+       `scene_cues`／門檻 0.4 零改動；`--override-dims 手動指定房間尺寸` 導引原文逐字保留
+       （裁決 T-48-S 紅線，收工前 `grep -n "override-dims" src/image_reverb/pipeline.py` 實測仍在）；
+       `run_text()`／`run_scene()`（`--text`／`--scene` 管線）一行未動，仍用舊有 `_make_out_dir()`；
+       `geometry.py`／`acoustics.py`／`ir_synth.py`／`ir_metrics.py`／`config.py`
+       （含 `GEOMETRY_SCOPE_MAX_M`）零 diff（`git diff` 已核對）。
+    2. 政策落地：輸入驗證通過後才算「真正開始 preprocess」——先 `_clear_stale_staging()`
+       清掉上次中止殘留，再 `_archive_existing_outputs()` 把既有 `output/preprocess/<stem>/`
+       與 `output/<stem>/`（若存在）**移動**（不刪除）到 `output/.archive/<stem>/<時間戳>/`；
+       本次所有產物（`preprocess_image()` 的 `output_dir` 參數、IR／analysis／viz／wet preview）
+       全部先寫 `output/.staging/<stem>/{preprocess,final}/`；`meta.json`（`preprocess_image()`
+       本體不改，用發布前字串前綴替換修正內嵌路徑）與 `analysis.json` 的路徑欄位一律寫**正式位置**
+       字串（生成期間讀寫仍用 staging Path）；成功時 `_publish_staging()` 把兩個子樹分別
+       `Path.rename()`（同檔案系統原子）到正式位置；gate 擋下（exit 3）／`UnidentifiedImageError`／
+       `(ValueError, KeyError, FileNotFoundError)` 例外中止三個出口都會清掉 staging，
+       並在有舊輸出被 archive 時印出位置與回復方式；exit code 語義（2／3／0）不變。
+    3. `scripts/test_output_gate.py` 新增【G】【H】【I】三案例（修 bug 類，程式碼見卡片自我檢查）：
+       【G】真實 `preprocess_image()`（程式合成非環景小圖，不需模型；surfaces/geometry 仍照
+       既有手法樁掉觸發 gate）→ 斷言 gate 後 `output/preprocess/<stem>/` 與 `output/<stem>/`
+       都無本次殘留；【H】預放假的舊 `meta.json`／`analysis.json`／`ir_mono.wav` 進兩個正式位置
+       → 跑一個被 gate 擋下的 run → 斷言舊檔已不在正式位置、完整出現在 `output/.archive/`
+       且 bytes 逐位元相同（可回復性）；【I】成功 run（樁到底）→ 斷言發布後 `analysis.json` 的
+       `output_dir`／`ir_mono.path`／`ir_stereo.path`／`wet_preview.path` 全部指向正式位置
+       （非生成期間的 staging 路徑）且檔案在該位置真的存在，`output/.staging/<stem>/`
+       執行完後不存在。案例 A–F（gate 判定行為回歸）全部照跑不變。
+    4. **舊碼必須 fail 的最小重現**（`git stash push -- src/image_reverb/pipeline.py`，
+       只把 `pipeline.py` 還原成本卡改動前、`test_output_gate.py` 維持新版）：
+       舊碼下【G】【H】共 4 項斷言確實 fail——`output/preprocess/<stem>/ 沒有本次殘留`（舊碼
+       gate 前就把 preprocess 產物直接寫進正式位置，殘留）、【H】的三項（舊檔未被移到 archive、
+       仍留在正式位置、archive 目錄根本不存在，共 3 項）；案例【I】在舊碼上仍通過（成功路徑
+       本來就會正確寫出，只是沒有 staging/archive 機制）——這正是本卡要修的洞，符合預期。
+       `git stash pop` 後確認 `git status` 乾淨、new pipeline.py 恢復。
+    5. **13 張基線變化表（鐵則 8，`scripts/t42_transactional_baseline.py`，新腳本，
+       `output/transactional_output/{REPORT.md,tables.md}` 程式產生）**：對 13 張真實照片，
+       用 `git worktree` 在 `HEAD`（`ec1a7bf`，即本卡改動前）與工作目錄（本卡改動後）
+       各跑一次真實 CLI（`python -m src.image_reverb <photo> --force-low-confidence --no-viz`，
+       26 次），逐張比對 geometry／materials／overall confidence／gate**全部相同**、
+       `ir_mono.wav` md5**逐位元相同**（交易化只改寫檔位置與時機，不改內容）；改動後
+       13 張全數 `output/preprocess/<stem>/` 與 `output/<stem>/` 同時成功發布、
+       `output/.staging/<stem>/` 不殘留。`bedroom_ai_generated`（臥室紅旗）gate 改動前後
+       皆為 `BLOCK`，未鬆動。⚠️ `TunnelToHell` 與 `EXPECTED_GATE` 凍結表的 geometry 欄
+       不符（表列 medium、實測 low）——**與 T-46 v3 REPORT 記錄的已知表過期問題同型**
+       （T-37 equirect 修正後未更新，非本卡回歸，改動前後一致地不符，交 T-47），
+       腳本已把它列為資訊性列（不阻擋本卡結論）。
+    6. **六條交付 IR MD5 全數逐位元相同**：T-14 兩條由 `test_ir_synth.py`【6】內建比對；
+       T-20 兩條 `2adbaa75eb698772a8c9aa693179ec47`／`2dd19b6e6d351d713887636fe45cd67e`；
+       T-21 兩條 `9a94ffdf5d8295aee7889729c39c9cd8`／`a1c21bcc3fd9aa3480df203a89c8cd05`
+       （手動重生 `gen_ir_from_text.py`／`gen_ir_coupled.py` 核對後已刪暫存檔）。
+    7. **自我檢查**：19 支 `scripts/test_*.py` 逐支 EXIT=0（含新增的 `test_output_gate.py`
+       G/H/I）；`grep -n "override-dims" src/image_reverb/pipeline.py` 實測導引仍在
+       gate 訊息內（裁決 T-48-S）；`git diff` 限縮在 `pipeline.py`＋`test_output_gate.py`
+       （`geometry.py`／`acoustics.py`／`ir_synth.py`／`ir_metrics.py`／`config.py` 全零 diff）；
+       `git worktree list` 只剩主 repo，無殘留 `.staging`／測試用 `.archive` 目錄。
+  - **下一步**：開 Opus 新視窗依 WORKFLOW §2.2 v2 複驗，「結果 commit」填 `cf1f1ba`。
+    通過後 T-43 前置（「T-42 ✅」）才算滿足。
 - **🔮 裁決 T-45-A 更新前置（2026-09-03）**：前置改為 **T-46 ✅（工程）**——T-44 停在 🟠 退回＋產品採用暫停，不再以「T-44 ✅」為前置；其餘內容不變。本卡在 Phase 1.9-R 順序中排 T-46 之後（見檔尾）。
 - **🔮 裁決 T-48-S 追加紅線（2026-09-08）**：T-48 可能在本卡之前或同期跑（見 T-48 卡）。本卡與 T-43 **不得**：
   改 gate 訊息中「幾何不可信 → 用 `--override-dims` 手動指定房間尺寸」導引的語意（T-48 A-2 判準依賴；文案其他

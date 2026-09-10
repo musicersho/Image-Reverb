@@ -69,7 +69,18 @@
       role_aware 會透過 `scene_cues["out_of_domain"]` 間接影響 geometry_confidence
       （`site_photo_department_store`）；`EXPECTED_GATE` 凍結表的 geometry 欄位疑似
       部分過期（`TunnelToHell`，T-37 之後未見更新）。詳見 TASKS.md T-46 卡交接筆記。
-- [ ] **T-42 → T-43**（下一張；產物可信度：交易式輸出、provenance）
+- [ ] **T-42 🔵 待審（Sonnet 2026-09-10，結果 commit `cf1f1ba`）→ 開 Opus 新視窗複驗** → T-43
+      — archive-first 隔離舊產物＋staging 暫存＋成功才原子發布；只動
+      `pipeline.py` 的 `run_photo()` 輸出編排段，gate 判定條件／
+      `compute_materials_confidence()`／`scene_cues`／門檻 0.4／`geometry.py`／
+      `acoustics.py`／`ir_synth.py`／`ir_metrics.py`／`config.py`／
+      `--override-dims` 導引全部零改動（裁決 T-48-S 紅線）；`--text`／`--scene` 不受影響。
+      `test_output_gate.py` 新增【G】【H】【I】三案例，對舊碼 `git stash` 實測 fail 4 項
+      （新腳本 `t42_transactional_baseline.py` 程式產生
+      `output/transactional_output/{REPORT.md,tables.md}`：13 張真實照片改動前後
+      `git worktree` 比對，geometry/materials/overall/gate 與 IR md5 全數相符、
+      臥室紅旗仍 BLOCK）。19 支測試 EXIT=0、六條交付 IR MD5 全中、`git diff`
+      限縮在兩檔。詳見 TASKS.md T-42 卡「交接筆記」。
 - [ ] **T-47** gate 校準複審量測（兩模式 ×四樣證據）→ 🔮 裁決 T-47-A
 - [ ] **T-48** T-11／T-12 判準 v2 針對性重驗（只量不改；裁決 T-48-S 2026-09-08：前置只有 T-46 ✅，可與 T-42／T-43 平行）
 - [ ] **T-44-R1**（等使用者：核准絕對下限選項 A／B、提供 ≥5 張 held-out 照片並逐面確認）
