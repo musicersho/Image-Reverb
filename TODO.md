@@ -76,9 +76,15 @@
       卡片「diff 限縮兩檔」與鐵則 8 措辭互斥）詳見 TASKS.md T-42 卡「🟡 Opus 附帶發現」。
       → **🔮 已裁決（T-42-A，Fable 2026-09-10）**：① 另開微型卡 T-49；② 併入 T-49 B 部分；
       ③ 開 T-50 手動清理指令；④ T-43 措辭改寫＋鐵則 13。
-- [ ] **T-49**（下一張；裁決 T-42-A 微型卡）`t42_transactional_baseline.py` 釘死 `OLD_COMMIT="ec1a7bf"`
-      ＋REPORT 印雙邊 rev-parse＋`run_photo()` 非預期例外 try/finally＋案例 J；結果寫
-      `output/transactional_output/t49/`，與 T-42 版 `tables.md` diff 必須為空。
+- [x] ~~**T-49 🔵 待審（Sonnet 2026-09-10，結果 commit `95d0d5a`）→ 開 Opus 新視窗複驗** → T-43~~ ——
+      `t42_transactional_baseline.py` 釘死 `OLD_COMMIT="ec1a7bf"`＋建好 worktree 自檢雙邊
+      `git rev-parse`＋REPORT 印 Provenance 區塊；`run_photo()` 第四出口（非預期例外）
+      包 `try/finally`（`published`／`archive_note_printed` 兩旗標），`_publish_staging()`
+      半發布失敗印復原指引後 `raise`；既有三出口 stderr 文字與 gate 判定條件逐字不變
+      （`diff -b` 已核對）。`test_output_gate.py` 新增案例【J】，對舊碼實測 (b)(e) fail、
+      (a)(c)(d) 過。19 支測試 EXIT=0、六條交付 IR MD5 全中、`t49/tables.md` 與 T-42 版
+      diff 為空、`git diff --stat -- src/` 只有 `pipeline.py`。詳見 TASKS.md T-49 卡
+      「交接筆記」。
 - [ ] **T-43** T-17 產物溯源（前置 **T-42 ✅ 且 T-49 ✅**；範圍依鐵則 13 句型改寫：`src/` 限縮
       `pipeline.py`＋新增 `provenance.py`，`scripts/` 只得 `t17_blind_test.py`／`test_t17_provenance.py`／
       `t43_provenance_baseline.py`）

@@ -1,5 +1,36 @@
 # Dev Log
 
+## 2026-09-10 (111)
+
+- **T-49 執行完成（Sonnet）——待 Opus 複驗**。動工前先發現前置缺口：使用者原要求執行 T-43，
+  但 HANDOFF.md 頂端裁決 T-42-A 已把 T-43 前置改為「T-42 ✅ 且 T-49 ✅」，T-49 卡狀態仍是
+  「⬜ 未開始」——攔下並請使用者確認後改做 T-49。
+- **A 部分**（`scripts/t42_transactional_baseline.py`）：「改動前」參照改成釘死的
+  `OLD_COMMIT = "ec1a7bf"` 常數（同 T-42 已驗證 REPORT 記錄的 commit），不再用
+  `git worktree add --detach <dir> HEAD`；worktree 建好後自檢 `git rev-parse HEAD` 是否等於
+  `OLD_COMMIT` 全長雜湊，不等即 `SystemExit`；REPORT 檔頭新增 Provenance 區塊（雙邊
+  `git rev-parse HEAD`＋主 repo `git status --porcelain -- src scripts`＋產生時間 UTC）；
+  `tables.md` 硬區維持只有 13 列、不含 provenance；沒開任何 CLI 參數指定舊 commit（鐵則 13）。
+- **B 部分**（`src/image_reverb/pipeline.py`）：`run_photo()` 加第四個出口——非預期例外。
+  從 `_archive_existing_outputs()` 之後到 `_publish_staging()`（含呼叫本身）整段包
+  `try/finally`，`published`／`archive_note_printed` 兩個旗標區分「真的發布了」與
+  「已印過 note」；`finally` 只在未發布時清 staging＋（若前面三出口都還沒印過才）補印
+  archive_note；例外照樣往上拋，不吞、不改 exit code。`_publish_staging()` 內部 rename
+  半途失敗＝半發布，印明確復原指引後 `raise`，此時 `published` 已 `True`，staging 不刪。
+  用 `diff -b`（忽略空白）核對整份 `pipeline.py` 改動前後，除本卡明列的插入外語意零 diff——
+  gate 判定條件、`--override-dims` 導引、既有三出口 stderr 文字全部逐字不變。
+- **`test_output_gate.py` 新增案例【J】**：樁 `_run_wet_preview` 丟 `CalledProcessError`，
+  斷言例外往上拋＋staging 清除＋archive_note 有印＋舊檔正確隔離。對舊碼（`git stash` 還原
+  `pipeline.py`）實測 (a)(c)(d) 過、**(b)(e) fail**（staging 殘留、無 note），符合預期。
+- **自我檢查**：19 支 `scripts/test_*.py` 逐支 EXIT=0（含案例 J）；六條交付 IR MD5 全中
+  （T-14 內建、T-20／T-21 手動重生核對）；`python scripts/t42_transactional_baseline.py
+  --fresh --out-dir output/transactional_output/t49/`（26 次真實 CLI）13 張全過、
+  `bedroom_ai_generated` 仍 BLOCK、`t49/tables.md` 與 T-42 已驗證 `tables.md` diff 為空；
+  T-42 已驗證 `REPORT.md`／`tables.md` 零 diff（未被覆寫）；`git diff --stat -- src/` 只有
+  `pipeline.py`；`git worktree list` 全程只剩主 repo。
+- **下一步**：開 Opus 新視窗依 WORKFLOW §2.2 v2 複驗 T-49，**結果 commit `95d0d5a`**。通過後
+  T-43 前置「T-42 ✅ 且 T-49 ✅」才算滿足，可以開 T-43。細節見 TASKS.md T-49 卡「交接筆記」。
+
 ## 2026-09-10 (110)
 
 - **🔮 裁決 T-42-A（Fable）——Opus T-42 四項附帶發現逐項裁決完畢**，全文在 TASKS.md T-42 卡

@@ -1,5 +1,54 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔵 2026-09-10 Sonnet：T-49 執行完成——**現在該做的是開 Opus 新視窗複驗**，結果 commit `95d0d5a`
+>
+> 使用者原要求執行 T-43，動工前先讀 HANDOFF/TASKS 發現裁決 T-42-A 已把 T-43 前置改成
+> 「T-42 ✅ 且 T-49 ✅」，T-49 當時仍是「⬜ 未開始」——攔下向使用者確認後改做 T-49（微型卡，
+> 裁決 T-42-A 執行卡 1/2）。
+>
+> **A 部分**（`scripts/t42_transactional_baseline.py`）：「改動前」參照從
+> `git worktree add --detach <dir> HEAD` 改成釘死的 `OLD_COMMIT = "ec1a7bf"` 常數（同 T-42
+> 已驗證 REPORT 記錄的 commit；鐵則 13 首例），worktree 建好後自檢
+> `git rev-parse HEAD`＝主 repo `git rev-parse OLD_COMMIT` 全長雜湊，不等即 `SystemExit`；
+> REPORT 檔頭新增 Provenance 區塊（雙邊 `git rev-parse HEAD`＋主 repo
+> `git status --porcelain -- src scripts`＋產生時間 UTC，T-40 指紋精神）；`tables.md` 硬區
+> 維持只有 13 列、不含 provenance；**沒有**新增任何 CLI 參數讓人指定舊 commit。
+>
+> **B 部分**（`src/image_reverb/pipeline.py`）：`run_photo()` 加第四個出口——非預期例外
+> （如 `_run_wet_preview()` 的 `CalledProcessError`）。從 `_archive_existing_outputs()` 之後
+> 到 `_publish_staging()`（含呼叫本身）整段包 `try/finally`，`published`（呼叫
+> `_publish_staging()` 前一行才設 `True`）與 `archive_note_printed`（既有三出口印
+> `archive_note` 之後補設 `True`）兩個旗標；`finally` 只在未發布時清 staging，並且只在
+> 前三出口都還沒印過時才補印一次 `archive_note`。`_publish_staging()` 內部新增
+> `try/except Exception`：rename 半途失敗（半發布）印明確復原指引（staging 位置＋archive
+> 位置）後 `raise`，此時 `published` 已 `True`，`finally` 不會清掉半發布的 staging。
+> **既有三個出口的 stderr 文字內容與順序逐字不變、gate 判定條件一行不動、`--override-dims`
+> 導引原文逐字保留**——用 `diff -b`（忽略空白）比對整份 `pipeline.py` 改動前後，除本卡明列
+> 的插入（`_publish_staging()` 簽名＋try/except、header 註解、內層 `try:`、三處
+> `archive_note_printed = True`、`published = True`＋呼叫改簽名、`finally:` 區塊）之外，
+> **其餘每一行完全相同**。
+>
+> `scripts/test_output_gate.py` 新增案例【J】（修 bug 類）：樁 `_run_wet_preview` 丟
+> `subprocess.CalledProcessError`，斷言 (a) 例外確實往上拋、(b) staging 不殘留、
+> (c) 正式位置未被本次發布、(d) archive 內舊檔 bytes 逐位元相同、(e) stderr 含
+> `archive_note`。對舊碼（`git stash push -- src/image_reverb/pipeline.py` 還原）實測：
+> (a)(c)(d) 過、**(b)(e) fail**（staging 殘留、無 note），符合預期；還原後 `git status`
+> 乾淨、`pipeline.py` 回到新版。
+>
+> 19 支 `scripts/test_*.py` EXIT=0（含 A–J）；六條交付 IR MD5 全數逐位元相同（T-14 兩條
+> `test_ir_synth.py`【6】內建比對＝`f3a763be…`／`f24353b5…`；T-20 兩條 `--text 浴室`／
+> `--text 大教堂` 重生＝`2adbaa75…`／`2dd19b6e…`；T-21 兩條 `--scene
+> assets/scenes/{neighbor_voices,stadium_corridor}.json` 重生＝`9a94ffdf…`／`a1c21bcc…`，
+> 比對後暫存輸出已刪）；`python scripts/t42_transactional_baseline.py --fresh --out-dir
+> output/transactional_output/t49/`（26 次真實 CLI，約 8 分鐘）13 張全過、`mismatches` 空、
+> `bedroom_ai_generated` 仍 `BLOCK`、`t49/tables.md` 與 T-42 已驗證 `tables.md` **diff 為
+> 空**；T-42 已驗證 `REPORT.md`／`tables.md` 零 diff（未被覆寫）；`git diff --stat -- src/`
+> 只有 `pipeline.py`；`git worktree list` 全程只剩主 repo。
+>
+> **下一步**：開 Opus 新視窗，貼 WORKFLOW §2.2 v2 的複驗 Prompt，**「結果 commit」填
+> `95d0d5a`**。通過後 T-43 前置（「T-42 ✅ 且 T-49 ✅」）才算滿足。詳見 TASKS.md T-49 卡
+> 「交接筆記」與 DEV_LOG `2026-09-10 (111)`。
+
 > ## 🔮 2026-09-10 Fable：裁決 T-42-A 已下——**現在該做的是開 Sonnet 視窗執行 T-49**（微型卡），再來才是 T-43
 >
 > Opus 在 T-42 複驗通過時提出四項附帶發現（新需求、非未達項），Fable 逐項裁決，全文在

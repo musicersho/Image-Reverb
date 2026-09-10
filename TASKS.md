@@ -8798,8 +8798,9 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
       **不要回滾 `src/`、不要改腳本斷言、不要重寫 `BASELINE.md`**。
 
 ### T-49 T-42 收尾：產表腳本釘死參照 commit＋`run_photo()` 非預期例外出口（微型卡；裁決 T-42-A 執行卡 1/2）
-- **狀態**：⬜ 未開始
-- **四軸狀態**：工程：未開始｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
+- **狀態**：🔵 待審（Sonnet 執行完成，結果 commit `95d0d5a`，待 Opus 複驗）
+- **四軸狀態**：工程：🔵 待審（結果 commit `95d0d5a`）｜實驗：不適用｜產品：不適用｜
+  MVP：不適用（沿用 T-17 FAIL）
 - **前置**：T-42 ✅（`6fe1e43`）。**T-43 的前置自此改為「T-42 ✅ 且 T-49 ✅」**；T-48 可平行（裁決 T-48-S）。
 - **為什麼**（Opus T-42 附帶發現 ①②；裁決 T-42-A 第 1、2 點）：
   1. `scripts/t42_transactional_baseline.py` 用 `git worktree add --detach <dir> HEAD` 當「改動前」，
@@ -8879,7 +8880,93 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
   archive_note 印兩次；紅旗：T-42 已驗證 REPORT／tables 被覆寫；紅旗：gate 判定條件任何 diff。
   Opus 自己 `--fresh --out-dir output/transactional_output/t49_opus/` 重跑一次（此時 HEAD 已含結果
   commit，REPORT 的 porcelain 段應為空）→ `tables.md` 與 T-42 版零 diff；審完刪 `t49_opus/`。
-- **交接筆記**：
+- **交接筆記（Sonnet 執行，2026-09-10）**：
+  1. **A 部分（`scripts/t42_transactional_baseline.py`）**：新增模組常數
+     `OLD_COMMIT = "ec1a7bf"`（同 T-42 已驗證 REPORT 記錄的 commit），`OLD_WORKTREE_DIR`
+     改成依 `OLD_COMMIT` 命名；`git worktree add --detach <dir> HEAD` 改成
+     `git worktree add --detach <dir> OLD_COMMIT`；建好後自檢 worktree
+     `git rev-parse HEAD` 與主 repo `git rev-parse OLD_COMMIT` 全長雜湊是否相等，
+     不等即 `SystemExit("🔴 卡關 …")`（寫法照抄 `t46_role_flag_baseline.py` 的
+     `build_baseline_b0()` 守門）。docstring／註解／print／REPORT 文字裡所有
+     「HEAD 就是改動前」敘述已改為引用 `OLD_COMMIT`。REPORT 檔頭新增
+     `## Provenance` 區塊：`OLD_COMMIT` 常數值、改動前 worktree
+     `git rev-parse HEAD`（全長）、改動後主 repo `git rev-parse HEAD`（全長）、
+     主 repo `git status --porcelain -- src scripts`（非空時原文照印＋標
+     ⚠️ 未 commit 工作區，不因此 exit 非 0）、產生時間 UTC；`tables.md` 硬區
+     維持只有 13 列、不含任何 provenance。**沒有新增任何 CLI 參數**讓人指定舊
+     commit（鐵則 13：參照只能是常數）。
+  2. **B 部分（`src/image_reverb/pipeline.py`）**：`run_photo()` 從
+     `_archive_existing_outputs()` 之後到 `_publish_staging()`（含呼叫本身）
+     整段包進一層 `try/finally`，用 `published`（預設 `False`，呼叫
+     `_publish_staging()` 前一行才設 `True`）與 `archive_note_printed`
+     （既有三出口各自 `if archive_note: print(...)` 之後補一行設 `True`）兩個
+     旗標；`finally` 只在 `not published` 時清 staging，並且只在
+     `archive_note and not archive_note_printed` 時才補印一次 note——**既有三個
+     出口（exit 2 ×2、exit 3）的 stderr 文字內容與順序逐字不變**（用
+     `diff -b`〔忽略空白〕比對改動前後整份 `pipeline.py`，除了本卡明列的插入
+     行與縮排位移，語意零 diff——已核對）。`_publish_staging()` 新增
+     `archive_dir` 參數，內部本體包 `try/except Exception`：rename 半途失敗時
+     印「⚠️ 發布中斷：{staging_root} 可能處於半發布狀態…（本次執行前的舊輸出仍
+     隔離於 {archive_dir}）」後 `raise`（原封重丟，不吞、不改語意）；此時呼叫端
+     `published` 已是 `True`，`finally` 不會清掉半發布的 staging。gate 判定條件
+     （`overall_confidence == "low"` 與 force 分支）一行不動；
+     `--override-dims 手動指定房間尺寸` 導引原文逐字保留（`grep -n
+     "override-dims" src/image_reverb/pipeline.py` 已核對，兩處都在）；
+     `run_text()`／`run_scene()` 一行未動；`geometry.py`／`acoustics.py`／
+     `ir_synth.py`／`ir_metrics.py`／`config.py`／`surfaces.py` 全零 diff。
+  3. **`scripts/test_output_gate.py` 新增案例【J】**：樁 `pipeline._run_wet_preview`
+     丟 `subprocess.CalledProcessError`（其餘沿用【I】的樁到底手法，medium
+     confidence 不觸發 gate），並預先放假的舊 `meta.json`／`analysis.json`／
+     `ir_mono.wav` 到正式位置（同【H】手法）。`run_photo()` 包在
+     `try/except subprocess.CalledProcessError`，`contextlib.redirect_stderr`
+     捕下 stderr，斷言 (a) 例外確實往上拋、(b) `output/.staging/<stem>/` 不殘留、
+     (c) 正式位置兩處未被本次發布、(d) archive 內三個舊檔 bytes 逐位元相同、
+     (e) stderr 含 `_archive_note()` 輸出。**舊碼實測**（`git stash push --
+     src/image_reverb/pipeline.py` 還原到 `4bff276`／`6fe1e43` 版
+     `pipeline.py`，`test_output_gate.py` 維持新版）：
+     ```
+     ❌ (b) output/.staging/<stem>/ 不殘留（finally 兜底清除）：exists=True
+     ❌ (e) stderr 含 archive_note 輸出（舊輸出隔離位置與回復方式）：stderr=''
+     ❌ 2 項失敗：(b) output/.staging/<stem>/ 不殘留（finally 兜底清除）、
+       (e) stderr 含 archive_note 輸出（舊輸出隔離位置與回復方式）
+     ```
+     (a)(c)(d) 皆過，符合預期（舊碼沒有 finally 兜底，例外照樣往上拋、archive-first
+     隔離也照樣發生，差的只是「清 staging」與「印 note」這兩件事）。實測後
+     `git stash pop` 還原，`git status --porcelain -- src scripts` 確認乾淨、
+     三個改動檔（`pipeline.py`／兩支 `scripts/`）都還原回新版。
+  4. **自我檢查（全部本視窗實跑，非轉述）**：
+     - `scripts/test_*.py` 19 支逐支 `EXIT=0`（含 `test_output_gate.py` 的 A–J）；
+     - 六條交付 IR MD5 全中：T-14 兩條由 `test_ir_synth.py`【6】內建比對
+       （`f3a763bed13cf4d6f49dbacddee6313f`／`f24353b5dbecf0f6073ca65a7be44ad3`）；
+       T-20 兩條本視窗用 `--text 浴室`／`--text 大教堂` 重生比對相符
+       （`2adbaa75eb698772a8c9aa693179ec47`／`2dd19b6e6d351d713887636fe45cd67e`）；
+       T-21 兩條用 `--scene assets/scenes/{neighbor_voices,stadium_corridor}.json`
+       重生比對相符（`9a94ffdf5d8295aee7889729c39c9cd8`／
+       `a1c21bcc3fd9aa3480df203a89c8cd05`），比對後暫存輸出已刪除；
+     - `python scripts/t42_transactional_baseline.py --fresh --out-dir
+       output/transactional_output/t49/`（26 次真實 CLI，約 8 分鐘）13 張全數
+       通過、`mismatches` 空、`bedroom_ai_generated` 仍 `BLOCK`；
+     - `diff output/transactional_output/tables.md
+       output/transactional_output/t49/tables.md` 為空；
+     - `git diff -- output/transactional_output/REPORT.md
+       output/transactional_output/tables.md` 為空（T-42 已驗證產物一個 bit 未改）；
+     - `grep -n 'worktree.*add.*"HEAD"' scripts/t42_transactional_baseline.py`
+       為空；`grep -n "override-dims" src/image_reverb/pipeline.py` 兩處導引仍在；
+     - `git diff --stat -- src/` 只有 `pipeline.py`；`git worktree list` 執行前後
+       都只剩主 repo；
+     - `diff -b`（忽略空白）比對 `pipeline.py` 改動前後，確認除本卡明列的插入
+       （`_publish_staging()` 簽名＋try/except、header 註解、內層 `try:`、三處
+       `archive_note_printed = True`、`published = True`＋呼叫改簽名、`finally:`
+       區塊）之外，**其餘每一行完全相同**（含 gate 判定條件、`--override-dims`
+       導引、所有既有 print 訊息）。
+  5. **範圍確認**：`git status --porcelain -- src scripts` 只有
+     `src/image_reverb/pipeline.py`、`scripts/t42_transactional_baseline.py`、
+     `scripts/test_output_gate.py` 三檔；`output/transactional_output/t49/` 為
+     新增未追蹤目錄（只含程式產出的 `REPORT.md`／`tables.md`）；未動
+     SPEC.md／ROADMAP.md／`output/mvp_acceptance/`／`output/transactional_output/
+     {REPORT.md,tables.md}`（T-42 已驗證產物）。
+  6. **下一步**：開 Opus 新視窗依 WORKFLOW §2.2 v2 複驗 Prompt，**結果 commit 填 `95d0d5a`**。
+     通過後 T-43 前置「T-42 ✅ 且 T-49 ✅」才算滿足。
 
 ### T-50 `output/.archive` 手動清理指令（停滯期填充卡；裁決 T-42-A 執行卡 2/2；`src/` 零改動）
 - **狀態**：⬜ 未開始
