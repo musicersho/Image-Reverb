@@ -1,5 +1,29 @@
 # Dev Log
 
+## 2026-09-10 (110)
+
+- **🔮 裁決 T-42-A（Fable）——Opus T-42 四項附帶發現逐項裁決完畢**，全文在 TASKS.md T-42 卡
+  「🔮 裁決 T-42-A」。讀了什麼才動手：CLAUDE／SPEC／ROADMAP／WORKFLOW、T-42／T-43／T-47／T-48／
+  T-44-R1／T-17-R2 卡、DEV_LOG (107)～(109)、`t42_transactional_baseline.py`（確認第 119 行確實是
+  `git worktree add --detach … "HEAD"`）、`t46_role_flag_baseline.py` 的 `B0_COMMIT` 守門、
+  `pipeline.py` `run_photo()` 三個出口與 `_publish_staging()`、`test_output_gate.py` 案例 I 的樁法、
+  `du -sh output/.archive`＝82M（實測相符）。
+- **裁決結果**：① 選 (b) **另開微型卡 T-49**，不併 T-43（T-43 的「舊碼必須 fail」不該混進與溯源無關的
+  變更；T-43 的產表腳本要拿 T-42 那支當樣板，樣板先修對）；「產表腳本一律釘死參照 commit、REPORT 印
+  雙邊 `git rev-parse HEAD`」升為 **Phase 1.9-R 共同鐵則 13**＋Phase 1.9 鐵則 8 補充細則二。
+  ② 開卡補 try/finally，**併入 T-49 B 部分、排 T-43 前**（出口結構先定，T-43 再往成功路徑加 provenance）；
+  政策補條：非預期例外→清 staging、印 archive note、照樣 raise 不吞錯、不加第四種 exit code；發布中
+  rename 失敗不刪 staging。③ **開 T-50** `scripts/prune_archive.py`：只提供手動指令、預設 dry-run、
+  `--yes` 才刪、每 stem 保留 `--keep N`（預設 3）；不採保留天數、不採自動清理；停滯期填充卡，T-47／T-48／
+  T-17-R2 期間禁止 `--yes`。④ 採納措辭改寫：T-42 原句不改、加語意註記；T-43 五處改為「`src/` 限縮在 X；
+  `scripts/` 只得 Y」句型並點名 `t43_provenance_baseline.py`＋新增 `provenance.py`；T-47／T-48 無矛盾不動。
+- **順序**：T-46 ✅ → T-42 ✅ → **T-49（下一張）** → T-43 → T-47 → 裁決 T-47-A → T-44-R1 → T-17-R2；
+  T-48 平行條款不變；T-50 停滯期做。T-43 前置改「T-42 ✅ 且 T-49 ✅」，T-47 前置同步加 T-49。
+- **本裁決不改任何驗收門檻**（純新開卡＋措辭釐清），不觸 WORKFLOW §7.1 的「結果後改同版門檻」；
+  T-42 已驗證的 `output/transactional_output/{REPORT.md,tables.md}` 唯讀，T-49 寫 `t49/` 子目錄。
+  `AGENTS.md`（未追蹤、Codex 用的入口說明）本輪未動、未納入 commit。
+- **下一步**：開 Sonnet 視窗執行 **T-49**（卡片在 TASKS.md Phase 1.9-R 節、T-46 之後）。
+
 ## 2026-09-10 (109)
 
 - **T-42 Opus 複驗通過——工程軸 ✅ 已驗證**（對象＝結果 commit `cf1f1ba`；依 WORKFLOW §5）。

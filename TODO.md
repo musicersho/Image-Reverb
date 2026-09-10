@@ -74,6 +74,16 @@
       的「改動前」參照用 `HEAD` 而非釘死 commit，收工 commit 後再跑會變成新碼比新碼的
       假綠燈並覆寫 REPORT。另三項（未攔截例外不印回復方式、`.archive` 已 82M 待訂清理策略、
       卡片「diff 限縮兩檔」與鐵則 8 措辭互斥）詳見 TASKS.md T-42 卡「🟡 Opus 附帶發現」。
+      → **🔮 已裁決（T-42-A，Fable 2026-09-10）**：① 另開微型卡 T-49；② 併入 T-49 B 部分；
+      ③ 開 T-50 手動清理指令；④ T-43 措辭改寫＋鐵則 13。
+- [ ] **T-49**（下一張；裁決 T-42-A 微型卡）`t42_transactional_baseline.py` 釘死 `OLD_COMMIT="ec1a7bf"`
+      ＋REPORT 印雙邊 rev-parse＋`run_photo()` 非預期例外 try/finally＋案例 J；結果寫
+      `output/transactional_output/t49/`，與 T-42 版 `tables.md` diff 必須為空。
+- [ ] **T-43** T-17 產物溯源（前置 **T-42 ✅ 且 T-49 ✅**；範圍依鐵則 13 句型改寫：`src/` 限縮
+      `pipeline.py`＋新增 `provenance.py`，`scripts/` 只得 `t17_blind_test.py`／`test_t17_provenance.py`／
+      `t43_provenance_baseline.py`）
+- [ ] **T-50** `.archive` 手動清理指令（停滯期填充卡；預設 dry-run、`--yes` 才刪、每 stem 保留 N 份；
+      T-47／T-48／T-17-R2 期間禁止 `--yes`）
 - [x] ~~**T-42 🔵 待審（Sonnet 2026-09-10，結果 commit `cf1f1ba`）→ 開 Opus 新視窗複驗** → T-43~~
       — archive-first 隔離舊產物＋staging 暫存＋成功才原子發布；只動
       `pipeline.py` 的 `run_photo()` 輸出編排段，gate 判定條件／
@@ -87,7 +97,7 @@
       臥室紅旗仍 BLOCK）。19 支測試 EXIT=0、六條交付 IR MD5 全中、`git diff`
       限縮在兩檔。詳見 TASKS.md T-42 卡「交接筆記」。
 - [ ] **T-47** gate 校準複審量測（兩模式 ×四樣證據）→ 🔮 裁決 T-47-A
-- [ ] **T-48** T-11／T-12 判準 v2 針對性重驗（只量不改；裁決 T-48-S 2026-09-08：前置只有 T-46 ✅，可與 T-42／T-43 平行）
+- [ ] **T-48** T-11／T-12 判準 v2 針對性重驗（只量不改；裁決 T-48-S 2026-09-08：前置只有 T-46 ✅，可與 T-49／T-43 平行）
 - [ ] **T-44-R1**（等使用者：核准絕對下限選項 A／B、提供 ≥5 張 held-out 照片並逐面確認）
 - [ ] **T-17-R2** MVP 重新驗收（新盲測種子與編號、T-43 provenance、結果寫 `output/mvp_acceptance_r2/`）
 - [ ] 🔮 待裁決（本輪不開卡）：外部 bug 掃描 `IMAGE_REVERB_BUG_SCAN_AFTER_T39.md` 的 B-01

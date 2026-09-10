@@ -1,5 +1,30 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔮 2026-09-10 Fable：裁決 T-42-A 已下——**現在該做的是開 Sonnet 視窗執行 T-49**（微型卡），再來才是 T-43
+>
+> Opus 在 T-42 複驗通過時提出四項附帶發現（新需求、非未達項），Fable 逐項裁決，全文在
+> TASKS.md T-42 卡「🔮 裁決 T-42-A」：
+>
+> 1. **產表腳本參照未釘死 → 另開微型卡 T-49（不併 T-43）**：`t42_transactional_baseline.py` 改成
+>    `OLD_COMMIT = "ec1a7bf"` 常數＋worktree HEAD 自檢＋REPORT 印雙邊 `git rev-parse HEAD`，寫新子目錄
+>    `output/transactional_output/t49/`，T-42 已驗證的 REPORT／tables 唯讀。升為 **Phase 1.9-R 鐵則 13**。
+> 2. **未攔截例外讓舊輸出無聲消失 → 併入 T-49 B 部分，排 T-43 前**：`run_photo()` 包 `try/finally`
+>    （清 staging＋印 archive note），例外照樣 raise、不吞錯、不加新 exit code；`test_output_gate.py`
+>    新增案例 J（對舊碼必須 fail）。
+> 3. **`.archive` 82M 只增不減 → 開 T-50 手動清理指令**（預設 dry-run、`--yes` 才刪、每 stem 保留 N 份）；
+>    **停滯期填充卡**，不進關鍵路徑，T-47／T-48／T-17-R2 期間禁止 `--yes`。落地前誰都不得手動 rm。
+> 4. **卡片措辭與鐵則 8 互斥 → 採納**：T-43 五處改為「`src/` 的 diff 限縮在 X；`scripts/` 只得 Y」句型，
+>    點名 `t43_provenance_baseline.py`（釘死 T-49 結果 commit）與新增 `src/image_reverb/provenance.py`。
+>
+> **順序**：T-46 ✅ → T-42 ✅ → **T-49（下一張）** → T-43 → T-47 → 裁決 T-47-A → T-44-R1 → T-17-R2；
+> T-48 平行條款（裁決 T-48-S）不變。**T-43 前置改為「T-42 ✅ 且 T-49 ✅」。**
+>
+> 開 Sonnet 視窗貼：「執行 TASKS.md 的任務 T-49。先讀 CLAUDE.md 和該任務卡的全部內容再動工，
+> 完成後執行任務卡裡的自我檢查，最後照 WORKFLOW.md 第 4 節做收工程序。收工時任務卡狀態一律寫四軸。」
+> T-49 重點：A 部分改腳本（釘死 `ec1a7bf`）、B 部分改 `run_photo()` 出口（try/finally）、案例 J 舊碼 fail、
+> 最後 `--fresh --out-dir output/transactional_output/t49/` 跑一次 26 次真實 CLI，`t49/tables.md` 與
+> T-42 版 `tables.md` diff 必須為空。
+
 > ## ✅ 2026-09-10 Opus：T-42 複驗**通過**——工程軸 ✅ 已驗證，下一步開 **T-43**（插卡 4/4）
 >
 > 對象＝結果 commit `cf1f1ba`。依 WORKFLOW §5 實跑複驗（不是轉述交接筆記）：
@@ -353,7 +378,8 @@
   **收工與驗證一律寫四軸，禁止只寫 ✅ 通過。**
 
 **接下來的固定順序**：~~T-46（REPORT §7 修正＋role-aware 回 feature flag）~~
-**T-46 🔵 待審已完成** → **T-42**（下一張）→ T-43
+~~**T-46 🔵 待審已完成** → **T-42**（下一張）~~ **T-46 ✅ → T-42 ✅ → T-49**（下一張，裁決 T-42-A
+微型卡：產表腳本釘死 commit＋`run_photo()` 非預期例外出口）→ T-43
 → T-47（gate 校準複審量測）→ T-48（T-11／T-12 判準 v2 針對性重驗）→ T-44-R1（需使用者
 核准絕對下限＋提供 held-out 照片）→ T-17-R2（新盲測、frozen manifests、結果另存）→ 回 Fable。
 只有 T-17-R2 全部硬門檻達成才可以寫 `MVP PASS`。
@@ -591,8 +617,10 @@ T-21 ✅（四輪迭代）｜T-17 §7-4 ✅ 已執行（無鐵筒子 artifact；
 | T-44 | role-aware 材質候選子集 | 🟠 工程退回（文件）｜🟢 相對正向｜🧪 產品採用暫停（裁決 T-45-A）｜安全缺口 1＋1 |
 | T-45 | 審查制度修正（Fable 卡） | ✅ 已執行（Fable 2026-09-03） |
 | T-46 | T-44 收尾：REPORT §7 修正＋role-aware 回 feature flag | ✅ **已驗證（Opus 第四輪複驗 2026-09-10，依 criteria v3；`ec1a7bf`）** |
-| T-42 | gate 交易式輸出與舊產物隔離（插卡 3/4） | 🔵 **待審（Sonnet 2026-09-10，結果 commit `cf1f1ba`）→ 待 Opus 複驗** |
-| T-43 | T-17 產物溯源（插卡 4/4） | ⬜ |
+| T-42 | gate 交易式輸出與舊產物隔離（插卡 3/4） | ✅ **已驗證（Opus 複驗 2026-09-10，對象 `cf1f1ba`；驗證 commit `6fe1e43`）** |
+| T-49 | T-42 收尾：產表腳本釘死 commit＋非預期例外出口（微型卡，裁決 T-42-A） | ⬜ **下一張** |
+| T-43 | T-17 產物溯源（插卡 4/4） | ⬜ 前置 T-42 ✅ 且 T-49 ✅ |
+| T-50 | `.archive` 手動清理指令（停滯期填充卡，裁決 T-42-A） | ⬜ 不進關鍵路徑 |
 | T-47 | gate 校準複審量測（量測卡） | ⬜ |
 | T-48 | T-11／T-12 判準 v2 針對性重驗（量測卡） | ⬜ |
 | T-44-R1 | role-aware 安全門檻重新驗證 | ⬜ 等使用者（核准門檻＋held-out 照片） |
@@ -1135,7 +1163,7 @@ python scripts/convolve.py assets/dry/clap_synth.wav output/ir_room_small_carpet
   改回 False＝T-46）；回溯重標 12 張卡；T-26／T-28／T-36-A gate 校準前提已變（T-47）。
   裁決全文見 TASKS.md T-45 卡；新卡在檔尾 Phase 1.9-R 節。
 
-【現在該做的 — 開 Sonnet 視窗執行 T-46】（模型選 Sonnet）
+【標準 Prompt 範例（以 T-46 為例；**現在該做的是 T-49**，見檔頭）】（模型選 Sonnet）
   貼：「執行 TASKS.md 的任務 T-46。先讀 CLAUDE.md 和該任務卡的全部內容再動工，
       完成後執行任務卡裡的自我檢查，最後照 WORKFLOW.md 第 4 節做收工程序。
       收工時任務卡狀態一律寫四軸（WORKFLOW §3），不准只寫一個圖示。」
@@ -1143,7 +1171,7 @@ python scripts/convolve.py assets/dry/clap_synth.wav output/ir_room_small_carpet
   `pipeline.py` 預設 role_aware=False＋CLI `--role-aware` 旗標；13 張基線變化表證明
   預設路徑回到 round11（bathroom_tiled 回 BLOCK）、旗標路徑等於 round17。
 
-【之後依序】T-42 → T-43 → T-47 → T-48 → T-44-R1（等使用者）→ T-17-R2 → 回 Fable。
+【之後依序】T-49 → T-43 → T-47 → T-48（可平行）→ T-44-R1（等使用者；停滯期做 T-50）→ T-17-R2 → 回 Fable。
   Opus 驗證一律貼 WORKFLOW §2.2 v2 的 Prompt（輸出四軸判定）。
 ```
 

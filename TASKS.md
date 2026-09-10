@@ -5442,6 +5442,11 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
      六條交付 IR MD5 逐條比對」代替 13 張重跑——鐵則 8 的目的在抓非預期
      漂移，零 `src/` 卡的漂移在機制上不可能，重跑純燒時間。動 `src/` 的卡
      （T-41／T-42／T-43）一律照原文重跑 13 張產表。
+   - **補充細則二（裁決 T-42-A，Fable 2026-09-10）**：產表腳本的「改動前」參照
+     **必須釘死為腳本內常數**並在 REPORT 檔頭由程式印出雙邊 `git rev-parse HEAD`
+     （全文＝Phase 1.9-R 共同鐵則 13）。`t42_transactional_baseline.py` 用 `HEAD`
+     當改動前參照是反例（收工 commit 後重跑＝新碼比新碼的假綠燈），由 T-49 修正；
+     T-43 起的產表腳本一律照鐵則 13 寫。
 
 ### T-37 地雷 #16 修正：`is_equirect()` 加極點列均勻度檢查（裁決 T-36-A 執行卡 1/3）
 - **狀態**：✅ 通過（Opus 驗證，2026-08-31）
@@ -7808,6 +7813,41 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
      **這不是對未達項的豁免**——本卡列出的驗收條件本身沒有一項未達；是措辭本身有內部矛盾，
      依 WORKFLOW §7 建議 Fable 在 T-43／T-47 卡改寫成「`src/` 的 diff 限縮在 `pipeline.py`；
      `scripts/` 只得新增測試與鐵則 8 產表腳本」。
+- **🔮 裁決 T-42-A（Fable 2026-09-10；回應上方四項 Opus 附帶發現，依 WORKFLOW §7 逐項裁決）**：
+  1. **附帶發現 ①（產表腳本參照未釘死）→ 選 (b)：另開微型卡 T-49，T-43 的前置改為「T-42 ✅ 且 T-49 ✅」。**
+     不併進 T-43 的理由：T-43 已同時動 `pipeline.py`＋`t17_blind_test.py`＋隔離 repo 測試，再把
+     「修 T-42 的產表腳本」塞進去，T-43 的「舊碼必須 fail」與 diff 範圍會混進與溯源無關的變更，
+     Opus 審起來兩件事纏在一起；而且 T-43 自己的產表腳本就是要照 T-42 那支的樣子寫——先把樣板修對，
+     再複製。修法本體與驗證見 T-49 卡 A 部分。同時把「產表腳本一律釘死參照 commit、REPORT 印雙邊
+     `git rev-parse HEAD`（T-40 指紋精神）」升為 **Phase 1.9-R 共同鐵則 13**（該節「本輪共同鐵則」新增），
+     並回寫成 Phase 1.9 鐵則 8 的補充細則二。
+  2. **附帶發現 ②（未攔截例外讓舊輸出無聲消失）→ 開卡，併入 T-49 的 B 部分，排在 T-43 之前。**
+     理由：這是交易政策的第四個出口（「非預期例外」），屬 `run_photo()` 出口結構的一部分；T-43 要在
+     成功路徑加 `provenance` payload，若先做 T-43 再補 try/finally，等於第三次改 `run_photo()`，
+     還得把 T-43 新加的程式碼一起包進去。出口結構先定，T-43 再往裡加欄位。**政策補條**：非預期例外 →
+     清 staging、印 archive note、**照樣往上 raise 不吞錯**（WORKFLOW §5 紅旗 4），exit code 由 Python
+     預設決定（非 0），**不新增第四種 exit code 語義**；唯一例外是 `_publish_staging()` 內部的 rename 失敗
+     （半發布狀態）——**不刪 staging**，印 staging 與 archive 位置交人處理。
+  3. **附帶發現 ③（`.archive` 只增不減，實測 82M）→ 開卡 T-50，形狀＝「只提供手動指令」。**
+     `scripts/prune_archive.py`：預設 dry-run 只列清單與大小、`--yes` 才真刪、每個 stem 保留最近
+     `--keep N` 份（預設 3）、只碰 `output/.archive/`。**不採**「保留天數」（本專案間歇性使用，天數規則會在
+     停工一週後把所有東西刪光）；**不採**自動清理（政策「不許永久刪除使用者舊檔」的實質是「刪除必須是
+     使用者的明確動作」，自動清理違反此義）。**排程：不進關鍵路徑**——T-49 ✅ 後任何等使用者的停滯期
+     （T-44-R1 等門檻核准／held-out 照片）做；T-47／T-48 量測期間與 T-17-R2 驗收期間**禁止**執行 `--yes`
+     （驗證者可能還要翻舊產物）。T-50 落地前任何視窗都不得手動 `rm -rf output/.archive`；82M 不構成壓力。
+     順帶說明成長來源：每次 13 張 `--fresh` 重跑就把上一輪 13 份正式輸出轉進 archive（equirect 六視角
+     PNG 佔大宗），這是政策的**預期行為**，不是漏洞。
+  4. **附帶發現 ④（自我檢查措辭與鐵則 8 字面互斥）→ 採納。** 本卡自我檢查那句**原文不改**（歷史紀錄），
+     在此註明其實質語意＝「`src/` 的 diff 限縮在 `pipeline.py`；`scripts/` 只得新增／修改卡片點名的測試與
+     鐵則 8 產表腳本」——Opus 驗證紀錄第 1 點已按此語意逐項實測。T-43 卡的「前置」「範圍」「產出」
+     「執行步驟 4」「自我檢查」五處已依此改寫（見 T-43 卡 🔮 改版註記）；T-47／T-48 本來就是 `src/` 零改動
+     且產出欄點名腳本，措辭無矛盾，不動。後續所有卡的範圍欄一律用「`src/` 的 diff 限縮在 X；`scripts/`
+     只得新增／修改 Y」句型（鐵則 13 附帶的措辭規則）。
+  5. **順序更新**：Phase 1.9-R 關鍵路徑改為 T-46 ✅ → T-42 ✅ → **T-49** → T-43 → T-47 → 裁決 T-47-A →
+     T-44-R1 → T-17-R2；T-48 平行條款（裁決 T-48-S）不變；T-50 是停滯期填充卡。
+  6. **明確不做**：不重跑、不覆寫 T-42 已驗證的 `output/transactional_output/{REPORT.md,tables.md}`
+     （唯讀；T-49 寫 `t49/` 子目錄）；不動 gate 判定條件（鐵則 6）；不把 `--text`／`--scene` 交易化
+     （仍併 T-29 排隊）；本裁決不改任何驗收門檻（純新開卡＋措辭釐清，非 §7.1 的結果後改門檻）。
 - **🔮 裁決 T-45-A 更新前置（2026-09-03）**：前置改為 **T-46 ✅（工程）**——T-44 停在 🟠 退回＋產品採用暫停，不再以「T-44 ✅」為前置；其餘內容不變。本卡在 Phase 1.9-R 順序中排 T-46 之後（見檔尾）。
 - **🔮 裁決 T-48-S 追加紅線（2026-09-08）**：T-48 可能在本卡之前或同期跑（見 T-48 卡）。本卡與 T-43 **不得**：
   改 gate 訊息中「幾何不可信 → 用 `--override-dims` 手動指定房間尺寸」導引的語意（T-48 A-2 判準依賴；文案其他
@@ -7896,8 +7936,13 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
 ### T-43 T-17 產物溯源：analysis.json 生成指紋＋盲測驗證（插卡 4/4）
 
 - **狀態**：⬜ 未開始
-- **前置**：T-42 ✅（同動 `pipeline.py`，依序避免衝突；且本卡溯源依賴 T-42
-  建立的「正式位置＝最近一次成功輸出」不變量）
+- **四軸狀態**：工程：未開始｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
+- **🔮 裁決 T-42-A 改版註記（Fable 2026-09-10）**：前置加 **T-49 ✅**；「範圍」「產出」
+  「執行步驟 4」「自我檢查」「抽查手法」依鐵則 13 措辭改寫（原文沒列鐵則 8 產表腳本，與
+  「表由程式產出」字面互斥，Opus 於 T-42 附帶發現 ④ 指出）；**修法本體（三點）一字不改**。
+- **前置**：T-42 ✅（`6fe1e43`）**且 T-49 ✅**（裁決 T-42-A：產表腳本樣板釘死 commit、
+  `run_photo()` 出口結構定案後，本卡才往成功路徑加欄位；同動 `pipeline.py`，依序避免衝突；
+  且本卡溯源依賴 T-42 建立的「正式位置＝最近一次成功輸出」不變量）
 - **問題**（外部掃描 P1，已核實；T-17 卡註解宣稱的 P2 修正實際沒有擋住
   「舊產物驗收新程式」）：
   1. `analysis.json` 沒記錄「生成這筆 IR 時」的程式／設定指紋——事後無法
@@ -7926,14 +7971,18 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
   3. MANIFEST **逐項複製來源 provenance**（每筆 sample 帶
      `source_provenance` 原文）；打包當下 HEAD 另存誠實命名的獨立欄位
      （如 `packaging_git_revision`），兩者不得混用同一個鍵名。
-- **範圍／禁止修改**：`pipeline.py`（只加 payload 欄位與必要 helper）＋
-  `scripts/t17_blind_test.py`＋新測試；**gate 段零改動**（鐵則 6）、
+- **範圍／禁止修改**（鐵則 13 句型）：**`src/` 的 diff 限縮在 `pipeline.py`**（只加 payload
+  欄位與必要 helper）**＋新增 `src/image_reverb/provenance.py`**（共用 `_git_rev()`／sha256
+  helper 的家；其他既有 `src/` 模組零 diff）；**`scripts/` 只得**：修改 `t17_blind_test.py`、
+  新增 `test_t17_provenance.py`、新增鐵則 8 產表腳本 `t43_provenance_baseline.py`（以 T-49 修好的
+  `t42_transactional_baseline.py` 為樣板：`OLD_COMMIT` 釘死為 **T-49 的結果 commit**、worktree
+  HEAD 自檢、REPORT 檔頭印雙邊 `git rev-parse HEAD`）；**gate 段零改動**（鐵則 6）、
   `ir_metrics.py` 零 diff（鐵則 3）、`output/mvp_acceptance/` 與既有
   `blind_test/`／`MANIFEST.json` 歷史檔一個字不改（歷史驗收紀錄不得改寫）；
   盲測的抽樣／`SHUFFLE_SEED`／作答流程／mtime 對齊手法不動。
-- **產出**：`pipeline.py` diff＋`t17_blind_test.py` diff＋
-  `scripts/test_t17_provenance.py`＋`output/provenance/REPORT.md`
-  （基線變化表）。
+- **產出**：`pipeline.py`＋`provenance.py` diff＋`t17_blind_test.py` diff＋
+  `scripts/test_t17_provenance.py`＋`scripts/t43_provenance_baseline.py`＋
+  `output/provenance/{REPORT.md,tables.md}`（基線變化表，程式產生——地雷 #15）。
 - **執行步驟**：
   1. 加 `provenance` 區塊（欄位如上，逐欄有單一來源——地雷 #15 精神）；
   2. 改 `t17_blind_test.py` 溯源驗證與 MANIFEST 複製；
@@ -7942,17 +7991,26 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
      v1 產物＋v2 HEAD：斷言盲測腳本 exit 非 0 且訊息點名 provenance 不符；
      provenance 齊全且相符：exit 0，且 MANIFEST 的 `source_provenance` 與
      來源逐項相同、`packaging_git_revision` 為當下 HEAD；
-  4. 基線變化表（鐵則 8）：重跑 13 張——三軸與 gate 結果逐值不變
-     （provenance 是純新增欄位，不進任何判定）。
+  4. 基線變化表（鐵則 8＋13）：`python scripts/t43_provenance_baseline.py --fresh`
+     重跑 13 張——三軸與 gate 結果逐值不變、`ir_mono.wav` md5 逐位元相同
+     （provenance 是純新增欄位，不進任何判定、不碰 WAV）；改動前參照＝`OLD_COMMIT`
+     （T-49 結果 commit）常數，改動後＝工作目錄；REPORT 檔頭印雙邊 `git rev-parse HEAD`
+     與主 repo `git status --porcelain -- src scripts data`。
 - **舊碼必須 fail 的最小重現**：隔離 repo 的 v1→v2 重現對 `git worktree`
   舊碼實測——舊碼 exit 0、MANIFEST 標成 v2 HEAD（舊產物被認證）；新碼
   exit 非 0 點名不符項。輸出貼交接筆記。
 - **自我檢查**：全部 `scripts/test_*.py` exit 0；六條交付 IR MD5 全中；
   13 張基線零漂移；隔離 repo 重現對舊碼 fail 已附；
-  `output/mvp_acceptance/`／既有 `blind_test/` 零 diff。
+  `output/mvp_acceptance/`／既有 `blind_test/` 零 diff；
+  **diff 範圍（鐵則 13 句型）**：`git diff --stat -- src/` 只有 `pipeline.py`＋新增
+  `provenance.py`；`git status --porcelain -- scripts/` 只有 `t17_blind_test.py`、
+  `test_t17_provenance.py`、`t43_provenance_baseline.py`；
+  `grep -n 'worktree.*add.*"HEAD"' scripts/t43_provenance_baseline.py` 為空；
+  `grep -n "override-dims" src/image_reverb/pipeline.py` 導引仍在（裁決 T-48-S）。
 - **六條 IR MD5／13 張基線適用規則**：provenance 只進 `analysis.json`
   （JSON），**不碰 WAV 內容**——六條 IR MD5 照鐵則 2 比對必不變；13 張
-  基線逐值不變；照片管線 IR bytes 不變（同 T-42 抽查手法）。
+  基線逐值不變；照片管線 IR bytes 不變（同 T-42／T-49 手法：釘死 commit 的產表腳本
+  逐張比 md5，不是手抽 3 張）。
 - **Opus 驗證重點**：紅旗：provenance 欄位有手打常數（模型 id／門檻必須讀
   `config`）；紅旗：`git_revision` 記的是「讀取時」而非「生成時」（用
   「生成後改 HEAD 再驗」的情境實測）；紅旗：MANIFEST 用同一個鍵混記兩種
@@ -7995,6 +8053,12 @@ T-46 ✅，**可在 T-42／T-43 之前開跑、與其平行**（條件見 T-48 �
 T-46 → {T-42 → T-43 → T-47｜T-48} → 裁決 T-47-A → T-44-R1 → T-17-R2；T-47 的前置（T-42／T-43 ✅）
 **不變**。
 
+**🔮 排程裁決 T-42-A（Fable 2026-09-10；全文見 T-42 卡）**：T-42 ✅ 後插入微型卡 **T-49**
+（產表腳本釘死參照 commit＋`run_photo()` 非預期例外出口），**T-43 前置改為 T-42 ✅ 且 T-49 ✅**。
+關鍵路徑：T-46 ✅ → T-42 ✅ → **T-49** → T-43 → T-47 → 裁決 T-47-A → T-44-R1 → T-17-R2；
+T-48 平行條款不變。另開 **T-50**（`.archive` 手動清理指令）為**停滯期填充卡**，不進關鍵路徑，
+T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
+
 **本輪共同鐵則**：Phase 1.9 共同鐵則 1～8 全部沿用（測試全 exit 0／六條交付 IR MD5
 ／`ir_metrics.py` 零 diff／凍結目錄／新測試診斷力／gate 規則零改動／臥室紅旗／
 基線變化表），另加：
@@ -8011,6 +8075,16 @@ T-46 → {T-42 → T-43 → T-47｜T-48} → 裁決 T-47-A → T-44-R1 → T-17-
     `RacquetballCourt4`（T-17 必測反例）、`arena_ntsu_linkou`／`site_photo_gym`
     （體育館尺度做反）、`car_interior_suv`（車內域外）。任何卡使其中任一張由 BLOCK
     變 pass，都必須逐例證明材質／幾何正確，否則＝🔴 停。
+13. **產表腳本一律釘死參照 commit（裁決 T-42-A，2026-09-10）**：任何鐵則 8 產表／基線腳本的
+    「改動前」參照**必須是腳本內常數**（如 `B0_COMMIT`／`OLD_COMMIT`），**不得用 `HEAD`、不得由
+    CLI 引數指定**（引數＝可以被填成任何東西的假綠燈）；建好 worktree 後程式自檢 worktree
+    `git rev-parse HEAD` == 主 repo `git rev-parse <常數>` 全長雜湊，不等＝🔴 卡關不跑；REPORT 檔頭
+    由程式印出雙邊 `git rev-parse HEAD`、主 repo `git status --porcelain -- src scripts data`
+    （執行者那次可為 dirty 但要照印並標 ⚠️；Opus 複驗那次必須為空）、產生時間 UTC（T-40 指紋精神）；
+    已驗證的 REPORT／tables **唯讀**，重跑一律寫新子目錄。**措辭規則**：卡片「範圍」欄一律寫成
+    「`src/` 的 diff 限縮在 X；`scripts/` 只得新增／修改 Y（測試＋鐵則 8 產表腳本）」，不得再寫
+    「`git diff` 限縮在兩檔」這種與鐵則 8 字面互斥的句子。**共同自我檢查新增一條**：
+    `grep -n 'worktree.*add.*"HEAD"' scripts/<本卡產表腳本>` 為空。
 
 ### T-45 審查制度修正（🔮 Fable 卡，已執行 2026-09-03）
 - **狀態**：✅ 工程：已執行（Fable，2026-09-03，本 commit）｜實驗：不適用｜產品：不適用｜MVP：不適用
@@ -8723,10 +8797,124 @@ T-46 → {T-42 → T-43 → T-47｜T-48} → 裁決 T-47-A → T-44-R1 → T-17-
       Fable 開完 v3、使用者核准後，執行者只要依 v3 §5.2 的新比對規則重跑核對即可，
       **不要回滾 `src/`、不要改腳本斷言、不要重寫 `BASELINE.md`**。
 
+### T-49 T-42 收尾：產表腳本釘死參照 commit＋`run_photo()` 非預期例外出口（微型卡；裁決 T-42-A 執行卡 1/2）
+- **狀態**：⬜ 未開始
+- **四軸狀態**：工程：未開始｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
+- **前置**：T-42 ✅（`6fe1e43`）。**T-43 的前置自此改為「T-42 ✅ 且 T-49 ✅」**；T-48 可平行（裁決 T-48-S）。
+- **為什麼**（Opus T-42 附帶發現 ①②；裁決 T-42-A 第 1、2 點）：
+  1. `scripts/t42_transactional_baseline.py` 用 `git worktree add --detach <dir> HEAD` 當「改動前」，
+     前提是改動尚未 commit——收工 commit 後這前提就不成立，現在再跑 `--fresh` 是**新碼比新碼**、
+     13 張必然全過，還會把 REPORT 的「改動前參照」覆寫成錯的 commit（假綠燈）。同 repo 正確作法
+     是 `t46_role_flag_baseline.py` 的 `B0_COMMIT` 常數＋worktree HEAD 自檢。T-43 的產表腳本要照這支
+     寫，樣板必須先修對。
+  2. `run_photo()` 只攔 `UnidentifiedImageError` 與 `(ValueError, KeyError, FileNotFoundError)`；其他
+     例外（例：`_run_wet_preview()` 的 `subprocess.run(..., check=True)` 丟 `CalledProcessError`）直接
+     往上拋——此時舊輸出**已被 archive 走**、正式位置空、staging 留著，使用者只看到 traceback，
+     沒有 archive 位置與回復方式。可回復（檔案都在 `.archive/`，下次執行會印 stale staging note）
+     但體驗是「舊輸出無聲消失」。
+- **A 部分——`t42_transactional_baseline.py` 釘死參照（鐵則 13 首例）**：
+  1. 新增模組常數 `OLD_COMMIT = "ec1a7bf"`（T-42 改動前參照；與已驗證 REPORT 所記
+     `ec1a7bfd62e1810f52be5d2d6921b9d8a63422f4` 同一 commit），`git worktree add --detach <dir> OLD_COMMIT`；
+     建好後 worktree `git rev-parse HEAD` 必須等於主 repo `git rev-parse OLD_COMMIT` 全長雜湊，不等＝
+     `SystemExit("🔴 卡關 …")`（照 `t46_role_flag_baseline.py` `build_baseline_b0()` 的守門寫法）；
+  2. 刪掉 docstring／註解／`print`／REPORT 文字裡所有「HEAD 就是改動前」「`git worktree` 於 `HEAD`」
+     的敘述，改為引用 `OLD_COMMIT`（腳本說的話必須是它真的做的事——T-46 v2 教訓）；
+  3. REPORT 檔頭由程式印出：改動前參照（`OLD_COMMIT` 縮寫＋worktree `git rev-parse HEAD` 全長）、
+     改動後主 repo `git rev-parse HEAD`、主 repo `git status --porcelain -- src scripts` 原文
+     （非空時照印並標「⚠️ 改動後為未 commit 工作區」，**不因此 exit 非 0**——執行者跑的那次必然 dirty；
+     Opus 複驗那次必須為空）、產生時間 UTC；`tables.md` 硬區維持只有 13 列表、不含任何 provenance；
+  4. 用既有 `--out-dir`，本卡跑 `--out-dir output/transactional_output/t49/`；T-42 已驗證的
+     `output/transactional_output/{REPORT.md,tables.md}` **一個 bit 不改**（鐵則 11 精神）；
+  5. **不新增**任何 CLI 參數讓人指定舊 commit（鐵則 13：參照只能是常數）。
+- **B 部分——`run_photo()` 第四出口（非預期例外；政策見裁決 T-42-A 第 2 點）**：
+  1. 從 `_archive_existing_outputs()` 之後到 `_publish_staging()` 之前的整段（含現有
+     `try/except (ValueError, KeyError, FileNotFoundError)` 與成功路徑的寫檔）包進 `try/finally`，
+     以旗標 `published = False` 區分：`finally` 中若 `not published` → `shutil.rmtree(staging_root,
+     ignore_errors=True)` 並印 `archive_note`（若有）到 stderr；例外**照樣往上拋**——**不得**寫
+     `except Exception`、不得改 exit code、不得吞錯（WORKFLOW §5 紅旗 4）；
+  2. `_publish_staging()` 內部 rename 失敗＝半發布：把 `published = True` 放在呼叫 `_publish_staging()`
+     的**前一行**，並在 `_publish_staging()` 內用 `try/except` 印「⚠️ 發布中斷：staging 位置＋archive
+     位置＋請手動處理」後 re-raise——此情況 **不刪 staging**（半發布狀態要留給人看）；
+  3. 既有三個出口（exit 2 兩處、exit 3）的**stderr 訊息內容與順序逐字不變**（案例 A–I 是回歸證據）；
+     既有各出口自己的 `print(archive_note)`＋`rmtree` 可以保留（`finally` 對已刪目錄用
+     `ignore_errors=True` 無害），但**不得**讓 archive_note 在同一出口印兩次（用旗標或把三處統一交給
+     `finally`，Sonnet 自選，行為要如上）；gate 判定條件一行不動（鐵則 6）；`--override-dims` 導引原文
+     不動（裁決 T-48-S）；
+  4. `scripts/test_output_gate.py` 新增案例【J】（修 bug 類，對舊碼必須實測 fail）：預放假舊
+     `analysis.json`／`ir_mono.wav`（正式 `output/<stem>/`）與 `meta.json`（`output/preprocess/<stem>/`），
+     樁 `pipeline._run_wet_preview` 丟 `subprocess.CalledProcessError(1, "convolve")`（其餘沿用【I】的
+     樁到底手法），`run_photo()` 包在 `try/except subprocess.CalledProcessError`、stderr 用
+     `contextlib.redirect_stderr` 捕下：斷言 (a) 例外確實傳出（沒被吞）；(b) `output/.staging/<stem>/`
+     不存在；(c) 正式位置兩處不存在（舊檔已 archive、本次未發布）；(d) archive 內三個舊檔 bytes 逐位元
+     相同；(e) stderr 含 `_archive_note()` 的輸出（archive 位置與回復方式）。**舊碼預期**：(a)(c)(d) 過、
+     **(b)(e) fail**（staging 殘留、無 note）。
+- **範圍／禁止修改**（鐵則 13 句型）：**`src/` 的 diff 限縮在 `pipeline.py`** 的 `run_photo()` 出口結構與
+  `_publish_staging()`（B-2 的訊息）；**`scripts/` 只得修改** `t42_transactional_baseline.py`（A 部分）與
+  `test_output_gate.py`（案例 J）；gate 判定條件、`preprocess_image()`、`run_text()`／`run_scene()`、
+  `geometry.py`／`acoustics.py`／`ir_synth.py`／`ir_metrics.py`／`config.py`／`surfaces.py` 全零 diff。
+- **產出**：`pipeline.py` diff＋`t42_transactional_baseline.py` diff＋`test_output_gate.py` 案例 J＋
+  `output/transactional_output/t49/{REPORT.md,tables.md}`（程式產生）。
+- **基線變化表（鐵則 8）的特別規定（Fable 定調）**：本卡用修好的
+  `python scripts/t42_transactional_baseline.py --fresh --out-dir output/transactional_output/t49/`
+  **一次跑完**（26 次真實 CLI，約 8 分鐘）同時充當兩件事：(i) A 部分的可重跑證明——`t49/tables.md` 與
+  已驗證的 `output/transactional_output/tables.md` `diff` **為空**（表格不含 provenance，可硬比）；
+  (ii) B 部分的基線變化表——改動前參照為 `ec1a7bf` 而非本卡直接前一 commit `6fe1e43`，**准用**理由：
+  T-42 Opus 驗證已證 `ec1a7bf` 與 `cf1f1ba`（程式碼＝`6fe1e43`）13 張逐值／IR 逐位元相同，傳遞性成立，
+  不必為此另建第二個 worktree。**這條准用只限本卡**——T-43 起 `OLD_COMMIT` 必須是各卡自己的直接前一
+  結果 commit。
+- **舊碼必須 fail 的最小重現**：案例 J 對 `git stash push -- src/image_reverb/pipeline.py`（或
+  `git checkout 6fe1e43 -- src/image_reverb/pipeline.py`）舊碼實測，(b)(e) 兩項 fail 的輸出貼交接筆記，
+  之後還原並確認 `git status` 乾淨、`pipeline.py` md5 回到新版。A 部分的「舊腳本假綠燈」不必重現
+  （Opus 附帶發現 ① 已說明機制），但交接筆記要貼 `t49/REPORT.md` 檔頭的 provenance 段原文。
+- **自我檢查**：全部 `scripts/test_*.py` exit 0（含 A–J）；六條交付 IR MD5 全中（鐵則 2 逐條比對）；
+  `diff output/transactional_output/tables.md output/transactional_output/t49/tables.md` 為空；
+  `git diff -- output/transactional_output/REPORT.md output/transactional_output/tables.md` 為空；
+  `grep -n 'worktree.*add.*"HEAD"' scripts/t42_transactional_baseline.py` 為空；
+  `grep -n "override-dims" src/image_reverb/pipeline.py` 導引仍在；`git diff --stat -- src/` 只有
+  `pipeline.py`；`git worktree list` 只剩主 repo；案例 J 舊碼 fail 實測已附；`bedroom_ai_generated`
+  在 `t49/tables.md` 仍 `BLOCK`（鐵則 7）。
+- **Opus 驗證重點（四軸輸出）**：紅旗：`git worktree add` 仍用 `HEAD`，或改成由引數指定舊 commit；
+  紅旗：REPORT 缺雙邊 `git rev-parse HEAD`；紅旗：案例 J 對舊碼沒有 (b)(e) fail 證據；紅旗：非預期例外
+  被 `except Exception` 吞掉、改了 exit code、或 traceback 消失；紅旗：既有三出口 stderr 訊息變動或
+  archive_note 印兩次；紅旗：T-42 已驗證 REPORT／tables 被覆寫；紅旗：gate 判定條件任何 diff。
+  Opus 自己 `--fresh --out-dir output/transactional_output/t49_opus/` 重跑一次（此時 HEAD 已含結果
+  commit，REPORT 的 porcelain 段應為空）→ `tables.md` 與 T-42 版零 diff；審完刪 `t49_opus/`。
+- **交接筆記**：
+
+### T-50 `output/.archive` 手動清理指令（停滯期填充卡；裁決 T-42-A 執行卡 2/2；`src/` 零改動）
+- **狀態**：⬜ 未開始
+- **四軸狀態**：工程：未開始｜實驗：不適用｜產品：不適用｜MVP：不適用
+- **前置**：T-49 ✅（archive 出口結構定案後再做工具）。**排程限制（裁決 T-42-A 第 3 點）**：不進
+  關鍵路徑；只在等使用者的停滯期（T-44-R1 等門檻核准／held-out 照片）執行；**T-47／T-48 量測期間與
+  T-17-R2 驗收期間禁止對真實 `output/.archive` 跑 `--yes`**。落地前任何視窗不得手動 `rm -rf output/.archive`。
+- **為什麼**：T-42 政策「archive 全保留、不許永久刪除使用者舊檔、清理策略未來另議」；Opus 實測
+  `output/.archive` 已 82M 且每次 13 張重跑就多 13 份（equirect 六視角 PNG 佔大宗）。「未來」就是本卡。
+- **政策（Fable 定調，執行者不得改）**：
+  1. **只提供手動指令**，無自動觸發（不掛進 `run_photo()`、不掛排程、`src/` 零 diff）；
+  2. **預設 dry-run**：列出每個 stem 下的 archive 時間戳目錄、大小、將刪／將留，最後印總計；
+  3. `--yes` 才真刪；規則＝每個 stem 保留最近 `--keep N` 份（預設 3，最小 1）；`--stem <name>` 限定
+     單一 stem；刪除前再印一次將刪清單與總大小；
+  4. 只碰 `output/.archive/**`：每個待刪路徑 `Path.resolve()` 後必須在 `OUTPUT_ROOT/.archive` 之下才刪
+     （防路徑逸出、防 symlink），否則拒絕並 exit 非 0；
+  5. 不碰 `output/.staging/`（那是 `run_photo()` 自己管的）、不碰正式位置。
+- **產出**：`scripts/prune_archive.py`＋`scripts/test_prune_archive.py`（在 scratchpad 造假 archive 樹：
+  多 stem × 多時間戳 × 假檔；斷言 dry-run 零刪除、`--yes --keep 2` 只留每 stem 最新 2 份且舊的確實消失、
+  `--stem` 限定其他 stem 不動、逸出路徑（symlink 指向樹外）拒絕）＋HANDOFF §5 環境速查加一行用法。
+- **範圍／禁止修改**（鐵則 13 句型）：`src/` 零 diff；`scripts/` 只得新增上述兩支；`data/` 零 diff。
+- **鐵則 8 適用**：零 `src/`＋零 `data/` 改動 → 依鐵則 8 補充細則以 `git diff src/ data/` 為空＋
+  六條 IR MD5 逐條比對代替 13 張重跑。
+- **自我檢查**：全部測試 exit 0；六條 IR MD5 全中；`git diff src/ data/` 為空；對真實 `output/.archive`
+  **只跑 dry-run** 並把輸出（各 stem 份數與總大小）貼交接筆記——**本卡不對真實 archive 執行 `--yes`**，
+  真刪由使用者決定時機。
+- **Opus 驗證重點（四軸輸出）**：紅旗：任何 `src/` diff；紅旗：預設不是 dry-run；紅旗：刪除範圍能
+  逃出 `.archive`；紅旗：測試在真實 `output/` 上跑；紅旗：交接筆記顯示對真實 archive 跑了 `--yes`。
+- **交接筆記**：
+
 ### T-47 gate 校準複審量測（量測卡；裁決 T-45-A 執行卡 2/5；`src/` 零改動）
 - **狀態**：⬜ 未開始
 - **四軸狀態**：工程：未開始｜實驗：待量測｜產品：待裁決（T-47-A）｜MVP：不適用
-- **前置**：T-46 ✅、T-42 ✅、T-43 ✅（量測產物要走交易式輸出與 provenance）
+- **前置**：T-46 ✅、T-42 ✅、T-49 ✅、T-43 ✅（量測產物要走交易式輸出與 provenance；
+  裁決 T-42-A 插入 T-49）
 - **為什麼**：T-26 gate、裁決 T-28-A、裁決 T-36-A 的 BLOCK／pass 校準全建立在「固定門檻
   0.4＋全域 12 候選 softmax」；T-44 候選子集收窄後 softmax 濃縮，`bathroom_tiled` 越過門檻
   被放行且判錯、`bedroom.floor` 近失。裁決 T-36-A 規定重開 gate 議題需四樣證據——本卡
