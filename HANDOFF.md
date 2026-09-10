@@ -1,5 +1,36 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🟠 2026-09-10 Opus：T-46 第二輪複驗 **退回**——門檻自我矛盾，**不是執行者做錯**
+>
+> 我依 `output/role_flag/CRITERIA_T46_v2.md` §5 六點自己重跑：
+> `t46_role_flag_baseline.py --out-dir output/role_flag/ --fresh`（13 張 B0＋13×2 兩模式
+> ＝**39 次真實 CLI**，約 19 分鐘，**exit 0**）。**實質斷言全部成立**：B0 自證守門 13/13、
+> A1～A7／B1～B2 13/13、表 1 三欄（B0／round11／round17）13/13 全 ✅、表 2 只有
+> `bathroom_tiled` 在旗標路徑 pass（T-44-R1 的事）、表 3 恰兩條資訊性描述、
+> `tables.md` 與已 commit 版本**整份逐字相同**、19 支測試 EXIT=0、四條手動 IR MD5 全中、
+> 五個紅旗全不成立、`bathroom_tiled` 不加 `--force-low-confidence` 實跑 **exit 3**。
+>
+> **退回的唯一原因**：criteria v2 **§5.2 要求 `BASELINE.md` 與已 commit 版本「逐字相同」，
+> 但同一份 v2 的 §2.1 又要求該檔內含「產生時間」「產生當下主 repo HEAD」「每份
+> `analysis.json` sha256」**——三者每次真跑必然不同（`analysis.json` 由
+> `src/image_reverb/pipeline.py:89` 寫入 `elapsed_s`）。同版門檻自我矛盾＝**字面不可執行**，
+> 依 WORKFLOW §7.5 標 **inconclusive**、不得改判 PASS；`HANDOFF_T46_VERIFY.md` 事後由
+> 執行者本人提出的三項豁免**不予採納**（§7.1／§7.4 自改自批、§5 紅旗 7）。
+> 我另用執行者殘留的 10 份 B0 `analysis.json` 逐欄位攤平比對，**唯一差異都是 `.elapsed_s`**，
+> 其餘 90–108 個葉節點逐位元相同——所以差異確實只是計時欄，不是結果不穩。
+>
+> **下一步＝Fable 開 criteria v3**（提案全文在 TASKS.md T-46 卡「Opus 驗證紀錄（第二輪）」
+> 第 8 點）：§5.2 改成「canonical stable projection 逐字相同」，三個時間／HEAD／JSON-sha
+> 欄降為**資訊欄（只記錄、不比對、不得再宣稱逐字相同）**，manifest 改用
+> `analysis_stable_sha256`（移除 `elapsed_s`／`time_budget_s`／`elapsed_note` 後
+> `sort_keys` 正規化再雜湊）。**v3 落地後不需重做實驗、不必回滾 `src/`、不必改腳本斷言**，
+> 只要依新比對規則重新核對一次。
+>
+> **連動**：T-44 四軸**不因本卡變動**（它有自己的複驗軌跡）；
+> **T-42／T-47／T-48／T-44-R1 的「前置 T-46 ✅」尚未滿足**（T-48 另有裁決 T-48-S 的平行條款）。
+> `HANDOFF_T46_VERIFY.md` **先不要刪**（它記的實測限制是 v3 的素材），但它的「建議判法」
+> 三項豁免**不是有效門檻**，下一位不得據此放行。
+
 > ## ✅ 2026-09-10 Opus：T-44 第四輪複驗通過（**工程軸**），產品採用仍暫停
 >
 > 第三輪的唯一阻擋項（`REPORT_T44.md` 三處無限定的「逐位元相同」）已修好，

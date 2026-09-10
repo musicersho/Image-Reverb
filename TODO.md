@@ -25,7 +25,15 @@
 - **gate 校準前提已變**（T-26／T-28／T-36-A）→ T-47 重量四樣證據後裁決 T-47-A。
 - [x] **T-45 審查制度修正 ✅（Fable 2026-09-03）**：WORKFLOW v2、CLAUDE/AGENTS 同步、
       12 卡回溯重標、新卡 T-46～T-48／T-44-R1／T-17-R2、HANDOFF/TODO/DEV_LOG/ROADMAP 同步。
-- [ ] **T-46 🔵 待審（依 criteria v2，Sonnet 2026-09-08 已重跑完成）→ 交 Opus 複驗**
+- [ ] **T-46 🟠 退回（Opus 第二輪複驗 2026-09-10，依 criteria v2）→ 交 Fable 開 criteria v3**
+      — **不是執行者做錯**：criteria v2 的 13 項實質斷言 Opus 全部獨立重跑成立（`--fresh` 39 次
+      真實 CLI、19 支測試 EXIT=0、四條 IR MD5 全中、五個紅旗全不成立、`tables.md` 逐字相同）。
+      退回唯一原因＝**v2 §5.2「`BASELINE.md` 逐字相同」與同版 §2.1（要求該檔含產生時間／
+      產生當下主 repo HEAD／每份 `analysis.json` sha256）互相矛盾、字面不可執行**，依 WORKFLOW
+      §7.5 標 inconclusive、不得改判 PASS，事後由執行者提出的三項豁免不予採納（§7.1／§7.4）。
+      v3 提案（canonical stable projection＋`analysis_stable_sha256`＋三個資訊欄降級只記錄不比對）
+      見 TASKS.md T-46 卡「Opus 驗證紀錄（第二輪）」第 8 點。**T-42／T-47／T-48／T-44-R1 的
+      「前置 T-46 ✅」尚未滿足**（T-48 另有裁決 T-48-S 的平行條款）。
       — v2 修正輪（2026-09-08）：`t46_role_flag_baseline.py` 新增 B0 建置（`git worktree` 重建
       commit `23f2aba` 真實 CLI 結果＋自證守門＋程式產出 `BASELINE.md`）、移除 v1 的
       `geometry_notes` 降級改為 A2／A4／A5 硬斷言、快取指紋、`--out-dir` 絕對路徑修正、

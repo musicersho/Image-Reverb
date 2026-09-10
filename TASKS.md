@@ -7995,6 +7995,19 @@ T-46 → {T-42 → T-43 → T-47｜T-48} → 裁決 T-47-A → T-44-R1 → T-17-
     criteria_changed_after_first_result: yes
     change_record: 2be2453／理由＝v1 基線物件無 confidence／gate 欄位，字面不可執行／提案 Opus（37e07fe）、起草 Fable、核准 使用者（2026-09-08 指示）＋Opus 複驗核對
     ```
+  - **變更紀錄（追加，2026-09-10 Opus 第二輪複驗；§8「只能追加、不得刪改」）**：
+    ```text
+    reviewer: Opus 5／2026-09-10／複驗時主 repo HEAD＝84deda8（複驗開始時為 dad0875，重跑期間另一視窗提交 84deda8）
+    result_commit: 545ec5e（未變）
+    verdict_under_current_criteria（v2，第二輪複驗定案）: 工程＝🟠 退回。
+      13 項實質斷言（A1～A7、B1～B2、B4、表 3、五紅旗、19 測試、六 IR MD5）Opus 全部獨立重跑成立；
+      v2 §5.2「BASELINE.md 與已 commit 版本逐字相同」與同版 §2.1（要求 BASELINE.md 內含產生時間／
+      產生當下主 repo HEAD／analysis.json sha256）互相矛盾 → 依 §7.5 標 inconclusive（門檻不可執行），
+      不得改判 PASS，不得用附註豁免（§5 紅旗 7）。
+    criteria_changed_after_first_result: yes（v1→v2）；v2 本身**未**因本輪結果被修改（Opus 未動門檻）
+    change_record（本輪）: 無門檻變更。Opus 僅「提案」v3（見驗證紀錄第 8 點），
+      須由 Fable 起草＋使用者核准＋獨立 commit `criteria: T-46 v3 …` 後才生效。
+    ```
 - **前置**：T-45 ✅
 - **目標**：把 T-44 的兩個懸案收掉——①Opus 退回的 REPORT §7 文件錯誤；②依裁決 T-45-A
   把 `role_aware` 從預設 True 改回預設 False，以 feature flag 保留研究路徑，並用程式證明
@@ -8234,6 +8247,95 @@ T-46 → {T-42 → T-43 → T-47｜T-48} → 裁決 T-47-A → T-44-R1 → T-17-
      紅旗查法，以及「`analysis.json` sha256 不會逐字相同——`elapsed_s` 計時欄位所致，非斷言失敗」
      的已知限制說明，Opus 開工前應先讀這份文件而非直接猜）。複驗通過後：T-46 四軸工程改「已驗證」、
      T-44 四軸工程依原文改「已驗證（經 T-46 複驗）」；下一張是 T-42（前置已改 T-46 ✅）。
+
+- **Opus 驗證紀錄（第二輪＝criteria v2 首次複驗，2026-09-10；只審不改碼；驗證者：Opus 5 @ `84deda8`）**：
+  1. **範圍與方法**：讀 CLAUDE.md／WORKFLOW §5 §7／`CRITERIA_T46_v2.md` 全文／T-46 卡全文／
+     `HANDOFF_T46_VERIFY.md`／`scripts/t46_role_flag_baseline.py` 全 577 行，並**自己**執行
+     `python scripts/t46_role_flag_baseline.py --out-dir output/role_flag/ --fresh`
+     （13 張 B0＋13×2 兩模式＝**39 次真實 CLI**，13.1–36.8 秒／張，全程約 19 分鐘，**exit 0**），
+     不採信交接筆記的任何數字。複驗用的重跑產物比對完即以 `git checkout` 還原，不覆寫送審版本。
+  2. **v2 §5.1（criteria commit 唯一且在前）✅**：
+     `git log --oneline -- output/role_flag/CRITERIA_T46_v2.md` **只有一筆** `2be2453`，
+     且在結果 commit `545ec5e` 之前（`git log` 序：`2be2453` → `c8f6be9` → `545ec5e`）。符合 §7.2。
+  3. **v2 §5.2（自行重建 B0，`BASELINE.md` 逐字相同）❌ 門檻不可執行 → inconclusive（§7.5）**：
+     - **相同的部分（逐字核對通過）**：13 張表格（`geometry_confidence`／`materials_confidence`／
+       `confidence`／gate／六面 `surfaces`／`surfaces_sources`）**逐字相同**；
+       manifest 的 worktree `git rev-parse HEAD` = `23f2abada92aa9d46b1da0ac1ba2a7f1dc178872`
+       （＝`23f2aba` 全長，與門檻要求相符）；13 張照片 sha256 **逐字相同**；
+       `output/role_flag/tables.md` **整份逐字相同**（`diff` 零行）；
+       `REPORT.md` 只差「主 repo HEAD（產生本報告時）」一欄（我重跑期間另一視窗提交了 `84deda8`，
+       HEAD 由 `dad0875` 變 `84deda8`，正好說明該欄是「產生當下」快照、不是固定值）。
+     - **必然不同的部分（三處，全是資訊欄）**：①「產生時主 repo 的 `git rev-parse HEAD`」
+       （`c8f6be9…` vs 我這輪 `dad0875…`）；②「產生時間（UTC）」；③ manifest 的
+       「每份 `analysis.json` sha256」13 筆全不同。
+     - **③ 的成因我獨立實證，不是採信交接筆記**：我保留了執行者 2026-09-08 那輪殘留的 10 份
+       B0 `analysis.json`，與我 2026-09-10 重建的同名檔**逐欄位攤平比對**（90–108 個葉節點／張）：
+       **10／10 張的唯一差異都是 `.elapsed_s`**，其餘欄位（含 `dims_m`、`closed_loop.t30_measured_s`
+       等連續浮點值）**逐位元完全相同**。成因在
+       [`src/image_reverb/pipeline.py:89`](src/image_reverb/pipeline.py:89) 的 `_elapsed_payload()`
+       把本次耗時寫進 `analysis.json`，**每次真跑必然不同**。
+     - **判定**：v2 §2.1 明文要求 `BASELINE.md` 內含「產生當下主 repo HEAD、產生時間、每份
+       `analysis.json` sha256」，v2 §5.2 又要求整份 `BASELINE.md`「逐字相同」——**同一份鎖定門檻
+       內部互相矛盾，要滿足 §5.2 就必須違反 §2.1**。依 §7.5 標 **inconclusive（門檻不可執行）**，
+       **不得改判 PASS**；依 §7.1／§7.4 我也**不得**自行豁免或降級（那正是 §5 紅旗 7）。
+     - **HANDOFF_T46_VERIFY.md 的三項豁免不予採納**（結果後由執行者本人補寫、鎖定門檻未授權；
+       理由見上方「狀態（第二輪複驗）」段）——但其**技術內容經上述實測為真**，可直接供 v3 引用。
+  4. **v2 §5.3（13×A1～A7、13×B1～B2、B4 表 2、表 3 只列不判）✅ 全部成立**：
+     - 我這輪 `--fresh` exit 0、`mismatches` 空、REPORT／tables 有寫出（腳本設計為任一斷言不成立
+       即 exit 非 0 且不寫產物，故 exit 0 ＝ 13×A1～A7 與 13×B1～B2 全數成立）；
+     - B0 自證守門 13/13 通過（六面材質＋來源＝round11；`materials_confidence`＝`EXPECTED_GATE` materials 欄）；
+     - 表 1 三欄「與 B0 相符／與 round11 相符／與 round17 相符」**13/13 全 ✅、零 🔴**；
+     - 表 2：`bathroom_tiled` 預設 `BLOCK`／`--role-aware` `pass`（T-44 已記錄的已知錯誤放行，
+       僅存在旗標路徑，處置屬 T-44-R1，本卡依 B4 只列不判）；其餘四張兩模式皆 `BLOCK`；
+     - 表 3 **恰為兩條資訊性描述**（`site_photo_department_store` 兩模式 geometry 不同、
+       `TunnelToHell` vs `EXPECTED_GATE` 不同），**沒有任何斷言失敗訊息混入**；
+     - A5 gate 定義等價性抽驗：`bathroom_tiled` 不加 `--force-low-confidence` 實跑 **exit 3（BLOCK）**、
+       加 `--role-aware` 實跑 **exit 0** 且訊息印出 experimental 警語——與表 1／表 2 一致。
+  5. **v2 §5.4（docstring／訊息與實際斷言一致，阻擋項 2 解除）✅**：
+     `grep -n "三軸 confidence／gate.*逐值相同\|geometry 完全不受" scripts/t46_role_flag_baseline.py`
+     **零輸出**；docstring 第 1～54 行與 13 條 `mismatches.append(...)` 我逐條讀過，每個 `!=` 都寫明
+     基線是 B0／round11／round17／`EXPECTED_GATE` 之一，且與程式實際比對的物件一致（v1 把兩個
+     不同基線寫成同一個的問題已清除）。
+  6. **v2 §5.5（五個紅旗）✅ 全部不成立**：
+     - 改本檔：`git log -- output/role_flag/CRITERIA_T46_v2.md` 只有 `2be2453`；
+     - 改 `src/`：`git diff --stat -- src/` 零行，`git show --stat 545ec5e` 也未列入任何 `src/` 檔；
+     - 用舊快取：我這輪 `--fresh` 全跑，log 中「快取命中」「快取指紋不符」**出現 0 次**，
+       39 行全是 `✅ …(b0)／(default)／(role_aware)` 的實跑計時；
+     - `BASELINE.md` 手打：我重建後 13 張表格＋worktree HEAD＋照片 sha256 逐字相同，確係程式產出；
+     - `EXPECTED_GATE`／表 7' 被動：`git diff --stat -- scripts/t36_clip_accuracy.py
+       output/clip_treatment/rounds/round17/tables.md` 零行，`545ec5e` 的 `--stat` 也未列入這兩檔。
+     - 範圍：`545ec5e` 只動 `scripts/t46_role_flag_baseline.py`、`output/role_flag/{REPORT.md,tables.md,
+       baseline_23f2aba/BASELINE.md}` 與五份狀態文件，**未外溢**。
+  7. **自我檢查我自己重跑的結果**：19 支 `scripts/test_*.py` **逐支 EXIT=0**（含 `test_t46_role_flag.py`）；
+     六條交付 IR——T-20 `chk_bath`＝`2adbaa75eb698772a8c9aa693179ec47`、`chk_church`＝
+     `2dd19b6e6d351d713887636fe45cd67e`，T-21 `coupled_neighbor_voices`＝`9a94ffdf5d8295aee7889729c39c9cd8`、
+     `coupled_stadium_corridor`＝`a1c21bcc3fd9aa3480df203a89c8cd05`（四條手動重生 **MD5 全中**），
+     T-14 兩條由 `test_ir_synth.py` 內建斷言隨測試套件通過；`git worktree list` **只剩主 repo**，無殘留。
+  8. **📮 給 Fable 的 criteria v3 提案（Opus 提案，非門檻變更本身；依 WORKFLOW §7.1／§7.4，
+     須由 Fable 起草、使用者核准、獨立 commit `criteria: T-46 v3 …`，我不自行改任何門檻）**：
+     - **v3 §5.2 改寫方向**：把「整份 `BASELINE.md` 逐字相同」改成
+       **「canonical stable projection 逐字相同」**——比對對象定義為
+       「`BASELINE.md` 扣除〈資訊欄〉後的內容」，並明文列出**〈資訊欄〉＝
+       ①「產生時主 repo 的 `git rev-parse HEAD`」②「產生時間（UTC）」③ manifest 的
+       「每份 `analysis.json` sha256」欄**——這三欄**只記錄、不比對、不得再宣稱每次逐字相同**。
+     - **穩定雜湊**：manifest 的第三欄建議改成 **`analysis_stable_sha256`**＝
+       對 `analysis.json` **移除 `elapsed_s`／`time_budget_s`／`elapsed_note` 後**、
+       以 `json.dumps(obj, sort_keys=True, ensure_ascii=False)` 正規化再取 sha256。
+       依我這輪 10 張的逐欄位實測（唯一差異 `.elapsed_s`），此雜湊**在不同機器／不同時間的真跑之間
+       應為穩定值**，可作為 v3 的硬性逐字比對欄；v3 首次執行時由執行者建立該欄基線。
+     - **仍須維持逐字比對的部分（不得放寬）**：13 張表格全欄、manifest 的 worktree HEAD
+       （＝`23f2aba` 全長）、13 張照片 sha256。
+     - **v3 不需要重做實驗**：本輪 39 次真實 CLI 的產物與證據仍然有效；v3 落地後只需依新比對規則
+       重新核對一次（若要求重跑，成本約 20 分鐘）。`src/` 不必為此改動——`elapsed_s` 保留在
+       `analysis.json` 是合理設計，處理方式是**比對時排除**，不是刪欄位。
+     - **附帶建議（非阻擋）**：v3 可順帶明文寫「`BASELINE.md` 的三個資訊欄用途是溯源，
+       複驗者看到它們不同屬預期，不得據此判失敗，也不得據此判通過」，避免下一位再落入同一個坑。
+  9. **§5.6 連動的處置**：本卡**未通過**，故 **T-44 的四軸狀態不因本卡而變動**
+     （T-44 卡另有其獨立的複驗軌跡，與本卡互不覆寫）；`T-42`／`T-47`／`T-48`／`T-44-R1` 寫的
+     「前置 T-46 ✅」**尚未滿足**，除非 Fable 另行裁決（T-48 已有 `裁決 T-48-S` 的平行條款）。
+  10. **給下一位的一句話**：**這張卡的工程內容我查不到問題**——退回純粹是門檻自我矛盾。
+      Fable 開完 v3、使用者核准後，執行者只要依 v3 §5.2 的新比對規則重跑核對即可，
+      **不要回滾 `src/`、不要改腳本斷言、不要重寫 `BASELINE.md`**。
 
 ### T-47 gate 校準複審量測（量測卡；裁決 T-45-A 執行卡 2/5；`src/` 零改動）
 - **狀態**：⬜ 未開始

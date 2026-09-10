@@ -1,5 +1,30 @@
 # Dev Log
 
+## 2026-09-10 (103)
+
+- **T-46 第二輪複驗（Opus，依 criteria v2）→ 🟠 退回，但不是執行者做錯**。自己跑
+  `t46_role_flag_baseline.py --out-dir output/role_flag/ --fresh`（13 張 B0＋13×2 兩模式
+  ＝39 次真實 CLI，約 19 分鐘，exit 0），不採信交接筆記。
+- **實質斷言全部成立**：B0 自證守門 13/13；A1～A7、B1～B2 13/13；表 1 三欄（B0／round11／
+  round17）13/13 全 ✅；表 2 只有 `bathroom_tiled` 在旗標路徑 pass（T-44-R1 的事）；
+  表 3 恰兩條資訊性描述；`tables.md` 與已 commit 版本**整份逐字相同**；19 支測試 EXIT=0；
+  四條手動 IR MD5 全中；五個紅旗全不成立；`bathroom_tiled` 不加 force 實跑 exit 3。
+- **退回的唯一原因＝門檻自我矛盾**：criteria v2 §5.2 要求 `BASELINE.md` 與已 commit 版本
+  「逐字相同」，但同版 §2.1 又要求該檔內含「產生時間／產生當下主 repo HEAD／每份
+  `analysis.json` sha256」——三者每次真跑必然不同。依 WORKFLOW §7.5 標
+  **inconclusive（門檻不可執行）**，不得改判 PASS；`HANDOFF_T46_VERIFY.md` 事後由執行者
+  自行提出的三項豁免**不予採納**（§7.1／§7.4 自改自批、§5 紅旗 7）。
+- **實證**：拿執行者 2026-09-08 殘留的 10 份 B0 `analysis.json` 與我重建的逐欄位攤平比對，
+  90–108 個葉節點中**唯一差異都是 `.elapsed_s`**（`pipeline.py:89` `_elapsed_payload()` 寫入），
+  其餘含連續浮點值逐位元相同。
+- **提案交 Fable 開 criteria v3**：§5.2 改為「canonical stable projection 逐字相同」，
+  三個時間／HEAD／JSON-sha 欄降為**資訊欄（只記錄不比對）**，manifest 改用
+  `analysis_stable_sha256`（移除 `elapsed_s`／`time_budget_s`／`elapsed_note` 後
+  `sort_keys` 正規化再雜湊）。v3 落地後不需重做實驗，`src/` 不必改。
+- **四軸**：工程 🟠 **退回**（v1、v2 舊 verdict 全部保留不覆寫）｜實驗 不適用｜
+  產品 🧪 feature flag（維持裁決 T-45-A）｜MVP 不適用（沿用 T-17 FAIL）。
+  T-44 四軸**不因本卡變動**；T-42／T-47／T-48／T-44-R1 的「前置 T-46 ✅」尚未滿足。
+
 ## 2026-09-10 (102)
 
 - **T-44 第四輪複驗（Opus，工程軸放行）**——對 `84deda8` 的純文件修正做獨立複核，
