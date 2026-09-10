@@ -1,5 +1,31 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔵 2026-09-10 Sonnet：T-46 第四輪執行完成——**現在該做的是開 Opus 新視窗複驗**，結果 commit `7b1384e`
+>
+> 依上一則（Opus 第三輪複驗中止）留下的處置四步執行：先清掉中斷輪留下的未進 git 殘留
+> `output/role_flag/v3/`，確認 `git worktree list` 只剩主 repo，重跑完整
+> `python scripts/t46_role_flag_baseline.py --out-dir output/role_flag/v3/ --fresh`
+> （39 次真實 CLI，約 12 分鐘，一次跑完未中斷）：exit 0，`mismatches` 空，四份產物全部產生
+> （`v3/{REPORT.md,tables.md}`、`v3/baseline_23f2aba/{BASELINE.md,BASELINE.stable.md}`）；
+> 13/13 三項比對（與 B0／round11／round17）皆 ✅，`bathroom_tiled`／`bedroom_ai_generated`／
+> 鐵則 12 五張已知錯誤案例預設模式全部 `BLOCK`；`v3/tables.md` 與已 commit 的 v2 版本除
+> 「criteria v2→v3／§2.4→§2.5」文字外逐字相同（純標籤更新，非結果差異）。
+>
+> 19 支 `scripts/test_*.py`（含 §2.6.8 新案例）逐支 EXIT=0；六條交付 IR MD5 全數逐位元相同
+> （T-14 兩條由 `test_ir_synth.py`【6】內建；T-20 兩條 `2adbaa75…`／`2dd19b6e…`；T-21 兩條
+> `9a94ffdf…`／`a1c21bcc…`，手動重生後已刪暫存檔）；`git diff -- src/` 為空；`git worktree list`
+> 只剩主 repo；v2 已 commit 的 `CRITERIA_T46_v2.md`／`REPORT.md`／`tables.md`／
+> `baseline_23f2aba/BASELINE.md`／`t36_clip_accuracy.py`／`round17/tables.md` 全部零 diff。
+>
+> 依 §4.6 commit `7b1384e`（`T-46: 依 criteria v3 …(待驗證)`，與 criteria commit `5807716`
+> 分開），只含兩支 `scripts/` 與四份 v3 產物。`baseline_stable_sha256`＝
+> `68edb28d6c218e7a620d3c65950c1cbab787e83c00c011ff85c27afddf10bc7a`。
+>
+> **下一步**：開 Opus 新視窗，貼 WORKFLOW §2.2 v2 的複驗 Prompt，**「結果 commit」填 `7b1384e`**。
+> Opus 依 criteria v3 §5 自行 `--fresh` 重建核對，通過後 T-46 工程軸才能改
+> 「✅ 已驗證（依 criteria v3）」，`T-42`／`T-43`／`T-47`／`T-48`／`T-44-R1` 的「前置 T-46 ✅」
+> 才算滿足。詳見 TASKS.md T-46 卡「狀態（第四輪執行）」。
+
 > ## 🔵 2026-09-10 Opus：T-46 第三輪複驗 **中止**——執行輪跑到一半被中斷，**沒有 v3 結果 commit 可審**
 >
 > 不是退回、也不是通過。`HEAD` 仍是 `03599ec`，`5807716` 之後**沒有任何** v3 結果 commit，
@@ -470,7 +496,7 @@ T-21 ✅（四輪迭代）｜T-17 §7-4 ✅ 已執行（無鐵筒子 artifact；
 | T-39 | 候選材質集擴充 | ✅ 工程已驗證｜🔴 實驗負向｜🚫 不採用（Opus 2026-09-02） |
 | T-44 | role-aware 材質候選子集 | 🟠 工程退回（文件）｜🟢 相對正向｜🧪 產品採用暫停（裁決 T-45-A）｜安全缺口 1＋1 |
 | T-45 | 審查制度修正（Fable 卡） | ✅ 已執行（Fable 2026-09-03） |
-| T-46 | T-44 收尾：REPORT §7 修正＋role-aware 回 feature flag | 🟡 **criteria v3 已開（Fable 2026-09-10，`5807716`）→ 待 Sonnet 依 v3 §4 `--fresh` 重跑**（v1／v2 退回 verdict 保留） |
+| T-46 | T-44 收尾：REPORT §7 修正＋role-aware 回 feature flag | 🔵 **待審（Sonnet 第四輪執行 2026-09-10，依 criteria v3；結果 commit `7b1384e`）→ 待 Opus 複驗**（v1／v2 退回 verdict 保留） |
 | T-42 | gate 交易式輸出與舊產物隔離（插卡 3/4） | ⬜ 未開始（前置 T-46 ✅ 尚未滿足，尚不可開） |
 | T-43 | T-17 產物溯源（插卡 4/4） | ⬜ |
 | T-47 | gate 校準複審量測（量測卡） | ⬜ |

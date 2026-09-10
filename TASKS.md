@@ -7896,6 +7896,40 @@ T-46 → {T-42 → T-43 → T-47｜T-48} → 裁決 T-47-A → T-44-R1 → T-17-
   - [ ] 只有 T-17-R2 完整硬門檻全部達成時才顯示 `MVP PASS`
 
 ### T-46 T-44 收尾修正：REPORT §7 事實修正＋role-aware 回 feature flag（Sonnet 卡；裁決 T-45-A 執行卡 1/5）
+- **狀態（第四輪執行，Sonnet 2026-09-10，依 criteria v3 §4；不覆寫下方任何一輪全文）**：
+  **四軸**：工程：🔵 **待審（依 criteria v3；結果 commit `7b1384e`，等 Opus 開新視窗複驗）**｜
+  實驗：不適用（v3 §2.4 B3 明文只報告不斷言）｜產品：🧪 feature flag（維持裁決 T-45-A，本輪無新證據）｜
+  MVP：不適用（沿用 T-17 FAIL）。
+  - **交接筆記**：`criteria_version=v3`；`criteria_commit=5807716`（只含 `CRITERIA_T46_v3.md`，早於本輪任何
+    run）；`result_commit=7b1384e`（`T-46: 依 criteria v3 …(待驗證)`，與 criteria commit 分開）；
+    `baseline_stable_sha256=68edb28d6c218e7a620d3c65950c1cbab787e83c00c011ff85c27afddf10bc7a`。
+  - 依上一輪（Opus 第三輪複驗中止）留下的「處置」四步逐項執行：
+    1. 先清掉中斷輪殘留的 `output/role_flag/v3/`（未進 git 的半成品）與確認 `git worktree list`
+       只剩主 repo，再重跑 `python scripts/t46_role_flag_baseline.py --out-dir output/role_flag/v3/ --fresh`
+       （39 次真實 CLI，約 12 分鐘，一次跑完未中斷）：exit 0，`mismatches` 空，四份產物
+       （`v3/{REPORT.md,tables.md}`、`v3/baseline_23f2aba/{BASELINE.md,BASELINE.stable.md}`）全部產生；
+       13/13 三項比對（與 B0／與 round11／與 round17）皆 ✅，`bathroom_tiled`／`bedroom_ai_generated`／
+       鐵則 12 五張已知錯誤案例預設模式全部 `BLOCK`；`v3/tables.md` 與已 commit 的 v2
+       `output/role_flag/tables.md` 逐字比對，除「criteria v2→v3／§2.4→§2.5」文字外**完全相同**
+       （純標籤更新，非結果差異）。
+    2. 19 支 `scripts/test_*.py`（含本卡新增的 §2.6.8 案例）**逐支 EXIT=0**；六條交付 IR MD5
+       全數逐位元相同——T-14 兩條由 `test_ir_synth.py`【6】內建比對通過；T-20 手動重生
+       `gen_ir_from_text.py "浴室"／"大教堂"`（`-o` 輸出到 `output/ir_synth/`）＝
+       `2adbaa75eb698772a8c9aa693179ec47`／`2dd19b6e6d351d713887636fe45cd67e`；T-21 手動重生
+       `gen_ir_coupled.py assets/scenes/neighbor_voices.json／stadium_corridor.json`＝
+       `9a94ffdf5d8295aee7889729c39c9cd8`／`a1c21bcc3fd9aa3480df203a89c8cd05`（比對後已刪除這四個
+       暫存檔，不是交付物）。`git diff -- src/` 為空；`git worktree list` 只剩主 repo；
+       `git diff -- output/role_flag/{CRITERIA_T46_v2.md,CRITERIA_T46_v3.md,REPORT.md,tables.md,
+       baseline_23f2aba/BASELINE.md} scripts/t36_clip_accuracy.py
+       output/clip_treatment/rounds/round17/tables.md` 全空（v2 已 commit 產物零被動）。
+    3. Commit `7b1384e`：只含 `scripts/t46_role_flag_baseline.py`、`scripts/test_t46_role_flag.py`、
+       `output/role_flag/v3/{REPORT.md,tables.md,baseline_23f2aba/{BASELINE.md,BASELINE.stable.md}}`
+       六個檔案，與 criteria commit `5807716` 分開。
+    4. 下一步：開 Opus 新視窗，貼 WORKFLOW §2.2 v2 的複驗 Prompt，**「結果 commit」填 `7b1384e`**
+       （不是佔位字串）；Opus 依 criteria v3 §5 自行 `--fresh` 重建核對，通過後 T-46 工程軸才能改
+       「✅ 已驗證（依 criteria v3）」，`T-42`／`T-43`／`T-47`／`T-48`／`T-44-R1` 的「前置 T-46 ✅」才算滿足。
+  - v1 `37e07fe`、v2 `6efa6ba` 兩個退回 verdict、v2 結果 `545ec5e`：**永久保留不覆寫，不得依 v3 補判 PASS**
+    （v3 §6）；本輪不變動。
 - **狀態（第三輪複驗**中止**，Opus 2026-09-10，依 criteria v3；不覆寫下方任何一輪全文）**：
   🔵 **待審（§5 複驗未執行——前提不成立，不是退回、也不是通過）**。
   - **❌ 阻擋（criteria v3 §5.1／§6／WORKFLOW §7.2／§8）：沒有 v3 結果 commit。**

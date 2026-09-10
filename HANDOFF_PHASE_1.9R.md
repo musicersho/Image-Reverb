@@ -17,7 +17,16 @@
 > **卡點回到 Fable：要開 criteria v3**（提案見 TASKS.md T-46 卡「Opus 驗證紀錄（第二輪）」
 > 第 8 點）。`HANDOFF_T46_VERIFY.md` 的「建議判法」三項豁免**不是有效門檻**，不得據此放行。
 > T-42／T-47／T-48／T-44-R1 仍全數掛在「等 T-46 ✅」。
-> **2026-09-10 Fable 更新（本檔最新一筆，優先於上面三筆）**：**criteria v3 已開**——獨立 commit `5807716`
+> **2026-09-10 Sonnet 更新（本檔最新一筆，優先於上面四筆）**：**T-46 v3 第四輪執行完成**，結果 commit
+> `7b1384e`（`T-46: 依 criteria v3 …(待驗證)`，與 criteria commit `5807716` 分開）。依上一輪
+> （Opus 第三輪複驗中止，執行輪跑到一半被打斷）留下的處置步驟重跑完整 `--fresh`（39 次真實 CLI，
+> 一次跑完未中斷）：13/13 三項比對（與 B0／round11／round17）全 ✅，`bathroom_tiled`／
+> `bedroom_ai_generated`／鐵則 12 五張已知錯誤案例預設模式全部 `BLOCK`；19 支測試 EXIT=0、
+> 六條交付 IR MD5 全中、`src/` 與 v2 三份已 commit 產物零 diff。四軸「工程：🔵 待審（依 criteria v3）」。
+> **卡點移到 Opus（v3 §5 複驗）**，Prompt 見 HANDOFF.md 頂部（「結果 commit」填 `7b1384e`）。
+> T-42／T-47／T-48／T-44-R1 仍全數掛在「等 Opus 確認 T-46 ✅」。細節見 TASKS.md T-46 卡
+> 「狀態（第四輪執行）」、DEV_LOG `2026-09-10 (106)`。
+> **2026-09-10 Fable 更新**：**criteria v3 已開**——獨立 commit `5807716`
 > 只含 [CRITERIA_T46_v3.md](output/role_flag/CRITERIA_T46_v3.md)（提案 Opus、起草 Fable、核准 使用者）。
 > v3 把 §5.2 的比對物件改成 `BASELINE.stable.md`（canonical stable projection：固定清單排除 3 個計時欄＋5 個絕對
 > 路徑欄後正規化雜湊），主 repo HEAD／產生時間／原始 JSON sha 降為 provenance 只記錄不比對；硬斷言一項不放寬；
@@ -39,7 +48,7 @@
 | 卡 | 工程 | 實驗 | 產品 | MVP | 卡在誰身上 |
 |---|---|---|---|---|---|
 | T-45 審查制度修正 | ✅ 已執行 | — | — | — | 結案 |
-| **T-46** 收尾修正（§7＋feature flag） | 🟡 **criteria v3 已開（Fable 2026-09-10，`5807716`）→ 待 Sonnet 依 v3 §4 `--fresh` 重跑**（v1 `37e07fe`／v2 `6efa6ba` 兩個退回 verdict 永久保留） | 不適用 | 🧪 flag | 不適用 | ~~Fable（門檻 v2）~~ ~~Sonnet（修正輪）~~ ~~Opus（複驗）~~ ~~Fable（開 criteria v3）~~ **Sonnet（v3 修正輪，見 HANDOFF.md 頂部 Prompt）** |
+| **T-46** 收尾修正（§7＋feature flag） | 🔵 **待審（Sonnet 第四輪執行 2026-09-10，結果 commit `7b1384e`，依 criteria v3）→ 待 Opus 複驗**（v1 `37e07fe`／v2 `6efa6ba` 兩個退回 verdict 永久保留） | 不適用 | 🧪 flag | 不適用 | ~~Fable（門檻 v2）~~ ~~Sonnet（修正輪）~~ ~~Opus（複驗）~~ ~~Fable（開 criteria v3）~~ ~~Sonnet（v3 修正輪）~~ **Opus（v3 複驗，見 HANDOFF.md 頂部 Prompt）** |
 | **T-44** role-aware | 🟠 **退回**（第二輪） | 🟢 相對正向 | 🧪 暫停採用 | FAIL | **Sonnet**（見 HANDOFF_T44_FIX.md） |
 | T-42 gate 交易式輸出 | ⬜ 未開始 | — | — | — | 等 T-46 ✅ |
 | T-43 產物溯源 provenance | ⬜ 未開始 | — | — | — | 等 T-42 ✅ |

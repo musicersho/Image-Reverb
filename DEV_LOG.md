@@ -1,5 +1,23 @@
 # Dev Log
 
+## 2026-09-10 (106)
+
+- **T-46 第四輪執行（Sonnet，依 criteria v3 §4）完成，結果 commit `7b1384e`**——依上一則（Opus
+  第三輪複驗中止）留下的處置四步逐項執行：清掉中斷輪殘留的未進 git `output/role_flag/v3/`，
+  重跑完整 `python scripts/t46_role_flag_baseline.py --out-dir output/role_flag/v3/ --fresh`
+  （39 次真實 CLI，約 12 分鐘，一次跑完未中斷）：exit 0，四份產物全部產生
+  （`v3/{REPORT.md,tables.md}`、`v3/baseline_23f2aba/{BASELINE.md,BASELINE.stable.md}`）。
+- 13/13 三項比對（與 B0／round11／round17）皆 ✅；`bathroom_tiled`／`bedroom_ai_generated`／
+  鐵則 12 五張已知錯誤案例預設模式全部 `BLOCK`；`v3/tables.md` 與已 commit 的 v2 版本除
+  「criteria v2→v3」文字外逐字相同（純標籤更新，非結果差異）。
+- 19 支 `scripts/test_*.py`（含 §2.6.8 新案例）逐支 EXIT=0；六條交付 IR MD5 全數逐位元相同
+  （T-14 由 `test_ir_synth.py`【6】內建；T-20／T-21 手動重生核對後已刪暫存檔）；
+  `git diff -- src/` 為空；`git worktree list` 只剩主 repo；v2 已 commit 的四份產物與
+  `t36_clip_accuracy.py`／`round17/tables.md` 全部零 diff。
+- `baseline_stable_sha256=68edb28d6c218e7a620d3c65950c1cbab787e83c00c011ff85c27afddf10bc7a`。
+  四軸：工程 🔵 待審（依 criteria v3）｜實驗 不適用｜產品 🧪 feature flag｜MVP 不適用。
+  下一步：開 Opus 新視窗複驗，「結果 commit」填 `7b1384e`。
+
 ## 2026-09-10 (105)
 
 - **T-46 第三輪複驗（Opus，依 criteria v3）＝🔵 中止，未產生 verdict**。原因不是執行者做錯、
