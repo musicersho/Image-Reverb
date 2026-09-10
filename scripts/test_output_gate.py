@@ -56,10 +56,25 @@ T-42（插卡 3/4；輸出交易化——archive-first 隔離舊產物＋staging
      路徑）且檔案在該正式位置真的存在；`output/.staging/<stem>/` 執行完後
      不存在（發布是原子 rename，不留殘骸）。
 
+T-49（裁決 T-42-A 執行卡 1/2，附帶發現②）新增一案例，修 bug 類，對舊碼
+（T-49 之前）必須實測 fail：
+  J. 成功路徑內非預期例外（樁 `pipeline._run_wet_preview` 丟
+     `subprocess.CalledProcessError`，其餘沿用【I】的樁到底手法；預先放假的
+     舊 `analysis.json`／`ir_mono.wav`／`meta.json` 到正式位置，同【H】手法）
+     → `run_photo()` 包在 `try/except subprocess.CalledProcessError`：
+     斷言 (a) 例外確實往上拋（沒被吞、沒被轉成別的 exit code）；
+     (b) `output/.staging/<stem>/` 不殘留（finally 兜底清除）；
+     (c) 正式位置兩處未被本次發布（舊檔已 archive、本次未成功寫入）；
+     (d) archive 內三個舊檔 bytes 逐位元相同（可回復性，同案例 H）；
+     (e) stderr 含 `_archive_note()` 的輸出（archive 位置與回復方式）。
+     **舊碼預期**：(a)(c)(d) 過、**(b)(e) fail**（staging 殘留、無 note——
+     T-49 之前 `run_photo()` 成功路徑的寫檔段沒有 try/finally 兜底）。
+
 跑法：`python scripts/test_output_gate.py`；全部通過 exit 0，任一失敗 exit 1。
 會在 `output/` 底下建立／清除 `_test_t26_gate_*`／`_test_t30_gate_*`／
-`_test_t34_gate_*`／`_test_t42_gate_*` 暫存資料夾（含 `output/preprocess/`
-與 `output/.archive/` 下同名 stem 的殘留），不影響任何既有交付檔案。
+`_test_t34_gate_*`／`_test_t42_gate_*`／`_test_t49_gate_*` 暫存資料夾（含
+`output/preprocess/` 與 `output/.archive/` 下同名 stem 的殘留），不影響任何
+既有交付檔案。
 
 診斷力：這支測試在加 gate 前的舊碼上必須 fail（低信心輸入照樣寫出 wav、
 exit 0）——自我檢查已用 `git stash` 實測並附輸出。
@@ -260,6 +275,9 @@ def main() -> int:
         g_photo = Path(tmp) / f"{g_stem}.png"
         h_photo = Path(tmp) / f"{h_stem}.png"
         i_photo = Path(tmp) / f"{i_stem}.png"
+        # T-49（裁決 T-42-A 執行卡 1/2）新增案例 J 的 stem／假照片路徑：
+        j_stem = "_test_t49_gate_j_unexpected_exception"
+        j_photo = Path(tmp) / f"{j_stem}.png"
         for p in (
             low_photo, low_forced_photo, medium_photo, mixed_geom_photo,
             uniform_photo, low_geom_photo,
@@ -267,6 +285,7 @@ def main() -> int:
             p.write_bytes(b"")
         h_photo.write_bytes(b"")
         i_photo.write_bytes(b"")
+        j_photo.write_bytes(b"")
         _make_real_photo(g_photo)  # 案例 G 要真的可被 PIL 開啟的圖片
 
         out_dirs = [
@@ -275,15 +294,15 @@ def main() -> int:
                 low_photo, low_forced_photo, medium_photo, mixed_geom_photo,
                 uniform_photo, low_geom_photo,
             )
-        ] + [OUTPUT_ROOT / s for s in (g_stem, h_stem, i_stem)]
+        ] + [OUTPUT_ROOT / s for s in (g_stem, h_stem, i_stem, j_stem)]
         for d in out_dirs:
             if d.exists():
                 shutil.rmtree(d)
-        # T-42 三案例還會動到 output/preprocess/<stem>／output/.staging/<stem>／
+        # T-42／T-49 案例還會動到 output/preprocess/<stem>／output/.staging/<stem>／
         # output/.archive/<stem>，先確保乾淨起跑（真正的清除斷言在各案例內）。
         t42_extra_dirs = [
             OUTPUT_ROOT / sub / stem
-            for stem in (g_stem, h_stem, i_stem)
+            for stem in (g_stem, h_stem, i_stem, j_stem)
             for sub in ("preprocess", ".staging", ".archive")
         ]
         for d in t42_extra_dirs:
@@ -666,6 +685,103 @@ def main() -> int:
                 and wet_preview_path == str(i_final_dir / "wet_preview.wav")
                 and Path(wet_preview_path).exists(),
                 f"wet_preview.path={wet_preview_path!r}",
+            )
+
+            # --- 案例 J（T-49）：成功路徑內非預期例外 → 例外照樣往上拋、 ---
+            # --- staging 已清、archive_note 有印、舊檔已隔離 -----------------
+            print(
+                "【J】成功路徑內非預期例外（_run_wet_preview 丟 CalledProcessError）→ "
+                "例外照樣往上拋、staging 已清、archive_note 有印、舊檔已隔離"
+            )
+            j_final_dir = OUTPUT_ROOT / j_stem
+            j_preprocess_dir = OUTPUT_ROOT / "preprocess" / j_stem
+            j_staging_dir = OUTPUT_ROOT / ".staging" / j_stem
+            j_archive_stem_dir = OUTPUT_ROOT / ".archive" / j_stem
+
+            j_preprocess_dir.mkdir(parents=True, exist_ok=True)
+            j_old_meta_bytes = b'{"fake": "old meta.json before unexpected exception"}'
+            (j_preprocess_dir / "meta.json").write_bytes(j_old_meta_bytes)
+
+            j_final_dir.mkdir(parents=True, exist_ok=True)
+            j_old_analysis_bytes = b'{"fake": "old analysis.json before unexpected exception"}'
+            j_old_wav_bytes = b"RIFF_FAKE_OLD_WAV_BYTES_BEFORE_EXCEPTION"
+            (j_final_dir / "analysis.json").write_bytes(j_old_analysis_bytes)
+            (j_final_dir / "ir_mono.wav").write_bytes(j_old_wav_bytes)
+
+            j_surf = _make_surf("manual")  # medium，不觸發 gate，走到成功路徑才會碰到 _run_wet_preview
+            orig_stubs_j = _install_stubs(j_surf)
+            orig_run_wet_preview = pipeline._run_wet_preview
+
+            def _fake_run_wet_preview_raises(*args, **kwargs):
+                raise subprocess.CalledProcessError(1, "convolve")
+
+            pipeline._run_wet_preview = _fake_run_wet_preview_raises
+            stderr_buf_j = io.StringIO()
+            raised: Exception | None = None
+            try:
+                with contextlib.redirect_stderr(stderr_buf_j):
+                    try:
+                        pipeline.run_photo(str(j_photo), override_dims="4x3x2.5", no_viz=True)
+                    except subprocess.CalledProcessError as e:
+                        raised = e
+            finally:
+                _restore_stubs(*orig_stubs_j)
+                pipeline._run_wet_preview = orig_run_wet_preview
+            stderr_j = stderr_buf_j.getvalue()
+
+            check(
+                "(a) CalledProcessError 確實往上拋（不被吞、不被轉成別的 exit code）",
+                raised is not None,
+                f"raised={raised!r}",
+            )
+            check(
+                "(b) output/.staging/<stem>/ 不殘留（finally 兜底清除）",
+                not j_staging_dir.exists(),
+                f"exists={j_staging_dir.exists()}",
+            )
+            check(
+                "(c) output/preprocess/<stem>/ 未被本次發布（舊檔已 archive，本次未成功）",
+                not j_preprocess_dir.exists(),
+                f"exists={j_preprocess_dir.exists()}",
+            )
+            check(
+                "(c) output/<stem>/ 未被本次發布（舊檔已 archive，本次未成功）",
+                not j_final_dir.exists(),
+                f"exists={j_final_dir.exists()}",
+            )
+            j_archive_runs = (
+                sorted(j_archive_stem_dir.glob("*")) if j_archive_stem_dir.exists() else []
+            )
+            check(
+                "(d) output/.archive/<stem>/ 下恰產生一個時間戳子目錄",
+                len(j_archive_runs) == 1,
+                f"archive_runs={j_archive_runs!r}",
+            )
+            if j_archive_runs:
+                j_run_dir = j_archive_runs[0]
+                j_archived_meta = j_run_dir / "preprocess" / "meta.json"
+                j_archived_analysis = j_run_dir / "final" / "analysis.json"
+                j_archived_wav = j_run_dir / "final" / "ir_mono.wav"
+                check(
+                    "(d) archive 內 meta.json bytes 與舊檔逐位元相同（可回復性）",
+                    j_archived_meta.exists() and j_archived_meta.read_bytes() == j_old_meta_bytes,
+                    f"exists={j_archived_meta.exists()}",
+                )
+                check(
+                    "(d) archive 內 analysis.json bytes 與舊檔逐位元相同（可回復性）",
+                    j_archived_analysis.exists()
+                    and j_archived_analysis.read_bytes() == j_old_analysis_bytes,
+                    f"exists={j_archived_analysis.exists()}",
+                )
+                check(
+                    "(d) archive 內 ir_mono.wav bytes 與舊檔逐位元相同（可回復性）",
+                    j_archived_wav.exists() and j_archived_wav.read_bytes() == j_old_wav_bytes,
+                    f"exists={j_archived_wav.exists()}",
+                )
+            check(
+                "(e) stderr 含 archive_note 輸出（舊輸出隔離位置與回復方式）",
+                "本次執行前的舊輸出未遭刪除" in stderr_j and str(j_archive_stem_dir) in stderr_j,
+                f"stderr={stderr_j!r}",
             )
         finally:
             ir_synth.synthesize_ir = real_synthesize_ir

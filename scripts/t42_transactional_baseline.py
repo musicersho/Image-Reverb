@@ -9,11 +9,10 @@ src.image_reverb <photo> --force-low-confidence --no-viz`，含真實幾何／�
 CLIP 模型，不打樁）對 `t36_clip_accuracy.GATE_ITEMS` 13 張照片各跑一次，程式化
 證明：
 
-1. **三軸 confidence／gate 逐值不變**：拿「本卡改動前」（`git worktree` 在
-   HEAD——本卡的程式碼改動此時仍未 commit，HEAD 就是改動前的狀態）與
-   「本卡改動後」（當前工作目錄）兩邊的真實 CLI 結果逐張比對，不透過
-   `EXPECTED_GATE` 間接比較（那張表是別卡的凍結基準，本卡只借用來核對
-   兩邊都跟它一致，不是本卡比較的主要依據）。
+1. **三軸 confidence／gate 逐值不變**：拿「本卡改動前」（`git worktree` 於固定
+   commit `OLD_COMMIT`）與「本卡改動後」（當前工作目錄）兩邊的真實 CLI 結果
+   逐張比對，不透過 `EXPECTED_GATE` 間接比較（那張表是別卡的凍結基準，本卡只
+   借用來核對兩邊都跟它一致，不是本卡比較的主要依據）。
 2. **IR bytes 完全不變**：`ir_mono.wav` 的 md5 兩邊逐張比對——交易化只改
    「寫到哪、何時發布」，不改內容。
 3. **輸出交易政策確實落地**：改動後的每一張照片跑完，`output/preprocess/
@@ -23,6 +22,16 @@ CLIP 模型，不打樁）對 `t36_clip_accuracy.GATE_ITEMS` 13 張照片各跑�
 跑法：`python scripts/t42_transactional_baseline.py --out-dir
 output/transactional_output/ --fresh`（13 張 ×2 邊＝26 次真實 CLI，
 單張約 15–40 秒）。任一斷言不成立 exit 非 0，且不寫 REPORT／tables。
+
+T-49（裁決 T-42-A 執行卡 1/2，附帶發現①；鐵則 13 首例）：「改動前」參照改成
+釘死的 commit 常數 `OLD_COMMIT`，不再用 `git worktree add --detach <dir> HEAD`
+——收工 commit 之後 HEAD 就是新碼，若仍用 HEAD，改動後再重跑會變成「新碼比
+新碼」的假綠燈，還會把 REPORT 的「改動前參照」覆寫成錯的 commit。`OLD_COMMIT`
+只能是模組常數，不開 CLI 參數讓人指定（鐵則 13：參照只能是常數，不能讓人在
+跑的時候換）；worktree 建好後會自檢 `git rev-parse HEAD` 是否等於 `OLD_COMMIT`
+的全長雜湊，不等就 `SystemExit("🔴 卡關 …")`。REPORT 檔頭改由程式印出雙邊
+`git rev-parse HEAD`（改動前 worktree／改動後主 repo）與主 repo
+`git status --porcelain -- src scripts`（T-40 指紋精神）。
 """
 
 from __future__ import annotations
@@ -32,6 +41,7 @@ import json
 import shutil
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -42,10 +52,12 @@ import t36_clip_accuracy as t36  # noqa: E402  （唯讀引用：GATE_ITEMS／EX
 from t36_analysis import _md_table  # noqa: E402  （唯讀引用，不重新實作表格排版）
 
 DEFAULT_OUT_DIR = REPO_ROOT / "output" / "transactional_output"
-# 本卡改動前的參照點：HEAD（本卡的 pipeline.py／test_output_gate.py 改動此時
-# 仍是工作區未 commit 的變更，HEAD 上是改動前的程式碼——不需要指定固定舊
-# commit，`git worktree add` 預設就是 HEAD）。
-OLD_WORKTREE_DIR = REPO_ROOT / ".worktree_t42_old_head"
+# T-49（裁決 T-42-A 附帶發現①；鐵則 13 首例）：本卡「改動前」的參照點釘死為
+# 固定 commit（T-42 已驗證 REPORT 記錄的 `ec1a7bfd62e1810f52be5d2d6921b9d8a
+# 63422f4` ＝ T-42 結果 commit `cf1f1ba` 的 parent），不用 HEAD——HEAD 會隨
+# 每次收工 commit 變動，不是穩定參照，再跑會變成「新碼比新碼」的假綠燈。
+OLD_COMMIT = "ec1a7bf"
+OLD_WORKTREE_DIR = REPO_ROOT / f".worktree_t42_old_{OLD_COMMIT}"
 
 
 def _git_head(cwd: Path) -> str:
@@ -114,14 +126,24 @@ def main() -> int:
         subprocess.run(["git", "worktree", "remove", "--force", str(OLD_WORKTREE_DIR)], cwd=REPO_ROOT, check=False)
         shutil.rmtree(OLD_WORKTREE_DIR, ignore_errors=True)
 
-    print(f"[worktree] git worktree add {OLD_WORKTREE_DIR.name}（HEAD＝本卡改動前）")
+    print(f"[worktree] git worktree add {OLD_WORKTREE_DIR.name} {OLD_COMMIT}（改動前參照，釘死常數）")
     subprocess.run(
-        ["git", "worktree", "add", "--detach", str(OLD_WORKTREE_DIR), "HEAD"],
+        ["git", "worktree", "add", "--detach", str(OLD_WORKTREE_DIR), OLD_COMMIT],
         cwd=REPO_ROOT, check=True, capture_output=True, text=True,
     )
 
     old_head = _git_head(OLD_WORKTREE_DIR)
-    print(f"[worktree] 舊碼 HEAD（改動前）＝{old_head}")
+    expected_old_head = subprocess.run(
+        ["git", "rev-parse", OLD_COMMIT], cwd=REPO_ROOT, capture_output=True, text=True, check=True
+    ).stdout.strip()
+    if old_head != expected_old_head:
+        subprocess.run(["git", "worktree", "remove", "--force", str(OLD_WORKTREE_DIR)], cwd=REPO_ROOT, check=False)
+        shutil.rmtree(OLD_WORKTREE_DIR, ignore_errors=True)
+        raise SystemExit(
+            f"🔴 卡關：worktree HEAD（{old_head}）≠ OLD_COMMIT（{OLD_COMMIT}）全長雜湊"
+            f"（{expected_old_head}）——改動前參照重建失敗，不可繼續。"
+        )
+    print(f"[worktree] 舊碼 HEAD（改動前，OLD_COMMIT={OLD_COMMIT}）＝{old_head}")
 
     rows: list[dict] = []
     mismatches: list[str] = []
@@ -188,12 +210,33 @@ def main() -> int:
         encoding="utf-8",
     )
 
+    porcelain = subprocess.run(
+        ["git", "status", "--porcelain", "--", "src", "scripts"],
+        cwd=REPO_ROOT, capture_output=True, text=True, check=True,
+    ).stdout
+    new_head_after = _git_head(REPO_ROOT)
+    generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    if porcelain.strip():
+        porcelain_block = (
+            "```\n" + porcelain + "```\n"
+            "⚠️ 改動後為未 commit 工作區（執行者本次跑的當下工作區有未 commit 變更，"
+            "不因此視為斷言失敗；Opus 複驗那次應為空）。\n"
+        )
+    else:
+        porcelain_block = "（空，工作區乾淨）\n"
+
     report = (
         "# T-42 步驟 4 REPORT — 13 張照片基線變化表（插卡 3/4；鐵則 8）\n\n"
-        f"改動前參照（`git worktree` 於 `HEAD`）：`{old_head}`。\n\n"
+        "## Provenance（T-49：改動前參照釘死為 OLD_COMMIT 常數，非 HEAD）\n\n"
+        f"- 改動前參照 `OLD_COMMIT`（模組常數）：`{OLD_COMMIT}`\n"
+        f"- 改動前 worktree `git rev-parse HEAD`（全長，須等於上列 commit）：`{old_head}`\n"
+        f"- 改動後主 repo `git rev-parse HEAD`（全長）：`{new_head_after}`\n"
+        f"- 改動後主 repo `git status --porcelain -- src scripts`：\n{porcelain_block}"
+        f"- 產生時間（UTC）：`{generated_at}`\n\n"
         "本報告由 `scripts/t42_transactional_baseline.py --fresh` 對 13 張照片各跑兩次真實 CLI"
         "（`python -m src.image_reverb <photo> --force-low-confidence --no-viz`，"
-        "分別在本卡改動前的 `HEAD`（`git worktree`）與改動後的工作目錄），程式化驗證：\n\n"
+        "分別在本卡改動前的固定 commit `OLD_COMMIT`（`git worktree`）與改動後的工作目錄），"
+        "程式化驗證：\n\n"
         "1. **gate 判定條件零改動（鐵則 6）**：13 張的 geometry／materials／overall confidence"
         "與 gate 結果，改動前後**逐值相同**——任一不同即視為斷言失敗，不寫本報告。\n"
         "2. **IR bytes 完全不變**：13 張的 `ir_mono.wav` md5，改動前後**逐位元相同**"
