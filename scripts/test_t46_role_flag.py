@@ -12,7 +12,7 @@
 `test_t44_role_partition.py`（分區表、`role=None` 不變量）驗證過，不是本卡
 範圍。
 
-分四部分：
+分五部分：
   0. CLI 參數接線（subprocess，不跑模型）：`--role-aware` 存在，且跟其他
      照片限定旗標一樣被 `check_mutual_exclusion` 之後的檢查擋下（非照片輸入
      搭配使用 → exit 2）。
@@ -23,6 +23,10 @@
   C. `analysis.json` 的 `"role_aware"` 欄位與呼叫時傳入的值逐值相符
      （A/B 兩種模式各跑一次，overall confidence 給 medium 以免被 T-26 gate
      擋下、無法產生檔案可讀）。
+  D.（criteria v3 §2.6.8 新增）`t46_role_flag_baseline.stable_projection()`＋
+     正規化序列化的雜湊斷言四件事：(a) 8 個排除鍵全部不在投影內；
+     (b) 兩個只差 `elapsed_s`／`input` 的物件雜湊相等；(c) 只差
+     `surfaces.floor` 的物件雜湊不等；(d) 鍵序打亂後雜湊相等。
 
 診斷力（自我檢查要求）：對 git worktree 的 HEAD 舊碼（5520b83 之後、本卡之前，
 `surfaces_from_preprocess(summary, role_aware=True)` 是寫死的）實測，本測試
@@ -43,12 +47,14 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from src.image_reverb import config  # noqa: E402
 from src.image_reverb import pipeline  # noqa: E402
 from src.image_reverb import preprocess as preprocess_mod  # noqa: E402
 from src.image_reverb import surfaces as surfaces_mod  # noqa: E402
 from src.image_reverb.materials import SURFACE_NAMES, SurfaceMaterials  # noqa: E402
+import t46_role_flag_baseline as t46_baseline  # noqa: E402
 
 PROJECT_ROOT = config.PROJECT_ROOT
 OUTPUT_ROOT = PROJECT_ROOT / "output"
@@ -141,8 +147,85 @@ def _check_cli_wiring() -> None:
     )
 
 
+def _check_stable_projection() -> None:
+    """criteria v3 §2.6.8：對 `stable_projection()`＋正規化序列化斷言四件事。"""
+    print("【D】stable_projection()（criteria v3 §2.2.1／§2.6.8）")
+
+    base = {
+        "input": "/Users/x/photo.png",
+        "output_dir": "/Users/x/output/photo",
+        "elapsed_s": 12.34,
+        "time_budget_s": 60,
+        "elapsed_note": "總耗時 61.0s 超過 SPEC §4 目標 60s",
+        "surfaces": {"floor": "carpet", "ceiling": "gypsum_board", "west": "brick"},
+        "surfaces_sources": {"floor": "clip", "ceiling": "clip", "west": "clip"},
+        "ir_mono": {"path": "/Users/x/output/photo/ir_mono.wav"},
+        "ir_stereo": {"path": "/Users/x/output/photo/ir_stereo.wav", "seed_left": 1, "seed_right": 2},
+        "wet_preview": {"path": "/Users/x/output/photo/wet.wav", "mix": 0.6},
+        "confidence": "medium",
+    }
+
+    # (a) 8 個排除鍵全部不在投影內
+    projected = t46_baseline.stable_projection(base)
+    excluded_present = []
+    for dotted in t46_baseline.STABLE_PROJECTION_EXCLUDED_PATHS:
+        parts = dotted.split(".")
+        node = projected
+        present = True
+        for p in parts[:-1]:
+            if not isinstance(node, dict) or p not in node:
+                present = False
+                break
+            node = node[p]
+        if present and isinstance(node, dict) and parts[-1] in node:
+            excluded_present.append(dotted)
+    check(
+        "(a) 8 個排除鍵全部不在投影內",
+        excluded_present == [],
+        f"仍殘留：{excluded_present!r}",
+    )
+    check(
+        "(a) 排除鍵數量恰為 8",
+        len(t46_baseline.STABLE_PROJECTION_EXCLUDED_PATHS) == 8,
+        f"實際 {len(t46_baseline.STABLE_PROJECTION_EXCLUDED_PATHS)} 個",
+    )
+
+    # (b) 兩個只差 elapsed_s／input 的物件雜湊相等
+    only_timing_and_input_diff = dict(base)
+    only_timing_and_input_diff["elapsed_s"] = 999.9
+    only_timing_and_input_diff["input"] = "/Users/other-machine/different/photo.png"
+    hash_base = t46_baseline.canonical_stable_bytes(base)
+    hash_variant = t46_baseline.canonical_stable_bytes(only_timing_and_input_diff)
+    check(
+        "(b) 只差 elapsed_s／input 的物件雜湊相等",
+        hash_base == hash_variant,
+        f"base={hash_base!r} variant={hash_variant!r}",
+    )
+
+    # (c) 只差 surfaces.floor 的物件雜湊不等
+    surfaces_diff = json.loads(json.dumps(base))
+    surfaces_diff["surfaces"]["floor"] = "wood_panel"
+    hash_surfaces_diff = t46_baseline.canonical_stable_bytes(surfaces_diff)
+    check(
+        "(c) 只差 surfaces.floor 的物件雜湊不等",
+        hash_base != hash_surfaces_diff,
+        f"base={hash_base!r} surfaces_diff={hash_surfaces_diff!r}",
+    )
+
+    # (d) 鍵序打亂後雜湊相等
+    shuffled = {k: base[k] for k in reversed(list(base.keys()))}
+    shuffled["surfaces"] = {k: base["surfaces"][k] for k in reversed(list(base["surfaces"].keys()))}
+    hash_shuffled = t46_baseline.canonical_stable_bytes(shuffled)
+    check(
+        "(d) 鍵序打亂後雜湊相等",
+        hash_base == hash_shuffled,
+        f"base={hash_base!r} shuffled={hash_shuffled!r}",
+    )
+
+
 def main() -> int:
     _check_cli_wiring()
+    _check_stable_projection()
 
     with tempfile.TemporaryDirectory() as tmp:
         default_photo = Path(tmp) / "_test_t46_role_flag_default.png"
