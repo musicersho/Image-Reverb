@@ -1,5 +1,27 @@
 # 交接文件 — 給下一個視窗
 
+> ## ✅ 2026-09-10 Opus：T-44 第四輪複驗通過（**工程軸**），產品採用仍暫停
+>
+> 第三輪的唯一阻擋項（`REPORT_T44.md` 三處無限定的「逐位元相同」）已修好，
+> 兩項次要建議也照做。我用 `rounds/round11_remap_baseline` 與 `rounds/round17`
+> 的原始 `detail.json` 獨立重算，全部相符：bedroom `surfaces`／`sources`／四面牆
+> face 物件完全相同、只有 `faces.floor` 的 `confidence` 0.2436→0.3394 與 `top3` 變，
+> gate 兩輪皆 `low`（BLOCK）；wall 側高於 0.3394 者恰 11 面（7 面 ≥0.35＋
+> `site_photo_restaurant` 四面各 0.3471）；§7 五檔門檻 27／22／20／7／0 逐格相同；
+> `84deda8` 只動 5 個文件檔、`src/`／`scripts/`／`data/`／`rounds/` 零 diff；
+> `scripts/test_*.py` 19 支 EXIT=0；一～三輪退回全文逐字保留。
+>
+> **✅ 只代表工程交付已驗證（WORKFLOW §3.3）**——四軸：工程 已驗證｜實驗 🟢 正向｜
+> 產品 🧪 **暫停採用**（裁決 T-45-A 不變，`role_aware` 預設仍 `False`）｜MVP **FAIL**。
+> **一項殘留精確度問題帶到 T-44-R1（不阻擋本輪）**：§3 表標題的括號只點名
+> `bedroom_ai_generated.floor`，但「其餘 68 面」裡實有 **9 面**信心／top3 變動且
+> **全部上升**（明細見 TASKS.md T-44 卡第四輪紀錄）；T-44-R1 改 REPORT 時請補這張
+> 9 面表，T-47 gate 校準複審也應把它當膨脹幅度的量測輸入。
+>
+> **下一步**：Phase 1.9-R 順序不變（T-46 複驗 → T-42 → T-43 → T-47 → T-48 →
+> T-44-R1 → T-17-R2）。T-46 的 Opus 複驗請讀 [HANDOFF_T46_VERIFY.md](HANDOFF_T46_VERIFY.md)。
+> 本檔下面所有更早的 T-44 段落皆為第三輪之前的舊狀態，僅供歷史脈絡參考。
+
 > ## 🔵 2026-09-10 Sonnet：T-44 第三輪退回修正輪已完成，待 Opus 第四輪複驗
 >
 > 依 TASKS.md T-44 卡「Opus 第三輪複驗，2026-09-08」的退回理由（純文件、

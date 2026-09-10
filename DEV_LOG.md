@@ -1,5 +1,36 @@
 # Dev Log
 
+## 2026-09-10 (102)
+
+- **T-44 第四輪複驗（Opus，工程軸放行）**——對 `84deda8` 的純文件修正做獨立複核，
+  不採信交接筆記，全部改用 `rounds/round11_remap_baseline` 與 `rounds/round17`
+  的原始 `detail.json` 重算。
+- **阻擋項解除**：`REPORT_T44.md:122`／`:143`／`:181` 三處無限定的「逐位元相同」
+  已改成限定敘述。實測 bedroom：`surfaces`／`sources` 與四面牆 face 物件完全相同，
+  只有 `faces.floor` 變（`confidence` 0.2436→0.3394、`top3` 換人、`material_id`
+  兩輪皆 `gypsum_board`／`method` 皆 `fallback`），gate 依規則 1 兩輪皆 `low`（BLOCK）。
+  全文已無無限定的「全部 6 面／其餘 68 面逐位元相同」；僅存的「逐位元完全相同」
+  限定在 48 個 wall face 物件，實測差異 0 筆為真。
+- **次要兩項也對**：27 個 wall fallback 面重算，高於 0.3394 者恰 11 面（7 面 ≥0.35
+  ＋`site_photo_restaurant` 四面各 0.3471），五檔門檻 27／22／20／7／0 與 §7 表逐格相同；
+  `config.py:144 = False`、`pipeline.py:171` 讀該常數，落地 commit 確為 `7686462`。
+- **衛生**：`84deda8` 只動 5 個文件檔，`src/`／`scripts/`／`data/`／`rounds/` 零 diff；
+  `scripts/test_*.py` 19 支逐支實跑全部 EXIT=0；一~三輪退回全文逐字保留。
+- **四軸**：工程 **已驗證**｜實驗 🟢 正向｜產品 🧪 **暫停採用**（裁決 T-45-A 不變）｜
+  MVP **FAIL**（沿用 T-17 首驗）。
+- **帶到 T-44-R1 的殘留精確度問題（不阻擋）**：§3 括號只點名 bedroom 一面，實測
+  「其餘 68 面」裡有 **9 面**信心／top3 變動且**全部上升**（CathedralRoom.ceiling
+  0.5612→0.7255 等，明細見 TASKS.md 第四輪紀錄）——這是我第三輪自己指定的字句，
+  依 WORKFLOW §7 不在結果後加碼成阻擋，改列 T-44-R1 待辦＋T-47 的量測輸入。
+- **順帶記一筆（非本卡，僅記事實）**：本視窗開場時 `output/role_flag/
+  baseline_23f2aba/BASELINE.md` 有未提交變動（重跑後 13 張 `analysis.json`
+  sha256 全變，與 HANDOFF_T46_VERIFY.md 已說明的 `elapsed_s` 牆鐘欄位一致）；
+  收工前該變動已不在工作區（本視窗沒有動它，也沒跑基線腳本——`scripts/test_*.py`
+  不寫這個檔，推測是別的視窗或使用者還原），因此本次 commit 未包含它。
+  另有未追蹤檔 `AGENTS.md`（Codex 視窗的入口說明），非本卡範圍，未 commit。
+- **下一步**：T-44 工程軸收束；產品採用仍待 T-44-R1（需使用者核准門檻＋held-out 照片）
+  與 T-17-R2。Phase 1.9-R 順序不變。
+
 ## 2026-09-10 (101)
 
 - **T-44 第三輪退回修正（Sonnet，純文件）**——依 TASKS.md T-44 卡「Opus 第三輪

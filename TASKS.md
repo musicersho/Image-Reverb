@@ -6413,7 +6413,96 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
     其比較基線＝`round11_remap_baseline`（因新候選未採用，該輪即最終狀態）。
 
 ### T-44 role-aware 材質候選子集（裁決 T-38B-A 執行卡；設計＋實驗卡）
-- **狀態**：🟠 退回（Opus 第三輪複驗，2026-09-08）
+- **狀態**：✅ 工程交付已驗證（Opus 第四輪複驗，2026-09-10）
+  ——**第三輪的唯一阻擋項（`REPORT_T44.md` 三處無限定的「逐位元相同」）已修好，
+  兩項次要建議也一併照做；我用 `round11_remap_baseline`／round17 的原始
+  `detail.json` 重新獨立複核每一條數字，沒有引入新矛盾，工程軸放行。
+  ✅ 依 WORKFLOW §3.3 **只代表工程交付已驗證**，不代表實驗成功、產品採用或
+  MVP 通過——產品軸維持 🧪 暫停採用（裁決 T-45-A），重新驗證走 T-44-R1。
+  以下為第四輪驗證紀錄；第一、二、三輪退回全文原封保留在其下，不覆寫（WORKFLOW §7.3）。**
+
+  - **✅ 阻擋項解除（三處全部改成限定敘述，我逐位元重跑核對，不採信交接筆記）**：
+    我把 `rounds/round11_remap_baseline/runs/bedroom_ai_generated/detail.json` 與
+    round17 的同名檔逐鍵比對——`surfaces`／`sources`／`is_equirect` **完全相同**，
+    `east`／`north`／`south`／`west` 四面 face 物件 **完全相同**，只有
+    `faces.floor` 不同：`confidence` **0.2436→0.3394**、`top3`
+    `[generic_wall 0.2436, concrete 0.1659, wood_panel 0.1076]` →
+    `[concrete 0.3394, wood_panel 0.2202, marble 0.1343]`（`material_id` 兩輪
+    皆 `gypsum_board`、`method` 兩輪皆 `fallback`、`pixel_ratio` 相同）。
+    gate 我用 `compute_materials_confidence()` 的規則逐條重算：兩輪 `sources`
+    都含 `floor: fallback` → 規則 1 命中 → 兩輪皆 `low`（BLOCK），**未從擋變放**。
+    現行 HEAD 三處措辭我逐行讀過，都已限定且與上述事實相符：
+    - `REPORT_T44.md:122`（§3 表標題）→「其餘 68 面的材質判定與來源不變
+      （其中 `bedroom_ai_generated.floor` 的信心值有變動，見第五節）」——
+      我對 13 張的全部 67 個實際存在面重算，`material_id`＋`sources` 有變動的
+      **恰為 10 面**（與 §3 表列的 10 面逐面相同），其餘皆未變；78−10＝68 成立。
+    - `REPORT_T44.md:143`（§4）→「`surfaces`／`sources`／`materials_confidence`
+      gate 與 round11 相同（floor 那面的 `confidence`／`top3` 有變動…）」✔。
+    - `REPORT_T44.md:181`（§5 首段）→ 同上限定寫法 ✔，與同節第 192-193 行的
+      「0.2436→0.3394」不再矛盾。
+    全文 grep `逐位元`／`完全相同`，**已無任何無限定的「全部 6 面」「其餘 68 面
+    逐位元相同」宣稱**；僅存的「逐位元完全相同」在 `REPORT_T44.md:206-207`，
+    限定於「48 個 wall 面 face 物件」——我實測這 48 個 wall face 物件序列化後
+    **差異 0 筆**，該句為真。
+
+  - **✅ 次要建議 1（wall 面數 7→11）已修正且數字正確**：我從 round17 的 13 份
+    `detail.json` 取全部 **27 個 wall fallback 面**的 top-1 信心重算，高於
+    `bedroom_ai_generated.floor` 的 0.3394 者**恰為 11 面**——`SteinmanHall.north`
+    0.3941、`.south` 0.3895、`stairwell_tiled` 四面各 0.3784、`SteinmanHall.east`
+    0.3578（以上 7 面 ≥0.35）＋`site_photo_restaurant` 四面各 0.3471（介於
+    0.3394 與 0.35 之間）。五檔門檻計數我也重算＝**27／22／20／7／0**，與 §7
+    wall 表逐格相同，表格數字一格未動。`REPORT_T44.md:199-204` 現行文字
+    「11 面比它更接近 0.4，其中 7 面 ≥0.35，另 4 面 site_photo_restaurant 0.3471」
+    與實測完全相符。
+
+  - **✅ 次要建議 2（產品軸過期句）已修正且與程式碼相符**：`src/image_reverb/
+    config.py:144` ＝ `ROLE_AWARE_MATERIALS_DEFAULT = False`、
+    `src/image_reverb/pipeline.py:171` ＝ `role_aware: bool = config.
+    ROLE_AWARE_MATERIALS_DEFAULT`，落地 commit 確為 `7686462`（我核對該 commit
+    的 diff 內含 `+ROLE_AWARE_MATERIALS_DEFAULT = False`）。四軸產品欄現行文字
+    已註明「T-46 本卡仍 🟠 退回，該項若隨 T-46 修正輪變動須回頭同步」，正確。
+
+  - **✅ 範圍與衛生（我實跑，不採信交接筆記）**：本輪修正 commit `84deda8` 的
+    `git diff --name-only 84deda8^ 84deda8` 只有 `DEV_LOG.md`／`HANDOFF.md`／
+    `TASKS.md`／`TODO.md`／`output/clip_treatment/REPORT_T44.md` **五檔**；
+    path-limited `git diff --stat 84deda8^ 84deda8 -- src/ scripts/ data/
+    output/clip_treatment/rounds/` **空輸出（零 diff）**——沒有偷改程式、
+    原始輪次資料或表格數字，也確實沒有重跑任何一輪。
+
+  - **✅ 完整測試**：`scripts/test_*.py` **19 支逐支實跑，全部 EXIT=0**
+    （含 `test_t44_role_partition.py`、`test_t39_materials_invariant.py`、
+    非本卡的 `test_t46_role_flag.py`）。
+
+  - **✅ 歷史 verdict 完整保留**：第一輪（2026-09-02）／第二輪（2026-09-07）／
+    第三輪（2026-09-08）退回全文在本卡內逐字未刪改，本輪只在其上新增第四輪
+    紀錄；「🔧 退回修正紀錄」第 6 點所述與實際 diff 相符，無謊報。
+
+  - **⚠️ 帶到 T-44-R1 的殘留精確度問題（不構成阻擋，因為這正是我第三輪自己指定
+    的字句，不得結果後加碼；WORKFLOW §7）**：§3 表標題的括號只點名
+    `bedroom_ai_generated.floor` 一面，但我實測「其餘 68 面」裡**共有 9 面**
+    `material_id`／`sources` 未變、`confidence`／`top3` 卻變了，且**全部往上**——
+    `CathedralRoom.ceiling` 0.5612→0.7255、`DivorceBeach.floor` 0.4318→0.5803、
+    `RacquetballCourt4.ceiling` 0.3625→0.5003、`.floor` 0.5921→0.7400、
+    `SteinmanHall.ceiling` 0.6845→0.8688、`.floor` 0.2105→0.3309、
+    `TunnelToHell.floor` 0.3535→0.6457、`bedroom_ai_generated.floor`
+    0.2436→0.3394、`site_photo_restaurant.ceiling` 0.6606→0.8947。
+    現行寫法（「其中 X 有變動」）字面為真、不是謊報，但讀起來像「只有 bedroom 變」，
+    而實際上「候選集收窄→softmax 濃縮→信心整體膨脹」是 floor／ceiling 的**系統性
+    現象**，這正是 §5 想警告的機制。**T-44-R1 改 REPORT 時請把括號改成
+    「其中 9 面的信心值有變動（全部上升，明細見第五節）」並在 §5 補這張 9 面表**；
+    T-47 gate 校準複審也應把這 9 面當作膨脹幅度的量測輸入。
+    另記：`faces.floor.note` 與 `payload.warnings[0]` 的內嵌數字（0.24→0.34）
+    同步變動，屬 `confidence` 的字串投影，已被現行限定敘述涵蓋，不另計。
+
+  - **ℹ️ 未動的既有記述（避免覆寫 Fable 裁決原文）**：`TASKS.md:5354` 的
+    Phase 1.9-R 順序行仍寫「T-44 🟠 退回＋🧪 產品採用暫停（裁決 T-45-A，
+    2026-09-03）」——那是 2026-09-03 裁決當下的紀錄，依 §7.3 不覆寫；
+    本卡工程軸現況以本卡「四軸狀態」為單一事實來源（§7.9）。
+
+  ---
+
+  **（以下為 2026-09-08 第三輪 Opus 退回全文，原封保留）**
+  🟠 退回（Opus 第三輪複驗，2026-09-08）
   ——**第二輪的阻擋項（§5 末句與 §7 wall 表矛盾）已確認修好、我逐面實測核對無誤；
   但同一份 REPORT 仍有三處無限定的「逐位元相同」敘述，與本輪新增的 §5 段落
   直接互相矛盾，且矛盾方向同樣是把風險講小（紅旗 #6 同型）。這三處第一輪就已
@@ -6766,11 +6855,12 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
      `2026-09-10`）。
 
 - **四軸狀態（裁決 T-45-A，2026-09-03；原「狀態」欄保留不改，語義見 WORKFLOW §3）**：
-  工程：**待審**（Sonnet 已依第三輪退回理由完成純文件修正，2026-09-10：
-  `REPORT_T44.md` 三處無限定的「逐位元相同」改為限定敘述、§5「7 面→11 面」
-  一句同步修正，見上方「🔧 退回修正紀錄」第 6 點；未重跑任何一輪、未動
-  `src/`／`scripts/`／`data/`／`rounds/`；待 Opus 第四輪複驗，**不得視為
-  已驗證**）。歷史沿革：第一輪阻擋項「REPORT §7 敏感度摘要與表 7' 矛盾」
+  工程：**已驗證**（Opus 第四輪複驗，2026-09-10：第三輪唯一阻擋項的三處
+  無限定「逐位元相同」已全部改為限定敘述，兩項次要建議亦照做；我用原始
+  `detail.json` 獨立複核 bedroom floor 0.2436→0.3394／`surfaces`／`sources`／
+  gate 相同、wall 側 11 面（7 面 ≥0.35）、五檔門檻 27／22／20／7／0、
+  `src/`／`scripts/`／`data/`／`rounds/` 零 diff、19 支測試 EXIT=0，全部相符；
+  驗證全文見上方「狀態」欄。**此軸為工程交付，不含產品採用**）。歷史沿革：第一輪阻擋項「REPORT §7 敏感度摘要與表 7' 矛盾」
   已於 `1121293` 修正並經 Opus 2026-09-07 逐位元複核確認；第二輪退回的
   §5 措辭已於當輪修正；第三輪複驗（2026-09-08）判定仍退回（見上方「狀態」
   欄與退回全文，原封保留）——三處無限定「逐位元相同」與 §5 wall 面數低估，
@@ -7806,6 +7896,29 @@ T-46 → {T-42 → T-43 → T-47｜T-48} → 裁決 T-47-A → T-44-R1 → T-17-
   - [ ] 只有 T-17-R2 完整硬門檻全部達成時才顯示 `MVP PASS`
 
 ### T-46 T-44 收尾修正：REPORT §7 事實修正＋role-aware 回 feature flag（Sonnet 卡；裁決 T-45-A 執行卡 1/5）
+- **狀態（第二輪複驗，Opus 2026-09-10，依 criteria v2；不覆寫下方 `37e07fe` 第一輪退回全文）**：
+  🟠 **退回**——**退回的原因不是執行者做錯**。criteria v2 的 13 項實質斷言（A1～A7、B1～B2、B4、
+  表 3、五個紅旗、19 支測試、六條 IR MD5）我全部自己重跑並確認成立，**沒有發現任何造假、放寬、
+  吞錯或範圍外溢**；退回的唯一原因是 **criteria v2 §5 第 2 點本身字面不可執行**，與 v1 被退回的
+  性質同型（門檻寫錯，不是人做錯）：
+  - **❌ 阻擋項（門檻不可執行；依 WORKFLOW §7.5 標 inconclusive，不得改判 PASS，也不得用附註豁免）**：
+    v2 §5.2 要求「自行重建 B0（`--fresh`）→ `BASELINE.md` 與已 commit 版本**逐字相同**」。
+    但**同一份 v2 的 §2.1 又明文要求** `BASELINE.md` 的 manifest 必須包含「產生當下主 repo HEAD」、
+    「產生時間」與「每份 `analysis.json` sha256」——這三者每次真跑必然不同
+    （`analysis.json` 由 [`src/image_reverb/pipeline.py:89`](src/image_reverb/pipeline.py:89)
+    的 `_elapsed_payload()` 寫入 `elapsed_s`＝本次耗時秒數）。
+    **§5.2 與 §2.1 在同一份鎖定門檻裡互相矛盾：要滿足 §5.2 就必須違反 §2.1。**
+    Opus 實測（2026-09-10 `--fresh` 全程重跑，39 次真實 CLI，約 19 分鐘）：13 張表格、
+    manifest 的 worktree HEAD、13 張照片 sha256 **全部逐字相同**；`tables.md` **整份逐字相同**；
+    差異只有上述三處資訊欄。
+  - **HANDOFF_T46_VERIFY.md 提出的三項豁免，本輪不予採納**：該文件是在結果 commit（`545ec5e`）
+    **之後**由**執行者本人**於 `dad0875` 補寫，而鎖定的 criteria v2 全文**未授權任何一項豁免**。
+    驗證者若據此放行，即構成 WORKFLOW §7.1／§7.4 禁止的「結果出來後放寬同版門檻、且由同一角色
+    自改自批」，也正是 §5「常見紅旗」第 7 項（**驗證者**用附註豁免未達的字面條件，T-12 型）。
+    → 不採納，但**其技術內容經我獨立實證為真**（見下方驗證紀錄第 3 點），可直接作為 v3 的素材。
+  - **處置**：**交 Fable 依 WORKFLOW §7 開 criteria v3**（提案全文見下方「Opus 驗證紀錄（第二輪）」
+    第 8 點）。v3 落地後**不需要重做任何實驗工作**：本輪 39 次真實 CLI 的證據仍然有效，
+    只需依 v3 的比對規則重新核對一次即可。**執行者不必回滾任何東西；`src/` 維持零改動。**
 - **狀態**：🟠 **退回**（Opus 驗證，2026-09-03）——**實作本體與數值結論全部實測成立，
   兩個阻擋項都在「證據物件與卡片門檻的一致性」上，不是程式錯**：
   - **❌ 阻擋項 1（走 WORKFLOW §7，不得用附註豁免）：步驟 4 寫死的驗收斷言被結果後放寬，
@@ -7843,12 +7956,17 @@ T-46 → {T-42 → T-43 → T-47｜T-48} → 裁決 T-47-A → T-44-R1 → T-17-
   - **✅ 以下全部由 Opus 實測通過，退回後不必重做**（詳見下方「Opus 驗證紀錄」）：REPORT §7 三段
     修正與表 7' 逐值相符且表 7' 一個數字未動、feature flag 接線、19 支測試、新測試對舊碼的診斷力、
     六條交付 IR MD5、凍結基線、13 張兩模式數值結論、腳本從零重跑逐字可重現。
-- **四軸狀態**：工程：🔵 **待審（依 criteria v2，Sonnet 2026-09-08 重跑完成，見下方新交接筆記）**
-  （原阻擋項 1／2 已依 v2 修正：阻擋項 1 用 B0＝`23f2aba` 取代不可執行的 round11 基線；阻擋項 2 已改
-  docstring／訊息只宣稱程式真的斷言的事；待 Opus 複驗定案）｜實驗：不適用（本卡不是實驗卡，不新增假設）｜
-  產品：🧪 **feature flag**（Opus 建議維持裁決 T-45-A 的結論——`pipeline.py` 預設 `role_aware=False`
-  已由 Opus 實跑確認生效、`bathroom_tiled` 預設回 BLOCK，**本次退回不要求回滾 `src/` 改動**；
-  正式裁決仍屬 Fable，WORKFLOW §3.2）｜MVP：不適用（沿用 T-17 首驗 FAIL，本卡不觸及 MVP gate）
+- **四軸狀態**：工程：🟠 **退回（Opus 第二輪複驗，2026-09-10，依 criteria v2）**——criteria v2 的
+  13 項實質斷言我全部獨立重跑成立（含 `--fresh` 39 次真實 CLI、19 支測試、六條 IR MD5、五個紅旗），
+  **退回的唯一原因是 v2 §5 第 2 點「`BASELINE.md` 逐字相同」與同版 §2.1 互相矛盾、字面不可執行**，
+  依 WORKFLOW §7.5 標 **inconclusive（門檻不可執行）**、不得改判 PASS，也不得用附註豁免（§5 紅旗 7）；
+  交 Fable 開 criteria v3（提案見下方「Opus 驗證紀錄（第二輪）」第 8 點）。
+  （verdict 一律保留不覆寫：v1＝🟠 退回 `37e07fe`；v2 第一次送審＝🟠 退回，本段）｜
+  實驗：不適用（本卡不是實驗卡，不新增假設）｜
+  產品：🧪 **feature flag**（維持裁決 T-45-A 的結論——`pipeline.py` 預設 `role_aware=False`
+  已由 Opus 兩輪實跑確認生效、`bathroom_tiled` 預設回 BLOCK（不加 `--force-low-confidence` 實跑 exit 3），
+  **本次退回不要求回滾 `src/` 改動**；正式裁決仍屬 Fable，WORKFLOW §3.2）｜
+  MVP：不適用（沿用 T-17 首驗 FAIL，本卡不觸及 MVP gate）
 - **🔮 門檻 v2（Fable 2026-09-08，依 WORKFLOW §7；獨立 commit `2be2453` `criteria: T-46 v2 …`）**：
   步驟 4 的 v1 文字「三軸 confidence／gate／六面材質與 `round11_remap_baseline` 逐值相同」對
   geometry／overall／gate 三項**不可執行**（round11 的 `detail.json` 沒有這些欄位，Opus `37e07fe` 實測），
