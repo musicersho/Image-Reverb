@@ -1,5 +1,30 @@
 # Dev Log
 
+## 2026-09-10 (105)
+
+- **T-46 第三輪複驗（Opus，依 criteria v3）＝🔵 中止，未產生 verdict**。原因不是執行者做錯、
+  也不是門檻有錯，而是**沒有可審的東西**：`HEAD` 仍是 `03599ec`，`5807716`（criteria v3）之後
+  **沒有任何 v3 結果 commit**，v3 §5.1 的「早於**結果 commit**」缺比較對象、§8 `result_commit` 欄無值。
+- **現場實測**：複驗開始時 `ps` 抓到執行中的 `t46_role_flag_baseline.py --out-dir output/role_flag/v3/ --fresh`
+  （14:22 起跑）＋子行程 `python -m src.image_reverb …RacquetballCourt4.jpg`，該行程隨後被中斷。
+  中斷後產物：B0 13/13、`BASELINE.stable.md`／`BASELINE.md` 已寫出，但兩模式 run 只有 **25/26**，
+  **`v3/tables.md`／`v3/REPORT.md` 不存在**；兩支 `scripts/` 仍未 commit。worktree 已清乾淨。
+- **本輪刻意不做的兩件事（做了就是紅旗）**：(1) 不跑 §5.2 的 `--fresh`——開跑時會撞執行者的
+  out-dir 與 worktree；更關鍵是 v3 產物一份都沒進 git，對未追蹤檔跑 `git diff` 必然是空的，
+  那個「空」只代表沒有基準，拿它判 §5.2 成立＝以無效證據判通過。(2) 不填 §2.7 分層判定表任何一列——
+  ①～④ 都以「已 commit 的 `BASELINE.stable.md`」為比較對象。
+- **唯讀預檢（不構成 §5 複驗，正式輪須對結果 commit 重做）**：§5.1 可查核部分全成立
+  （`CRITERIA_T46_v3.md` 只有 `5807716` 一筆且只含該檔；v2 只有 `2be2453`；v2 三份產物零 diff）；
+  **§5.3 獨立重算 13/13 全等**（我另寫實作、不 import 執行者腳本，重算值＝`analysis.stable.json` 檔案 sha256
+  ＝表 S2，且檔案 bytes 恰為 canonical bytes，投影內零殘留計時欄與 `/Users/` 路徑）；
+  §5.5 未發現未限定的「BASELINE.md 逐字相同」（三處全有限定）；19 支測試檔存在、§2.6.8 案例存在（未實跑）；
+  §3.3 靜態紅線（`src/`／兩份 criteria／`EXPECTED_GATE`／round17 零 diff、worktree 乾淨）未見觸犯。
+- **處置**：Sonnet 重跑完整 `--fresh`（中途勿中斷）→ 跑完 §4.5 自檢 → 依 §4.6 commit
+  `T-46: 依 criteria v3 …(待驗證)` → 再開 Opus 視窗，**Prompt 的「結果 commit」要填實際 hash**
+  （本輪收到的是未填佔位字串 `<結果 commit>`）。**不需要開 criteria v4**——本輪未發現任何門檻錯誤。
+- **四軸**：工程 🔵 待審（依 criteria v3，複驗中止）｜實驗 不適用｜產品 🧪 feature flag｜MVP 不適用
+  （沿用 T-17 FAIL）。v1 `37e07fe`／v2 `6efa6ba` 退回 verdict 永久保留；`545ec5e` 不得依 v3 補判 PASS。
+
 ## 2026-09-10 (104)
 
 - **T-46 criteria v3 已開（Fable，依 WORKFLOW §7）**：獨立 commit `5807716`

@@ -7896,6 +7896,73 @@ T-46 → {T-42 → T-43 → T-47｜T-48} → 裁決 T-47-A → T-44-R1 → T-17-
   - [ ] 只有 T-17-R2 完整硬門檻全部達成時才顯示 `MVP PASS`
 
 ### T-46 T-44 收尾修正：REPORT §7 事實修正＋role-aware 回 feature flag（Sonnet 卡；裁決 T-45-A 執行卡 1/5）
+- **狀態（第三輪複驗**中止**，Opus 2026-09-10，依 criteria v3；不覆寫下方任何一輪全文）**：
+  🔵 **待審（§5 複驗未執行——前提不成立，不是退回、也不是通過）**。
+  - **❌ 阻擋（criteria v3 §5.1／§6／WORKFLOW §7.2／§8）：沒有 v3 結果 commit。**
+    複驗當下 `HEAD` ＝ `03599ec`（docs 交接同步），`git log --oneline` 從 `5807716`（criteria v3）
+    之後**沒有任何** `T-46: 依 criteria v3 …(待驗證)` 的結果 commit；v3 §5.1 要求核對的
+    「criteria commit 早於**結果 commit**」缺少比較對象，§8 的 `result_commit` 欄無值。
+    v3 §6 明文：「v3 的第一個有效結果＝Sonnet 依 §4 產生的**新結果 commit**；
+    `verdict_under_current_criteria` 只能由 Opus 在該 commit 之後填寫。」
+  - **❌ 阻擋：執行輪在跑到一半被中斷，v3 產物不完整。**
+    複驗開始時 `ps` 實測到執行中的
+    `python scripts/t46_role_flag_baseline.py --out-dir output/role_flag/v3/ --fresh`（14:22 起跑）
+    與其子行程 `python -m src.image_reverb …RacquetballCourt4.jpg --force-low-confidence --no-viz`；
+    該行程隨後被中斷。中斷後的實際產物：B0 13/13 完成、`BASELINE.stable.md`／`BASELINE.md` 已寫出，
+    但兩模式 run 只有 **25/26**，且 **`v3/tables.md` 與 `v3/REPORT.md` 完全不存在**
+    → v3 §5.2 要求 `git diff` 為空的兩個物件之一（`tables.md`）尚未產生，§5.4 的表 1／表 2／表 3
+    也無從查核。`scripts/t46_role_flag_baseline.py`／`scripts/test_t46_role_flag.py` 仍是未 commit 的
+    工作區改動（`git status` 為 ` M`）。
+  - **本輪明確拒絕做的兩件事（否則就是 v3 §5.7 紅旗）**：
+    1. **不執行 §5.2 的 `--fresh` 重建**。理由有二：(i) 開始時執行者的 run 與 worktree
+       `.worktree_t46_b0_23f2aba` 正在使用同一個 `--out-dir` 與同一個 worktree 路徑，我跑下去會直接
+       毀掉執行者的產物；(ii) **更關鍵**——v3 產物一份都沒進 git，此時對未追蹤檔跑
+       `git diff -- …/BASELINE.stable.md …/tables.md` **必然是空的**，那個「空」只代表「沒有基準可比」，
+       不代表可重現。拿它當 §5.2 成立＝以無效證據判通過，與紅旗「驗證者自己用 provenance 差異判通過」同型。
+    2. **不填 §2.7 分層判定表任何一列**。①～④ 每一列都以「已 commit 的 `BASELINE.stable.md`」為比較對象，
+       前提不存在時填任何一列都是造假；§2.7 只約束「有結果可比」的情形，不提供「無結果」的出口。
+  - **⚠️ 以下為唯讀預檢，明確**不構成** §5 複驗、不得被引用為通過證據**（對象是中斷輪的未 commit 產物，
+    正式輪必須對新的結果 commit 重做）：
+    - **§5.1 可查核的部分：全部成立。** `git log -- output/role_flag/CRITERIA_T46_v3.md` 只有
+      **`5807716`** 一筆（`--stat` 確認只含該檔一個檔案，549 行新增，2026-09-10 14:09）；
+      `git log -- output/role_flag/CRITERIA_T46_v2.md` 仍只有 **`2be2453`**；
+      v2 三份已 commit 產物（`output/role_flag/{REPORT.md,tables.md,baseline_23f2aba/BASELINE.md}`）
+      `git status` **零 diff**。唯一無法查核的子句＝「早於結果 commit」（無結果 commit）。
+    - **§5.3（獨立重算）：13/13 一致。** 我**不 import 執行者腳本**，另寫實作照 v3 §2.2.1 逐字定義
+      （8 個排除鍵、`json.dumps(sort_keys=True, ensure_ascii=False, indent=2)` ＋結尾換行、UTF-8）
+      對 13 份 B0 `analysis.json` 重算 `analysis_stable_sha256`，與 `analysis.stable.json` 的**檔案** sha256
+      及 `BASELINE.stable.md` 表 S2 **三者 13/13 全等**；並實測每份 `analysis.stable.json` 的 bytes
+      **恰為** canonical bytes（§2.2.1 自檢語意成立）；13 份投影內**零殘留** `elapsed_s`／`time_budget_s`／
+      `elapsed_note`，**零殘留** `/Users/` 絕對路徑。表 S2 恰 13 列。
+    - **§5.5：未發現殘留的未限定宣稱。** `scripts/t46_role_flag_baseline.py` 內三處提到「`BASELINE.md`…逐字」
+      全部有限定：`:4` 是引述「v3 取代 v2 的『BASELINE.md 逐字相同』」（歷史說明）、
+      `:41` 寫「`BASELINE.md`＝同一段 stable 文字逐字＋provenance 段…provenance 段只記錄不比對」、
+      `:551` 是自檢錯誤訊息「`BASELINE.md` 的 **S 段**與 `BASELINE.stable.md` 不逐字相同」。
+      docstring 明寫「`BASELINE.stable.md` 是 §5.2 的**唯一**硬比對物件」。`criteria_version` 欄已為 `v3`。
+    - **§5.6 的一半：** `scripts/test_*.py` 共 **19** 支（數量符合）；§2.6.8 要求的案例存在
+      （`test_t46_role_flag.py:150 _check_stable_projection()`，含 (a) 8 個排除鍵不在投影內＋排除鍵數恰為 8、
+      (b) 只差 `elapsed_s`／`input` 雜湊相等 …）。**未實跑**測試、未查六條 IR MD5、
+      未跑 `bathroom_tiled` 不加 force：這三項要對**已 commit 的腳本**跑才有意義，留給正式輪。
+    - **§5.7 靜態紅線：本輪未發現觸犯。** `git diff -- src/` 空；`CRITERIA_T46_v2.md`／`CRITERIA_T46_v3.md`
+      工作區零 diff；`scripts/t36_clip_accuracy.py`（`EXPECTED_GATE`）與 `round17/tables.md` 零 diff；
+      `git worktree list` 已只剩主 repo（中斷後已清乾淨）。**尚無法查核**「手打 v3 產物／用舊快取送審」——
+      那要對結果 commit 的完整產物與 fingerprint 才驗得出來。
+  - **處置（給 Sonnet，不需要 Fable 開 v4——本輪沒有發現任何門檻錯誤）**：
+    1. 重跑完整的 `python scripts/t46_role_flag_baseline.py --out-dir output/role_flag/v3/ --fresh`
+       （§2.6.1；39 次真實 CLI，約 15–20 分鐘，**中途不要中斷**），確認 exit 0 且
+       `v3/tables.md`／`v3/REPORT.md`／`v3/baseline_23f2aba/BASELINE.{md,stable.md}` 四份都產生；
+    2. 依 §4.5 跑完 19 支測試、六條 IR MD5、§2.6.9 的 `git diff`／`git worktree list`；
+    3. 依 §4.6 **commit**（格式 `T-46: 依 criteria v3 …(待驗證)`，**不得與 `5807716` 同一 commit**），
+       進 git 的四份產物＋兩支 `scripts/`；交接筆記寫 `criteria_version: v3`＋`5807716`＋結果 commit
+       ＋`baseline_stable_sha256`；
+    4. 再開 Opus 視窗複驗，**Prompt 裡的「結果 commit」要填實際 hash**（本輪收到的 Prompt 是
+       未填的佔位字串 `<結果 commit>`，這本身就是「結果尚未產生」的信號）。
+  - **四軸狀態**：工程：🔵 **待審（依 criteria v3；第三輪複驗中止，無結果 commit 可審——不是退回、
+    也不是通過；依 WORKFLOW §7.7 不得寫「已驗證」）**｜實驗：**不適用**（v3 §2.4 B3 明文只報告不斷言，
+    本卡無實驗假設）｜產品：🧪 **feature flag**（維持裁決 T-45-A，本輪無新證據可改，Opus 亦只能建議）｜
+    MVP：**不適用**（沿用 T-17 FAIL；`MVP PASS` 只能由 T-17 系列驗收卡寫）。
+    v1 `37e07fe`、v2 `6efa6ba` 兩個退回 verdict **永久保留不覆寫**；v2 結果 `545ec5e`
+    **仍不得依 v3 補判 PASS**（v3 §6）。
 - **狀態（🔮 門檻 v3 已開，Fable 2026-09-10；不覆寫下方兩輪退回全文）**：
   criteria v3＝[`output/role_flag/CRITERIA_T46_v3.md`](output/role_flag/CRITERIA_T46_v3.md)，
   獨立 commit **`5807716`**（`criteria: T-46 v3 …`，只含該檔，早於任何 v3 結果）。
