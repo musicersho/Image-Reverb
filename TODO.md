@@ -94,7 +94,7 @@
       (a)(c)(d) 過。19 支測試 EXIT=0、六條交付 IR MD5 全中、`t49/tables.md` 與 T-42 版
       diff 為空、`git diff --stat -- src/` 只有 `pipeline.py`。詳見 TASKS.md T-49 卡
       「交接筆記」。
-- [ ] **T-43 🔵 待審（Sonnet 執行完成，2026-09-11，結果 commit 見 HANDOFF.md）→ 開 Opus 新視窗複驗**
+- [ ] **T-43 🔵 待審（Sonnet 執行完成，2026-09-11，結果 commit `bad3f98`）→ 開 Opus 新視窗複驗**
       ——`run_photo()` 成功路徑新增 `provenance` 區塊（`git_revision`＋dirty、`input_sha256`、
       `materials_json_sha256`、模型 id／門檻讀 `config`、CLI 參數、生成時戳），單一事實來源
       新模組 `src/image_reverb/provenance.py`；`t17_blind_test.py` 改為溯源驗證（缺

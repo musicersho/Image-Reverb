@@ -7935,7 +7935,7 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
 
 ### T-43 T-17 產物溯源：analysis.json 生成指紋＋盲測驗證（插卡 4/4）
 
-- **狀態**：🔵 待審（Sonnet 執行完成，結果 commit 見下方交接筆記，待 Opus 複驗）
+- **狀態**：🔵 待審（Sonnet 執行完成，結果 commit `bad3f98`，待 Opus 複驗）
 - **四軸狀態**：工程：🔵 待審｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
 - **🔮 裁決 T-42-A 改版註記（Fable 2026-09-10）**：前置加 **T-49 ✅**；「範圍」「產出」
   「執行步驟 4」「自我檢查」「抽查手法」依鐵則 13 措辭改寫（原文沒列鐵則 8 產表腳本，與
@@ -8101,9 +8101,8 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
      -- src/image_reverb/surfaces.py src/image_reverb/geometry.py
      src/image_reverb/acoustics.py src/image_reverb/ir_synth.py
      src/image_reverb/ir_metrics.py src/image_reverb/config.py` 為空）。
-  10. **下一步**：開 Opus 新視窗，貼 WORKFLOW §2.2 v2 複驗 Prompt，「結果 commit」填
-      本次收工 commit（見 HANDOFF.md 最上方）。通過後 T-47 前置（「T-42／T-43 ✅」）
-      才算滿足。
+  10. **下一步**：開 Opus 新視窗，貼 WORKFLOW §2.2 v2 複驗 Prompt，**「結果 commit」填
+      `bad3f98`**。通過後 T-47 前置（「T-42／T-43 ✅」）才算滿足。
 
 ### Phase 1.9 收尾（回 Fable 複評，不開卡）
 帶著 T-37／T-38A／T-38B／T-39／T-44 的 REPORT 與基線變化表、以及插卡輪

@@ -24,7 +24,7 @@
   `t43_provenance_baseline.py` 新增）；`output/mvp_acceptance/`／既有 `blind_test/` 零
   diff；gate／聲學模組（`surfaces.py`／`geometry.py`／`acoustics.py`／`ir_synth.py`／
   `ir_metrics.py`／`config.py`）全零 diff；`--override-dims` 導引未動（裁決 T-48-S）。
-- **下一步**：開 Opus 新視窗依 WORKFLOW §2.2 v2 複驗，結果 commit 見本次收工 commit。
+- **下一步**：開 Opus 新視窗依 WORKFLOW §2.2 v2 複驗，結果 commit `bad3f98`。
   通過後 T-47 前置（「T-42／T-43 ✅」）才算滿足。詳見 TASKS.md T-43 卡「交接筆記」。
 
 ## 2026-09-11 (115)
