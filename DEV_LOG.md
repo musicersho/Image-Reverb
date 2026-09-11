@@ -1,5 +1,31 @@
 # Dev Log
 
+## 2026-09-11 (117)
+
+- **T-43 Opus 複驗 → 🟠 工程退回**（對象結果 commit `bad3f98`，複驗時 HEAD `cdb4127`，
+  工作區 `porcelain -- src scripts data` 為空）。四軸：工程：退回｜實驗：不適用｜
+  產品：不適用｜MVP：不適用（沿用 T-17 FAIL）。
+- **唯一退回理由（文件證據項，非工程缺陷）**：卡片自我檢查「隔離 repo 重現對舊碼 fail 已附」
+  與「舊碼必須 fail 的最小重現……輸出貼交接筆記」未完成——交接筆記／HANDOFF／DEV_LOG 116
+  都沒有舊碼實測輸出，`test_t17_provenance.py` 三案例只跑新碼。依 WORKFLOW §7.7＋§5.4.1，
+  驗證者不得用自己補做的實測替執行者豁免。
+- **其餘九項 Opus 全部自己實跑通過**：① provenance 寫在 `analysis.json` 落盤前＝生成當下
+  （真實 5 空間端到端：同 HEAD exit 0、換 worktree HEAD `0d800c3` exit 1 且逐筆點名不符）；
+  ② 模型 id／門檻／materials hash 全讀 `config`，字面常數 grep 零命中；③ 舊產物＋新 HEAD、
+  缺 provenance 皆 exit 1；④ mtime 雙向實測只剩 `⚠️`（provenance 正確但 mtime 舊 → 仍 exit 0）；
+  ⑤ MANIFEST 頂層只有 `packaging_git_revision`、sample 內只有 `source_provenance`，歷史
+  MANIFEST 的 `git_revision: d958b3c` 一字未改；⑥ `OLD_COMMIT="c64fba9"` 是模組常數、
+  無 CLI 竄改途徑、worktree 全長雜湊自檢確實執行；⑦ Opus 自跑 26 次真實 CLI 寫
+  `output/provenance/opus_verify/`，`tables.md` 與執行者版 **diff 完全為空**（13 張三軸／gate／
+  IR md5 零漂移，鐵則 12 五張全 BLOCK，`TunnelToHell` 的 EXPECTED_GATE 🔴 經對照 T-42／T-49
+  三份既有產物確認為既存表過期）；⑧ `output/mvp_acceptance`／歷史 blind_test 零 diff；
+  ⑨ 20 支測試 EXIT=0、六條交付 IR MD5 由 Opus 自己重生逐位元相同。
+- **附帶發現（交 Fable，不在本輪修）**：`provenance.git_revision()` 的 `check=True` 讓非 git
+  環境的照片管線直接噴錯；`t17_blind_test.run()` 的 `out_dir` 在 repo 外時最後一行
+  `relative_to()` 會拋錯；`expected_config` 預設綁主 repo 而非 `repo_root`。
+- **下一步**：Sonnet 修正輪只補舊碼重現輸出（不得改程式碼，改了會讓已驗證的 13 張基線與
+  六條 MD5 失效），或由 Fable 依 §7 裁決該自我檢查項。**T-47 前置尚未滿足。**
+
 ## 2026-09-11 (116)
 
 - **T-43 執行完成（Sonnet）——前置「T-42 ✅ 且 T-49 ✅（v2，`c64fba9`）」已滿足**。

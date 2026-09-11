@@ -7935,8 +7935,17 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
 
 ### T-43 T-17 產物溯源：analysis.json 生成指紋＋盲測驗證（插卡 4/4）
 
-- **狀態**：🔵 待審（Sonnet 執行完成，結果 commit `bad3f98`，待 Opus 複驗）
-- **四軸狀態**：工程：🔵 待審｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
+- **狀態**：🟠 **工程退回**（Opus 複驗 2026-09-11，結果 commit `bad3f98`，複驗時 HEAD=`cdb4127`）。
+  **唯一退回理由（文件證據項，非工程缺陷）**：任務卡自我檢查「**隔離 repo 重現對舊碼 fail 已附**」
+  與「舊碼必須 fail 的最小重現……**輸出貼交接筆記**」**未完成**——交接筆記與 `HANDOFF.md` 全文
+  沒有任何對 `git worktree` 舊碼（T-43 之前的 `t17_blind_test.py`）實測的輸出；
+  `test_t17_provenance.py` 三個案例全部只跑新碼。依 **WORKFLOW §7.7**（「未完成任務卡自檢時，
+  `工程` 不得是『已驗證』」）與 **§5.4.1**（「未完成項不得用備註豁免；若有未達項，只能退回、卡關
+  或先走 §7 變更控制，不能直接綠燈」），驗證者**不得**用自己補做的實測替執行者豁免此項。
+  **其餘每一項驗收條件（修法三點、鐵則 6／8／12／13、範圍、凍結產物、20 支測試、六條 IR MD5、
+  13 張零漂移）Opus 本視窗全部獨立實測通過**，詳見下方複驗紀錄；**補救成本極低**——執行者照卡
+  重跑一次舊碼重現並把輸出貼進交接筆記即可（Opus 已附自己的重現輸出供對照，見第 4 點）。
+- **四軸狀態**：工程：**退回**｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
 - **🔮 裁決 T-42-A 改版註記（Fable 2026-09-10）**：前置加 **T-49 ✅**；「範圍」「產出」
   「執行步驟 4」「自我檢查」「抽查手法」依鐵則 13 措辭改寫（原文沒列鐵則 8 產表腳本，與
   「表由程式產出」字面互斥，Opus 於 T-42 附帶發現 ④ 指出）；**修法本體（三點）一字不改**。
@@ -8103,6 +8112,139 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
      src/image_reverb/ir_metrics.py src/image_reverb/config.py` 為空）。
   10. **下一步**：開 Opus 新視窗，貼 WORKFLOW §2.2 v2 複驗 Prompt，**「結果 commit」填
       `bad3f98`**。通過後 T-47 前置（「T-42／T-43 ✅」）才算滿足。
+
+- **🟠 Opus 複驗紀錄（2026-09-11，新視窗；對象結果 commit `bad3f98`，複驗時 HEAD `cdb4127`，
+  工作區 `git status --porcelain -- src scripts data` 為空——依鐵則 13「Opus 複驗那次必須為空」）**：
+
+  **判定：工程：退回｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）。**
+  退回理由只有一項（第 10 點），是**文件證據項未附**，不是工程缺陷；第 1～9 點全部由 Opus
+  本視窗**自己實跑**，不採信交接筆記貼上來的輸出。
+
+  1. **provenance 取自「生成當下」而非讀取／打包當下——成立。** 程式面：
+     `pipeline.py:602-620` 的 `provenance_payload` 在 `run_photo()` 成功路徑、
+     `_run_wet_preview()` 之後、`analysis.json` 落盤之前組出，`provenance.git_revision()`
+     是該次呼叫當下的 `git rev-parse HEAD`；`t17_blind_test.verify_source_provenance()` 讀的是
+     `analysis.get("provenance")` 的**存檔值**，另外**獨立**再呼叫一次 `git_revision(cwd=repo_root)`
+     當「盲測當下」的對照——兩邊不共用同一次讀取，不會恆真。實測面（真實產物，非樁）：
+     `output/bathroom_tiled/analysis.json` 的 `provenance.git_revision.commit`
+     ＝`cdb4127d4253…`＝當下 HEAD，`generated_at`＝`2026-09-11T08:04:14Z`（＝該次 CLI 生成時刻），
+     `input_sha256`／`materials_json_sha256` 與 `assets/photos/bathroom_tiled.png`／
+     `data/materials.json` 實檔逐位元相符。**端到端真實產物實測**：Opus 以 `t17.run()`
+     指向真實 5 個空間、`out_dir` 另置（**不碰 `output/mvp_acceptance/`**）跑兩次——
+     (a) `repo_root`＝主 repo（HEAD `cdb4127`）→ **exit 0**，MANIFEST 五筆全帶 `source_provenance`；
+     (b) `repo_root`＝另一個 commit 的 worktree（`0d800c3`）、產物不變 → **exit 1**，五筆逐筆
+     點名「`git_revision` 不符：來源產物生成於 `cdb4127d…`，盲測當下主 repo HEAD 是 `0d800c30…`」。
+     即「生成後改 HEAD 再驗」的紅旗情境**確實被抓到**。
+  2. **模型 id／門檻／materials hash 皆讀單一事實來源，無手打——成立。**
+     `pipeline.py` 取 `config.SEGMENTATION_MODEL_ID`／`config.CLIP_MODEL_ID`／
+     `config.CLIP_CONFIDENCE_THRESHOLD`／`config.MATERIALS_PATH`；
+     `t17_blind_test._expected_model_config()` 取同一組 `config` 常數。
+     `grep -rn "segformer\|clip-vit" src/image_reverb/pipeline.py src/image_reverb/provenance.py
+     scripts/t17_blind_test.py` **零命中**（無字面常數）。實跑產物的三個欄位值與
+     `config.py:127-131` 逐字相同。
+  3. **舊產物搭配新 HEAD 被拒、缺 provenance 也被拒——成立。** 除第 1 點 (b) 的真實產物實測外，
+     Opus 另在 `tempfile` 隔離 git repo 重跑：v1 產物＋v2 HEAD → exit 1 且點名 `git_revision 不符`；
+     完全沒有 `provenance` 鍵 → exit 1 且點名「缺少 provenance」。
+     程式面確認 `verify_source_provenance()` 的每個不符項都進 `stale`，迴圈後 `return 1`，無旁路。
+  4. **mtime 只是輔助警示，沒有取代 provenance——成立（雙向實測）。**
+     (a) 反向：把 `analysis.json` 的 mtime 調成**比來源照片舊**（舊碼會判 stale 擋下）、provenance 正確
+     → 新碼 **exit 0**，stderr 只有
+     `⚠️ testroom：analysis.json 比來源照片舊（輔助警示，不影響通過判定，主證據見 provenance）`；
+     (b) 正向：provenance 缺失但 mtime 刻意做成「analysis 比照片新」→ 仍 **exit 1**。
+     程式面：mtime 分支只 `print(...⚠️...)`，未 `stale.append`，不影響 exit code。
+     **＊本點同時是第 10 點退回項的補做**：Opus 自己用 `git show c64fba9:scripts/t17_blind_test.py`
+     還原 T-43 之前的舊碼（非 import 新碼），對**同一個** v1→v2 隔離 repo 情境實測，輸出如下——
+     ```
+     隔離 repo：v1=80a892b8  v2(HEAD)=835d1891；產物 provenance 記 v1，mtime 刻意讓 analysis 比照片新
+     【舊碼 c64fba9】exit=0   stderr=''
+       MANIFEST 頂層鍵 = ['git_revision', 'shuffle_seed', 'generated_from']
+       MANIFEST.git_revision = '835d189'  ← v2 短雜湊='835d189'（舊產物被蓋上新 HEAD 的章）
+       MANIFEST 有無 source_provenance = False
+     【新碼 HEAD】exit=1
+       ❌ 溯源驗證失敗（可能拿舊產物驗收新程式，或環境已變更）：
+          - testroom：git_revision 不符：來源產物生成於 '80a892b870bd…'，盲測當下主 repo HEAD 是 '835d189105…'
+     ```
+     **舊碼 exit 0、MANIFEST 標成 v2 HEAD（舊產物被認證）；新碼 exit 非 0 並點名不符項**——
+     與卡片「舊碼必須 fail 的最小重現」預期**逐項吻合**，新測試的診斷力成立。
+     （此輸出是**驗證者**補做的，依 §5.4.1／§7.7 **不能**替執行者銷掉第 10 點；附此供修正輪對照。）
+  5. **MANIFEST 兩種 revision 未混用——成立。** 真實產物與隔離 repo 兩次實跑的 MANIFEST：
+     頂層鍵只有 `['packaging_git_revision', 'shuffle_seed', 'generated_from']`（**無**裸
+     `git_revision`／`source_provenance`）；`generated_from[*]` 內只有 `source_provenance`
+     （**無** `packaging_*`）；`source_provenance == 來源 analysis.json 的 provenance` 逐項 `==` 為真。
+     歷史 `output/mvp_acceptance/blind_test/MANIFEST.json` 的舊鍵 `git_revision: d958b3c`
+     **一字未改**（md5 `d07fed82a8bf3a7ca817cbe77ed3cb5e`），符合「歷史誠實標記不得回頭改寫」。
+  6. **`t43_provenance_baseline.py` 的 `OLD_COMMIT` 釘死＝`c64fba9`——成立。**
+     第 56 行 `OLD_COMMIT = "c64fba9"` 是模組常數；`grep -n "sys.argv"` 只有 `--fresh`／`--out-dir`
+     （輸出路徑，非參照 commit），**無任何 CLI 途徑可竄改參照**；
+     `grep -n 'worktree.*add.*"HEAD"'` 為空；worktree 建好後比對
+     `_git_head(worktree)` == `git rev-parse c64fba9` 全長雜湊，不等即 `SystemExit`（Opus 實跑時
+     印出 `c64fba9d304d2342ed88abd2cea64ddb8b4c6335`，自檢確實執行）。`c64fba9` 確為 T-49 v2 修正輪
+     結果 commit（Opus 複驗通過紀錄＝`0d800c3`），與卡片指定一致。
+  7. **13 張三軸／gate／IR MD5 零漂移——成立（Opus 自己重跑，不採信執行者的表）。**
+     `python scripts/t43_provenance_baseline.py --out-dir output/provenance/opus_verify --fresh`
+     （26 次真實 CLI）**exit 0**；`diff output/provenance/tables.md output/provenance/opus_verify/tables.md`
+     **完全相同**：13/13 geometry／materials／overall／gate 改動前後逐值相同、`ir_mono.wav` md5
+     逐位元相同、改動後 13 張全含 `provenance`；`bedroom_ai_generated` 仍 `BLOCK`（鐵則 12），
+     鐵則 12 五張已知錯誤案例全部 `BLOCK`，**無任何 BLOCK→pass**。`TunnelToHell` 對
+     `EXPECTED_GATE` 的 geometry 欄不符**確認為既存表過期**，非本卡回歸——
+     `output/transactional_output/tables.md`（T-42）、`t49/tables.md`、`t49_v2/tables.md`
+     三份既有已驗證產物**同一格同樣是 🔴**，且 gate 結果兩邊都是 `BLOCK`（不觸及鐵則 6／12）。
+     Opus 這次的 REPORT 檔頭 porcelain 為「（空，工作區乾淨）」，符合鐵則 13 對複驗那次的要求；
+     依鐵則 13「重跑一律寫新子目錄」，寫在 `output/provenance/opus_verify/`，
+     執行者已驗證的 `output/provenance/{REPORT.md,tables.md}` **未被覆寫**。
+  8. **舊 `output/mvp_acceptance` 與 blind_test 歷史產物零 diff——成立。**
+     `git diff --name-only c64fba9 HEAD -- output/mvp_acceptance` 為空、
+     `git status --porcelain -- output/mvp_acceptance` 為空（含 Opus 本視窗所有實測之後）。
+     執行者**未**對真實 13 張跑 `t17_blind_test.py` 主流程（會覆寫歷史盲測素材），
+     改走隔離 repo 驗證——Opus 認同此判斷，且自己的端到端實測也一律把 `out_dir` 另置、事後清除。
+  9. **完整測試套件與六條交付 IR MD5——成立。** 20 支 `scripts/test_*.py` 逐支實跑 **EXIT=0**
+     （含新增的 `test_t17_provenance.py`）。六條交付 IR MD5 **Opus 自己重生比對**：
+     T-14 兩條由 `test_ir_synth.py`【T14_DELIVERED_MD5】內建比對（隨套件 EXIT=0）；
+     T-20／T-21 四條先移走舊檔再以 `--text 浴室`／`--text 大教堂`／
+     `--scene assets/scenes/{neighbor_voices,stadium_corridor}.json` 重生＝
+     `2adbaa75eb698772a8c9aa693179ec47`／`2dd19b6e6d351d713887636fe45cd67e`／
+     `9a94ffdf5d8295aee7889729c39c9cd8`／`a1c21bcc3fd9aa3480df203a89c8cd05`，
+     與歷次記錄**逐位元相同**（亦佐證 `--text`／`--scene` 路徑未被本卡波及）。
+     **範圍與紅線**：`git status --porcelain -- src scripts data` 為空（已 commit）；
+     `git diff --stat c64fba9 HEAD -- src/` 只有 `pipeline.py`＋新增 `provenance.py`；
+     `scripts/` 只有 `t17_blind_test.py`（改）＋`test_t17_provenance.py`／
+     `t43_provenance_baseline.py`（新增）；`surfaces.py`／`geometry.py`／`acoustics.py`／
+     `ir_synth.py`／`ir_metrics.py`／`config.py` 零 diff（鐵則 3）；
+     `grep -n "override-dims" src/image_reverb/pipeline.py` 兩處導引（`:375`／`:427`）逐字仍在
+     （裁決 T-48-S）；`data/` 零改動。
+  10. **🟠 唯一退回項：自我檢查「隔離 repo 重現對舊碼 fail 已附」未完成。**
+      卡片「舊碼必須 fail 的最小重現」明文要求「對 `git worktree` 舊碼實測……**輸出貼交接筆記**」，
+      自我檢查亦列「隔離 repo 重現對舊碼 fail 已附」。實際：`TASKS.md` 交接筆記第 1～10 點、
+      `HANDOFF.md` T-43 全段、`DEV_LOG.md` 116 均**無**任何舊碼實測輸出；
+      `test_t17_provenance.py` 只 `import t17_blind_test`（新碼），三案例都沒跑過舊碼。
+      依 **§7.7**「未完成任務卡自檢時，`工程` 不得是『已驗證』」＋ **§5.4.1**「未完成項不得用
+      備註豁免……只能退回、卡關或先走 §7 變更控制」，且 §2.2 明禁驗證者用附註豁免字面條件
+      （紅旗 7），故**工程軸退回**。
+      **修正輪只需做一件事**：照卡把舊碼重現跑一次（`git show c64fba9:scripts/t17_blind_test.py`
+      還原，或 `git worktree` 舊碼），把 `舊碼 exit 0 ＋ MANIFEST 標成 v2 HEAD ＋ 新碼 exit 非 0
+      點名不符項` 的輸出貼進交接筆記——**不需要改任何程式碼**（Opus 已確認第 1～9 點全過，
+      改碼反而會讓已驗證的 13 張基線與六條 MD5 失效）。
+      **另一條合法路徑（交 Fable 裁決，非 Opus 可自決）**：若 Fable 認為 Phase 1.9「鐵則 5／E
+      ——驗證者自己還原舊碼實測、不採信貼上來的輸出」已使此自我檢查項對執行者成為冗餘，
+      可依 **§7** 開 criteria v2 明文改寫該項（獨立 `criteria:` commit＋理由＋核准者），
+      原 v1 verdict（本則）保留不覆寫。
+
+  **附帶發現（不構成退回，交 Fable 排期；本卡未要求、不得在本輪順手改）**：
+  - **① `provenance.git_revision()` 用 `check=True`，非 git 環境會讓照片管線整支噴錯。**
+    舊 `t17_blind_test._git_rev()` 有 `try/except → "unknown"`，搬進 `src/` 後改成
+    `subprocess.run(..., check=True)`。在本專案（永遠是 git checkout）不會發生，但使用者若以
+    zip 下載原始碼跑 `run_photo()`，會在成功路徑尾端拋 `CalledProcessError`。
+    符合裁決 T-42-A「非預期例外照樣 raise 不吞錯」的政策，但語意上這不是「使用者的錯誤輸入」。
+    建議另開卡決定：記 `{"commit": null, "dirty": null, "unavailable": "not_a_git_repo"}`
+    （並讓 `t17_blind_test` 視為不符→擋下），或維持現狀但在文件寫明「本專案只支援 git checkout」。
+  - **② `t17_blind_test.run()` 的 `out_dir` 若在 `repo_root` 之外，最後一行
+    `out_dir.relative_to(repo_root)` 會拋 `ValueError`**（所有檔案其實都已寫完才炸）。
+    真實用法（預設路徑）與 `test_t17_provenance.py` 都在 repo 內，不影響本卡任何驗收項；
+    Opus 端到端實測時踩到，改把 `out_dir` 放進 repo 內的暫存目錄繞過。
+  - **③ `t17_blind_test.py` 模組載入時就 `from src.image_reverb import config`（綁**主** repo），
+    但 `run(repo_root=...)` 可指到別的 repo；`expected_config` 未傳時會拿主 repo 的 config
+    去比對別的 repo 的產物。現有呼叫端都有傳 `expected_config`（測試）或兩者同一個 repo（正式），
+    無實害；若 T-17-R2 要跨 repo 用，建議把 `expected_config` 預設改成由 `repo_root` 推導。
 
 ### Phase 1.9 收尾（回 Fable 複評，不開卡）
 帶著 T-37／T-38A／T-38B／T-39／T-44 的 REPORT 與基線變化表、以及插卡輪

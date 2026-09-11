@@ -1,5 +1,53 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🟠 2026-09-11 Opus：T-43 **複驗＝工程退回**——**現在該做的是開 Sonnet 修正輪，只補一段輸出、不改程式**
+>
+> 對象結果 commit `bad3f98`，複驗時 HEAD `cdb4127`，工作區 `git status --porcelain -- src scripts data`
+> **為空**（鐵則 13 對複驗那次的要求）。四軸：**工程：退回｜實驗：不適用｜產品：不適用｜MVP：不適用**
+> （沿用 T-17 FAIL）。
+>
+> **唯一退回理由（文件證據，不是程式壞掉）**：T-43 卡明文要求「舊碼必須 fail 的最小重現……
+> **輸出貼交接筆記**」、自我檢查列「隔離 repo 重現對舊碼 fail **已附**」。實際上交接筆記第 1～10 點、
+> `HANDOFF.md` T-43 全段、`DEV_LOG.md` 116 **都沒有**任何對 T-43 之前的舊碼實測的輸出，
+> `test_t17_provenance.py` 三個案例也只 import 新碼。依 **WORKFLOW §7.7**（未完成自檢時工程不得
+> 標「已驗證」）與 **§5.4.1／§2.2 紅旗 7**（未完成項不得由驗證者用附註豁免），只能退回。
+>
+> **其餘九項全部通過，而且是 Opus 自己重跑的，不是採信貼上來的輸出**：
+> ① `provenance` 寫在 `analysis.json` 落盤**之前**＝生成當下——真實 5 個空間端到端實測：
+> `repo_root`＝主 repo（HEAD `cdb4127`）**exit 0**、換成 worktree `0d800c3` 後同一批產物
+> **exit 1** 並逐筆點名「來源產物生成於 `cdb4127d…`，盲測當下 HEAD 是 `0d800c30…`」；
+> ② 模型 id／CLIP 門檻／materials hash 全讀 `config`，字面常數 grep **零命中**；
+> ③ 舊產物＋新 HEAD、缺 `provenance` 都 exit 1；④ mtime **雙向**實測——provenance 正確但
+> `analysis.json` 比照片舊 → 仍 **exit 0** 且只印 `⚠️`；缺 provenance 但 mtime 新 → 仍 exit 1；
+> ⑤ MANIFEST 頂層只有 `packaging_git_revision`、sample 內只有 `source_provenance`，**未混用**，
+> 歷史 `blind_test/MANIFEST.json` 的 `git_revision: d958b3c` **一字未改**；
+> ⑥ `OLD_COMMIT = "c64fba9"` 是模組常數，`sys.argv` 只吃 `--fresh`／`--out-dir`，**沒有 CLI
+> 竄改參照的途徑**，worktree 全長雜湊自檢確實執行；
+> ⑦ **Opus 自己跑 26 次真實 CLI**（寫新子目錄 `output/provenance/opus_verify/`，不覆寫執行者版），
+> `tables.md` 與執行者版 **diff 完全為空**——13 張三軸／gate／`ir_mono.wav` md5 零漂移，
+> 鐵則 12 五張已知錯誤案例全部 `BLOCK`、無 BLOCK→pass；`TunnelToHell` 對 `EXPECTED_GATE` 的 🔴
+> 經比對 T-42／T-49／T-49 v2 三份既有已驗證產物，確認是**既存表過期**、非本卡回歸；
+> ⑧ `output/mvp_acceptance/`／歷史 `blind_test/` 零 diff（執行者刻意不對真實 13 張跑主流程，Opus 認同）；
+> ⑨ 20 支 `scripts/test_*.py` EXIT=0，六條交付 IR MD5 **由 Opus 自己重生**逐位元相同。
+>
+> **Opus 也把缺的那段自己做了一次**（放在 TASKS.md T-43 卡複驗紀錄第 4 點，供修正輪對照）：
+> 用 `git show c64fba9:scripts/t17_blind_test.py` 還原舊碼，對同一個 v1→v2 隔離 repo——
+> **舊碼 exit 0、MANIFEST 蓋上 v2 短雜湊（舊產物被認證）、沒有 `source_provenance`；新碼 exit 1
+> 點名 `git_revision 不符`**，與卡片預期逐項吻合。但依 §5.4.1／§7.7，**驗證者補做不能替執行者銷帳**。
+>
+> **下一步（二選一，使用者決定）**：
+> 1. **開 Sonnet 修正輪**（建議）：貼「執行 TASKS.md 的任務 T-43 修正輪：只補自我檢查
+>    『隔離 repo 重現對舊碼 fail 已附』那一項，把舊碼實測輸出貼進交接筆記，**不得修改任何程式碼**
+>    （改了會讓已驗證的 13 張基線與六條 IR MD5 失效），然後照 WORKFLOW §4 收工。」
+> 2. **開 Fable 裁決**：若認為此項與 Phase 1.9 鐵則 5／E（「驗證者自己還原舊碼實測，不採信貼上來的
+>    輸出」）重複，依 **§7** 開 criteria v2 明文改寫（獨立 `criteria:` commit＋理由＋核准者），
+>    原 v1 verdict 保留不覆寫。
+>
+> **T-47 前置（「T-42／T-43 ✅」）尚未滿足**，不要開 T-47。
+> **附帶發現（交 Fable 排期，本輪不得順手改）**：`provenance.git_revision()` 的 `check=True`
+> 讓非 git 環境的照片管線噴錯；`t17_blind_test.run()` 的 `out_dir` 在 repo 外時最後一行
+> `relative_to()` 會拋錯；`expected_config` 預設綁主 repo 而非 `repo_root`。
+
 > ## 🔵 2026-09-11 Sonnet：T-43 執行完成——**現在該做的是開 Opus 新視窗複驗**，結果 commit `bad3f98`
 >
 > 前置「T-42 ✅ 且 T-49 ✅（v2）」已於 `c64fba9` 滿足。依 T-43 卡（裁決 T-42-A 改版註記，
