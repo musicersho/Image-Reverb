@@ -1,5 +1,32 @@
 # Dev Log
 
+## 2026-09-11 (116)
+
+- **T-43 執行完成（Sonnet）——前置「T-42 ✅ 且 T-49 ✅（v2，`c64fba9`）」已滿足**。
+  新模組 `src/image_reverb/provenance.py`（`git_revision()`／`sha256_file()` 單一事實
+  來源）；`run_photo()` 成功路徑新增 `provenance` 區塊（git revision＋dirty、照片
+  sha256、materials.json sha256、模型 id／門檻讀 `config`、CLI 參數、UTC 時戳），
+  寫在 `analysis.json` 落盤前（生成當下，不是讀取時）。
+- **`t17_blind_test.py` 改為溯源驗證**：`run()` 抽成函式；`verify_source_provenance()`
+  核對 git revision／照片 hash／模型設定，缺 provenance 或不符一律 exit 非 0；mtime
+  檢查降為輔助警示。`MANIFEST.json` 分開記 `packaging_git_revision`／
+  `generated_from[*].source_provenance`，不混用鍵名。
+- **新測試 `test_t17_provenance.py`**：隔離 `tempfile` git repo（兩個真實 commit 模擬
+  v1→v2），案例 A（v1 產物＋v2 HEAD）必須 fail 且點名 `git_revision 不符`、案例 B
+  （provenance 齊全相符）必須 exit 0 且 MANIFEST 正確、案例 C（缺 provenance）必須
+  fail——三案例本視窗實測全過。
+- **`t43_provenance_baseline.py`**（複製 T-49 樣板，`OLD_COMMIT="c64fba9"`）
+  `--fresh` 26 次真實 CLI exit 0：13 張三軸／gate／IR md5 零漂移，臥室紅旗仍
+  BLOCK，`TunnelToHell` 對 `EXPECTED_GATE` 不符為已知表過期問題（非回歸）。
+- **共同鐵則**：20 支 `scripts/test_*.py` 全 EXIT=0；六條交付 IR MD5 全中（T-20／
+  T-21 四條本視窗重生核對）；`git status --porcelain -- src scripts data` 只有五項
+  （`pipeline.py`／`t17_blind_test.py` 改動＋`provenance.py`／`test_t17_provenance.py`／
+  `t43_provenance_baseline.py` 新增）；`output/mvp_acceptance/`／既有 `blind_test/` 零
+  diff；gate／聲學模組（`surfaces.py`／`geometry.py`／`acoustics.py`／`ir_synth.py`／
+  `ir_metrics.py`／`config.py`）全零 diff；`--override-dims` 導引未動（裁決 T-48-S）。
+- **下一步**：開 Opus 新視窗依 WORKFLOW §2.2 v2 複驗，結果 commit 見本次收工 commit。
+  通過後 T-47 前置（「T-42／T-43 ✅」）才算滿足。詳見 TASKS.md T-43 卡「交接筆記」。
+
 ## 2026-09-11 (115)
 
 - **T-49 Opus v2 複驗：✅ 工程已驗證（criteria v2）**，對結果 commit `c64fba9`（複驗時 HEAD=`c74329c`）。

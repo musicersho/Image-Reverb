@@ -1,5 +1,64 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔵 2026-09-11 Sonnet：T-43 執行完成——**現在該做的是開 Opus 新視窗複驗**，結果 commit `<待收工填入>`
+>
+> 前置「T-42 ✅ 且 T-49 ✅（v2）」已於 `c64fba9` 滿足。依 T-43 卡（裁決 T-42-A 改版註記，
+> 鐵則 13 措辭）執行三點修法：
+>
+> 1. **`run_photo()` 加 `provenance` 區塊（照片管線限定）**：`git_revision`＋dirty
+>    （範圍 `src`＋`data`）、`input_sha256`（來源照片 bytes）、`materials_json_sha256`、
+>    `segmentation_model_id`／`clip_model_id`／`clip_confidence_threshold`（一律讀
+>    `config`，未手打）、`cli_params`（override_dims／override_materials／
+>    force_low_confidence／furnishings 三態）、`generated_at`（UTC）。新模組
+>    `src/image_reverb/provenance.py` 是 `git_revision()`／`sha256_file()` 的單一事實
+>    來源，`t17_blind_test.py` 也改呼叫這裡（不再各自維護一份 `_git_rev()`）。寫入點在
+>    成功路徑、`analysis.json` 落盤**之前**——記的是生成當下，不是之後讀取時才補算
+>    （堵外部掃描指出的「v1 碼產的 IR 拿去驗收 v2 碼」紅旗）。`run_text()`／
+>    `run_scene()` 零 diff（併 T-29 排隊）。
+> 2. **`t17_blind_test.py` 改為溯源驗證**：主流程抽成 `run()` 函式（帶專案路徑預設值），
+>    新 `verify_source_provenance()` 核對 (a) `git_revision` 與盲測當下 HEAD 相同、
+>    雙方非 dirty，(b) `input_sha256` 與 `assets/photos/` 實檔一致，(c) `materials_json_
+>    sha256`／模型 id／門檻與當前 `config` 一致；缺 `provenance`（舊產物）同樣 fail；
+>    既有 mtime 檢查降級為輔助警示（`⚠️`，不影響 exit code）。
+> 3. **`MANIFEST.json` 分開記錄**：`packaging_git_revision`（打包當下 HEAD，取代舊的
+>    裸字串欄位）＋`generated_from[*].source_provenance`（來源 `analysis.json` 的
+>    `provenance` 原文逐項複製），兩個鍵名不重疊。
+>
+> **新測試 `scripts/test_t17_provenance.py`**（修 bug 類，隔離 `tempfile` git repo，兩個
+> 真實 commit 模擬 v1→v2，全程樁 `analysis.json`／IR／wet preview、不跑模型）：案例 A
+> （v1 產物＋v2 HEAD）必須 fail 且訊息點名 `git_revision 不符`；案例 B（provenance 齊全
+> 且相符）必須 exit 0，`MANIFEST` 的 `source_provenance` 與來源逐項相同、
+> `packaging_git_revision` 為當下 HEAD、兩鍵未混用；案例 C（缺 provenance）必須 fail。
+> 三案例本視窗實測全過。
+>
+> **`scripts/t43_provenance_baseline.py`**（複製 T-49 修好的 `t42_transactional_baseline.py`
+> 樣板，鐵則 13）：`OLD_COMMIT = "c64fba9"`（T-49 v2 修正輪結果 commit，非 HEAD、無 CLI
+> 參數）；worktree 自檢通過。`--out-dir output/provenance/ --fresh`（26 次真實 CLI）
+> **exit 0，13 張全數**：geometry／materials／overall／gate 逐值相同、`ir_mono.wav` md5
+> 逐位元相同、改動後 `analysis.json` 全數含 `provenance`；`bedroom_ai_generated` 仍
+> `BLOCK`（鐵則 12）；`TunnelToHell` 對 `EXPECTED_GATE` 不符是已知表過期問題（同
+> T-42／T-49／T-46 v3 記錄，非本卡回歸）。REPORT 雙邊 `git rev-parse HEAD` 與
+> `git status --porcelain -- src scripts data` 齊全（執行者本次為 dirty，已標 ⚠️；
+> Opus 複驗那次應為空）。
+>
+> **共同鐵則**：20 支 `scripts/test_*.py`（含新增的 `test_t17_provenance.py`）逐支
+> `EXIT=0`；六條交付 IR MD5 全中（T-14 由 `test_ir_synth.py` 內建；T-20／T-21 四條本
+> 視窗實跑 `--text 浴室`／`--text 大教堂`／`--scene {neighbor_voices,stadium_corridor}.json`
+> 重生，逐位元與歷史記錄相同）；`git status --porcelain -- src scripts data` 只有五項
+> （`pipeline.py`、`t17_blind_test.py` 改動＋`provenance.py`、`test_t17_provenance.py`、
+> `t43_provenance_baseline.py` 新增）；`surfaces.py`／`geometry.py`／`acoustics.py`／
+> `ir_synth.py`／`ir_metrics.py`／`config.py` 全零 diff；`override-dims` 導引兩處逐字
+> 未動（裁決 T-48-S）；`output/mvp_acceptance/` 與既有 `blind_test/`／`MANIFEST.json`
+> 零 diff（本卡未對真實 13 張跑 `t17_blind_test.py` 主流程，避免覆寫歷史盲測素材——
+> 溯源邏輯改走隔離 repo 測試驗證，符合「盲測抽樣／`SHUFFLE_SEED`／作答流程／mtime
+> 對齊手法不動」的範圍條款）；`grep -n 'worktree.*add.*"HEAD"'
+> scripts/t43_provenance_baseline.py` 為空。
+>
+> **下一步**：開 Opus 新視窗，貼 WORKFLOW §2.2 v2 複驗 Prompt，「結果 commit」填本次
+> 收工 commit（見本檔上方 git log 或下一次收工後的訊息）。通過後 T-47 前置
+> （「T-42／T-43 ✅」）才算滿足。詳見 TASKS.md T-43 卡「交接筆記（Sonnet 執行，
+> 2026-09-11）」。
+
 > ## ✅ 2026-09-11 Opus：T-49 **v2 複驗通過（工程：已驗證）**——**現在該做的是開視窗執行 T-43**
 >
 > 對結果 commit `c64fba9` 複驗（複驗時 HEAD=`c74329c`），依裁決 T-49-A 第 6 點的 v2 清單，**七項全過**：

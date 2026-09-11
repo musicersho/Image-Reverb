@@ -17,7 +17,7 @@ import shutil
 import subprocess
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -25,7 +25,7 @@ import numpy as np
 import soundfile as sf
 from PIL import UnidentifiedImageError
 
-from . import config, coupled, ir_synth, scene_text, visualize
+from . import config, coupled, ir_synth, provenance, scene_text, visualize
 from .acoustics import compute_acoustics
 from .furnishings import estimate_furnishings
 from .geometry import estimate_room, parse_override_dims
@@ -599,6 +599,28 @@ def run_photo(
                 "使用者強制輸出，結果可信度未知。"
             )
 
+        # T-43（插卡 4/4）：產物溯源指紋——只限照片管線（--text／--scene 併 T-29
+        # 排隊）。在這裡（成功路徑，寫 analysis.json 之前）呼叫
+        # `provenance.git_revision()`，記的是**生成當下**的 revision，不是
+        # `t17_blind_test.py` 驗證當下才讀——否則「生成後改 HEAD 再驗」的情境
+        # 會抓不到（Opus 驗證重點紅旗）。模型 id／門檻一律讀 `config`，不手打。
+        furnishings_mode = "off" if no_furnishings else ("apply" if furnishings else "observe")
+        provenance_payload: dict[str, Any] = {
+            "git_revision": provenance.git_revision(),
+            "input_sha256": provenance.sha256_file(photo_path),
+            "materials_json_sha256": provenance.sha256_file(config.MATERIALS_PATH),
+            "segmentation_model_id": config.SEGMENTATION_MODEL_ID,
+            "clip_model_id": config.CLIP_MODEL_ID,
+            "clip_confidence_threshold": config.CLIP_CONFIDENCE_THRESHOLD,
+            "cli_params": {
+                "override_dims": override_dims,
+                "override_materials": override_specs_used,
+                "force_low_confidence": force_low_confidence,
+                "furnishings_mode": furnishings_mode,
+            },
+            "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        }
+
         # T-42：analysis.json 的路徑字串一律寫「正式位置」——生成當下檔案實體在
         # staging，但字串記錄的是本次成功後 _publish_staging() 會 rename 過去的
         # 正式位置；讀寫（上面）用的仍是 staging 的 Path 物件，這裡只轉寫字串。
@@ -634,6 +656,7 @@ def run_photo(
                 "path": _public_path(wet_wav, staging_final_dir, public_out_dir) if wet_wav else None,
                 "mix": 0.6,
             },
+            "provenance": provenance_payload,
             "notes": notes,
             "warnings": warnings,
             **_elapsed_payload(t0),

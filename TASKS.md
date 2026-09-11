@@ -7935,8 +7935,8 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
 
 ### T-43 T-17 產物溯源：analysis.json 生成指紋＋盲測驗證（插卡 4/4）
 
-- **狀態**：⬜ 未開始
-- **四軸狀態**：工程：未開始｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
+- **狀態**：🔵 待審（Sonnet 執行完成，結果 commit 見下方交接筆記，待 Opus 複驗）
+- **四軸狀態**：工程：🔵 待審｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
 - **🔮 裁決 T-42-A 改版註記（Fable 2026-09-10）**：前置加 **T-49 ✅**；「範圍」「產出」
   「執行步驟 4」「自我檢查」「抽查手法」依鐵則 13 措辭改寫（原文沒列鐵則 8 產表腳本，與
   「表由程式產出」字面互斥，Opus 於 T-42 附帶發現 ④ 指出）；**修法本體（三點）一字不改**。
@@ -8017,6 +8017,93 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
   「生成後改 HEAD 再驗」的情境實測）；紅旗：MANIFEST 用同一個鍵混記兩種
   revision；紅旗：mtime 仍被當主證據（provenance 缺失但 mtime 通過就放行
   ＝退回）；紅旗：歷史 `blind_test/` 素材或 `output/mvp_acceptance/` 被改。
+
+- **交接筆記（Sonnet 執行，2026-09-11）**：
+
+  1. **`src/image_reverb/provenance.py`（新檔）**：`git_revision(cwd, scope=("src","data"))`
+     回傳 `{"commit": <git rev-parse HEAD 全長雜湊>, "dirty": bool}`（`dirty` 只看 `scope`
+     的 `git status --porcelain`）；`sha256_file(path)`。搬自 `t17_blind_test.py` 舊版
+     `_git_rev()`（原本 `--short`＋字串拼接，現在拆成結構化欄位，讓 `run_photo()` 與
+     `t17_blind_test.py` 呼叫同一份實作，不用各自維護一份範圍/門檻）。
+  2. **`src/image_reverb/pipeline.py`**：`run_photo()` 成功路徑（`_run_wet_preview()` 之後、
+     寫 `analysis.json` 之前）新增 `provenance_payload`：`git_revision`（呼叫當下，不是
+     `t17_blind_test.py` 驗證當下才讀）、`input_sha256`（來源照片 bytes）、
+     `materials_json_sha256`（`config.MATERIALS_PATH`）、`segmentation_model_id`／
+     `clip_model_id`／`clip_confidence_threshold`（三者皆讀 `config`，未手打常數）、
+     `cli_params`（`override_dims`／`override_materials`／`force_low_confidence`／
+     `furnishings_mode` 三態）、`generated_at`（UTC）。寫入 `analysis` dict 的 `"provenance"`
+     鍵（`wet_preview` 之後、`notes` 之前）。`run_text()`／`run_scene()` 未動（`git diff`
+     確認零 diff，併 T-29 排隊）。
+  3. **`scripts/t17_blind_test.py`**：主流程抽成 `run(*, repo_root, out_dir, spaces,
+     photos_dir, outputs_dir, materials_path, expected_config)` 函式（帶預設值＝真實專案
+     路徑），`main()` 只是套殼；新增 `verify_source_provenance()`（回傳不符項清單）：
+     (a) `git_revision.commit` 與盲測當下 `repo_root` 的 HEAD 相同、雙方皆非 dirty，
+     (b) `input_sha256` 與 `assets/photos/` 實檔一致，(c) `materials_json_sha256`／
+     `segmentation_model_id`／`clip_model_id`／`clip_confidence_threshold` 與
+     `expected_config`（預設讀當前 `config`）一致；缺 `provenance` 同樣視為不符。
+     任一不符 → `stale` 累積訊息、迴圈跑完後 exit 1，指示重生。既有「`analysis.json`
+     比來源照片舊」的 mtime 檢查改成只印 `⚠️` 警示，不再加入 `stale`（不影響 exit code）。
+     `MANIFEST.json` 頂層改為 `packaging_git_revision`（打包當下 HEAD，取代舊的
+     `"git_revision"` 字串欄位）＋`generated_from[*].source_provenance`（來源
+     `analysis.json` 的 `provenance` 原文逐項複製）——兩個鍵名不重疊。
+  4. **`scripts/test_t17_provenance.py`（新檔，修 bug 類）**：`tempfile.TemporaryDirectory()`
+     建隔離 git repo（`git init`＋兩個真實 commit，模擬 v1→v2），全程樁
+     `analysis.json`／IR／wet preview（純資料檔案，不跑模型）：
+     - 案例 A（v1 產物＋v2 HEAD）：`provenance.git_revision.commit`＝v1 commit，呼叫
+       `t17.run(repo_root=<v2 HEAD 的隔離 repo>, ...)`——斷言 exit 非 0 且 stderr 含
+       `git_revision 不符`；
+     - 案例 B（provenance 齊全且相符）：`git_revision.commit`＝當下 HEAD（v2）、
+       `input_sha256`／`materials_json_sha256`／模型設定全部與隔離 repo 實檔／
+       `expected_config` 一致——斷言 exit 0、`MANIFEST.generated_from[0].source_provenance`
+       與來源 `provenance` 逐項相同（`==`）、`packaging_git_revision.commit`＝v2、
+       頂層無裸 `git_revision`／`source_provenance`（未混用鍵名）；
+     - 案例 C（附帶，缺 provenance）：斷言 exit 非 0 且 stderr 含「缺少 provenance」。
+     三案例全過（見下方自我檢查輸出）。
+  5. **`scripts/t43_provenance_baseline.py`（新檔，鐵則 8＋13，複製 T-49 修好的
+     `t42_transactional_baseline.py` 樣板）**：`OLD_COMMIT = "c64fba9"`（T-49 v2 修正輪
+     結果 commit，Opus 複驗通過，非 HEAD、無 CLI 參數）；worktree 建好後自檢
+     `git rev-parse HEAD` == `OLD_COMMIT` 全長雜湊；對 `t36_clip_accuracy.GATE_ITEMS`
+     13 張照片各跑兩次真實 CLI（`--force-low-confidence --no-viz`），比對 geometry／
+     materials／overall／gate 逐值相同、`ir_mono.wav` md5 逐位元相同、改動後
+     `analysis.json` 含 `provenance`；REPORT 檔頭印雙邊 `git rev-parse HEAD` 與主 repo
+     `git status --porcelain -- src scripts data`。
+  6. **實跑結果**：`python scripts/t43_provenance_baseline.py --out-dir output/provenance/
+     --fresh`（26 次真實 CLI，OLD_COMMIT=`c64fba9`）exit 0，13 張全數：三軸 confidence／
+     gate 逐值相同、IR md5 逐位元相同、改動後 `analysis.json` 全數含 `provenance`；
+     `bedroom_ai_generated` 仍 `BLOCK`（鐵則 12）；`TunnelToHell` 與 `EXPECTED_GATE`
+     geometry 欄不符是已知表過期問題（同 T-46 v3／T-42／T-49 REPORT 記錄，非本卡回歸，
+     `tables.md` 其餘 12 張與 `EXPECTED_GATE` 全部相符）。REPORT 雙邊 `git rev-parse HEAD`
+     與 porcelain（`-- src scripts data`）齊全，執行者這次工作區為 dirty（本卡未 commit
+     的改動本身），已標 ⚠️；Opus 複驗那次應為空。
+  7. **六條交付 IR MD5**：T-14 兩條由 `test_ir_synth.py`【T14_DELIVERED_MD5】內建比對通過
+     （隨完整測試套件 EXIT=0 一併驗證）；T-20 兩條本視窗實跑
+     `--text 浴室`／`--text 大教堂` 重生＝`2adbaa75eb698772a8c9aa693179ec47`／
+     `2dd19b6e6d351d713887636fe45cd67e`；T-21 兩條實跑
+     `--scene assets/scenes/{neighbor_voices,stadium_corridor}.json` 重生＝
+     `9a94ffdf5d8295aee7889729c39c9cd8`／`a1c21bcc3fd9aa3480df203a89c8cd05`——六條與
+     HANDOFF 歷次記錄的值逐位元相同。
+  8. **自我檢查**：全部 20 支 `scripts/test_*.py`（含新增的 `test_t17_provenance.py`）
+     `EXIT=0`；`git diff --stat -- src/` 只有 `pipeline.py`＋新增 `provenance.py`；
+     `git status --porcelain -- scripts/` 只有 `t17_blind_test.py`（改）、
+     `test_t17_provenance.py`（新增）、`t43_provenance_baseline.py`（新增）；
+     `grep -n 'worktree.*add.*"HEAD"' scripts/t43_provenance_baseline.py` 為空；
+     `grep -n "override-dims" src/image_reverb/pipeline.py` 導引兩處仍在（裁決
+     T-48-S，逐字未動）；`git status --porcelain -- output/mvp_acceptance` 與既有
+     `blind_test/`／`MANIFEST.json` 零 diff（本卡未真的跑 `t17_blind_test.py` 對真實
+     13 張照片，避免覆寫歷史驗收紀錄——溯源邏輯改走隔離 repo 的
+     `test_t17_provenance.py` 驗證，符合「範圍」條款「盲測的抽樣／`SHUFFLE_SEED`／
+     作答流程／mtime 對齊手法不動」）。
+  9. **範圍**：`git status --porcelain -- src scripts data`（鐵則 13）只有五項：
+     `M scripts/t17_blind_test.py`、`M src/image_reverb/pipeline.py`、
+     `?? scripts/t43_provenance_baseline.py`、`?? scripts/test_t17_provenance.py`、
+     `?? src/image_reverb/provenance.py`；`data/` 零改動；`ir_metrics.py`／
+     `geometry.py`／`acoustics.py`／`ir_synth.py`／gate 判定條件零 diff（`git diff --stat
+     -- src/image_reverb/surfaces.py src/image_reverb/geometry.py
+     src/image_reverb/acoustics.py src/image_reverb/ir_synth.py
+     src/image_reverb/ir_metrics.py src/image_reverb/config.py` 為空）。
+  10. **下一步**：開 Opus 新視窗，貼 WORKFLOW §2.2 v2 複驗 Prompt，「結果 commit」填
+      本次收工 commit（見 HANDOFF.md 最上方）。通過後 T-47 前置（「T-42／T-43 ✅」）
+      才算滿足。
 
 ### Phase 1.9 收尾（回 Fable 複評，不開卡）
 帶著 T-37／T-38A／T-38B／T-39／T-44 的 REPORT 與基線變化表、以及插卡輪

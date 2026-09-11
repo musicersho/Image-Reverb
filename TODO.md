@@ -94,9 +94,16 @@
       (a)(c)(d) 過。19 支測試 EXIT=0、六條交付 IR MD5 全中、`t49/tables.md` 與 T-42 版
       diff 為空、`git diff --stat -- src/` 只有 `pipeline.py`。詳見 TASKS.md T-49 卡
       「交接筆記」。
-- [ ] **T-43** T-17 產物溯源（前置 **T-42 ✅ 且 T-49 ✅**；範圍依鐵則 13 句型改寫：`src/` 限縮
-      `pipeline.py`＋新增 `provenance.py`，`scripts/` 只得 `t17_blind_test.py`／`test_t17_provenance.py`／
-      `t43_provenance_baseline.py`）
+- [ ] **T-43 🔵 待審（Sonnet 執行完成，2026-09-11，結果 commit 見 HANDOFF.md）→ 開 Opus 新視窗複驗**
+      ——`run_photo()` 成功路徑新增 `provenance` 區塊（`git_revision`＋dirty、`input_sha256`、
+      `materials_json_sha256`、模型 id／門檻讀 `config`、CLI 參數、生成時戳），單一事實來源
+      新模組 `src/image_reverb/provenance.py`；`t17_blind_test.py` 改為溯源驗證（缺
+      provenance 或 git revision／照片 hash／模型設定不符 → exit 非 0），`MANIFEST.json`
+      分開記 `source_provenance`／`packaging_git_revision`。新測試
+      `test_t17_provenance.py`（隔離 git repo，v1→v2 情境對舊產物必須 fail、齊全相符必須
+      exit 0，皆已實測）。`t43_provenance_baseline.py`（`OLD_COMMIT="c64fba9"`）13 張
+      `--fresh` 全過：三軸／gate／IR md5 零漂移，臥室紅旗仍 BLOCK。20 支測試 EXIT=0、
+      六條交付 IR MD5 全中。詳見 TASKS.md T-43 卡「交接筆記」。
 - [ ] **T-50** `.archive` 手動清理指令（停滯期填充卡；預設 dry-run、`--yes` 才刪、每 stem 保留 N 份；
       T-47／T-48／T-17-R2 期間禁止 `--yes`）
 - [x] ~~**T-42 🔵 待審（Sonnet 2026-09-10，結果 commit `cf1f1ba`）→ 開 Opus 新視窗複驗** → T-43~~
