@@ -1,5 +1,45 @@
 # 交接文件 — 給下一個視窗
 
+> ## ✅ 2026-09-11 Opus：T-43 **修正輪複驗通過（工程：已驗證）**——**現在該做的是開視窗執行 T-47**
+>
+> 對象結果 commit `67b6aa5`（雜湊回填 `5d122a9`），複驗時 HEAD `de71d44`，
+> 工作區 `git status --porcelain -- src scripts data` 為空（鐵則 13）。
+> **四軸：工程：已驗證｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）。**
+>
+> **覆核範圍（使用者本輪指定）**：上一輪第 1～9 點已由 Opus 獨立實測通過，本輪只覆核
+> 第 10 點退回項（舊碼重現輸出）是否確實補齊且可信，以及零程式碼改動是否成立。
+>
+> 1. **零程式碼改動成立** → 第 1～9 點未失效：`git diff --stat bad3f98 HEAD -- src scripts data`
+>    **為空**、`git status --porcelain -- output` 為空、歷史 `blind_test/MANIFEST.json` md5
+>    仍為 `d07fed82a8bf3a7ca817cbe77ed3cb5e`。抽樣複查：`test_t17_provenance.py`／
+>    `test_ir_synth.py` EXIT=0、T-20／T-21 四條交付 IR md5 現檔全中、字面範圍項（`src/` diff、
+>    `OLD_COMMIT="c64fba9"`、`worktree …"HEAD"` grep 為空、`override-dims` 兩處導引、鐵則 3
+>    六模組零 diff）全部仍成立。
+> 2. **貼出的輸出是真的跑出來的**：交接筆記第 11 點的程式碼區塊與執行者 scratchpad 的
+>    `t43_repro_output.txt` **逐行相同**（無手寫加工）；Opus 原樣重跑該驅動腳本，行為重現。
+> 3. **查到一處未揭露的修改，但不影響結論**：執行者的舊碼複本把 `SPACES` 由 5 個真實空間縮成
+>    1 個樁空間（`diff` 只有這一個 hunk，受測邏輯逐字未動；原因是舊碼把 `SPACES` 寫死、缺任一
+>    `output/<run>/` 就提早 `return 1`）。Opus 因此改用**真正的 `git worktree add --detach c64fba9`
+>    ＋逐位元未改的舊碼＋5 個空間全部樁出來＋刻意把 `analysis.json` mtime 設成比照片新**
+>    （讓舊碼唯一的 mtime 檢查通過）重跑一次——**結論相同**：舊碼 exit 0、MANIFEST 頂層
+>    `git_revision` ＝ v2 HEAD 短雜湊（舊產物被認證）、無 `source_provenance`；新碼 exit 1，
+>    5 筆逐筆點名 `git_revision 不符`。與卡片四項預期逐項吻合。
+> 4. **為什麼不再退回**：字面自我檢查是「重現輸出**已附**」——已附、真實、可重跑；卡片方法句的
+>    `git worktree` 與執行者用的 `git show` 取出的檔案**逐位元相同**（sha256 已比對），機制替換
+>    不構成放寬；唯一實質偏差（`SPACES`）Opus 已用「不做這個修改」的版本重跑得到相同結論。
+>    與上一輪退回邏輯不衝突：上一輪是**執行者完全沒有交付物**，本輪交付物存在且出自執行者，
+>    Opus 的重跑是佐證可信度，不是替執行者補交付。
+> 5. **附帶（交 Fable，不構成退回）**：交接筆記應主動交代「舊碼複本除 `SPACES` 外逐位元未改」；
+>    上一輪三項附帶發現（`provenance.git_revision()` 的 `check=True` 在非 git 環境會噴錯、
+>    `out_dir` 在 `repo_root` 外時 `relative_to()` 拋 `ValueError`、`t17_blind_test` 模組載入即綁
+>    主 repo `config`）本輪零程式碼改動故原樣保留。
+>
+> **下一步**：**T-47 前置（「T-42／T-43 ✅」）自此滿足 → 開 T-47**。
+> 關鍵路徑：T-46 ✅ → T-42 ✅ → T-49 ✅ → **T-43 ✅** → **T-47** → 裁決 T-47-A → T-44-R1 → T-17-R2。
+> T-17-R2 的新盲測素材必須用本卡的 provenance 機制重生（舊素材 `d958b3c` 不得沿用）。
+>
+> ---
+>
 > ## 🔵 2026-09-11 Sonnet：T-43 修正輪完成——**現在該做的是開 Opus 新視窗複驗**，結果 commit `67b6aa5`（雜湊回填見 `5d122a9`）
 >
 > 上一輪 Opus 複驗（結果 commit `bad3f98`，複驗時 HEAD `cdb4127`，見下方 🟠 紀錄）第 1～9 點

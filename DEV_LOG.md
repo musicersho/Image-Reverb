@@ -1,5 +1,23 @@
 # Dev Log
 
+## 2026-09-11 (119)
+
+- **T-43 Opus 修正輪複驗 → ✅ 工程已驗證**（對象結果 commit `67b6aa5`／回填 `5d122a9`，
+  複驗時 HEAD `de71d44`，工作區 `porcelain -- src scripts data` 為空）。四軸：
+  工程：已驗證｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）。
+- **覆核範圍（使用者指定）**：只覆核第 10 點退回項是否補齊＋零程式碼改動是否成立。
+  `git diff --stat bad3f98 HEAD -- src scripts data` **為空**、`git status --porcelain -- output`
+  為空 → 第 1～9 點（上一輪獨立實測通過）未失效；歷史 blind_test MANIFEST md5 未變。
+- **舊碼重現可信度**：交接筆記第 11 點貼的輸出與執行者 scratchpad 存檔**逐行相同**（無手寫加工），
+  Opus 原樣重跑該腳本行為重現。另查到複本的 `SPACES` 由 5 個縮成 1 個樁空間（交接筆記未揭露，
+  受測邏輯逐字未動）→ Opus 以**真正的 `git worktree add --detach c64fba9`＋逐位元未改的舊碼＋
+  5 空間全樁＋刻意讓舊碼 mtime 檢查通過**重跑，結論相同：舊碼 exit 0、MANIFEST 頂層
+  `git_revision` ＝ v2 HEAD 短雜湊、無 `source_provenance`；新碼 exit 1 五筆逐筆點名
+  `git_revision 不符`。四項預期逐項吻合。
+- **附帶（不退回）**：交接筆記應主動交代「舊碼複本除 `SPACES` 外逐位元未改」；上一輪三項附帶
+  發現（`check=True`／`relative_to()`／模組載入綁主 repo config）零程式碼改動下原樣保留，交 Fable。
+- **下一步**：**T-47 前置「T-42／T-43 ✅」自此滿足**，可開 T-47。
+
 ## 2026-09-11 (118)
 
 - **T-43 修正輪：補做 Opus 第 10 點退回項（隔離 repo 對舊碼實測輸出）。零程式碼改動**

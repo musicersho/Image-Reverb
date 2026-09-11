@@ -94,7 +94,18 @@
       (a)(c)(d) 過。19 支測試 EXIT=0、六條交付 IR MD5 全中、`t49/tables.md` 與 T-42 版
       diff 為空、`git diff --stat -- src/` 只有 `pipeline.py`。詳見 TASKS.md T-49 卡
       「交接筆記」。
-- [ ] **T-43 🔵 待審（修正輪，2026-09-11，結果 commit `67b6aa5`）→ 開 Opus 新視窗複驗**
+- [x] **T-43 ✅ 工程已驗證（Opus 修正輪複驗 2026-09-11，對象結果 commit `67b6aa5`／回填 `5d122a9`）
+      → T-47 前置「T-42／T-43 ✅」自此滿足**
+      四軸：工程：已驗證｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）。
+      覆核範圍（使用者指定）＝只看第 10 點退回項是否補齊＋零程式碼改動：
+      `git diff --stat bad3f98 HEAD -- src scripts data` 為空、`porcelain -- output` 為空
+      → 第 1～9 點未失效；交接筆記第 11 點貼的輸出與執行者 scratchpad 存檔逐行相同（非手寫），
+      Opus 原樣重跑行為重現。另查到舊碼複本的 `SPACES` 由 5 縮成 1（交接筆記未揭露、受測邏輯
+      逐字未動）→ Opus 改用**真正的 `git worktree --detach c64fba9`＋逐位元未改的舊碼＋5 空間全樁
+      ＋刻意讓舊碼 mtime 檢查通過**重跑，結論相同：舊碼 exit 0／MANIFEST 標成 v2 HEAD／
+      無 `source_provenance`；新碼 exit 1 逐筆點名 `git_revision 不符`。詳見 TASKS.md T-43 卡
+      「✅ Opus 複驗紀錄（第二輪／修正輪）」。以下保留修正輪待審時的原文（不覆寫）：
+- [x] ~~**T-43 🔵 待審（修正輪，2026-09-11，結果 commit `67b6aa5`）→ 開 Opus 新視窗複驗**~~
       **本輪只補一件事**：上一輪 Opus 複驗（結果 commit `bad3f98`，複驗時 HEAD `cdb4127`）第 1～9
       點全數獨立實測通過，唯一退回理由是自我檢查「隔離 repo 重現對舊碼 fail 已附」未完成——本輪
       用 `git show c64fba9:scripts/t17_blind_test.py` 還原舊碼，`tempfile` 隔離 repo 重現 v1→v2

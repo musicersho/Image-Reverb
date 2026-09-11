@@ -7935,14 +7935,15 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
 
 ### T-43 T-17 產物溯源：analysis.json 生成指紋＋盲測驗證（插卡 4/4）
 
-- **狀態**：🔵 待審（修正輪，結果 commit `67b6aa5`）。上一輪 Opus 複驗（2026-09-11，結果 commit
-  `bad3f98`）第 1～9 點全數獨立實測通過，**唯一退回理由**是任務卡自我檢查「隔離 repo 重現對舊碼
-  fail 已附」與「舊碼必須 fail 的最小重現……輸出貼交接筆記」未完成（文件證據項，非工程缺陷）。
-  本輪**只補做這一件事**：把該重現自己實跑一次，原始輸出見下方交接筆記「11. 修正輪（舊碼重現
-  補附）」；未改動任何 `src/`／`scripts/`／`data/` 程式碼（`git status --porcelain -- src scripts
-  data` 為空），第 1～9 點已驗證的成果原封不動。Opus 上一輪的 🟠 退回紀錄原文保留於下方，不覆寫。
-- **四軸狀態**：工程：🔵 待審（修正輪，結果 commit `67b6aa5`）｜實驗：不適用｜產品：不適用｜MVP：不適用
-  （沿用 T-17 FAIL）
+- **狀態**：✅ **工程已驗證（Opus 修正輪複驗 2026-09-11，對象結果 commit `67b6aa5`／雜湊回填
+  `5d122a9`，複驗時 HEAD `de71d44`）**——第 10 點退回項已補齊並經獨立覆核：執行者貼出的舊碼
+  重現輸出真實、可重跑、與卡片預期逐項吻合；Opus 另以**真正的 `git worktree add --detach c64fba9`
+  ＋逐位元未改的舊碼＋5 個空間全樁＋刻意讓舊碼 mtime 檢查通過**重跑一次，結論相同
+  （舊碼 exit 0／MANIFEST 標成 v2 HEAD／無 `source_provenance`；新碼 exit 1 點名 `git_revision 不符`）。
+  `git status --porcelain -- src scripts data` 為空、`git diff bad3f98 HEAD -- src scripts data` 為空，
+  故第 1～9 點（上一輪已獨立實測通過）未失效。詳見下方「✅ Opus 複驗紀錄（第二輪／修正輪）」。
+  上一輪的 🟠 退回紀錄與執行輪原文全部保留於下方，不覆寫。
+- **四軸狀態**：工程：已驗證｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
 - **🔮 裁決 T-42-A 改版註記（Fable 2026-09-10）**：前置加 **T-49 ✅**；「範圍」「產出」
   「執行步驟 4」「自我檢查」「抽查手法」依鐵則 13 措辭改寫（原文沒列鐵則 8 產表腳本，與
   「表由程式產出」字面互斥，Opus 於 T-42 附帶發現 ④ 指出）；**修法本體（三點）一字不改**。
@@ -8332,6 +8333,98 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
     但 `run(repo_root=...)` 可指到別的 repo；`expected_config` 未傳時會拿主 repo 的 config
     去比對別的 repo 的產物。現有呼叫端都有傳 `expected_config`（測試）或兩者同一個 repo（正式），
     無實害；若 T-17-R2 要跨 repo 用，建議把 `expected_config` 預設改成由 `repo_root` 推導。
+
+- **✅ Opus 複驗紀錄（第二輪／修正輪複驗，2026-09-11，新視窗；對象結果 commit `67b6aa5`
+  ＋雜湊回填 `5d122a9`，複驗時 HEAD `de71d44`，工作區 `git status --porcelain -- src scripts data`
+  為空——依鐵則 13「Opus 複驗那次必須為空」）**：
+
+  **判定：工程：已驗證｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）。**
+  本輪依使用者指定範圍只覆核一件事：第 10 點退回項（舊碼重現輸出）是否確實補齊且可信，
+  以及零程式碼改動是否成立（第 1～9 點沿用上一輪的獨立實測結論）。
+
+  1. **零程式碼改動成立 → 第 1～9 點未失效。** `git status --porcelain -- src scripts data`
+     為空；`git diff --stat bad3f98 HEAD -- src scripts data` **為空**；
+     `git diff --name-only bad3f98 HEAD` 只有 `DEV_LOG.md`／`HANDOFF.md`／`TASKS.md`／`TODO.md`
+     ＋Opus 上一輪自己寫的 `output/provenance/opus_verify/{REPORT.md,tables.md}`。
+     `git status --porcelain -- output` 為空（佐證執行者「未碰 `output/provenance/`（含
+     `opus_verify/`）、未碰 `output/mvp_acceptance/`／既有 `blind_test/`」的宣稱）；
+     歷史 `output/mvp_acceptance/blind_test/MANIFEST.json` md5 仍為
+     `d07fed82a8bf3a7ca817cbe77ed3cb5e`（與上一輪紀錄相同，一字未改）。
+  2. **貼出的輸出是真的跑出來的，不是手寫。** 執行者 scratchpad 的驅動腳本與存檔輸出仍在
+     （`t43_old_code_repro.py`／`t17_blind_test_old.py`／`t43_repro_output.txt`）；
+     `TASKS.md` 交接筆記第 11 點的程式碼區塊與 `t43_repro_output.txt` **逐行相同**
+     （去尾空白後 `diff` 為空，48 行），無手動加工；Opus 另把該腳本**原樣重跑一次**，
+     行為重現（新的臨時 repo 雜湊不同，但舊碼 exit 0／`MANIFEST.git_revision` ＝新 HEAD 短雜湊／
+     無 `source_provenance`；新碼 exit 1 點名 `git_revision 不符`）。其輸出所報的臨時目錄
+     `…/T/t43_old_code_repro_f_qtqlgr` 確實存在於檔案系統，與「實跑」一致。
+  3. **舊碼來源逐位元查核（查到一處未揭露的修改，但不影響結論——見第 5 點）。**
+     `git show c64fba9:scripts/t17_blind_test.py` 的 sha256 ＝
+     `269593c75ccdefeac7735eeda4ef2722c94555294f76a8d7542a554f4835d12e`；執行者的複本
+     `t17_blind_test_old.py` ＝ `375ce89e…`，`diff` 只有**一個 hunk（13 行）**：`SPACES`
+     由 5 個真實空間縮成 1 個樁空間 `("測試空間","testroom")`，複本內有註解說明。
+     **受測邏輯（`_git_rev()`、來源查核分支、MANIFEST 寫入）逐字未動。** 縮減的原因是舊碼把
+     `SPACES` 寫死、缺任一 `output/<run>/` 就在 `:84` 直接 `return 1`，隔離 repo 若不樁滿 5 個
+     就跑不到判定段。
+  4. **Opus 自己用「真正的 `git worktree` ＋逐位元未改的舊碼」重跑，結論相同。**
+     `git worktree add -q --detach <scratchpad>/wt_c64fba9 c64fba9`（worktree HEAD 自檢
+     ＝`c64fba9d304d2342ed88abd2cea64ddb8b4c6335`，`scripts/t17_blind_test.py` sha256
+     ＝`269593c7…`，與 blob 相同），把**未改一字**的舊碼複製進隔離 repo；刻意做得比執行者更嚴：
+     (a) 5 個真實空間全部樁出來 → **完全不需要改舊碼**；(b) 把 `analysis.json` 的 mtime 設成
+     **比照片新** → 舊碼唯一的 mtime 檢查刻意讓它通過，確認「舊碼 exit 0」是「不看 provenance」
+     造成而非僥倖；(c) 舊碼（`subprocess`）與新碼（`run(repo_root=隔離repo, …)`）餵**同一份**樁資料。
+     原始輸出：
+     ```
+     v1 = 701643ae   v2(HEAD) = 2e951809   （產物 provenance 記 v1）
+     舊碼來源：git worktree …/wt_c64fba9/scripts/t17_blind_test.py（sha256 269593c75ccdefea…，逐位元＝c64fba9）
+     【舊碼 c64fba9，未改一字】exit code = 0   stderr=(空)
+       MANIFEST 頂層鍵 = ['git_revision', 'shuffle_seed', 'generated_from']
+       MANIFEST['git_revision'] = '2e95180'   ← v2 短雜湊 = '2e95180'   等於 v2 HEAD？ True
+       任一筆含 source_provenance？ False      generated_from 筆數 = 5
+     【新碼 HEAD】exit code = 1（5 筆逐筆點名）
+       - bathroom_tiled：git_revision 不符：來源產物生成於 '701643ae9fed…'，盲測當下主 repo HEAD 是 '2e9518090d16…'
+       （bedroom_ai_generated／arena_ntsu_linkou／stairwell_tiled／car_interior_suv 同樣訊息）
+       新碼是否產生 MANIFEST？ False
+     小結：舊碼 exit=0（應為 0）；新碼 exit=1（應為非 0）
+     ```
+     **與卡片「舊碼必須 fail 的最小重現」四項預期逐項吻合**：舊碼 exit 0；MANIFEST 頂層
+     `git_revision` 標成 v2 HEAD（舊產物被認證）；無 `source_provenance`；新碼 exit 非 0 且
+     點名 `git_revision` 不符。worktree 已於驗證後 `git worktree remove --force`＋`prune` 清除
+     （`git status --porcelain` 只剩先前就存在的 `?? AGENTS.md`，2026-09-03 的 Codex 入口文件，
+     與本卡無關）。
+  5. **為什麼第 3 點的發現不構成退回（不是用附註豁免，WORKFLOW §2.2 紅旗 7）。**
+     自我檢查的字面要求是「隔離 repo 重現對舊碼 fail **已附**」——本輪**已附**，且輸出真實、
+     可重跑。卡片方法句寫「對 `git worktree` 舊碼實測」，執行者改用 `git show` 取 blob：
+     兩者取出的檔案內容**逐位元相同**（第 3 點已比對 sha256），機制替換不構成放寬；而唯一的
+     實質偏差（`SPACES` 縮成 1 個）**Opus 已用「不做這個修改」的版本重跑並得到相同結論**
+     （第 4 點），故對「新測試的診斷力」這件待證事項沒有殘留疑義。本點與上一輪的退回邏輯
+     不衝突：上一輪退回是因為**執行者完全沒有交付物**（唯一輸出是驗證者自己做的）；本輪交付物
+     存在且出自執行者，Opus 的重跑是**佐證可信度**（驗證者本職），不是替執行者補交付。
+  6. **交接筆記第 11 點的敘述精確度（附帶，不構成退回）**：第 11 點寫「`git show
+     c64fba9:scripts/t17_blind_test.py` 取出 T-43 之前的舊碼……另存一份到 scratchpad」，
+     但**沒有揭露複本的 `SPACES` 被縮成一個樁空間**。雖然複本檔內有註解、且不影響結論，
+     「受測的舊碼被改過」屬於方法上應主動交代的細節。建議後續同類卡在交接筆記直接寫明
+     「舊碼複本除 `SPACES` 常數外逐位元未改，diff 附上」——本輪不因此退回，理由見第 5 點。
+  7. **第 1～9 點抽樣複查（確認未因本輪失效）**：`scripts/test_t17_provenance.py` EXIT=0
+     （A／B／C 三案例全過）、`scripts/test_ir_synth.py` EXIT=0（內建【T14_DELIVERED_MD5】比對
+     ＝T-14 兩條）；T-20／T-21 四條交付 IR 現檔 md5 ＝
+     `2adbaa75eb698772a8c9aa693179ec47`（`output/text_bathroom/`）／
+     `2dd19b6e6d351d713887636fe45cd67e`（`output/text_church/`）／
+     `9a94ffdf5d8295aee7889729c39c9cd8`（`output/neighbor_voices/`）／
+     `a1c21bcc3fd9aa3480df203a89c8cd05`（`output/stadium_corridor/`），與歷次記錄逐位元相同；
+     字面範圍項複查：`git diff --stat c64fba9 HEAD -- src/` 只有 `pipeline.py`＋新增
+     `provenance.py`、`git status --porcelain -- scripts/` 為空（已 commit）、
+     `grep -n 'worktree.*add.*"HEAD"' scripts/t43_provenance_baseline.py` 為空、
+     `OLD_COMMIT = "c64fba9"`（第 56 行）、`override-dims` 兩處導引（`:375`／`:427`）仍在、
+     鐵則 3 六個模組（`surfaces`／`geometry`／`acoustics`／`ir_synth`／`ir_metrics`／`config`）
+     對 `c64fba9` 零 diff。13 張基線與六條 MD5 **未重跑**（零程式碼改動，上一輪
+     `output/provenance/opus_verify/` 的 26 次真實 CLI 結論沿用；鐵則 13 不要求複驗重跑兩次）。
+  8. **上一輪三項附帶發現仍未處理，維持交 Fable 排期**（①`provenance.git_revision()` 的
+     `check=True` 在非 git 環境會讓照片管線噴錯；②`out_dir` 在 `repo_root` 外時
+     `relative_to()` 會拋 `ValueError`；③`t17_blind_test` 模組載入即綁主 repo 的 `config`）。
+     本輪零程式碼改動，故三項原樣保留，**不影響本卡工程軸判定**（皆非卡片要求項）。
+  9. **下一步**：T-43 工程軸 ✅ → **T-47 前置「T-42／T-43 ✅」自此滿足**，可開 T-47。
+     T-43 的「實驗／產品」軸不適用（純溯源機制，不是實驗卡、不進產品判定路徑）；
+     MVP 仍 FAIL（沿用 T-17 首驗，重驗＝T-17-R2，其素材必須用本卡的 provenance 機制重生）。
 
 ### Phase 1.9 收尾（回 Fable 複評，不開卡）
 帶著 T-37／T-38A／T-38B／T-39／T-44 的 REPORT 與基線變化表、以及插卡輪
