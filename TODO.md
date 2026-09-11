@@ -94,7 +94,7 @@
       (a)(c)(d) 過。19 支測試 EXIT=0、六條交付 IR MD5 全中、`t49/tables.md` 與 T-42 版
       diff 為空、`git diff --stat -- src/` 只有 `pipeline.py`。詳見 TASKS.md T-49 卡
       「交接筆記」。
-- [ ] **T-43 🔵 待審（修正輪，2026-09-11，結果 commit 待填）→ 開 Opus 新視窗複驗**
+- [ ] **T-43 🔵 待審（修正輪，2026-09-11，結果 commit `67b6aa5`）→ 開 Opus 新視窗複驗**
       **本輪只補一件事**：上一輪 Opus 複驗（結果 commit `bad3f98`，複驗時 HEAD `cdb4127`）第 1～9
       點全數獨立實測通過，唯一退回理由是自我檢查「隔離 repo 重現對舊碼 fail 已附」未完成——本輪
       用 `git show c64fba9:scripts/t17_blind_test.py` 還原舊碼，`tempfile` 隔離 repo 重現 v1→v2
