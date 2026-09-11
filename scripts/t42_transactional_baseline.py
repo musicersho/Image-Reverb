@@ -31,7 +31,7 @@ T-49（裁決 T-42-A 執行卡 1/2，附帶發現①；鐵則 13 首例）：「
 跑的時候換）；worktree 建好後會自檢 `git rev-parse HEAD` 是否等於 `OLD_COMMIT`
 的全長雜湊，不等就 `SystemExit("🔴 卡關 …")`。REPORT 檔頭改由程式印出雙邊
 `git rev-parse HEAD`（改動前 worktree／改動後主 repo）與主 repo
-`git status --porcelain -- src scripts`（T-40 指紋精神）。
+`git status --porcelain -- src scripts data`（T-40 指紋精神）。
 """
 
 from __future__ import annotations
@@ -152,7 +152,7 @@ def main() -> int:
             name = item["name"]
             photo = REPO_ROOT / item["photo"]
             print(f"[{name}]")
-            print("  （舊碼／HEAD）")
+            print(f"  （舊碼／OLD_COMMIT={OLD_COMMIT}）")
             old = run_cli_side(photo, name, OLD_WORKTREE_DIR)
             print("  （新碼／本卡改動後）")
             new = run_cli_side(photo, name, REPO_ROOT)
@@ -211,7 +211,7 @@ def main() -> int:
     )
 
     porcelain = subprocess.run(
-        ["git", "status", "--porcelain", "--", "src", "scripts"],
+        ["git", "status", "--porcelain", "--", "src", "scripts", "data"],
         cwd=REPO_ROOT, capture_output=True, text=True, check=True,
     ).stdout
     new_head_after = _git_head(REPO_ROOT)
@@ -231,7 +231,7 @@ def main() -> int:
         f"- 改動前參照 `OLD_COMMIT`（模組常數）：`{OLD_COMMIT}`\n"
         f"- 改動前 worktree `git rev-parse HEAD`（全長，須等於上列 commit）：`{old_head}`\n"
         f"- 改動後主 repo `git rev-parse HEAD`（全長）：`{new_head_after}`\n"
-        f"- 改動後主 repo `git status --porcelain -- src scripts`：\n{porcelain_block}"
+        f"- 改動後主 repo `git status --porcelain -- src scripts data`：\n{porcelain_block}"
         f"- 產生時間（UTC）：`{generated_at}`\n\n"
         "本報告由 `scripts/t42_transactional_baseline.py --fresh` 對 13 張照片各跑兩次真實 CLI"
         "（`python -m src.image_reverb <photo> --force-low-confidence --no-viz`，"
