@@ -76,7 +76,8 @@
       卡片「diff 限縮兩檔」與鐵則 8 措辭互斥）詳見 TASKS.md T-42 卡「🟡 Opus 附帶發現」。
       → **🔮 已裁決（T-42-A，Fable 2026-09-10）**：① 另開微型卡 T-49；② 併入 T-49 B 部分；
       ③ 開 T-50 手動清理指令；④ T-43 措辭改寫＋鐵則 13。
-- [x] ~~**T-49 🔵 待審（Sonnet 2026-09-10，結果 commit `95d0d5a`）→ 開 Opus 新視窗複驗** → T-43~~ ——
+- [ ] **T-49 🟠 工程退回（Opus 複驗 2026-09-11，結果 commit `95d0d5a`）→ Sonnet 修 A-2 殘句後再送複驗** → T-43 ——
+      **退回理由**：`t42_transactional_baseline.py:155` 仍印 `（舊碼／HEAD）`（A-2 未完成，現已是假話）。其餘全數通過：
       `t42_transactional_baseline.py` 釘死 `OLD_COMMIT="ec1a7bf"`＋建好 worktree 自檢雙邊
       `git rev-parse`＋REPORT 印 Provenance 區塊；`run_photo()` 第四出口（非預期例外）
       包 `try/finally`（`published`／`archive_note_printed` 兩旗標），`_publish_staging()`

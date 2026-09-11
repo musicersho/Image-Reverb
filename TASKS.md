@@ -8798,9 +8798,67 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
       **不要回滾 `src/`、不要改腳本斷言、不要重寫 `BASELINE.md`**。
 
 ### T-49 T-42 收尾：產表腳本釘死參照 commit＋`run_photo()` 非預期例外出口（微型卡；裁決 T-42-A 執行卡 1/2）
-- **狀態**：🔵 待審（Sonnet 執行完成，結果 commit `95d0d5a`，待 Opus 複驗）
-- **四軸狀態**：工程：🔵 待審（結果 commit `95d0d5a`）｜實驗：不適用｜產品：不適用｜
-  MVP：不適用（沿用 T-17 FAIL）
+- **狀態**：🟠 **工程退回**（Opus 複驗 2026-09-11，對結果 commit `95d0d5a`）——**唯一退回理由：A-2
+  未完成**。`scripts/t42_transactional_baseline.py:155` 仍留著 `print("  （舊碼／HEAD）")`
+  （每張照片印一次，13 次），這是卡片 A-2 明列必須刪除的「HEAD 就是改動前」敘述之一，而且**現在是假話**：
+  複驗時舊碼側實際是 `OLD_COMMIT=ec1a7bf`、主 repo HEAD 是 `35842c0`，兩者不同。這正是 A-2 引用的
+  T-46 v2 教訓（「腳本說的話必須是它真的做的事」），且此腳本是 T-43 要複製的樣板——留著會把鐵則 13
+  要消滅的誤解原樣傳給下一張卡。依 WORKFLOW §5.4.1（未完成項不得用備註豁免）與 §5 紅旗 7，
+  不得以「只是進度列印、不影響 REPORT／tables」為由放行。**修法**：把該行改成引用 `OLD_COMMIT`
+  （例如 `print(f"  （舊碼／OLD_COMMIT={OLD_COMMIT}）")`）；`:146` 那行「舊碼 HEAD（改動前，
+  OLD_COMMIT=…）」已有限定詞，指的是 worktree 自己的 HEAD，可不動。**不需重跑 26 次 CLI**——
+  該行不進 REPORT／tables，Opus 本次複驗已證表格正確（見下）；改完重跑 `test_*.py` 全綠、
+  `grep -n 'HEAD' scripts/t42_transactional_baseline.py` 確認殘句清乾淨即可送複驗。
+  其餘 A／B／案例 J 全部通過，詳見下方「Opus 驗證紀錄」。
+- **四軸狀態**：工程：🟠 退回（Opus 2026-09-11，結果 commit `95d0d5a`；A-2 未完成，其餘全數通過）｜
+  實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
+- **Opus 驗證紀錄（2026-09-11，reviewer=Opus 5，對結果 commit `95d0d5a`，複驗時 HEAD=`35842c0`）**：
+  1. **A 部分（已驗證）**：`git worktree add --detach <dir> OLD_COMMIT`，**無任何 CLI 引數**可指定舊
+     commit（`grep -n add_argument` 為空，只有 `--fresh`／`--out-dir`）＝鐵則 13 成立；建好 worktree 後
+     自檢雙邊全長雜湊、不等即 `SystemExit("🔴 卡關…")`。Opus 自跑
+     `--fresh --out-dir output/transactional_output/t49_opus/` **exit 0**，執行中
+     `git worktree list` 顯示 `.worktree_t42_old_ec1a7bf  ec1a7bf (detached HEAD)`——**舊碼側確實釘在
+     `ec1a7bf`，而非當前 HEAD `35842c0`**，這就是修法有效的直接證據（舊腳本此時會變成新碼比新碼）。
+  2. **REPORT 雙邊 rev-parse（已驗證）**：Opus 那次 `t49_opus/REPORT.md` 檔頭
+     `OLD_COMMIT=ec1a7bf`／worktree HEAD=`ec1a7bfd62e1810f52be5d2d6921b9d8a63422f4`／主 repo
+     HEAD=`35842c02041cb9c240bf6fc8c8a2a97b056dfcf1`／porcelain **「（空，工作區乾淨）」**（符合卡片
+     「Opus 複驗那次必須為空」）／UTC 時間戳，五項齊全。
+  3. **表格零 diff（已驗證）**：`diff output/transactional_output/tables.md
+     output/transactional_output/t49_opus/tables.md` **為空**；13 張 gate/confidence 與 IR md5 全數相符，
+     `bedroom_ai_generated` 仍 `BLOCK`（鐵則 7）。審完已 `rm -rf t49_opus/`，`git worktree list` 只剩主 repo。
+  4. **T-42 已驗證產物未被覆寫（已驗證）**：`git diff --stat 6fe1e43 95d0d5a --
+     output/transactional_output/{REPORT.md,tables.md}` 為空（鐵則 11）。
+  5. **案例 J 舊碼 fail 為 Opus 自測，不採信貼上來的輸出（已驗證）**：另建 worktree 於 `4bff276`、
+     只把新版 `test_output_gate.py` 複製進去（`pipeline.py` 保持舊版，md5 `b7d9842…` vs 新版
+     `5a4ed48…`）實跑，結果 **(a)(c)(d) 過、(b) exists=True fail、(e) stderr='' fail**，與交接筆記逐字一致；
+     新碼側 J 全綠。主 repo 全程未被 stash／checkout 污染。
+  6. **不吞錯／exit code 未變（已驗證）**：`run_photo()` 內無 `except Exception`；唯一的
+     `except Exception` 在 `_publish_staging()`（`pipeline.py:193`）且印完復原指引即 `raise` 原例外；
+     案例 J (a) 證明 `CalledProcessError` 確實傳出＝exit code 由 Python 決定，未新增第四種語義
+     （裁決 T-42-A 第 2 點）。
+  7. **既有三出口逐字不變、archive_note 不重印（已驗證）**：`git diff -w --ignore-blank-lines`
+     整份 `pipeline.py` 只刪兩行（`_publish_staging()` 舊簽名、舊呼叫），其餘 662 行全是縮排位移；
+     四個 `return`（2／3／2／0）都在新 `try` 內，三處 `archive_note_printed = True` 緊接在既有
+     `print(archive_note)` 之後，`finally` 只在 `archive_note and not archive_note_printed` 時補印＝
+     不可能印兩次。gate 判定條件（`overall_confidence == "low"` / `force_low_confidence`）除縮排外零 diff
+     （鐵則 6）；`--override-dims` 導引原文仍在（`pipeline.py:427`）。
+  8. **共同鐵則（已驗證，Opus 自跑）**：19 支 `scripts/test_*.py` 逐支 EXIT=0；六條交付 IR MD5
+     Opus 自己重生比對——T-14 兩條由 `test_ir_synth.py`【6】內建，T-20／T-21 四條實測為
+     `2adbaa75eb698772a8c9aa693179ec47`／`2dd19b6e6d351d713887636fe45cd67e`／
+     `9a94ffdf5d8295aee7889729c39c9cd8`／`a1c21bcc3fd9aa3480df203a89c8cd05`，**全中**。
+     `git diff --stat 4bff276 95d0d5a -- src/` 只有 `pipeline.py`；`scripts/` 只有卡片點名的兩支。
+  9. **🔴 交 Fable 走 §7 變更控制（不是豁免，不列入本次退回理由）**：**鐵則 13 與 T-49 卡 A-3 的
+     porcelain 範圍互相矛盾**——鐵則 13（TASKS.md:8086）寫 `git status --porcelain -- src scripts data`，
+     T-49 卡 A-3 與自我檢查寫 `-- src scripts`（少了 `data`），實作照卡片做成 `src scripts`
+     （`t42_transactional_baseline.py:214`）。`data/materials.json` 會直接改變 13 張的 materials→
+     confidence→gate，少印 `data` ＝這張表的指紋有實質缺口；同 repo 先例 `t17_blind_test.py:61`
+     用的是 `src data`。本次證據不受影響（複驗時 `git status --porcelain -- data src scripts` 為空，
+     已實測）。**不由驗證者自行認定哪一份對**：請 Fable 裁決是修鐵則 13 的措辭還是修卡片＋腳本，
+     **必須在 T-43 複製此樣板之前定案**。處理方式比照裁決 T-42-A 第 4 點（附帶發現 ④）的前例。
+  10. **次要觀察（不影響判定）**：`t49/REPORT.md` 末段「`test_output_gate.py` 新增三案例（【G】【H】
+      【I】）」是 T-42 的原文，未提案例 J——此 REPORT 本體描述的是 T-42 的交易化政策，卡片未要求更新，
+      不構成矛盾，但 T-43 複製樣板時建議一併檢查。`TODO.md` 把 T-49 打成 `[x]`＋刪除線而狀態仍是
+      🔵 待審，字面上與 §7.9「TASKS.md 四軸為單一事實來源」不一致（行內已標「🔵 待審」故未誤導）。
 - **前置**：T-42 ✅（`6fe1e43`）。**T-43 的前置自此改為「T-42 ✅ 且 T-49 ✅」**；T-48 可平行（裁決 T-48-S）。
 - **為什麼**（Opus T-42 附帶發現 ①②；裁決 T-42-A 第 1、2 點）：
   1. `scripts/t42_transactional_baseline.py` 用 `git worktree add --detach <dir> HEAD` 當「改動前」，

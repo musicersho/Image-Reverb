@@ -1,5 +1,22 @@
 # Dev Log
 
+## 2026-09-11 (112)
+
+- **T-49 Opus 複驗 → 🟠 工程退回（唯一理由：A-2 未完成）**。
+  `scripts/t42_transactional_baseline.py:155` 仍留 `print("  （舊碼／HEAD）")`——卡片 A-2 明列
+  必須刪的「HEAD 就是改動前」敘述，且複驗當下已成假話（舊碼側＝`ec1a7bf`，HEAD＝`35842c0`）。
+  依 WORKFLOW §5.4.1／§5 紅旗 7 不得用「只是進度列印」豁免；此腳本又是 T-43 的樣板。
+  修法：該行改引用 `OLD_COMMIT`，不需重跑 26 次 CLI。
+- **其餘全部通過（Opus 自跑，不採信轉述）**：A 部分 worktree 實測釘在 `ec1a7bf` 而非 HEAD；
+  `--fresh --out-dir t49_opus/` exit 0、REPORT provenance 五項齊全且 porcelain 為空、
+  `tables.md` 與 T-42 版 **零 diff**、`bedroom_ai_generated` 仍 BLOCK；T-42 已驗證 REPORT／tables
+  未被覆寫；案例 J 由 Opus 另建 `4bff276` worktree 實測舊碼 (b)(e) fail、(a)(c)(d) 過；
+  `run_photo()` 無 `except Exception`、exit code 未變、三出口逐字不變（`diff -w` 只刪兩行）；
+  19 支測試 EXIT=0；六條交付 IR MD5 Opus 自行重生全中。審完已刪 `t49_opus/`、worktree 只剩主 repo。
+- **🔴 交 Fable 走 §7**：鐵則 13 寫 porcelain 範圍 `src scripts data`、T-49 卡 A-3 寫 `src scripts`，
+  兩份規格互相矛盾（`data/materials.json` 會改變 13 張結果，少印＝指紋缺口）。不由驗證者自行認定，
+  請在 T-43 複製樣板前裁決。比照裁決 T-42-A 第 4 點前例。
+
 ## 2026-09-10 (111)
 
 - **T-49 執行完成（Sonnet）——待 Opus 複驗**。動工前先發現前置缺口：使用者原要求執行 T-43，
