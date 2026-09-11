@@ -1,5 +1,40 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔵 2026-09-11 Sonnet：T-43 修正輪完成——**現在該做的是開 Opus 新視窗複驗**，結果 commit `67b6aa5`（雜湊回填見 `5d122a9`）
+>
+> 上一輪 Opus 複驗（結果 commit `bad3f98`，複驗時 HEAD `cdb4127`，見下方 🟠 紀錄）第 1～9 點
+> 全部獨立實測通過，**唯一退回理由**是任務卡自我檢查「隔離 repo 重現對舊碼 fail 已附」與
+> 「舊碼必須 fail 的最小重現……輸出貼交接筆記」未完成——當時交接筆記／`HANDOFF.md`／`DEV_LOG.md`
+> 都沒有任何對 T-43 之前舊碼（`c64fba9` 版 `scripts/t17_blind_test.py`）的實測輸出，Opus 第 4 點
+> 自己補做的重現依 §5.4.1／§7.7 不能替執行者銷這一項。
+>
+> **本輪只做這一件事，零程式碼改動**（`git status --porcelain -- src scripts data` 為空）：
+> `git show c64fba9:scripts/t17_blind_test.py` 還原舊碼存進 scratchpad（未加進 `scripts/`），
+> `tempfile.mkdtemp()` 建隔離 git repo，`git init` 兩個真實 commit 模擬 v1→v2；樁
+> `output/testroom/{wet_preview.wav,ir_mono.wav,analysis.json}`（純資料檔案位元組，不跑模型）——
+> `analysis.json.provenance.git_revision.commit` 寫死＝v1 commit，repo 現在 HEAD 是 v2、非 dirty；
+> 同一份樁資料分別餵舊碼（`subprocess` 在隔離 repo 內執行舊碼複本）與現行新碼
+> （`t17_blind_test.run(repo_root=隔離repo, ...)`）。
+>
+> **實測結果與卡片「舊碼必須 fail 的最小重現」預期逐項吻合**：
+> - **舊碼**（`c64fba9`）：`exit code = 0`；`MANIFEST.json` 頂層 `git_revision` 記的是**盲測當下
+>   （v2）HEAD 短雜湊**（舊產物被認證），`generated_from` **沒有** `source_provenance` 鍵；
+> - **新碼**（HEAD）：`exit code = 1`，stderr 明確點名
+>   `git_revision 不符：來源產物生成於 '<v1 commit>'，盲測當下主 repo HEAD 是 '<v2 commit>'`。
+>
+> 完整原始輸出（未經刪改）已貼進 `TASKS.md` T-43 卡交接筆記「11. 修正輪（舊碼重現補附）」，
+> 連同重現步驟細節。`DEV_LOG.md` 118、`TODO.md` T-43 項也已同步。
+>
+> **範圍確認**：驅動腳本與舊碼複本只存在 scratchpad，未新增檔案到 `scripts/`／`src/`；未跑
+> `t43_provenance_baseline.py`，未碰 `output/provenance/`（含 Opus 的 `opus_verify/` 子目錄，
+> 唯讀）；未碰 `output/mvp_acceptance/` 與既有 `blind_test/`；未對真實 13 張照片跑
+> `t17_blind_test.py` 主流程；Opus 上一輪 🟠 複驗紀錄原文（下方）**一字未改**，本輪只在交接筆記
+> 追加新段落，卡片「狀態」／「四軸狀態」欄改回 🔵 待審（修正輪）。
+>
+> **下一步**：開 Opus 新視窗，貼 WORKFLOW §2.2 v2 複驗 Prompt，**「結果 commit」填 `67b6aa5`**
+> （TASKS.md 的雜湊回填在緊接的下一個 commit `5d122a9`，兩者一起看即可，內容無實質差異）。
+> 通過後 **T-47 前置（「T-42／T-43 ✅」）才算滿足**。
+
 > ## 🟠 2026-09-11 Opus：T-43 **複驗＝工程退回**——**現在該做的是開 Sonnet 修正輪，只補一段輸出、不改程式**
 >
 > 對象結果 commit `bad3f98`，複驗時 HEAD `cdb4127`，工作區 `git status --porcelain -- src scripts data`
