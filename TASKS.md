@@ -8798,7 +8798,8 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
       **不要回滾 `src/`、不要改腳本斷言、不要重寫 `BASELINE.md`**。
 
 ### T-49 T-42 收尾：產表腳本釘死參照 commit＋`run_photo()` 非預期例外出口（微型卡；裁決 T-42-A 執行卡 1/2）
-- **狀態**：🟠 **工程退回**（Opus 複驗 2026-09-11，對結果 commit `95d0d5a`）——**唯一退回理由：A-2
+- **狀態**：🟠 **工程退回**（Opus 複驗 2026-09-11，對結果 commit `95d0d5a`；**criteria v2 已開，見下方
+  「🔮 裁決 T-49-A」：Sonnet 修 A-2 殘句＋A-3 補 `data` 後重跑寫 `t49_v2/` 再送複驗**）——**v1 唯一退回理由：A-2
   未完成**。`scripts/t42_transactional_baseline.py:155` 仍留著 `print("  （舊碼／HEAD）")`
   （每張照片印一次，13 次），這是卡片 A-2 明列必須刪除的「HEAD 就是改動前」敘述之一，而且**現在是假話**：
   複驗時舊碼側實際是 `OLD_COMMIT=ec1a7bf`、主 repo HEAD 是 `35842c0`，兩者不同。這正是 A-2 引用的
@@ -8812,6 +8813,49 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
   其餘 A／B／案例 J 全部通過，詳見下方「Opus 驗證紀錄」。
 - **四軸狀態**：工程：🟠 退回（Opus 2026-09-11，結果 commit `95d0d5a`；A-2 未完成，其餘全數通過）｜
   實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
+- **criteria_version**：v1（卡片原文 2026-09-10；A-3 porcelain 範圍 `-- src scripts`）→ **v2（裁決 T-49-A，
+  2026-09-11；A-3 改為 `-- src scripts data`，與鐵則 13 一致；其餘門檻一字不改）**
+- **criteria_commit**：v1＝`4bff276`（2026-09-10 開卡）；v2＝本 commit（2026-09-11，獨立 `criteria:` commit，
+  不含任何程式碼或結果，早於任何 v2 結果）
+- **verdict_under_original_criteria**：🟠 工程退回（Opus 2026-09-11 對 `95d0d5a`；唯一理由 A-2 殘句。A-3 依 v1
+  字面 `src scripts` 實作＝**v1 下 A-3 通過**）——保留，不覆寫
+- **verdict_under_current_criteria**：待 v2 修正輪（Sonnet 修 A-2＋A-3 → 結果 commit → Opus 複驗）
+- **🔮 裁決 T-49-A（Fable 2026-09-11；回應 Opus 驗證紀錄第 9 點，依 WORKFLOW §7）——鐵則 13 不動，修 T-49 卡＋腳本**
+  1. **裁決**：以**鐵則 13 為準**（`git status --porcelain -- src scripts data`），**鐵則 13 措辭零改動**；T-49 卡 A-3
+     是 2026-09-10 同日謄寫時漏了 `data`，屬卡片抄錯，不是規則設計改變。
+  2. **理由**：(a) `data/materials.json` 是 13 張 materials→confidence→gate 的**直接輸入**，porcelain 少印 `data`＝
+     執行者可在 `data/` dirty 的狀態下產出一份「看起來乾淨」的指紋，正是鐵則 13 要堵的假綠燈；(b) 同 repo 三處先例
+     都含 `data`：`t17_blind_test.py:61`（`src data`）、T-48 條件 (a)（`src data scripts`）、T-43 執行步驟 4
+     （`src scripts data`）——只有 T-49 卡一處漏；(c) 這支是 T-43 的樣板，樣板錯就會被複製。
+  3. **§7 適用性**：T-49 結果（`95d0d5a`）已出，改 A-3 字面＝結果後改同版門檻，**不得直接改**（§7.1）→ 開
+     **criteria v2**、本獨立 `criteria:` commit（§7.2：不含程式碼、不含結果）、原 verdict 保留為
+     `verdict_under_original_criteria`（§7.3）。提出者 Opus（驗證紀錄第 9 點）、起草者 Fable、核准者 使用者
+     （2026-09-11 指示 Fable 依 §7 裁決並授權獨立 criteria commit）（§7.4）。
+  4. **v2 與 v1 的差異只有一處**：A-3「主 repo `git status --porcelain -- src scripts`」→「`-- src scripts data`」，
+     連帶自我檢查新增三條（標 **v2 新增**）。A-1／A-2／A-4／A-5、B 部分、案例 J、範圍、鐵則 8 特別規定**一字不改**。
+  5. **對 Sonnet 的執行指示（v2 修正輪，一次送審兩件事）**：
+     (i) **A-2 殘句**：`scripts/t42_transactional_baseline.py:155` `print("  （舊碼／HEAD）")` → 引用 `OLD_COMMIT`
+     （Opus 退回理由，照 Opus 給的修法）；
+     (ii) **A-3 v2**：同檔 `:214` 的 `["git", "status", "--porcelain", "--", "src", "scripts"]` 加 `"data"`；`:34`
+     docstring 與 `:234` REPORT 文字的 `-- src scripts` 同步改 `-- src scripts data`（腳本說的話必須是它真的做的事）；
+     (iii) **重跑一次**（§7.1「再重新跑」；26 次真實 CLI 約 8 分鐘）：
+     `python scripts/t42_transactional_baseline.py --fresh --out-dir output/transactional_output/t49_v2/`；
+     `output/transactional_output/t49/`（v1 結果）**唯讀不動**（§7.3 原結果保留）；
+     `diff output/transactional_output/t49/tables.md output/transactional_output/t49_v2/tables.md` 必須為空；
+     `t49_v2/REPORT.md` 檔頭 porcelain 行必須寫 `-- src scripts data`（執行者那次可 dirty，照印＋⚠️）；
+     (iv) 結果 commit 訊息 `T-49: 依 criteria v2 修 A-2 殘句＋A-3 porcelain 補 data(待驗證)`，**不得與本 criteria
+     commit 合併**；交接筆記另起「v2 修正輪」一段，**不改寫** v1 交接筆記。
+  6. **Opus v2 複驗（在原驗證重點之上新增）**：`grep -n '"--porcelain", "--", "src", "scripts", "data"'
+     scripts/t42_transactional_baseline.py` 非空；`grep -n 'src scripts"' scripts/t42_transactional_baseline.py`
+     （不含 `data` 的舊字串）為空；`grep -n 'HEAD' scripts/t42_transactional_baseline.py` 只剩 `rev-parse HEAD` 語意的行；
+     Opus 自跑 `--out-dir output/transactional_output/t49_opus_v2/` 的 REPORT porcelain 行寫 `-- src scripts data` 且
+     為空；`t49_v2/tables.md` 與 T-42 版零 diff；全部 `scripts/test_*.py` exit 0；審完刪 `t49_opus_v2/`。
+     v1 已驗證的第 1～8 點是否重審由 Opus 依 WORKFLOW §2.2 自行決定（v2 修正輪 `src/` 應零 diff）。
+  7. **連動**：T-43 卡「範圍」點名的樣板欄補一句「REPORT 檔頭 porcelain 範圍 `-- src scripts data`」（T-43 無結果，
+     非 §7.1，走 docs commit）。T-43 前置「T-42 ✅ 且 T-49 ✅」不變，T-49 ✅ 指 **v2 下的 ✅**，T-43 的 `OLD_COMMIT`
+     ＝T-49 v2 修正輪的結果 commit（Opus 複驗通過的那個）。
+  8. **明確不做**：不改鐵則 13 一字；不改 `pipeline.py`；不重跑案例 J 舊碼實測（B 部分未變）；不覆寫 `t49/`；
+     不由 Fable 代改腳本（§7.2 criteria commit 不含程式碼；執行歸 Sonnet）。
 - **Opus 驗證紀錄（2026-09-11，reviewer=Opus 5，對結果 commit `95d0d5a`，複驗時 HEAD=`35842c0`）**：
   1. **A 部分（已驗證）**：`git worktree add --detach <dir> OLD_COMMIT`，**無任何 CLI 引數**可指定舊
      commit（`grep -n add_argument` 為空，只有 `--fresh`／`--out-dir`）＝鐵則 13 成立；建好 worktree 後
@@ -8879,7 +8923,8 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
   2. 刪掉 docstring／註解／`print`／REPORT 文字裡所有「HEAD 就是改動前」「`git worktree` 於 `HEAD`」
      的敘述，改為引用 `OLD_COMMIT`（腳本說的話必須是它真的做的事——T-46 v2 教訓）；
   3. REPORT 檔頭由程式印出：改動前參照（`OLD_COMMIT` 縮寫＋worktree `git rev-parse HEAD` 全長）、
-     改動後主 repo `git rev-parse HEAD`、主 repo `git status --porcelain -- src scripts` 原文
+     改動後主 repo `git rev-parse HEAD`、主 repo `git status --porcelain -- src scripts data`（**v2**，裁決
+     T-49-A；v1 原文 `-- src scripts`，漏 `data`）原文
      （非空時照印並標「⚠️ 改動後為未 commit 工作區」，**不因此 exit 非 0**——執行者跑的那次必然 dirty；
      Opus 複驗那次必須為空）、產生時間 UTC；`tables.md` 硬區維持只有 13 列表、不含任何 provenance；
   4. 用既有 `--out-dir`，本卡跑 `--out-dir output/transactional_output/t49/`；T-42 已驗證的
@@ -8929,9 +8974,13 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
   `diff output/transactional_output/tables.md output/transactional_output/t49/tables.md` 為空；
   `git diff -- output/transactional_output/REPORT.md output/transactional_output/tables.md` 為空；
   `grep -n 'worktree.*add.*"HEAD"' scripts/t42_transactional_baseline.py` 為空；
+  **（v2 新增，裁決 T-49-A）** `grep -n '"--porcelain", "--", "src", "scripts", "data"'
+  scripts/t42_transactional_baseline.py` 非空、`grep -n 'src scripts"' scripts/t42_transactional_baseline.py` 為空、
+  `diff output/transactional_output/t49/tables.md output/transactional_output/t49_v2/tables.md` 為空且
+  `t49_v2/REPORT.md` 檔頭 porcelain 行為 `-- src scripts data`；
   `grep -n "override-dims" src/image_reverb/pipeline.py` 導引仍在；`git diff --stat -- src/` 只有
   `pipeline.py`；`git worktree list` 只剩主 repo；案例 J 舊碼 fail 實測已附；`bedroom_ai_generated`
-  在 `t49/tables.md` 仍 `BLOCK`（鐵則 7）。
+  在 `t49/tables.md`（v2：`t49_v2/tables.md`）仍 `BLOCK`（鐵則 7）。
 - **Opus 驗證重點（四軸輸出）**：紅旗：`git worktree add` 仍用 `HEAD`，或改成由引數指定舊 commit；
   紅旗：REPORT 缺雙邊 `git rev-parse HEAD`；紅旗：案例 J 對舊碼沒有 (b)(e) fail 證據；紅旗：非預期例外
   被 `except Exception` 吞掉、改了 exit code、或 traceback 消失；紅旗：既有三出口 stderr 訊息變動或
