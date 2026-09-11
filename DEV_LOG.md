@@ -1,5 +1,20 @@
 # Dev Log
 
+## 2026-09-11 (115)
+
+- **T-49 Opus v2 複驗：✅ 工程已驗證（criteria v2）**，對結果 commit `c64fba9`（複驗時 HEAD=`c74329c`）。
+  裁決 T-49-A 第 6 點的七項清單全過；v1 唯一退回理由（A-2 殘句）已消除——不只看原始碼，Opus 自跑的
+  26 次 CLI stdout 逐張印 `（舊碼／OLD_COMMIT=ec1a7bf）`，腳本說的話與它做的事一致。
+- **Opus 自跑重建**：`--fresh --out-dir output/transactional_output/t49_opus_v2/` exit 0、13 張全數相符；
+  執行中 worktree 仍釘在 `ec1a7bf`（主 repo HEAD 已是 `c74329c`）＝鐵則 13 在收工 commit 之後依然成立；
+  REPORT porcelain 行寫 `-- src scripts data` 且**為空**、雙邊 rev-parse 與 UTC 齊全；`tables.md` 對
+  T-42 版與 `t49_v2/` 皆零 diff；審完已刪 `t49_opus_v2/`，`git worktree list` 只剩主 repo。
+- **共同鐵則**：19 支 `scripts/test_*.py` 逐支 EXIT=0（含案例 A–J）；六條交付 IR MD5 逐條重生全中
+  （T-20／T-21 四條本視窗實跑 `--text`／`--scene` 比對）。`git diff --stat 95d0d5a c74329c -- src/` 為空；
+  結果 commit 只含腳本 4 行＋`t49_v2/` 兩檔，未與 criteria commit `c84c87f` 合併（§7.2）。
+- **連動**：T-43 前置「T-42 ✅ 且 T-49 ✅」**自此滿足**，T-43 的 `OLD_COMMIT`＝`c64fba9`；T-50 前置解除
+  （仍受裁決 T-42-A 第 3 點排程限制，不進關鍵路徑）。**下一步：開 Fable／Sonnet 視窗做 T-43。**
+
 ## 2026-09-11 (114)
 
 - **T-49 v2 修正輪執行完成（Sonnet）——依裁決 T-49-A 第 5 點，結果 commit `c64fba9`**。

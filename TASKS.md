@@ -8799,8 +8799,10 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
       **不要回滾 `src/`、不要改腳本斷言、不要重寫 `BASELINE.md`**。
 
 ### T-49 T-42 收尾：產表腳本釘死參照 commit＋`run_photo()` 非預期例外出口（微型卡；裁決 T-42-A 執行卡 1/2）
-- **狀態**：🔵 **待審**（Sonnet 已完成 v2 修正輪，結果 commit `c64fba9`，等 Opus 依 criteria v2 複驗）
-  ——**v1 判定**：🟠 **工程退回**（Opus 複驗 2026-09-11，對結果 commit `95d0d5a`；**criteria v2 已開，見下方
+- **狀態**：✅ **工程已驗證（criteria v2）**（Opus 複驗 2026-09-11，對結果 commit `c64fba9`；
+  裁決 T-49-A 第 6 點的 v2 複驗清單**七項全過**，v1 唯一退回理由 A-2 殘句已消除並經實跑輸出證實；
+  詳見下方「Opus v2 複驗紀錄」。**T-43 前置「T-42 ✅ 且 T-49 ✅」自此滿足**，T-43 的 `OLD_COMMIT`＝`c64fba9`）
+  ——**v1 判定（保留不覆寫，§7.3）**：🟠 **工程退回**（Opus 複驗 2026-09-11，對結果 commit `95d0d5a`；**criteria v2 已開，見下方
   「🔮 裁決 T-49-A」：Sonnet 修 A-2 殘句＋A-3 補 `data` 後重跑寫 `t49_v2/` 再送複驗**）——**v1 唯一退回理由：A-2
   未完成**。`scripts/t42_transactional_baseline.py:155` 仍留著 `print("  （舊碼／HEAD）")`
   （每張照片印一次，13 次），這是卡片 A-2 明列必須刪除的「HEAD 就是改動前」敘述之一，而且**現在是假話**：
@@ -8813,8 +8815,8 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
   該行不進 REPORT／tables，Opus 本次複驗已證表格正確（見下）；改完重跑 `test_*.py` 全綠、
   `grep -n 'HEAD' scripts/t42_transactional_baseline.py` 確認殘句清乾淨即可送複驗。
   其餘 A／B／案例 J 全部通過，詳見下方「Opus 驗證紀錄」。
-- **四軸狀態**：工程：🔵 待審（Sonnet 2026-09-11，v2 修正輪結果 commit `c64fba9`；A-2 殘句＋A-3 porcelain
-  補 `data` 已修，等 Opus 複驗）｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
+- **四軸狀態**：工程：✅ 已驗證（Opus 2026-09-11，criteria v2，結果 commit `c64fba9`）｜實驗：不適用｜
+  產品：不適用｜MVP：不適用（沿用 T-17 FAIL；本卡不觸碰 MVP 判準）
 - **四軸狀態（v1，保留不覆寫）**：工程：🟠 退回（Opus 2026-09-11，結果 commit `95d0d5a`；A-2 未完成，其餘全數通過）｜
   實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
 - **criteria_version**：v1（卡片原文 2026-09-10；A-3 porcelain 範圍 `-- src scripts`）→ **v2（裁決 T-49-A，
@@ -8823,8 +8825,8 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
   不含任何程式碼或結果，早於任何 v2 結果）
 - **verdict_under_original_criteria**：🟠 工程退回（Opus 2026-09-11 對 `95d0d5a`；唯一理由 A-2 殘句。A-3 依 v1
   字面 `src scripts` 實作＝**v1 下 A-3 通過**）——保留，不覆寫
-- **verdict_under_current_criteria**：🔵 待審（Sonnet 已完成 v2 修正輪，結果 commit `c64fba9`；待 Opus 依
-  criteria v2 複驗）
+- **verdict_under_current_criteria**：✅ **工程已驗證**（Opus 2026-09-11 對 `c64fba9`，依 criteria v2；
+  v2 複驗清單七項全過，另重驗 19 支測試與六條交付 IR MD5 全中）
 - **🔮 裁決 T-49-A（Fable 2026-09-11；回應 Opus 驗證紀錄第 9 點，依 WORKFLOW §7）——鐵則 13 不動，修 T-49 卡＋腳本**
   1. **裁決**：以**鐵則 13 為準**（`git status --porcelain -- src scripts data`），**鐵則 13 措辭零改動**；T-49 卡 A-3
      是 2026-09-10 同日謄寫時漏了 `data`，屬卡片抄錯，不是規則設計改變。
@@ -8861,6 +8863,60 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
      ＝T-49 v2 修正輪的結果 commit（Opus 複驗通過的那個）。
   8. **明確不做**：不改鐵則 13 一字；不改 `pipeline.py`；不重跑案例 J 舊碼實測（B 部分未變）；不覆寫 `t49/`；
      不由 Fable 代改腳本（§7.2 criteria commit 不含程式碼；執行歸 Sonnet）。
+- **Opus v2 複驗紀錄（2026-09-11，reviewer=Opus 5，對結果 commit `c64fba9`，複驗時 HEAD=`c74329c`；
+  依裁決 T-49-A 第 6 點清單，全部本視窗實跑）**：
+  1. **A-2 殘句已清除（v1 唯一退回理由，已解除）**：`scripts/t42_transactional_baseline.py:155` 現為
+     `print(f"  （舊碼／OLD_COMMIT={OLD_COMMIT}）")`。不只看原始碼——Opus 自跑那 26 次 CLI 的 stdout
+     逐張印的是 `（舊碼／OLD_COMMIT=ec1a7bf）`，**腳本說的話與它真的做的事一致**（A-2 引用的 T-46 v2 教訓）。
+  2. **`grep -n 'HEAD' scripts/t42_transactional_baseline.py` 只剩合法語意**：11 個命中逐行核對——
+     `:65`／`:143`／`:232`／`:233` 是 `git rev-parse HEAD` 本體或其標籤；`:146` 是 v1 已放行的
+     「舊碼 HEAD（改動前，OLD_COMMIT=…）」（限定詞指 worktree 自己的 HEAD）；`:27`／`:28`／`:31`／`:57`／`:230`
+     是 docstring／註解／REPORT 標題裡**說明「為何不用 HEAD」**的敘述（「不再用 `git worktree add --detach <dir> HEAD`」
+     「收工 commit 之後 HEAD 就是新碼」「改動前參照釘死為 OLD_COMMIT 常數，非 HEAD」），語意與 A-2 要刪的
+     「HEAD 就是改動前」相反且句句為真，**不構成殘句**。
+  3. **A-3 v2 三條 grep（裁決第 6 點）**：`grep -n '"--porcelain", "--", "src", "scripts", "data"'` **非空**
+     （`:214`）；`grep -n 'src scripts"'` **為空**；另查全檔 `src scripts` 字面只剩 `:34` docstring 與 `:234`
+     REPORT 文字，兩處皆已是 `-- src scripts data`（腳本、說明、報告三處同步，無殘留舊範圍）。
+  4. **Opus 自跑重建（乾淨環境，§5 第一層）**：`python scripts/t42_transactional_baseline.py --fresh
+     --out-dir output/transactional_output/t49_opus_v2/` **exit 0**、13 張全數相符。執行中
+     `git worktree list` 顯示 `.worktree_t42_old_ec1a7bf  ec1a7bf (detached HEAD)`——主 repo HEAD 已是
+     `c74329c`，舊碼側仍釘在 `ec1a7bf`，**鐵則 13 在「收工 commit 之後」依然成立**（這正是舊腳本會變成
+     新碼比新碼的情境，已不再發生）。
+  5. **REPORT porcelain 行（裁決第 6 點硬條件）**：`t49_opus_v2/REPORT.md` 檔頭寫
+     `- 改動後主 repo \`git status --porcelain -- src scripts data\`：` 且內容為 **「（空，工作區乾淨）」**，
+     符合「Opus 複驗那次必須為空」；雙邊 `git rev-parse HEAD`（`ec1a7bf…3422f4` ／ `c74329c…c11e162`）
+     與 UTC 時間戳齊全，五項不缺。
+  6. **表格零 diff（兩邊都比）**：`diff output/transactional_output/tables.md t49_opus_v2/tables.md` 為空；
+     `diff t49_v2/tables.md t49_opus_v2/tables.md` 也為空；另查 Sonnet 那輪 `diff t49/tables.md
+     t49_v2/tables.md` 為空。`bedroom_ai_generated` 仍 `BLOCK`（鐵則 7）；`tables.md` 硬區只有 13 列、
+     不含 provenance。審完已 `rm -rf t49_opus_v2/`，`git worktree list` 只剩主 repo。
+  7. **共同鐵則（Opus 自跑，非轉述）**：19 支 `scripts/test_*.py` **逐支 EXIT=0**（含案例 A–J，`grep '【J】'`
+     確認案例 J 仍在 `test_output_gate.py:693`）；六條交付 IR MD5 逐條重生比對——T-14 兩條由
+     `test_ir_synth.py`【6】內建，T-20／T-21 四條本視窗實跑 `--text 浴室`／`--text 大教堂`／
+     `--scene assets/scenes/{neighbor_voices,stadium_corridor}.json` 得
+     `2adbaa75eb698772a8c9aa693179ec47`／`2dd19b6e6d351d713887636fe45cd67e`／
+     `9a94ffdf5d8295aee7889729c39c9cd8`／`a1c21bcc3fd9aa3480df203a89c8cd05`，**全中**。
+  8. **範圍與 §7 程序（逐項核對）**：結果 commit `c64fba9` 的 `git show --stat` **只有三個檔**——
+     `scripts/t42_transactional_baseline.py`（4 行，即裁決第 5 點 (i)(ii) 四處，一字不多）與新目錄
+     `t49_v2/{REPORT.md,tables.md}`；**未與 criteria commit `c84c87f` 合併**，而 `c84c87f` 的
+     `git show --stat` 只有 `TASKS.md`（§7.2：criteria commit 不含程式碼、不含結果）且在結果之前。
+     `git diff --stat 95d0d5a c74329c -- src/` **為空**（本輪 `pipeline.py` 一行未動，符合裁決第 8 點）；
+     `git diff --stat 6fe1e43 c64fba9 -- output/transactional_output/{REPORT.md,tables.md}` 為空、
+     `git diff --stat 95d0d5a c64fba9 -- output/transactional_output/t49/` 為空（T-42 與 v1 產物唯讀，鐵則 11／§7.3）。
+     複驗結束時 `git status --porcelain -- src scripts data` 為空。
+  9. **v1 第 1～8 點的重審決定（§2.2 自行裁量）**：v2 輪 `src/` 與 `95d0d5a` **逐位元零 diff**，故 v1 的
+     B 部分結論（`run_photo()` 內無 `except Exception`、唯一 `except Exception` 在 `_publish_staging()`
+     `pipeline.py:193` 且 `raise` 原例外、三出口逐字不變、gate 判定條件零 diff、案例 J 舊碼 (b)(e) fail
+     為 Opus 自測）**原樣沿用，不重跑舊碼 worktree**；本輪另以 `grep` 復查 `except` 分布與
+     `--override-dims` 導引兩處仍在，結果與 v1 一致。
+  10. **v1 第 9 點（鐵則 13 vs 卡片 A-3 矛盾）已由裁決 T-49-A 結案**：走的是 §7 變更控制而非驗證者豁免，
+      鐵則 13 措辭零改動、卡片與腳本改齊，連動的 T-43 樣板欄也補上 porcelain 範圍（`TASKS.md:7980`）。
+      v1 第 10 點的次要觀察其一（`TODO.md` 把 T-49 打成 `[x]`＋刪除線）本輪已改回 `- [ ]`，
+      與 §7.9「TASKS.md 四軸為單一事實來源」一致；其二（`t49/REPORT.md` 末段未提案例 J）仍留給 T-43
+      複製樣板時一併檢查，不影響本卡判定。
+  11. **沒有發現新問題**：無紅旗（未用 `HEAD` 當參照、無 CLI 引數指定舊 commit〔`grep add_argument` 為空〕、
+      REPORT 雙邊 rev-parse 齊全、無 `except Exception` 吞錯、無 exit code 變動、無 archive_note 重印、
+      T-42 已驗證產物未被覆寫、gate 判定條件零 diff）。**判定：工程：✅ 已驗證（criteria v2）**。
 - **Opus 驗證紀錄（2026-09-11，reviewer=Opus 5，對結果 commit `95d0d5a`，複驗時 HEAD=`35842c0`）**：
   1. **A 部分（已驗證）**：`git worktree add --detach <dir> OLD_COMMIT`，**無任何 CLI 引數**可指定舊
      commit（`grep -n add_argument` 為空，只有 `--fresh`／`--out-dir`）＝鐵則 13 成立；建好 worktree 後

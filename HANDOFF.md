@@ -1,5 +1,35 @@
 # 交接文件 — 給下一個視窗
 
+> ## ✅ 2026-09-11 Opus：T-49 **v2 複驗通過（工程：已驗證）**——**現在該做的是開視窗執行 T-43**
+>
+> 對結果 commit `c64fba9` 複驗（複驗時 HEAD=`c74329c`），依裁決 T-49-A 第 6 點的 v2 清單，**七項全過**：
+>
+> 1. `grep -n '"--porcelain", "--", "src", "scripts", "data"'` **非空**（`:214`）；
+> 2. `grep -n 'src scripts"'` **為空**（全檔僅剩 `:34` docstring 與 `:234` REPORT 文字，兩處都已是
+>    `-- src scripts data`）；
+> 3. `grep -n 'HEAD'` 11 個命中逐行核對，只剩 `rev-parse HEAD` 本體／標籤、v1 已放行的 `:146`，
+>    以及說明「**為何不用** HEAD」的 docstring／註解——句句為真，非殘句；
+> 4. Opus 自跑 `--fresh --out-dir output/transactional_output/t49_opus_v2/` exit 0，REPORT porcelain 行
+>    寫 `-- src scripts data` 且內容 **「（空，工作區乾淨）」**，雙邊 rev-parse＋UTC 齊全；
+> 5. `tables.md` 對 T-42 版與對 `t49_v2/` 皆 **零 diff**，`bedroom_ai_generated` 仍 `BLOCK`；
+> 6. 19 支 `scripts/test_*.py` 逐支 **EXIT=0**（含案例 A–J）；
+> 7. 審完已 `rm -rf t49_opus_v2/`，`git worktree list` 只剩主 repo。
+>
+> **v1 唯一退回理由已解除**：`:155` 現為 `print(f"  （舊碼／OLD_COMMIT={OLD_COMMIT}）")`，且 Opus 自跑的
+> 26 次 CLI stdout 逐張實際印出 `（舊碼／OLD_COMMIT=ec1a7bf）`。執行中 worktree 釘在 `ec1a7bf` 而主 repo
+> HEAD 已是 `c74329c`——**鐵則 13 在收工 commit 之後依然成立**（舊腳本在此情境會變成新碼比新碼）。
+>
+> **另加驗**：六條交付 IR MD5 逐條重生全中（T-14 由 `test_ir_synth.py`【6】內建；T-20／T-21 四條本視窗
+> 實跑 `--text 浴室`／`--text 大教堂`／`--scene {neighbor_voices,stadium_corridor}.json`）；
+> `git diff --stat 95d0d5a c74329c -- src/` 為空（本輪 `pipeline.py` 一行未動）→ v1 的 B 部分結論
+> （無 `except Exception` 吞錯、三出口逐字不變、gate 條件零 diff、案例 J 舊碼 (b)(e) fail）原樣沿用；
+> T-42 與 `t49/` 產物一個 bit 未改（鐵則 11／§7.3）；`c64fba9` 未與 criteria commit `c84c87f` 合併（§7.2）。
+>
+> **下一步**：**T-43**（T-17 產物溯源）。前置「T-42 ✅ 且 T-49 ✅」**已滿足**，T-43 的 `OLD_COMMIT`
+> ＝**`c64fba9`**；樣板 `t42_transactional_baseline.py` 已修好可直接複製（REPORT 檔頭 porcelain 範圍
+> 記得寫 `-- src scripts data`）。複製樣板時順手檢查 v1 第 10 點留下的觀察：`t49/REPORT.md` 末段仍是
+> T-42 原文、未提案例 J。詳見 TASKS.md T-49 卡「Opus v2 複驗紀錄」與 DEV_LOG `2026-09-11 (115)`。
+
 > ## 🔵 2026-09-11 Sonnet：T-49 v2 修正輪執行完成——**現在該做的是開 Opus 新視窗依 criteria v2 複驗**，結果 commit `c64fba9`
 >
 > 依裁決 T-49-A 第 5 點執行：(i) `scripts/t42_transactional_baseline.py:155` 的 A-2 殘句

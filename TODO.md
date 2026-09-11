@@ -76,7 +76,11 @@
       卡片「diff 限縮兩檔」與鐵則 8 措辭互斥）詳見 TASKS.md T-42 卡「🟡 Opus 附帶發現」。
       → **🔮 已裁決（T-42-A，Fable 2026-09-10）**：① 另開微型卡 T-49；② 併入 T-49 B 部分；
       ③ 開 T-50 手動清理指令；④ T-43 措辭改寫＋鐵則 13。
-- [ ] **T-49 🔵 待審（v2 修正輪已完成，結果 commit `c64fba9`，等 Opus 依 criteria v2 複驗）** → T-43 ——
+- [x] ~~**T-49**~~ **✅ 工程已驗證（criteria v2，Opus 複驗 2026-09-11，結果 commit `c64fba9`）** → **下一張 T-43**
+      ——v2 複驗清單七項全過：A-2 殘句已清（實跑 stdout 印 `（舊碼／OLD_COMMIT=ec1a7bf）`）、porcelain 三處
+      同步為 `-- src scripts data`、Opus 自跑 `t49_opus_v2/` REPORT porcelain **為空**且雙邊 rev-parse 齊全、
+      `tables.md` 對 T-42 版與 `t49_v2/` 皆零 diff、19 支測試 EXIT=0、六條交付 IR MD5 全中、`t49_opus_v2/` 已刪。
+      **T-43 前置「T-42 ✅ 且 T-49 ✅」自此滿足**，T-43 的 `OLD_COMMIT`＝`c64fba9`。以下保留 v1 歷程（不覆寫）：
       v1 判定：🟠 工程退回（Opus 複驗 2026-09-11，結果 commit `95d0d5a`）→ 🔮 裁決 T-49-A 已開 criteria v2
       （`c84c87f`）：Sonnet 已修 A-2 殘句＋A-3 porcelain 補 `data`、重跑寫 `t49_v2/`，待送複驗——
       **裁決 T-49-A**：鐵則 13（`-- src scripts data`）為準、零改動；T-49 卡 A-3 漏 `data` 屬抄錯，走 §7 開 v2，
