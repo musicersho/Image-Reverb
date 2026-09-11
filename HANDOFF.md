@@ -1,5 +1,27 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔮 2026-09-11 Fable：裁決 T-49-A 已下（criteria v2，commit `c84c87f`）——**現在該做的是開 Sonnet 視窗跑 T-49 v2 修正輪**，再送 Opus 複驗
+>
+> Opus 複驗 T-49（`748e25b`）退回理由只有 A-2 殘句，另提第 9 點交 Fable：鐵則 13 寫 porcelain 範圍
+> `-- src scripts data`、T-49 卡 A-3 寫 `-- src scripts`，腳本照卡片做成少 `data`。裁決全文在 TASKS.md
+> T-49 卡「🔮 裁決 T-49-A」：
+>
+> 1. **鐵則 13 為準、措辭零改動**；T-49 卡 A-3 是同日謄寫漏字。`data/materials.json` 直接決定 13 張的
+>    materials→confidence→gate，少印 `data` 就是鐵則 13 要堵的假綠燈；同 repo 先例
+>    （`t17_blind_test.py:61`、T-48 條件 (a)、T-43 步驟 4）全含 `data`。
+> 2. **結果已出 → 走 §7 開 criteria v2**（獨立 commit `c84c87f`，只含 TASKS.md）：v2 與 v1 唯一差異＝A-3
+>    `-- src scripts data`；原 verdict（🟠 退回，A-2）保留為 `verdict_under_original_criteria`。
+> 3. **Sonnet v2 修正輪要做的事**（一次送審）：(i) `t42_transactional_baseline.py:155` 殘句改引用 `OLD_COMMIT`
+>    （**工作區已有此未 commit 改動**，2026-09-11 13:49，沿用即可）；(ii) `:214` porcelain 加 `"data"`，`:34` 與
+>    `:234` 文字同步改 `-- src scripts data`；(iii) 重跑 `--fresh --out-dir output/transactional_output/t49_v2/`
+>    （`t49/` 唯讀不動），`diff t49/tables.md t49_v2/tables.md` 為空；(iv) 結果 commit
+>    `T-49: 依 criteria v2 修 A-2 殘句＋A-3 porcelain 補 data(待驗證)`，交接筆記另起「v2 修正輪」段。
+> 4. **T-43 連動**：樣板欄補「porcelain 範圍 `-- src scripts data`」；T-43 前置仍為「T-42 ✅ 且 T-49 ✅（v2）」，
+>    `OLD_COMMIT`＝T-49 v2 修正輪的結果 commit。
+>
+> 順序不變：T-46 ✅ → T-42 ✅ → **T-49 v2（下一張）** → T-43 → T-47 → 裁決 T-47-A → T-44-R1 → T-17-R2；
+> T-48 平行條款不變。⚠️ 工作區另有未追蹤的 `AGENTS.md`（Codex 入口說明，非本裁決範圍，未動）。
+
 > ## 🔵 2026-09-10 Sonnet：T-49 執行完成——**現在該做的是開 Opus 新視窗複驗**，結果 commit `95d0d5a`
 >
 > 使用者原要求執行 T-43，動工前先讀 HANDOFF/TASKS 發現裁決 T-42-A 已把 T-43 前置改成

@@ -7975,8 +7975,9 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
   欄位與必要 helper）**＋新增 `src/image_reverb/provenance.py`**（共用 `_git_rev()`／sha256
   helper 的家；其他既有 `src/` 模組零 diff）；**`scripts/` 只得**：修改 `t17_blind_test.py`、
   新增 `test_t17_provenance.py`、新增鐵則 8 產表腳本 `t43_provenance_baseline.py`（以 T-49 修好的
-  `t42_transactional_baseline.py` 為樣板：`OLD_COMMIT` 釘死為 **T-49 的結果 commit**、worktree
-  HEAD 自檢、REPORT 檔頭印雙邊 `git rev-parse HEAD`）；**gate 段零改動**（鐵則 6）、
+  `t42_transactional_baseline.py` 為樣板：`OLD_COMMIT` 釘死為 **T-49 的結果 commit**（criteria v2 修正輪、
+  Opus 複驗通過的那個）、worktree HEAD 自檢、REPORT 檔頭印雙邊 `git rev-parse HEAD`＋主 repo
+  `git status --porcelain -- src scripts data`（裁決 T-49-A：範圍含 `data`，鐵則 13 原文））；**gate 段零改動**（鐵則 6）、
   `ir_metrics.py` 零 diff（鐵則 3）、`output/mvp_acceptance/` 與既有
   `blind_test/`／`MANIFEST.json` 歷史檔一個字不改（歷史驗收紀錄不得改寫）；
   盲測的抽樣／`SHUFFLE_SEED`／作答流程／mtime 對齊手法不動。
@@ -8815,7 +8816,7 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
   實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
 - **criteria_version**：v1（卡片原文 2026-09-10；A-3 porcelain 範圍 `-- src scripts`）→ **v2（裁決 T-49-A，
   2026-09-11；A-3 改為 `-- src scripts data`，與鐵則 13 一致；其餘門檻一字不改）**
-- **criteria_commit**：v1＝`4bff276`（2026-09-10 開卡）；v2＝本 commit（2026-09-11，獨立 `criteria:` commit，
+- **criteria_commit**：v1＝`4bff276`（2026-09-10 開卡）；v2＝`c84c87f`（2026-09-11，獨立 `criteria:` commit，
   不含任何程式碼或結果，早於任何 v2 結果）
 - **verdict_under_original_criteria**：🟠 工程退回（Opus 2026-09-11 對 `95d0d5a`；唯一理由 A-2 殘句。A-3 依 v1
   字面 `src scripts` 實作＝**v1 下 A-3 通過**）——保留，不覆寫

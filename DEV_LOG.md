@@ -1,5 +1,21 @@
 # Dev Log
 
+## 2026-09-11 (113)
+
+- **🔮 裁決 T-49-A（Fable）——鐵則 13 不動，修 T-49 卡＋腳本；走 §7 開 criteria v2（`c84c87f`）**。
+  Opus 第 9 點：鐵則 13 porcelain 範圍 `-- src scripts data` vs T-49 卡 A-3 `-- src scripts`。
+  裁決以鐵則 13 為準：`data/materials.json` 是 13 張 materials→confidence→gate 的直接輸入，少印 `data`
+  ＝可在 `data/` dirty 下產出「看似乾淨」的指紋（鐵則 13 要堵的假綠燈）；同 repo 先例
+  `t17_blind_test.py:61`／T-48 條件 (a)／T-43 步驟 4 全含 `data`；此腳本是 T-43 樣板。
+- **§7 程序**：T-49 結果（`95d0d5a`）已出 → 不直接改同版門檻；獨立 `criteria:` commit 只含 TASKS.md T-49 卡
+  （不含程式碼、不含結果）；`verdict_under_original_criteria`＝🟠 退回（A-2；A-3 依 v1 字面通過）保留。
+  提案者 Opus、起草者 Fable、核准者 使用者（2026-09-11 指示）。v2 與 v1 唯一差異＝A-3 加 `data`＋三條 v2 自我檢查。
+- **給 Sonnet 的 v2 修正輪**：A-2 殘句改引用 `OLD_COMMIT`（工作區已有此未 commit 改動，Fable 未動、未納入
+  criteria commit）；`:214` 加 `"data"`、`:34`／`:234` 文字同步；重跑 `--out-dir t49_v2/`（`t49/` 唯讀）；
+  獨立結果 commit；交接筆記另起 v2 段。Opus v2 複驗新增 grep／diff 檢查見卡片第 6 點。
+- **連動**：T-43 樣板欄補 porcelain 範圍 `-- src scripts data`、`OLD_COMMIT`＝T-49 v2 結果 commit（docs commit）。
+  未動：鐵則 13、`pipeline.py`、`t49/`、未追蹤的 `AGENTS.md`。
+
 ## 2026-09-11 (112)
 
 - **T-49 Opus 複驗 → 🟠 工程退回（唯一理由：A-2 未完成）**。
