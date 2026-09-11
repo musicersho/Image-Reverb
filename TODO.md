@@ -94,18 +94,16 @@
       (a)(c)(d) 過。19 支測試 EXIT=0、六條交付 IR MD5 全中、`t49/tables.md` 與 T-42 版
       diff 為空、`git diff --stat -- src/` 只有 `pipeline.py`。詳見 TASKS.md T-49 卡
       「交接筆記」。
-- [ ] **T-43 🟠 工程退回（Opus 複驗 2026-09-11，結果 commit `bad3f98`，複驗時 HEAD `cdb4127`）→ 開 Sonnet 修正輪（只補文件，不改程式）**
-      **唯一退回理由**：自我檢查「隔離 repo 重現對舊碼 fail 已附」未完成——交接筆記／HANDOFF／
-      DEV_LOG 都沒有對舊碼（T-43 之前的 `t17_blind_test.py`）實測的輸出，依 WORKFLOW §7.7＋§5.4.1
-      不得綠燈。**其餘九項 Opus 全部獨立實測通過**：provenance 取自生成當下（真實產物端到端：
-      同 HEAD exit 0／換 HEAD exit 1 逐筆點名）、模型 id 與門檻零手打、缺 provenance 與舊產物
-      皆被擋、mtime 雙向確認只剩 ⚠️ 警示、MANIFEST 兩鍵未混用、`OLD_COMMIT="c64fba9"` 釘死且
-      無 CLI 竄改途徑、Opus 自跑 26 次真實 CLI 的 13 張表與執行者版**完全相同**（三軸／gate／
-      IR md5 零漂移、鐵則 12 五張全 BLOCK）、`output/mvp_acceptance` 與歷史 blind_test 零 diff、
-      20 支測試 EXIT=0 且六條交付 IR MD5 由 Opus 自己重生逐位元相同。
-      **修正輪只需把舊碼重現輸出貼進交接筆記，不需要改任何程式碼**（Opus 已附自己的重現輸出供對照）；
-      或由 Fable 依 §7 裁決此自我檢查項是否與鐵則 5／E 重複。T-47 前置（「T-42／T-43 ✅」）**尚未**滿足。
-      以下保留待審時的執行摘要（不覆寫）：
+- [ ] **T-43 🔵 待審（修正輪，2026-09-11，結果 commit 待填）→ 開 Opus 新視窗複驗**
+      **本輪只補一件事**：上一輪 Opus 複驗（結果 commit `bad3f98`，複驗時 HEAD `cdb4127`）第 1～9
+      點全數獨立實測通過，唯一退回理由是自我檢查「隔離 repo 重現對舊碼 fail 已附」未完成——本輪
+      用 `git show c64fba9:scripts/t17_blind_test.py` 還原舊碼，`tempfile` 隔離 repo 重現 v1→v2
+      情境，舊碼／新碼實測輸出已貼進 TASKS.md T-43 卡交接筆記「11. 修正輪（舊碼重現補附）」：
+      舊碼 exit 0、MANIFEST 標成 v2 HEAD（舊產物被認證）、無 `source_provenance`；新碼 exit 1 點名
+      `git_revision 不符`。**零程式碼改動**（`git status --porcelain -- src scripts data` 為空），
+      未跑 `t43_provenance_baseline.py`、未碰 `output/provenance/`（含 `opus_verify/`）與
+      `output/mvp_acceptance/`／既有 `blind_test/`。T-47 前置（「T-42／T-43 ✅」）待本輪複驗通過。
+      以下保留上一輪待審時的執行摘要（不覆寫）：
       ——`run_photo()` 成功路徑新增 `provenance` 區塊（`git_revision`＋dirty、`input_sha256`、
       `materials_json_sha256`、模型 id／門檻讀 `config`、CLI 參數、生成時戳），單一事實來源
       新模組 `src/image_reverb/provenance.py`；`t17_blind_test.py` 改為溯源驗證（缺

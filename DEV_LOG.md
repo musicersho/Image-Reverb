@@ -1,5 +1,25 @@
 # Dev Log
 
+## 2026-09-11 (118)
+
+- **T-43 修正輪：補做 Opus 第 10 點退回項（隔離 repo 對舊碼實測輸出）。零程式碼改動**
+  （`git status --porcelain -- src scripts data` 為空）。上一輪 Opus 複驗第 1～9 點已全部
+  獨立實測通過，唯一退回理由是自我檢查「隔離 repo 重現對舊碼 fail 已附」未完成——交接
+  筆記與 `HANDOFF.md` 從未附過對 T-43 之前舊碼（`c64fba9` 版 `t17_blind_test.py`）的實測。
+- **作法**：`git show c64fba9:scripts/t17_blind_test.py` 取出舊碼存進 scratchpad；`tempfile`
+  隔離 git repo 建 v1／v2 兩個 commit，樁 `analysis.json`／IR／wet preview（不跑模型），
+  provenance 記 v1 commit、repo HEAD 是 v2；同一份樁資料分別餵舊碼（`subprocess` 執行）與
+  現行新碼（`t17_blind_test.run(repo_root=…)`）。
+- **實測結果與卡片預期逐項吻合**：舊碼 exit 0、MANIFEST 頂層 `git_revision` 標成 v2 HEAD
+  短雜湊（舊產物被認證）、`generated_from` 無 `source_provenance` 鍵；新碼 exit 1，訊息點名
+  `git_revision 不符`（來源產物生成於 v1，盲測當下 HEAD 是 v2）。原始輸出已貼進
+  `TASKS.md` T-43 卡交接筆記「11. 修正輪（舊碼重現補附）」。
+- **範圍**：驅動腳本與舊碼複本只在 scratchpad，未新增檔案到 `scripts/`／`src/`；未跑
+  `t43_provenance_baseline.py`、未碰 `output/provenance/`（含 `opus_verify/`）與
+  `output/mvp_acceptance/`／既有 `blind_test/`。
+- **下一步**：開 Opus 新視窗複驗，本輪結果 commit 待補（見 HANDOFF.md）。通過後 T-47 前置
+  （「T-42／T-43 ✅」）才算滿足。
+
 ## 2026-09-11 (117)
 
 - **T-43 Opus 複驗 → 🟠 工程退回**（對象結果 commit `bad3f98`，複驗時 HEAD `cdb4127`，

@@ -7935,17 +7935,14 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
 
 ### T-43 T-17 產物溯源：analysis.json 生成指紋＋盲測驗證（插卡 4/4）
 
-- **狀態**：🟠 **工程退回**（Opus 複驗 2026-09-11，結果 commit `bad3f98`，複驗時 HEAD=`cdb4127`）。
-  **唯一退回理由（文件證據項，非工程缺陷）**：任務卡自我檢查「**隔離 repo 重現對舊碼 fail 已附**」
-  與「舊碼必須 fail 的最小重現……**輸出貼交接筆記**」**未完成**——交接筆記與 `HANDOFF.md` 全文
-  沒有任何對 `git worktree` 舊碼（T-43 之前的 `t17_blind_test.py`）實測的輸出；
-  `test_t17_provenance.py` 三個案例全部只跑新碼。依 **WORKFLOW §7.7**（「未完成任務卡自檢時，
-  `工程` 不得是『已驗證』」）與 **§5.4.1**（「未完成項不得用備註豁免；若有未達項，只能退回、卡關
-  或先走 §7 變更控制，不能直接綠燈」），驗證者**不得**用自己補做的實測替執行者豁免此項。
-  **其餘每一項驗收條件（修法三點、鐵則 6／8／12／13、範圍、凍結產物、20 支測試、六條 IR MD5、
-  13 張零漂移）Opus 本視窗全部獨立實測通過**，詳見下方複驗紀錄；**補救成本極低**——執行者照卡
-  重跑一次舊碼重現並把輸出貼進交接筆記即可（Opus 已附自己的重現輸出供對照，見第 4 點）。
-- **四軸狀態**：工程：**退回**｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
+- **狀態**：🔵 待審（修正輪，結果 commit 待填）。上一輪 Opus 複驗（2026-09-11，結果 commit
+  `bad3f98`）第 1～9 點全數獨立實測通過，**唯一退回理由**是任務卡自我檢查「隔離 repo 重現對舊碼
+  fail 已附」與「舊碼必須 fail 的最小重現……輸出貼交接筆記」未完成（文件證據項，非工程缺陷）。
+  本輪**只補做這一件事**：把該重現自己實跑一次，原始輸出見下方交接筆記「11. 修正輪（舊碼重現
+  補附）」；未改動任何 `src/`／`scripts/`／`data/` 程式碼（`git status --porcelain -- src scripts
+  data` 為空），第 1～9 點已驗證的成果原封不動。Opus 上一輪的 🟠 退回紀錄原文保留於下方，不覆寫。
+- **四軸狀態**：工程：🔵 待審（修正輪，結果 commit 待填）｜實驗：不適用｜產品：不適用｜MVP：不適用
+  （沿用 T-17 FAIL）
 - **🔮 裁決 T-42-A 改版註記（Fable 2026-09-10）**：前置加 **T-49 ✅**；「範圍」「產出」
   「執行步驟 4」「自我檢查」「抽查手法」依鐵則 13 措辭改寫（原文沒列鐵則 8 產表腳本，與
   「表由程式產出」字面互斥，Opus 於 T-42 附帶發現 ④ 指出）；**修法本體（三點）一字不改**。
@@ -8112,6 +8109,96 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
      src/image_reverb/ir_metrics.py src/image_reverb/config.py` 為空）。
   10. **下一步**：開 Opus 新視窗，貼 WORKFLOW §2.2 v2 複驗 Prompt，**「結果 commit」填
       `bad3f98`**。通過後 T-47 前置（「T-42／T-43 ✅」）才算滿足。
+  11. **修正輪（舊碼重現補附，2026-09-11，補做第 10 點缺的自我檢查項）**：Opus 複驗第 10 點
+      指出交接筆記與 `HANDOFF.md` 從未附過「對 T-43 之前的舊碼實測」的輸出（第 4 點裡的重現是
+      **驗證者**補做的，依 §5.4.1／§7.7 不能替執行者銷掉這項）。本輪把卡片「舊碼必須 fail 的
+      最小重現」原文自己重跑一次，**零程式碼改動**（`git status --porcelain -- src scripts data`
+      為空，見下方自我檢查）。
+
+      **作法**：`git show c64fba9:scripts/t17_blind_test.py` 取出 T-43 之前的舊碼（T-49 v2 修正輪
+      結果 commit，即卡片「範圍」一節 `t43_provenance_baseline.py` 的 `OLD_COMMIT`），另存一份
+      到 scratchpad（未加進 `scripts/`）；在 `tempfile.mkdtemp()` 建隔離 git repo：`git init` 後
+      建 `v1` commit（`src/marker.txt`＝"v1"、`data/materials.json`、`assets/photos/testroom.png`、
+      舊碼複本放在 `scripts/t17_blind_test.py`——舊碼用 `Path(__file__).resolve().parent.parent`
+      當 `REPO_ROOT`，放進隔離 repo 的 `scripts/` 下才能讓它讀到隔離 repo 而非主 repo），
+      再建 `v2` commit（只改 `src/marker.txt`＝"v2"，模擬程式已往前走，此時為隔離 repo 的 HEAD）；
+      樁 `output/testroom/{wet_preview.wav,ir_mono.wav,analysis.json}`（純資料檔案位元組，不跑
+      模型）——`analysis.json.provenance.git_revision.commit` 手動寫死＝**v1 commit**（模擬「用 v1
+      碼生成」），其餘 `input_sha256`／`materials_json_sha256`／模型設定欄位刻意與隔離 repo 當前
+      實檔／`expected_config` 一致（讓不符項只剩 `git_revision` 一項，訊息乾淨）；隔離 repo 此時
+      HEAD＝v2、`git status --porcelain` 為空（非 dirty）。同一份樁資料分別餵：(a) 隔離 repo 內的
+      舊碼（`subprocess` 執行 `scripts/t17_blind_test.py`）；(b) 現行主 repo 的新碼
+      （`import t17_blind_test` 後呼叫 `run(repo_root=隔離repo, out_dir=另一個子目錄,
+      spaces=[("測試空間","testroom")], photos_dir=…, outputs_dir=…, materials_path=…,
+      expected_config=…)`，用法與既有 `scripts/test_t17_provenance.py` 案例 A 相同手法，只是這次
+      對照組換成**真的舊碼**而非新碼自己）。驅動腳本存於 scratchpad
+      （`t43_old_code_repro.py`＋`t17_blind_test_old.py`），未新增任何檔案到 `scripts/`／`src/`。
+
+      **實跑原始輸出**（`source .venv/bin/activate && python3 -u t43_old_code_repro.py`，
+      未經刪改）：
+      ```
+      隔離 repo：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/t43_old_code_repro_f_qtqlgr/isolated_repo
+      v1 = 732938b3   v2(HEAD) = 3bae05f9
+      產物 provenance 記 v1，repo 現在 HEAD 是 v2（analysis.json 已寫死 v1 commit）
+
+      ======================================================================
+      【舊碼 c64fba9】python scripts/t17_blind_test.py（於隔離 repo 內執行）
+      ======================================================================
+      exit code = 0
+      --- stdout ---
+        sample_1.wav  ←  （答案已寫入 ANSWERS 檔，此處不印）
+
+      ✅ 盲聽素材：output/mvp_acceptance/blind_test/（5 組，檔名不洩露答案）
+         作答表：output/mvp_acceptance/blind_test/作答表.md
+         答案鍵：output/mvp_acceptance/blind_test_ANSWERS.json（作答前請勿打開）
+
+      --- stderr ---
+      (空)
+      --- 舊碼 MANIFEST.json 內容 ---
+      {
+        "git_revision": "3bae05f",
+        "shuffle_seed": 20260830,
+        "generated_from": [
+          {
+            "run": "testroom",
+            "photo_sha256": "a9e99b0572f1fd8664bf784b48438ace1588d8287436db861ada7723b4dd6d70",
+            "ir_sha256": "333de24fbfd8d0623e37323b92a3b9b4aff9e2e62e8f0699f47102986e94afec",
+            "wet_sha256": "294deb91b2b72018c9190c86ce24039aea1bbe07b9b717751c2752b126b94880",
+            "dims_source": "estimated",
+            "confidence": "high"
+          }
+        ]
+      }
+      MANIFEST 頂層鍵 = ['git_revision', 'shuffle_seed', 'generated_from']
+      MANIFEST 有無 source_provenance = False
+
+      ======================================================================
+      【新碼 HEAD】t17_blind_test.run(repo_root=隔離repo, ...)
+      ======================================================================
+      ❌ 溯源驗證失敗（可能拿舊產物驗收新程式，或環境已變更）：
+         - testroom：git_revision 不符：來源產物生成於 '732938b34aef2df53d2a33699609d66fec71787a'，盲測當下主 repo HEAD 是 '3bae05f999c9d0c80d47d6119ac14e0ad15e0b9e'（拿舊碼產物驗收新碼，或反過來，必須重生）
+         請先重跑 `python -m src.image_reverb assets/photos/<name>.png`
+      exit code = 1
+      （新碼未產生 MANIFEST.json，如預期——溯源驗證失敗時提早 return）
+
+      ======================================================================
+      小結
+      ======================================================================
+      舊碼 exit=0；新碼 exit=1
+      ```
+
+      **對照卡片「舊碼必須 fail 的最小重現」預期，逐項吻合**：舊碼 exit 0、MANIFEST 頂層
+      `git_revision` 標成 v2 HEAD 短雜湊 `3bae05f`（等於隔離 repo 現在的 HEAD `3bae05f9…`，
+      即「舊產物被認證」——舊碼完全不檢查 `analysis.json` 記的來源 revision）、`generated_from`
+      不含 `source_provenance` 鍵（舊碼從未寫過這個欄位）；新碼 exit 1，訊息明確點名
+      `git_revision 不符`，指出來源產物生成於 v1（`732938b3…`）而盲測當下 HEAD 是 v2
+      （`3bae05f9…`）。
+
+      **自我檢查（本點）**：`git status --porcelain -- src scripts data` 為空（見下方交接筆記
+      末的完整範圍檢查）；驅動腳本與舊碼複本只存在 scratchpad，`git status --porcelain --
+      scripts src` 不受影響；本輪未執行 `t43_provenance_baseline.py`、未碰
+      `output/provenance/`（含 `opus_verify/`）、未碰 `output/mvp_acceptance/`／既有
+      `blind_test/`。
 
 - **🟠 Opus 複驗紀錄（2026-09-11，新視窗；對象結果 commit `bad3f98`，複驗時 HEAD `cdb4127`，
   工作區 `git status --porcelain -- src scripts data` 為空——依鐵則 13「Opus 複驗那次必須為空」）**：
