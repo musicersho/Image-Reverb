@@ -1,5 +1,41 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔵 2026-09-11 Sonnet：T-49 v2 修正輪執行完成——**現在該做的是開 Opus 新視窗依 criteria v2 複驗**，結果 commit `c64fba9`
+>
+> 依裁決 T-49-A 第 5 點執行：(i) `scripts/t42_transactional_baseline.py:155` 的 A-2 殘句
+> `print("  （舊碼／HEAD）")` 改引用 `OLD_COMMIT`（工作區進來時已有此未 commit 改動，`git diff`
+> 核對內容與裁決要求一致後沿用，未重做）；(ii) 同檔 `:214` 的 porcelain 指令
+> `["git", "status", "--porcelain", "--", "src", "scripts"]` 加上 `"data"`，`:34` docstring 與
+> `:234` REPORT 文字的 `-- src scripts` 同步改為 `-- src scripts data`。
+>
+> **重跑**：`python scripts/t42_transactional_baseline.py --fresh --out-dir
+> output/transactional_output/t49_v2/`（26 次真實 CLI，約 8 分鐘）exit 0，13 張全數相符；
+> `diff output/transactional_output/t49/tables.md output/transactional_output/t49_v2/tables.md`
+> 為空；`t49_v2/REPORT.md` 檔頭 porcelain 行為 `git status --porcelain -- src scripts data`，
+> 內容為 `M scripts/t42_transactional_baseline.py`（執行者這次工作區本來就有這一處未 commit
+> 改動，符合預期，標 ⚠️ 未 exit 非 0）；`bedroom_ai_generated` 仍 `BLOCK`；
+> `output/transactional_output/t49/`（v1）與頂層 `{REPORT.md,tables.md}`（T-42 已驗證產物）
+> 一個 bit 未改。
+>
+> **自我檢查**：19 支 `scripts/test_*.py` 逐支 `EXIT=0`（本輪未改 `test_output_gate.py`，沿用既有
+> 案例 A–J 覆蓋）；`grep -n '"--porcelain", "--", "src", "scripts", "data"'
+> scripts/t42_transactional_baseline.py` 非空、`grep -n 'src scripts"'
+> scripts/t42_transactional_baseline.py` 為空、`grep -n "override-dims"
+> src/image_reverb/pipeline.py` 兩處導引仍在、`git diff --stat -- src/` 為空（本輪未動
+> `src/`，只動 `scripts/t42_transactional_baseline.py`）、`git worktree list` 執行前後都只剩
+> 主 repo。**範圍**：`git status --porcelain -- src scripts data` 只有
+> `scripts/t42_transactional_baseline.py` 一檔；未動 `pipeline.py`、鐵則 13、`t49/`、
+> 未追蹤的 `AGENTS.md`。
+>
+> **結果 commit** `c64fba9`（`T-49: 依 criteria v2 修 A-2 殘句＋A-3 porcelain 補 data(待驗證)`），
+> 只含 `scripts/t42_transactional_baseline.py` 與新目錄 `output/transactional_output/t49_v2/`，
+> 未與 criteria commit `c84c87f` 合併。交接筆記另起「v2 修正輪」段，v1 交接筆記未改寫。
+>
+> **下一步**：開 Opus 新視窗，依裁決 T-49-A 第 6 點的 v2 複驗清單複驗，**結果 commit 填
+> `c64fba9`**。通過後 T-49 才算 v2 下 ✅，T-43 前置「T-42 ✅ 且 T-49 ✅」才算滿足，
+> `OLD_COMMIT`＝`c64fba9`。詳見 TASKS.md T-49 卡「交接筆記（v2 修正輪，Sonnet 執行，
+> 2026-09-11）」與 DEV_LOG `2026-09-11 (114)`。
+
 > ## 🔮 2026-09-11 Fable：裁決 T-49-A 已下（criteria v2，commit `c84c87f`）——**現在該做的是開 Sonnet 視窗跑 T-49 v2 修正輪**，再送 Opus 複驗
 >
 > Opus 複驗 T-49（`748e25b`）退回理由只有 A-2 殘句，另提第 9 點交 Fable：鐵則 13 寫 porcelain 範圍

@@ -8799,7 +8799,8 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
       **不要回滾 `src/`、不要改腳本斷言、不要重寫 `BASELINE.md`**。
 
 ### T-49 T-42 收尾：產表腳本釘死參照 commit＋`run_photo()` 非預期例外出口（微型卡；裁決 T-42-A 執行卡 1/2）
-- **狀態**：🟠 **工程退回**（Opus 複驗 2026-09-11，對結果 commit `95d0d5a`；**criteria v2 已開，見下方
+- **狀態**：🔵 **待審**（Sonnet 已完成 v2 修正輪，結果 commit `c64fba9`，等 Opus 依 criteria v2 複驗）
+  ——**v1 判定**：🟠 **工程退回**（Opus 複驗 2026-09-11，對結果 commit `95d0d5a`；**criteria v2 已開，見下方
   「🔮 裁決 T-49-A」：Sonnet 修 A-2 殘句＋A-3 補 `data` 後重跑寫 `t49_v2/` 再送複驗**）——**v1 唯一退回理由：A-2
   未完成**。`scripts/t42_transactional_baseline.py:155` 仍留著 `print("  （舊碼／HEAD）")`
   （每張照片印一次，13 次），這是卡片 A-2 明列必須刪除的「HEAD 就是改動前」敘述之一，而且**現在是假話**：
@@ -8812,7 +8813,9 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
   該行不進 REPORT／tables，Opus 本次複驗已證表格正確（見下）；改完重跑 `test_*.py` 全綠、
   `grep -n 'HEAD' scripts/t42_transactional_baseline.py` 確認殘句清乾淨即可送複驗。
   其餘 A／B／案例 J 全部通過，詳見下方「Opus 驗證紀錄」。
-- **四軸狀態**：工程：🟠 退回（Opus 2026-09-11，結果 commit `95d0d5a`；A-2 未完成，其餘全數通過）｜
+- **四軸狀態**：工程：🔵 待審（Sonnet 2026-09-11，v2 修正輪結果 commit `c64fba9`；A-2 殘句＋A-3 porcelain
+  補 `data` 已修，等 Opus 複驗）｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
+- **四軸狀態（v1，保留不覆寫）**：工程：🟠 退回（Opus 2026-09-11，結果 commit `95d0d5a`；A-2 未完成，其餘全數通過）｜
   實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
 - **criteria_version**：v1（卡片原文 2026-09-10；A-3 porcelain 範圍 `-- src scripts`）→ **v2（裁決 T-49-A，
   2026-09-11；A-3 改為 `-- src scripts data`，與鐵則 13 一致；其餘門檻一字不改）**
@@ -8820,7 +8823,8 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
   不含任何程式碼或結果，早於任何 v2 結果）
 - **verdict_under_original_criteria**：🟠 工程退回（Opus 2026-09-11 對 `95d0d5a`；唯一理由 A-2 殘句。A-3 依 v1
   字面 `src scripts` 實作＝**v1 下 A-3 通過**）——保留，不覆寫
-- **verdict_under_current_criteria**：待 v2 修正輪（Sonnet 修 A-2＋A-3 → 結果 commit → Opus 複驗）
+- **verdict_under_current_criteria**：🔵 待審（Sonnet 已完成 v2 修正輪，結果 commit `c64fba9`；待 Opus 依
+  criteria v2 複驗）
 - **🔮 裁決 T-49-A（Fable 2026-09-11；回應 Opus 驗證紀錄第 9 點，依 WORKFLOW §7）——鐵則 13 不動，修 T-49 卡＋腳本**
   1. **裁決**：以**鐵則 13 為準**（`git status --porcelain -- src scripts data`），**鐵則 13 措辭零改動**；T-49 卡 A-3
      是 2026-09-10 同日謄寫時漏了 `data`，屬卡片抄錯，不是規則設計改變。
@@ -9075,6 +9079,37 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
      {REPORT.md,tables.md}`（T-42 已驗證產物）。
   6. **下一步**：開 Opus 新視窗依 WORKFLOW §2.2 v2 複驗 Prompt，**結果 commit 填 `95d0d5a`**。
      通過後 T-43 前置「T-42 ✅ 且 T-49 ✅」才算滿足。
+- **交接筆記（v2 修正輪，Sonnet 執行，2026-09-11）**：
+  1. **依裁決 T-49-A 第 5 點執行**：(i) `scripts/t42_transactional_baseline.py:155` 的
+     `print("  （舊碼／HEAD）")` 已在工作區改成
+     `print(f"  （舊碼／OLD_COMMIT={OLD_COMMIT}）")`（動工前工作區已有此未 commit 改動，
+     `git diff` 確認內容與裁決要求一致後沿用，未重做）；(ii) 同檔 `:214` 的
+     `["git", "status", "--porcelain", "--", "src", "scripts"]` 加上 `"data"`，`:34` docstring
+     與 `:234` REPORT 文字的 `-- src scripts` 同步改為 `-- src scripts data`（三處均已核對）。
+  2. **重跑**：`python scripts/t42_transactional_baseline.py --fresh --out-dir
+     output/transactional_output/t49_v2/`（26 次真實 CLI，約 8 分鐘）exit 0，13 張全數
+     `✅ 全數相符`；`output/transactional_output/t49/`（v1 結果）**唯讀未動**；
+     `diff output/transactional_output/t49/tables.md output/transactional_output/t49_v2/tables.md`
+     為空；`t49_v2/REPORT.md` 檔頭 porcelain 行為 `git status --porcelain -- src scripts data`，
+     內容為 `M scripts/t42_transactional_baseline.py`（執行者那次工作區本來就有這一處未 commit
+     改動，符合預期，標 ⚠️ 未 exit 非 0）；`bedroom_ai_generated` 仍 `BLOCK`。
+  3. **自我檢查**：全部 19 支 `scripts/test_*.py` 逐支 `EXIT=0`（含案例 A–J，本輪未改
+     `test_output_gate.py`，沿用既有覆蓋）；`grep -n '"--porcelain", "--", "src", "scripts", "data"'
+     scripts/t42_transactional_baseline.py` 非空（`:214`）；`grep -n 'src scripts"'
+     scripts/t42_transactional_baseline.py` 為空；`grep -n "override-dims"
+     src/image_reverb/pipeline.py` 兩處導引仍在；`git diff --stat -- src/` 空（本輪未動
+     `src/`）；`git worktree list` 執行前後都只剩主 repo。
+  4. **範圍確認**：`git status --porcelain -- src scripts data` 只有
+     `scripts/t42_transactional_baseline.py`（僅此一檔，符合裁決 T-49-A 第 8 點「不改
+     `pipeline.py`」）；`output/transactional_output/t49_v2/` 為新增未追蹤目錄（只含程式
+     產出的 `REPORT.md`／`tables.md`）；`output/transactional_output/t49/`（v1）與頂層
+     `{REPORT.md,tables.md}`（T-42 已驗證產物）一個 bit 未改；工作區另有未追蹤的
+     `AGENTS.md`，本輪未動、未加入 commit。
+  5. **結果 commit**：`c64fba9`（`T-49: 依 criteria v2 修 A-2 殘句＋A-3 porcelain 補
+     data(待驗證)`）——只含 `scripts/t42_transactional_baseline.py` 與新目錄
+     `output/transactional_output/t49_v2/`，未與 criteria commit `c84c87f` 合併。
+  6. **下一步**：開 Opus 新視窗依裁決 T-49-A 第 6 點的 v2 複驗清單複驗，**結果 commit 填
+     `c64fba9`**。通過後 T-49 才算 v2 下 ✅，T-43 前置「T-42 ✅ 且 T-49 ✅」才算滿足。
 
 ### T-50 `output/.archive` 手動清理指令（停滯期填充卡；裁決 T-42-A 執行卡 2/2；`src/` 零改動）
 - **狀態**：⬜ 未開始

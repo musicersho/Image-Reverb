@@ -1,5 +1,19 @@
 # Dev Log
 
+## 2026-09-11 (114)
+
+- **T-49 v2 修正輪執行完成（Sonnet）——依裁決 T-49-A 第 5 點，結果 commit `c64fba9`**。
+  (i) `t42_transactional_baseline.py:155` A-2 殘句改引用 `OLD_COMMIT`（工作區已有此未 commit
+  改動，`git diff` 核對內容後沿用，未重做）；(ii) `:214` porcelain 指令加 `"data"`，`:34`
+  docstring 與 `:234` REPORT 文字同步改 `-- src scripts data`。
+- **重跑**：`--fresh --out-dir output/transactional_output/t49_v2/`（26 次真實 CLI）exit 0，
+  `diff t49/tables.md t49_v2/tables.md` 為空，`t49_v2/REPORT.md` porcelain 行為
+  `-- src scripts data`，`bedroom_ai_generated` 仍 `BLOCK`；`t49/`（v1）唯讀未動。
+- **自我檢查**：19 支 `scripts/test_*.py` 全 EXIT=0；`grep` 確認 porcelain 已含 `data`、無殘留
+  `src scripts"` 舊字串；`git diff --stat -- src/` 為空（本輪未動 `pipeline.py`）；
+  `git status --porcelain -- src scripts data` 只有 `t42_transactional_baseline.py` 一檔。
+- **下一步**：開 Opus 新視窗依裁決 T-49-A 第 6 點複驗，結果 commit 填 `c64fba9`。
+
 ## 2026-09-11 (113)
 
 - **🔮 裁決 T-49-A（Fable）——鐵則 13 不動，修 T-49 卡＋腳本；走 §7 開 criteria v2（`c84c87f`）**。
