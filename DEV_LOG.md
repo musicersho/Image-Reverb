@@ -1,5 +1,26 @@
 # Dev Log
 
+## 2026-09-11 (120)
+
+- **T-47 gate 校準複審量測完成**（前置 T-46／T-42／T-49／T-43 全數 ✅ 已於開工前核對）。
+  新腳本 `scripts/t47_gate_calibration.py`：對 13 張照片、`role_aware=False`／`True`
+  各跑一次真實 CLI（geometry／overall／gate／provenance）＋一次逐面判定明細 harness
+  （唯讀重用 `t36_clip_accuracy.py`／`t44_role_eval.py`／`eval_cache.py`，取 top3／
+  top-1 機率——CLI 的 `analysis.json` 不含這份明細），52 次真實模型推論，26 組
+  `surfaces`／`surfaces_sources` 兩條資料來源程式化核對**全部相符**。
+- **四樣證據**：①新基準率——`default` 13/13 BLOCK、`role_aware` 12/13 BLOCK
+  僅 `bathroom_tiled` pass；②被放行案例逐面 vs ground truth；③已知錯誤（鐵則 12）
+  5 張中 `default` 0/5、`role_aware` 1/5 pass；④臥室兩模式續擋（floor 0.2436→0.3394，
+  仍低於門檻）。另加信心膨脹量化（T-44 第四輪記錄的 9 面信心上升交叉檢查 9/9 通過，
+  數值逐位元相同）、按角色門檻敏感度、兩項唯讀模擬（候選數縮放門檻／規則 4 收窄
+  下修）——兩個模擬都會把 `bathroom_tiled` 的放行收回，本卡不下結論，交 Fable 裁決 T-47-A。
+- **自我檢查**：20 支 `scripts/test_*.py` 全 EXIT=0；六條交付 IR MD5 全中（T-14
+  內建；T-20／T-21 四條本視窗重生逐位元相同）；`git diff --stat -- src/ data/` 為空；
+  `output/gate_calibration/` 只有 `REPORT.md`／`tables.md` 進 git（同既有 `.gitignore`
+  慣例，其餘 183M 原始產物不進版控）。
+- **下一步**：開 Opus 新視窗複驗，結果 commit 見 HANDOFF.md。通過後 Fable 可依四樣
+  證據下裁決 T-47-A，之後才能開 T-44-R1。
+
 ## 2026-09-11 (119)
 
 - **T-43 Opus 修正輪複驗 → ✅ 工程已驗證**（對象結果 commit `67b6aa5`／回填 `5d122a9`，

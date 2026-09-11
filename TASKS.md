@@ -9605,8 +9605,10 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
 - **交接筆記**：
 
 ### T-47 gate 校準複審量測（量測卡；裁決 T-45-A 執行卡 2/5；`src/` 零改動）
-- **狀態**：⬜ 未開始
-- **四軸狀態**：工程：未開始｜實驗：待量測｜產品：待裁決（T-47-A）｜MVP：不適用
+- **狀態**：🔵 **待審（Sonnet 執行，2026-09-11）**——等 Opus 開新視窗依 WORKFLOW §5 複驗
+- **四軸狀態**：工程：🔵 待審（結果 commit 見下方「交接筆記」，等 Opus 複驗）｜
+  實驗：不適用（本卡是量測卡，只產出證據供 Fable 裁決 T-47-A，不判定任何假設成立與否）｜
+  產品：待裁決（T-47-A，沿用卡片預設，本卡未提案）｜MVP：不適用（沿用 T-17 FAIL）
 - **前置**：T-46 ✅、T-42 ✅、T-49 ✅、T-43 ✅（量測產物要走交易式輸出與 provenance；
   裁決 T-42-A 插入 T-49）
 - **為什麼**：T-26 gate、裁決 T-28-A、裁決 T-36-A 的 BLOCK／pass 校準全建立在「固定門檻
@@ -9633,7 +9635,93 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
   兩模式 13 張快取指紋對 HEAD 相符；REPORT 四樣證據 ×2 模式齊全。
 - **Opus 驗證重點（四軸輸出）**：紅旗：任何 `src/` diff；紅旗：手打數字；紅旗：只跑一種模式；
   紅旗：REPORT 對「該不該調門檻」下結論（那是 Fable 的裁決，不是量測卡的結論）。
-- **交接筆記**：
+- **交接筆記（Sonnet 執行，2026-09-11）**：
+
+  前置「T-46 ✅、T-42 ✅、T-49 ✅、T-43 ✅」開工前已在 TASKS.md 逐張核對過，全部
+  已驗證，`OLD_COMMIT` 系不適用（本卡不是抽查卡，不需要舊碼對照）。
+
+  **量測機制**：新腳本 `scripts/t47_gate_calibration.py` 對每張照片、每種模式各跑
+  兩條獨立真實資料來源——① 真實 CLI（`python -m src.image_reverb <photo>
+  --force-low-confidence --no-viz [--role-aware]`，取 geometry／materials／overall
+  confidence／gate／`surfaces`／`surfaces_sources`／`provenance`，滿足前置「量測產物
+  要走交易式輸出與 provenance」）；② 逐面判定明細 harness（唯讀重用
+  `t36_clip_accuracy.run_or_load()`／`t44_role_eval.run_or_load_role_aware()`／
+  `eval_cache.py`，取逐面 top3／top-1 機率——CLI 的 `analysis.json` 不含這份明細，
+  證據②③⑤⑥非靠這條資料來源不可）。兩條來源各自真實跑模型（不共用彼此結果），
+  跑完程式化核對 26 組（13 張×2 模式）`surfaces`／`surfaces_sources` 是否逐位元
+  相符——**26/26 全部相符**，交叉驗證了兩條路徑實際呼叫的是同一段
+  `surfaces_from_preprocess()` 程式碼。`--out-dir output/gate_calibration/ --fresh`
+  （全新目錄，未重用任何 T-36／T-44／T-46 的舊 `runs/`），52 次真實模型推論
+  （13×2×2），約 25 分鐘。
+
+  **四樣證據結果（程式產生，數字照抄 `output/gate_calibration/{REPORT.md,tables.md}`，
+  未手打）**：
+  1. **新基準率（表 1）**：`role_aware=False`＝13/13 張 `BLOCK`；`role_aware=True`＝
+     12/13 張 `BLOCK`、**僅 1 張 pass（`bathroom_tiled`，materials medium／overall
+     medium）**——與裁決 T-45-A 點名的已知放行案例完全吻合，其餘 12 張兩模式 gate
+     結果不變。
+  2. **被放行案例逐面（表 2）**：`default` 模式 0 面（無 pass 案例）；`role_aware`
+     模式僅 `bathroom_tiled` 6 面——floor（`carpet`，✗，gt=`gypsum_board`）、
+     ceiling（`gypsum_board`／無來源，✗，gt=`vinyl_panel`）、north／east／south／west
+     （皆 `generic_wall`／clip，✓）。
+  3. **已知錯誤（鐵則 12）佔比（表 3）**：5 張已知錯誤案例中 `default` 0/5 pass、
+     `role_aware` 1/5 pass（`bathroom_tiled`）；pass 案例裡的 in-set 誤判面數／
+     pass 案例總評分面數：`default` 0/0、`role_aware` 1/6（即 `bathroom_tiled.floor`
+     這一面）。
+  4. **臥室續擋（表 4）**：`bedroom_ai_generated` 兩模式 gate 皆 `BLOCK`；floor
+     top-1 機率 `default` 0.2436 → `role_aware` 0.3394（與 T-44 第四輪記錄逐位元
+     相同），仍在 0.4 門檻之下，未近失翻盤。
+  5. **信心膨脹量化（表 5，67 面全量）**：距 0.4 門檻 <0.05 的面——floor 4 面
+     （`bathroom_tiled`／`stairwell_tiled`／`DivorceBeach`／`TunnelToHell`）、
+     ceiling 3 面（`stairwell_tiled`／`site_photo_department_store`／
+     `RacquetballCourt4`）、wall 7 面（`stairwell_tiled`×4、`SteinmanHall`
+     east／north／south）。**T-44 第四輪記錄的 9 個 round11→round17 信心上升面
+     已全部在本卡量測資料裡找到且方向一致（9/9），數值與歷史記錄逐位元相同**——
+     程式化斷言，非本卡自行點名，見 tables.md「T-44 第四輪 9 面信心上升交叉檢查」段。
+  6. **門檻敏感度（表 6，按角色×模式共 6 張）**：wall 角色兩模式完全相同（候選集
+     兩模式皆 16 種，本來就是 no-op）；floor／ceiling 角色 `role_aware` 模式的
+     「放行後答對」欄多數為 0（即使門檻調更低，放行的面裡答對的很少）。
+  7. **兩項唯讀模擬（表 7／表 8，只算不採用，`compute_materials_confidence()`／
+     `classify_region_material()`／gate 判定段／門檻 0.4／`ROLE_MATERIAL_CANDIDATES`
+     全部只唯讀 import）**：
+     - (a) 門檻依候選數 n 縮放（`threshold(n)=min(0.99, 0.4×16/n)`，floor n=10→
+       eff=0.64、ceiling n=8→eff=0.80、wall n=16 不變）：`role_aware` 模式下多張
+       照片的 floor／ceiling 面會被模擬翻回 `fallback`（含 `bathroom_tiled.floor`），
+       **模擬後 13 張兩模式的 gate 全部維持 `low`／`BLOCK`**——這個候選數縮放公式
+       會連 `bathroom_tiled` 那張放行也一併收回。
+     - (b) 規則 4 加「候選集收窄的 clip 面不得直接 medium」：`role_aware` 模式下
+       `bathroom_tiled`（materials medium→模擬 low）與 `DivorceBeach`（materials
+       medium→模擬 low，但 `DivorceBeach` 因 geometry 已是 low，gate 本來就是
+       `BLOCK`，這條模擬對它的 gate 無感）都被下修；`default` 模式無 narrowing，
+       兩張照片模擬前後不變。這條模擬同樣會把 `bathroom_tiled` 收回 `BLOCK`。
+
+  **自我檢查**：`scripts/test_*.py` 20 支逐支 `EXIT=0`；六條交付 IR MD5 全中——
+  T-14 兩條由 `test_ir_synth.py`【6】內建比對（`f3a763be…`／`f24353b5…`）；T-20 兩條
+  本視窗實跑 `--text 浴室`／`--text 大教堂` 重生＝`2adbaa75…`／`2dd19b6e…`；T-21
+  兩條實跑 `--scene assets/scenes/{neighbor_voices,stadium_corridor}.json` 重生＝
+  `9a94ffdf…`／`a1c21bcc…`——四條與歷史記錄逐位元相同；`git diff --stat -- src/
+  data/` 為空；`git status --porcelain -- src scripts data` 只有新增的
+  `scripts/t47_gate_calibration.py` 一檔（腳本本身尚未 commit 前的預期狀態，見
+  REPORT.md 的 provenance 段説明，同 T-42／T-43／T-49 既有慣例）；兩模式 13 張的
+  真實 CLI／harness 快取指紋皆含跑 CLI 當下的主 repo HEAD（見 REPORT.md
+  `code_fingerprint.repo_head`）；REPORT 四樣證據 ×2 模式齊全（見上）。
+
+  **範圍確認**：本卡只新增 `scripts/t47_gate_calibration.py` 一支腳本＋
+  `output/gate_calibration/{REPORT.md,tables.md}`（`output/gate_calibration/`
+  其餘 183M 的 `cli_runs/`／`detail_runs/` 原始產物依 `.gitignore` 規則不進
+  git，只有 `.md` 檔進版控，同既有慣例）；`src/`／`data/`／`scripts/` 其他既有
+  檔案零改動；未跑 `--yes` 清理指令；未碰 `output/mvp_acceptance/`、既有
+  `blind_test/`、`output/role_flag/`、`output/transactional_output/`、
+  `output/provenance/` 等其他卡的產物；`git worktree list` 全程只有主 repo（本卡
+  未使用 `git worktree`，兩條資料來源都跑在當下工作目錄）。
+
+  **本卡刻意不做的事（範圍紅線）**：不對「該不該調整門檻／候選集分區表」下任何
+  結論或建議——⑦(a)(b) 兩個模擬公式的選擇本身也帶有主觀判斷，REPORT 已註明
+  「只算不採用」，交 Fable 下裁決 T-47-A 時參考。
+
+  **下一步**：開 Opus 新視窗，貼 WORKFLOW §2.2 v2 複驗 Prompt，「結果 commit」
+  填本卡的結果 commit（見 HANDOFF.md 同段）。通過後才算「工程：已驗證」，
+  Fable 才能依四樣證據下裁決 T-47-A；T-47-A 之後才能開 T-44-R1。
 
 ### T-48 T-11／T-12 判準第二版針對性重驗（量測卡；裁決 T-45-A 執行卡 3/5；`src/` 零改動）
 - **狀態**：⬜ 未開始

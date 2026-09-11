@@ -1,5 +1,45 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔵 2026-09-11 Sonnet：T-47 gate 校準複審量測完成——**現在該做的是開 Opus 新視窗複驗**，結果 commit `<待補>`
+>
+> 前置「T-46／T-42／T-49／T-43 全部 ✅」開工前已核對成立。新腳本
+> `scripts/t47_gate_calibration.py`（`--out-dir output/gate_calibration/ --fresh`）
+> 對 13 張照片、`role_aware=False`／`True` 各跑**兩條獨立真實資料來源**：
+> ① 真實 CLI（`python -m src.image_reverb <photo> --force-low-confidence --no-viz
+> [--role-aware]`，取 geometry／materials／overall confidence／gate／provenance，
+> 滿足前置「量測產物要走交易式輸出與 provenance」）；② 逐面判定明細 harness
+> （唯讀重用 `t36_clip_accuracy.run_or_load()`／`t44_role_eval.run_or_load_role_aware()`／
+> `eval_cache.py`，取 CLI 的 `analysis.json` 不含的逐面 top3／top-1 機率）。52 次真實
+> 模型推論，26 組 `surfaces`／`surfaces_sources` 兩條來源程式化核對**全部相符**。
+>
+> **四樣證據（詳表見 `output/gate_calibration/{REPORT.md,tables.md}`）**：
+> ①新基準率——`default` 13/13 張 `BLOCK`；`role_aware` 12/13 張 `BLOCK`，**僅
+> `bathroom_tiled` 1 張 pass**（與裁決 T-45-A 點名的已知放行案例吻合）。②該張逐面
+> vs ground truth：floor `carpet`✗、ceiling 無來源✗、四面牆 `generic_wall`✓。
+> ③已知錯誤（鐵則 12）5 張中 `default` 0/5、`role_aware` 1/5 pass；pass 案例裡
+> in-set 誤判面數／總評分面數：`role_aware` 1/6。④臥室兩模式續擋（floor top-1
+> 機率 0.2436→0.3394，仍低於 0.4 門檻）。另加：⑤信心膨脹量化（距門檻 <0.05 的
+> 14 面按角色列出；**T-44 第四輪記錄的 9 個信心上升面已全部程式化核對出現且方向
+> 一致，9/9，數值與歷史記錄逐位元相同**，不只點名 bedroom）；⑥按角色×模式的
+> 門檻敏感度共 6 張；⑦兩項唯讀模擬（候選數縮放門檻、規則 4 收窄下修）——**兩個
+> 模擬都會把 `bathroom_tiled` 的放行收回**，本卡未下任何「該不該調門檻」的結論，
+> 交 Fable 裁決 T-47-A。
+>
+> **自我檢查**：20 支 `scripts/test_*.py` 全 `EXIT=0`；六條交付 IR MD5 全中
+> （T-14 兩條 `test_ir_synth.py`【6】內建；T-20 兩條 `--text 浴室`／`--text 大教堂`
+> 重生＝`2adbaa75…`／`2dd19b6e…`；T-21 兩條 `--scene
+> {neighbor_voices,stadium_corridor}.json` 重生＝`9a94ffdf…`／`a1c21bcc…`，
+> 四條與歷史記錄逐位元相同）；`git diff --stat -- src/ data/` 為空；
+> `output/gate_calibration/` 只有 `REPORT.md`／`tables.md` 進 git（`.gitignore`
+> 既有規則，183M 原始產物不進版控）；未使用 `git worktree`；未碰任何其他卡的
+> 既有產物。
+>
+> **下一步**：開 Opus 新視窗，貼 WORKFLOW §2.2 v2 複驗 Prompt，**「結果 commit」
+> 填本次 commit 雜湊**（本行的 `<待補>` 會在下一個 commit 回填，兩者一起看即可，
+> 內容無實質差異，同 T-43／T-49 既有慣例）。通過後 Fable 才能依四樣證據下裁決
+> T-47-A，之後才能開 T-44-R1。詳見 TASKS.md T-47 卡「交接筆記（Sonnet 執行，
+> 2026-09-11）」與 DEV_LOG `2026-09-11 (120)`。
+
 > ## ✅ 2026-09-11 Opus：T-43 **修正輪複驗通過（工程：已驗證）**——**現在該做的是開視窗執行 T-47**
 >
 > 對象結果 commit `67b6aa5`（雜湊回填 `5d122a9`），複驗時 HEAD `de71d44`，
