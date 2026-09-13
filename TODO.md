@@ -138,10 +138,12 @@
       `git worktree` 比對，geometry/materials/overall/gate 與 IR md5 全數相符、
       臥室紅旗仍 BLOCK）。19 支測試 EXIT=0、六條交付 IR MD5 全中、`git diff`
       限縮在兩檔。詳見 TASKS.md T-42 卡「交接筆記」。
-- [ ] **T-47** 🔵 待審（Sonnet 執行，2026-09-11，結果 commit 見 HANDOFF.md／DEV_LOG (120)）——
-      兩模式 ×13 張四樣證據已產出（`output/gate_calibration/REPORT.md`），`role_aware=True`
-      僅 `bathroom_tiled` 1/13 張 pass，臥室續擋，T-44 第四輪 9 面信心上升交叉檢查 9/9 通過
-      → 開 Opus 新視窗複驗 → 🔮 裁決 T-47-A
+- [ ] **T-47** 🟠 工程退回（Opus 複驗 2026-09-13，對象結果 commit `6d95f5f`）——量測本體獨立
+      `--fresh` 重跑 tables.md 逐位元相同、20 支測試 exit 0、六條 IR MD5 全中；退回理由：
+      ① REPORT ⑦(b) 指向表 8 看 gate 影響，但表 8 無 gate 欄，(b) 的 gate 結論只在手寫交接筆記
+      （修法：表 7／8 加程式產出的 BLOCK/pass 欄後 `--fresh` 重跑）；② WORKFLOW §8 不可變欄位
+      缺漏，交 Fable 定奪。詳見 TASKS.md T-47 卡「狀態」欄與「🟠 Opus 複驗紀錄」
+      → Sonnet 修正輪 → Opus 複驗 → 🔮 裁決 T-47-A
 - [ ] **T-48** T-11／T-12 判準 v2 針對性重驗（只量不改；裁決 T-48-S 2026-09-08：前置只有 T-46 ✅，可與 T-49／T-43 平行）
 - [ ] **T-44-R1**（等使用者：核准絕對下限選項 A／B、提供 ≥5 張 held-out 照片並逐面確認）
 - [ ] **T-17-R2** MVP 重新驗收（新盲測種子與編號、T-43 provenance、結果寫 `output/mvp_acceptance_r2/`）

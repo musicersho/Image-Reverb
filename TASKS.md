@@ -9605,10 +9605,29 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
 - **交接筆記**：
 
 ### T-47 gate 校準複審量測（量測卡；裁決 T-45-A 執行卡 2/5；`src/` 零改動）
-- **狀態**：🔵 **待審（Sonnet 執行，2026-09-11，結果 commit `6d95f5f`）**——等 Opus 開新視窗依 WORKFLOW §5 複驗
-- **四軸狀態**：工程：🔵 待審（結果 commit `6d95f5f`，等 Opus 複驗）｜
-  實驗：不適用（本卡是量測卡，只產出證據供 Fable 裁決 T-47-A，不判定任何假設成立與否）｜
-  產品：待裁決（T-47-A，沿用卡片預設，本卡未提案）｜MVP：不適用（沿用 T-17 FAIL）
+- **狀態**：🟠 **工程退回（Opus 複驗 2026-09-13，對象結果 commit `6d95f5f`／雜湊回填 `4203ba6`，
+  複驗時 HEAD `4203ba6`，`git status --porcelain -- src scripts data` 為空）**。
+  量測本體獨立實測成立（Opus `--fresh` 13 張×2 模式全量重跑，`tables.md` 與提交版**逐位元相同**；
+  20 支測試 exit 0；六條交付 IR MD5 全中；`src/`／`data/` 零 diff），**退回理由只有下列必修項**：
+  1. **REPORT 與程式產出表格不一致（WORKFLOW §5.4.1「產物、報告、原始表格互相一致」＋地雷 #15）**：
+     REPORT ⑦(b) 寫「對 gate 的影響——見 tables.md 表 8」，但表 8 **只有 materials_confidence 兩欄，
+     沒有 gate 欄**；「(b) 會把 `bathroom_tiled` 收回 `BLOCK`」這個對 T-47-A 最關鍵的結論只出現在
+     交接筆記第 7 點與 DEV_LOG（「兩個模擬都會把 `bathroom_tiled` 的放行收回」），是**手寫推導**，
+     不是程式產出（Opus 以表 1 geometry＋表 8 materials 取較低者推導，結論本身正確，但不得以此豁免）。
+     **修法**：表 8 加「實際 gate／模擬 gate」兩欄（唯讀呼叫 `_overall_confidence(geometry, materials_sim)`
+     後轉 `BLOCK`／`pass`）；表 7 的「模擬 gate」欄目前填的是 `low`／`medium`（信心值，不是 gate），
+     同步改成 `BLOCK`／`pass` 並保留模擬 overall 欄；REPORT ⑦(a)(b) 各加一句由程式填入的
+     「模擬後 pass 張數／實際 pass 張數（兩模式）」。改完 `--fresh` 重跑，並程式化或逐位元確認
+     表 1～6 與本次提交版不變。
+  2. **WORKFLOW §8 不可變欄位缺漏（交 Fable 定奪，不在此豁免）**：§8 明文涵蓋「量測」卡且要求執行者
+     開跑前填 `criteria_version`／`criteria_commit`／`criteria_locked_at`／`dataset_manifest_sha256`，
+     本卡卡片模板與交接筆記均無此區塊（Fable 開卡時也未附）。本卡無 pass/fail 門檻，此事前時序已無法
+     補救——請 Fable 裁定：(i) 以「事後補建」標記追加 §8 區塊（`criteria_version: 無門檻量測卡`、
+     `dataset_manifest_sha256` 由程式計算）即可，或 (ii) 量測卡不適用 §8 並修 WORKFLOW 文字（走 §7）。
+  詳見下方「🟠 Opus 複驗紀錄（2026-09-13）」。Sonnet 執行輪原文保留於下方，不覆寫。
+- **四軸狀態**：工程：退回（Opus 2026-09-13，理由見「狀態」欄）｜
+  實驗：不適用（量測卡，只產出證據供 Fable 裁決 T-47-A，不判定任何假設成立與否）｜
+  產品：待裁決（T-47-A）｜MVP：不適用（沿用 T-17 FAIL）
 - **前置**：T-46 ✅、T-42 ✅、T-49 ✅、T-43 ✅（量測產物要走交易式輸出與 provenance；
   裁決 T-42-A 插入 T-49）
 - **為什麼**：T-26 gate、裁決 T-28-A、裁決 T-36-A 的 BLOCK／pass 校準全建立在「固定門檻
@@ -9722,6 +9741,50 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
   **下一步**：開 Opus 新視窗，貼 WORKFLOW §2.2 v2 複驗 Prompt，「結果 commit」
   填 `6d95f5f`。通過後才算「工程：已驗證」，Fable 才能依四樣證據下裁決
   T-47-A；T-47-A 之後才能開 T-44-R1。
+
+- **🟠 Opus 複驗紀錄（2026-09-13，新視窗；對象結果 commit `6d95f5f`＋雜湊回填 `4203ba6`，
+  複驗時 HEAD `4203ba6`，`git status --porcelain -- src scripts data` 為空）**：
+
+  **四軸判定**：工程：退回｜實驗：不適用｜產品：待裁決（T-47-A）｜MVP：不適用（沿用 T-17 FAIL）
+
+  **獨立實測通過的項目（修正輪不需重做證明，但須維持）**：
+  1. `git diff --stat 808a6ff 4203ba6 -- src data` 為空；`6d95f5f` 只動 7 檔（腳本＋兩份 .md＋四份文件）。
+  2. Opus 自跑 `python scripts/t47_gate_calibration.py --out-dir <scratchpad>/t47_opus_verify --fresh`
+     （HEAD `4203ba6`，工作區乾淨）→ exit 0；26 組 CLI／harness `surfaces`＋`sources` 逐位元相符；
+     9/9 交叉檢查通過；**`tables.md` 與提交版 `diff` 零差異**；REPORT 只差 out_dir／HEAD／時間／porcelain
+     （現為「空，工作區乾淨」）。另直接讀 26 份 `analysis.json` 原始 JSON 核對表 1 三軸＋gate、
+     `bathroom_tiled` role_aware floor top3（carpet 0.4044）與 bedroom default floor 0.2436，全部一致。
+  3. Sonnet 原跑的 26 份 CLI `.fingerprint.json` 的 `code_sha256` 與現行 6 支 `src` 檔逐一相同（0 不符）；
+     26 份 detail 快取 `eval_mode` 為 `t47_gate_calibration:*`，非舊卡快取。
+  4. `scripts/test_*.py` 20 支逐支 exit 0；T-14 兩條由 `test_ir_synth.py`【6】比對通過；T-20／T-21 四條
+     Opus 本視窗重生（檔案時間 2026-09-13 14:23）MD5＝`2adbaa75…`／`2dd19b6e…`／`9a94ffdf…`／`a1c21bcc…` 全中。
+  5. 腳本內手抄常數逐一對源：`KNOWN_ERROR_PHOTOS` 與 round17 表 4 五張相同；`T44_ROUND4_NINE_FACES`
+     與 T-44 卡第四輪紀錄 9 面數值相同（`surfaces.py` 以 4 位小數存 top3，「逐位元相同」在此精度下成立）；
+     候選數 n 由 `ROLE_MATERIAL_CANDIDATES`＋`CLIP_OOD_PROMPTS` 讀出（floor 10／ceiling 8／wall 16，
+     softmax 確實含 4 個域外候選，用 16 不是 12 有根據）；gate＝`confidence=="low"` 與 `pipeline.py` 一致。
+  6. 從表 5 原始數字手算複核：<0.05 清單完整（floor 4／ceiling 3／wall 7）；六張敏感度表逐列相符；
+     ⑦(a) 在 default 模式 n=16 為恆等，模擬 materials 13 張全等於實際值（模擬機制的健全性檢查成立）。
+  7. REPORT 未對「該不該調門檻」下結論（卡片紅旗未觸發）；只跑一種模式、`src/` diff、舊快取三紅旗皆未觸發。
+
+  **退回理由（必修）**：見本卡「狀態」欄第 1、2 點（表 8 無 gate 欄而 REPORT 指向它、
+  (b) 的 gate 結論僅手寫；§8 不可變欄位缺漏交 Fable）。
+
+  **附帶發現（非退回理由，原樣交 Fable 裁決 T-47-A 時參考；不得在修正輪擴大範圍處理）**：
+  - ⓐ **③ 的 1/6 容易被讀成「放行案例 5/6 面正確」**：表 2 顯示 `bathroom_tiled`（role_aware 唯一 pass）
+    6 面裡**錯 2 面**——floor（clip 判 carpet，in-set 誤判）＋ceiling（**無來源**，預設 gypsum_board，
+    gt=vinyl_panel）。REPORT 的「in-set 誤判面數 1/6」字面為真（非 in-set 錯不計），但決策時請看表 2。
+  - ⓑ **gate 規則本身的漏洞（重要）**：`compute_materials_confidence()` 規則 1 只看 `fallback`／
+    `out_of_domain`，**「無來源」的面不觸發 low**；`bathroom_tiled` 能到 medium，一部分正因 ceiling
+    根本沒判到卻落到規則 4。這不是本卡的錯，但與 T-47-A 直接相關。
+  - ⓒ ⑦(a) 的 `0.4×16/n` 是線性縮放，REPORT 稱「等效全域 16 候選 softmax 的機率門檻」屬措辭過度
+    （softmax 機率不隨 n 線性縮放）；腳本 docstring 已自承「不是唯一合理公式」。
+  - ⓓ role_aware 也會改變 **geometry 軸**：`site_photo_department_store` geometry medium→low（floor 由
+    clip 0.9356 變 out_of_domain，經 `geometry.py` 域外 scene cue 下修）；`car_interior_suv` floor
+    clip→out_of_domain。表 1 已如實呈現，但 REPORT／交接筆記未點出。
+  - ⓔ 表 5「距門檻 0.4」對 `out_of_domain` 面（如 `TunnelToHell.floor` default 0.3535）也計算距離，
+    該門檻對域外判定不起作用，讀 <0.05 清單時應排除或另標。
+  - ⓕ 表 6 敏感度只掃 0.20～0.40（向下放寬），role_aware 的膨脹問題需要的是向上收緊的資訊，
+    目前只有 ⑦(a) 單一公式提供；交接筆記「放行後答對欄多數為 0」實為全部為 0。
 
 ### T-48 T-11／T-12 判準第二版針對性重驗（量測卡；裁決 T-45-A 執行卡 3/5；`src/` 零改動）
 - **狀態**：⬜ 未開始
