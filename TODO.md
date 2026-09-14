@@ -174,7 +174,7 @@
       MVP：不適用（沿用 T-17 FAIL）。Opus scratchpad 重算 `dataset_manifest_sha256`＝`c15d0a14…2b01a7`，與 T-47 §8 回填值、
       HEAD manifest blob 三方相同；ground truth＝`965e51ac…`；26/26 CLI 指紋 `photo_sha256` 相符；commit 恰五檔；
       TASKS diff 只三個合法 hunk；20 支測試 EXIT=0、六條 IR MD5 全中。詳見 TASKS.md T-51 卡「✅ Opus 驗證紀錄」。
-- [ ] **T-48** T-11／T-12 判準 v2 針對性重驗——**🔵 待審（修正輪，Sonnet 2026-09-14；結果 commit 待回填）**。原
+- [ ] **T-48** T-11／T-12 判準 v2 針對性重驗——**🔵 待審（修正輪，Sonnet 2026-09-14；結果 commit `cbc117b`）**。原
       🟠 工程退回（Opus 2026-09-14，對象 `012a07f`）理由 R1～R8 已於修正輪逐項處理：R1／R2 卡片文字直接更正、
       R3／R4／R5／R7 為 `scripts/t48_geometry_material_r2.py` 報表產生邏輯修正（commit `8bfe262`，未改任何量測數值／判準）、
       R6 以「→ Opus 更正」append 方式修 T-11／T-12 §8、R8 六條交付 IR MD5 本輪全部實跑驗證（不只 2 條）。Part A 未重跑
