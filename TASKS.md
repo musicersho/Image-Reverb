@@ -10337,7 +10337,7 @@ EOF
   criteria_version: gate v2（裁決 T-47-A 選項乙；規則原文＝output/gate_calibration/CRITERIA_GATE_v2.md）
   criteria_commit: 81bc4cd（criteria: gate v2……，2026-09-14；只含 CRITERIA_GATE_v2.md 一檔；早於本卡任何結果 commit）
   criteria_locked_at: 2026-09-14（使用者核准日＝criteria commit 日）
-  dataset_manifest_sha256: 〈執行者開跑前填；必須＝c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7（同一批 13 張＋ground truth），不等＝卡關〉
+  dataset_manifest_sha256: c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7（開跑前 shasum -a 256 output/gate_calibration/DATASET_MANIFEST.json 重算，與本卡要求值相符）
   implementation_commit: 〈執行者填〉
   result_commit: 〈執行者填〉
   reviewer: 〈Opus 填：模型＋日期＋commit〉
