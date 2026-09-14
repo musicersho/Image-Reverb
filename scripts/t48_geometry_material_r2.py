@@ -347,7 +347,7 @@ def run_part_a_report_only() -> list[dict]:
     return results
 
 
-def _write_part_a_report(results: list[dict]) -> None:
+def _write_part_a_report(results: list[dict], report_only: bool = False) -> None:
     head = git_head()
     dirty_check = git_status_clean(["src", "data", "scripts"])
     lines = []
@@ -355,6 +355,16 @@ def _write_part_a_report(results: list[dict]) -> None:
     lines.append(f"> 產生日期：{datetime.now(timezone.utc).isoformat()}　"
                  f"git_head：`{head}`　"
                  f"git status --porcelain -- src data scripts：{'(空)' if not dirty_check else dirty_check}\n")
+    # 第二修正輪（Sonnet，2026-09-14）回應 Opus 修正輪複驗紀錄 Q2：report-only 模式下
+    # git_head 只是「這次重產報表當下」的 commit，不是量測發生的 commit，兩者不寫清楚
+    # 會讓讀者誤以為每次重產報表都重新跑了一次 CLI。這裡另外列出真正量測的 commit。
+    if report_only:
+        lines.append(
+            f"> **本報表為 report-only 重產於 `{head}`，未重跑 CLI**——13 張照片的真實 CLI 量測"
+            f"（`default`／`force_low_confidence` 兩次執行、寫入 `output/geometry_r2/runs/` 的原始 log）"
+            f"實際發生於 **量測 commit `{PART_A_MEASUREMENT_COMMIT}`**（Part A 最終程式版本，見 T-11 "
+            f"§8「Opus 更正」）；本次只讀既有 log 重新組字串／表格，數字不會、也不可能因此改變。\n"
+        )
     lines.append(
         "判準 v2（事前鎖定，見 TASKS.md T-48 卡 §8）：實際最大維 >10m 的照片，"
         "`geometry_confidence` 必須為 low 且 gate 訊息含 `--override-dims` 導引；"
@@ -440,13 +450,22 @@ def _write_part_a_report(results: list[dict]) -> None:
                 f"擋下的軸＝{('、'.join(r['blocking_axes']) or '無（本張預設路徑未被擋下）')}。"
             )
             if "materials" in r["blocking_axes"] and "geometry" not in r["blocking_axes"]:
+                # 第二修正輪（Sonnet，2026-09-14）回應 Opus 修正輪複驗紀錄 N3（非退回理由，順手處理）：
+                # actual_dims_m 原本是 Python list repr（例如 [12.19, 6.1, 6.1]）原樣輸出，改成
+                # 與上面估計尺寸同款的 L×W×H(m) 格式，純外觀、不改任何數值。
+                known = r["known"] or {}
+                if "actual_dims_m" in known:
+                    dl, dw, dh = known["actual_dims_m"]
+                    actual_dims_str = f"{dl:.2f}×{dw:.2f}×{dh:.2f}m"
+                else:
+                    actual_dims_str = f"最大維 {known['actual_max_dim_m']}m"
                 lines.append(
                     f"即：本張是被**材質軸**擋下，幾何軸維持 medium（未觸發 low），"
                     f"所以 gate 給的出口只有材質覆寫（低信心面：{('、'.join(r['low_confidence_faces']) or '無')}），"
                     f"**沒有**提供 `--override-dims` 這個出口——使用者如果只照 gate 訊息字面操作"
                     f"（覆寫上述材質面），程式不會再擋幾何，會直接用這張的**錯誤估計尺寸**"
                     f"（{r['length_m']:.2f}×{r['width_m']:.2f}×{r['height_m']:.2f}m，"
-                    f"實際 {r['known']['actual_dims_m'] if r['known'] and 'actual_dims_m' in r['known'] else r['known']['actual_max_dim_m']}）"
+                    f"實際 {actual_dims_str}）"
                     f"輸出 IR，exit 0。**這一步已由 Opus 驗證紀錄 V5（2026-09-14，驗證時 HEAD "
                     f"`153155b`）實測確認**：對 RacquetballCourt4 加 "
                     f"`--override-material north=gypsum_board --override-material ceiling=wood_panel` 後，"
@@ -485,7 +504,7 @@ def cmd_part_a() -> None:
 
 def cmd_part_a_report_only() -> None:
     results = run_part_a_report_only()
-    _write_part_a_report(results)
+    _write_part_a_report(results, report_only=True)
     fail_count = sum(1 for r in results if r["verdict"] == "FAIL")
     print(f"\nPart A（只重產報表，未重新呼叫 CLI）完成：FAIL 筆數 = {fail_count}")
 
@@ -541,6 +560,18 @@ def _sabine_125hz_from_stdout(stdout: str) -> float | None:
 FIRST_RUN_V2B_DIFF_PCT = -21.1
 FIRST_RUN_V2B_VERDICT = "FAIL"
 FIRST_RUN_V2B_COMMIT = "d372ad9"
+
+# 第二修正輪（Sonnet，2026-09-14）新增，回應 Opus 修正輪複驗紀錄 Q2（溯源失實）：
+# report-only 模式重產 REPORT 時，檔頭的 git_head 只反映「這次重產報表當下」的 commit
+# （例如跑 partB-report-only 時的 HEAD），跟「量測實際發生的 commit」是兩回事——不寫清楚
+# 會讓讀者誤以為每次重產報表都重新量了一次。這兩個常數記錄「量測本體真正發生」的 commit，
+# 供 REPORT 檔頭另外列出，report-only 不改這兩個值。
+# A：Part A 最終真跑 CLI 的 commit（13 張 default／force_low_confidence log 的產生時刻；
+#    T-11 §8「Opus 更正」已核對 714703d 是 Part A 最終程式版本，469abef 只是初版）。
+PART_A_MEASUREMENT_COMMIT = "714703d"
+# B：本卡交付 WAV 實際由 gen_ir_manual.py 重生的 commit（三次「官方」重跑中的第三次，也是
+#    唯一留存到 output/material_r2/ 的交付版本；前兩次 d372ad9／dd03c0e 的產物已被覆蓋）。
+PART_B_MEASUREMENT_COMMIT = "cda6b9b"
 
 
 def run_part_b() -> dict:
@@ -663,8 +694,13 @@ def _write_stability_appendix(cases: dict, repeats: dict) -> list[str]:
     lines.append(
         "`gen_ir_manual.py` 呼叫的 pyroomacoustics ray tracing **沒有固定 random seed**"
         "（已實測：同一指令重跑兩次，輸出 WAV sha256 不同，樣本點最大絕對差"
-        "約 0.099——見本卡交接筆記）。§0 的官方判定只用**每個 case 第一次（也是唯一"
-        "交付到 `output/material_r2/` 的那次）重生結果**，不做多次重跑取平均"
+        "約 0.099——見本卡交接筆記）。"
+        # 第二修正輪（Sonnet，2026-09-14）回應 Opus 修正輪複驗紀錄 Q1（R4 殘留）：這句原本寫
+        # 「§0 的官方判定只用每個 case 第一次（也是唯一交付到 output/material_r2/ 的那次）重生
+        # 結果」，與 §0「官方 verdict＝首跑 d372ad9、交付檔是第三次 cda6b9b」正面矛盾——
+        # d372ad9 那次不是「唯一交付」的那次，交付版是後來的 cda6b9b。改成與 §0 一致的說法。
+        f"**§0 的官方 verdict＝首跑（`{FIRST_RUN_V2B_COMMIT}`）；本附錄與 §1 的數字量自"
+        f"`{PART_B_MEASUREMENT_COMMIT}` 生成的交付 WAV**（見上方交付檔案表），不做多次重跑取平均"
         "（判準本身沒有要求，本卡也不得另外發明「取平均」這種未鎖定的判定方式）。\n\n"
         f"為了讓 Opus／Fable 判斷 v2-b 這筆 **{official_verdict}**（本次交付版本，"
         f"{official_diff:+.1f}%）是否落在量測噪聲量級內，"
@@ -718,12 +754,25 @@ def _write_stability_appendix(cases: dict, repeats: dict) -> list[str]:
     return lines
 
 
-def _write_part_b_report(cases: dict, repeats: dict | None = None) -> None:
+def _write_part_b_report(cases: dict, repeats: dict | None = None, report_only: bool = False) -> None:
     head = git_head()
     dirty_check = git_status_clean(["src", "data", "scripts"])
     pw = cases["per_wall"]
     cg = cases["control_gypsum"]
     cc = cases["control_carpet"]
+
+    # 第二修正輪（Sonnet，2026-09-14）回應 Opus 修正輪複驗紀錄 Q2：report-only 模式下所有
+    # 「本次重生／本次執行／搬移前後」字句都改指向真正量測發生的 commit（PART_B_MEASUREMENT_COMMIT），
+    # 不寫死成「本次」——否則 8bfe262／cbc117b 這種只重產報表沒重生 IR 的 commit，字面上會變成
+    # 「本次重生」的假象（Opus 修正輪複驗紀錄 Q2 正是抓到這個）。
+    if report_only:
+        regen_phrase = f"`{PART_B_MEASUREMENT_COMMIT}` 那次重生"
+        regen_stdout_phrase = f"`{PART_B_MEASUREMENT_COMMIT}` 那次執行的 stdout（讀自 `output/material_r2/runs/*.log`，本次未重新呼叫 `gen_ir_manual.py`）"
+        move_note = f"（`{PART_B_MEASUREMENT_COMMIT}` 那次生成時搬移前後都算過 sha256；本次 report-only 只讀既有交付 WAV 重新量測與重組文字，未搬移、未重新生成任何檔案）"
+    else:
+        regen_phrase = "本次重生"
+        regen_stdout_phrase = "本次執行的 stdout（程式印出，不手打）"
+        move_note = "（sha256 在搬移前後都算過，確認 bytes 未在搬移過程變動）"
 
     # v2-a：per-wall Sabine 125Hz ≈0.348s ±20%
     v2a_target = 0.348
@@ -755,11 +804,19 @@ def _write_part_b_report(cases: dict, repeats: dict | None = None) -> None:
     lines.append(f"> 產生日期：{datetime.now(timezone.utc).isoformat()}　"
                  f"git_head：`{head}`　"
                  f"git status --porcelain -- src data scripts：{'(空)' if not dirty_check else dirty_check}\n")
+    if report_only:
+        lines.append(
+            f"> **本報表為 report-only 重產於 `{head}`，未重跑 CLI／未重生任何 IR**——三條交付 WAV 的"
+            f"真實生成（`gen_ir_manual.py` 呼叫）實際發生於 **量測 commit `{PART_B_MEASUREMENT_COMMIT}`**"
+            f"（本卡執行期間第三次「官方」重跑，也是唯一留存至今的交付版本）；本次只讀既有 WAV 與 log "
+            f"重新量測（`t30_low_combined()`／`band_t30()` 對現存 bytes 直接計算）並重組文字，數字不會、"
+            f"也不可能因此改變。\n"
+        )
     lines.append(
-        "三條 IR 由 `scripts/gen_ir_manual.py`（不改動，逐字沿用 T-12 卡「Opus 驗證結果」表格"
-        "已記錄的指令）本次重生，交付到 `output/material_r2/`（紅線：不得重用 `output/` 舊 IR）：\n"
+        f"三條 IR 由 `scripts/gen_ir_manual.py`（不改動，逐字沿用 T-12 卡「Opus 驗證結果」表格"
+        f"已記錄的指令）{regen_phrase}，交付到 `output/material_r2/`（紅線：不得重用 `output/` 舊 IR）：\n"
     )
-    lines.append("| case | 指令 | 房間 | 交付檔案 | sha256（本次重生） |")
+    lines.append(f"| case | 指令 | 房間 | 交付檔案 | sha256（{regen_phrase}） |")
     lines.append("|---|---|---|---|---|")
     for c in cases.values():
         cmd = "python scripts/gen_ir_manual.py " + " ".join(c["args"])
@@ -796,14 +853,14 @@ def _write_part_b_report(cases: dict, repeats: dict | None = None) -> None:
         lines.append(f"| {c['desc']} | {sab} | {c['t30_125hz_octave_s']:.4f} | {c['t30_low_combined_s']:.4f} |")
 
     lines.append(
-        "\n## 2. 方法\n\n"
-        "1. `scripts/gen_ir_manual.py`（**零改動**）依上表指令重生三條 IR，程式預設寫到 `output/`，"
-        "本腳本立即搬到 `output/material_r2/`（sha256 在搬移前後都算過，確認 bytes 未在搬移過程變動）。\n"
-        "2. v2-a：Sabine 125Hz 數字讀自 `gen_ir_manual.py` 本次執行的 stdout（程式印出，不手打）。\n"
-        "3. v2-b／v1：讀 `src/image_reverb/ir_metrics.py` 既有函式——`t30_low_combined()`（T-18，"
-        "88.4–353.6Hz 聯合帶）與 `band_t30(ir, fs, [125])`（單一 125Hz 八度，v1 字面條件用）——"
-        "對本次重生的 WAV 直接量測，不重新實作任何頻段濾波／Schroeder 積分邏輯。\n"
-        "4. `ir_metrics.py`、`src/`、`data/` 全程零 diff（本卡只呼叫既有函式，不修改）。\n"
+        f"\n## 2. 方法\n\n"
+        f"1. `scripts/gen_ir_manual.py`（**零改動**）依上表指令重生三條 IR，程式預設寫到 `output/`，"
+        f"本腳本立即搬到 `output/material_r2/`{move_note}。\n"
+        f"2. v2-a：Sabine 125Hz 數字讀自 `gen_ir_manual.py` {regen_stdout_phrase}。\n"
+        f"3. v2-b／v1：讀 `src/image_reverb/ir_metrics.py` 既有函式——`t30_low_combined()`（T-18，"
+        f"88.4–353.6Hz 聯合帶）與 `band_t30(ir, fs, [125])`（單一 125Hz 八度，v1 字面條件用）——"
+        f"對{regen_phrase}的 WAV 直接量測，不重新實作任何頻段濾波／Schroeder 積分邏輯。\n"
+        f"4. `ir_metrics.py`、`src/`、`data/` 全程零 diff（本卡只呼叫既有函式，不修改）。\n"
     )
 
     if repeats is None:
@@ -888,7 +945,7 @@ def cmd_part_b_report_only() -> None:
         print(f"❌ 錯誤：{stability_dir} 底下找不到既有重跑檔，無法只重產報表。")
         sys.exit(1)
 
-    verdicts = _write_part_b_report(cases, repeats=repeats)
+    verdicts = _write_part_b_report(cases, repeats=repeats, report_only=True)
     print(f"\nPart B（只重產報表，未重新生成任何 IR）完成："
           f"v2-a={'PASS' if verdicts['v2a_pass'] else 'FAIL'} "
           f"v2-b={verdicts['v2b_verdict_label']} "
