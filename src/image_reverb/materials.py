@@ -104,6 +104,11 @@ class SurfaceMaterials:
     sources: dict[str, str] = field(default_factory=dict)
     warnings: list[str] = field(default_factory=list)
 
+    # T-52（裁決 T-47-A 選項乙，gate v2 R1b）：每個面的材質是用哪個候選集判出來的——
+    # "global"（全域 12 種，預設）或 "role:floor"／"role:ceiling"／"role:wall"
+    # （role_aware 模式，該面的角色候選子集）。未指定的面視為 "global"。
+    candidate_scope: dict[str, str] = field(default_factory=dict)
+
     def as_dict(self) -> dict[str, str]:
         """回傳 {面名稱: 材質 id}，key 順序與 pyroomacoustics 的 wall_names 一致。"""
         return {name: getattr(self, name) for name in SURFACE_NAMES}
@@ -120,13 +125,18 @@ class SurfaceMaterials:
         """六個面是不是同一種材質（= 退化成約束 A 禁止的不現實模型）。"""
         return len(self.unique_ids()) == 1
 
-    def set_walls(self, material_id: str, source: str = "manual") -> None:
+    def set_walls(
+        self, material_id: str, source: str = "manual", candidate_scope: str = "global"
+    ) -> None:
         """一次設定四面牆（不動地板與天花板）。"""
         for name in WALL_NAMES:
             setattr(self, name, material_id)
             self.sources[name] = source
+            self.candidate_scope[name] = candidate_scope
 
-    def set_surface(self, name: str, material_id: str, source: str = "manual") -> None:
+    def set_surface(
+        self, name: str, material_id: str, source: str = "manual", candidate_scope: str = "global"
+    ) -> None:
         """設定單一面；面名稱打錯要立刻報錯，不要安靜忽略。"""
         if name not in SURFACE_NAMES:
             raise KeyError(
@@ -135,6 +145,7 @@ class SurfaceMaterials:
             )
         setattr(self, name, material_id)
         self.sources[name] = source
+        self.candidate_scope[name] = candidate_scope
 
     def validate(self, data: dict[str, Any] | None = None) -> None:
         """確認六個面的材質 id 都真的存在於材質表（早失敗，不要拖到模擬時才炸）。"""

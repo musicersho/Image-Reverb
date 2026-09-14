@@ -30,7 +30,7 @@ from .acoustics import compute_acoustics
 from .furnishings import estimate_furnishings
 from .geometry import estimate_room, parse_override_dims
 from .materials import SURFACE_NAMES, apply_overrides, load_materials
-from .surfaces import compute_materials_confidence
+from .surfaces import compute_materials_confidence, r1b_narrowed_clip_faces
 
 PROJECT_ROOT = config.PROJECT_ROOT
 OUTPUT_ROOT = PROJECT_ROOT / "output"
@@ -420,6 +420,19 @@ def run_photo(
                                 f"（來源：{surf.sources.get(name)}）",
                                 file=sys.stderr,
                             )
+                    # T-52（裁決 T-47-A 選項乙，gate v2 R1b）：candidate_scope 在
+                    # role_aware=False 時一律 "global"，r1b_narrowed_clip_faces() 因此
+                    # 在 default 模式恆回傳空清單——這段永不印出，stderr 逐位元不變。
+                    r1b_faces = r1b_narrowed_clip_faces(surf)
+                    if r1b_faces:
+                        print("  未校準面（role_aware）：", file=sys.stderr)
+                        for name, role, n in r1b_faces:
+                            print(
+                                f"    {name}：目前推測 {getattr(surf, name)}"
+                                f"（角色 {role}，候選 {n} 種，來源：clip；"
+                                "未經校準，裁決 T-47-A，不計入放行）",
+                                file=sys.stderr,
+                            )
                     print("  怎麼繼續：", file=sys.stderr)
                     step = 1
                     if est.confidence == "low":
@@ -450,7 +463,36 @@ def run_photo(
                             file=sys.stderr,
                         )
                         step += 1
-                    elif materials_confidence == "low" and not low_conf_faces and surf.is_uniform():
+                    elif materials_confidence == "low" and not low_conf_faces and r1b_faces:
+                        # T-52（裁決 T-47-A 選項乙，gate v2 R1b）：規則 1 沒觸發，materials
+                        # 仍為 low，是因為收窄候選集的 clip 面未經校準——兩條出口（改用預設
+                        # 模式／人工覆寫），依 T-30 原則點名面，不假裝這是規則 2 的退化情況。
+                        print(
+                            f"    {step}a) 改用預設模式（拿掉 --role-aware）→ 上列面改用全域候選集，"
+                            "不再受 R1b 影響（裁決 T-47-A gate v2）",
+                            file=sys.stderr,
+                        )
+                        skeleton = " ".join(
+                            f"--override-material {name}=<材質id>" for name, _, _ in r1b_faces
+                        )
+                        print(
+                            f"    {step}b) 或人工確認上列面的實際材質後覆寫，"
+                            f"例如：python -m src.image_reverb {photo_path} {skeleton}",
+                            file=sys.stderr,
+                        )
+                        print(
+                            "       <材質id> 請自行判斷並用 "
+                            "`python scripts/gen_ir_manual.py --list-materials` 查表填入"
+                            "——這是人工確認的出口，不要用另一層自動猜測取代 CLIP。",
+                            file=sys.stderr,
+                        )
+                        step += 1
+                    elif (
+                        materials_confidence == "low"
+                        and not low_conf_faces
+                        and not r1b_faces
+                        and surf.is_uniform()
+                    ):
                         # T-34：規則 1（fallback/out_of_domain）沒觸發，materials 仍為 low
                         # 只可能是規則 2（六面全同的退化情況）——這種情況 low_conf_faces
                         # 是空的，之前完全沒有導引，只剩 --force-low-confidence 一條路
@@ -639,6 +681,14 @@ def run_photo(
             "volume_m3": round(est.volume_m3, 2),
             "surfaces": surf.as_dict(),
             "surfaces_sources": surf.sources,
+            **(
+                {
+                    "surfaces_candidate_scope": dict(surf.candidate_scope),
+                    "materials_gate_criteria": "v2",
+                }
+                if role_aware
+                else {}
+            ),
             "override_dims_used": override is not None,
             "override_materials_used": override_specs_used,
             "band_center_freqs_hz": ac.band_center_freqs_hz,

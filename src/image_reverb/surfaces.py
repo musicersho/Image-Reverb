@@ -366,7 +366,11 @@ def surfaces_from_preprocess(
                     f"[{view_name}] 沒有偵測到足夠大的 {role} 區域，{surface} 面保持預設材質"
                 )
                 continue
-            surfaces.set_surface(surface, obs.material_id, source=obs.method)
+            # T-52：candidate_scope 記的是**實際用來分類這個面**的角色（obs.role，
+            # 可能因上面的 fallback 退回 "wall" 而與 surface 對應的 role 不同），
+            # 不是 role_aware=False 時一律 "global"。
+            scope = f"role:{obs.role}" if role_aware else "global"
+            surfaces.set_surface(surface, obs.material_id, source=obs.method, candidate_scope=scope)
             detail["views"][view_name] = {
                 "surface": surface, "role": obs.role, "material_id": obs.material_id,
                 "confidence": round(obs.confidence, 4), "method": obs.method,
@@ -382,10 +386,11 @@ def surfaces_from_preprocess(
         detail["class_ratios"]["single"] = res["class_ratios"]
 
         for role, obs in res["observations"].items():
+            scope = f"role:{obs.role}" if role_aware else "global"
             if role == "wall":
-                surfaces.set_walls(obs.material_id, source=obs.method)
+                surfaces.set_walls(obs.material_id, source=obs.method, candidate_scope=scope)
             else:
-                surfaces.set_surface(role, obs.material_id, source=obs.method)
+                surfaces.set_surface(role, obs.material_id, source=obs.method, candidate_scope=scope)
             detail["views"].setdefault("single", {})[role] = {
                 "material_id": obs.material_id, "confidence": round(obs.confidence, 4),
                 "method": obs.method, "pixel_ratio": round(obs.pixel_ratio, 4),
@@ -409,27 +414,70 @@ def surfaces_from_preprocess(
     return surfaces, detail
 
 
+def r1b_narrowed_clip_faces(surfaces: SurfaceMaterials) -> list[tuple[str, str, int]]:
+    """T-52 R1b（`output/gate_calibration/CRITERIA_GATE_v2.md`）判定式：找出哪些面
+    來源為 `"clip"` 且該面的角色候選集是收窄子集（`len(ROLE_MATERIAL_CANDIDATES[role])
+    < len(CLIP_MATERIAL_PROMPTS)`）。回傳 `(面名稱, 角色, 該角色候選數)` 清單，供
+    `compute_materials_confidence()` 與 gate BLOCK 訊息共用同一份判定，不重複寫規則。
+
+    `candidate_scope` 在 `role_aware=False` 時一律為 `"global"`（`surfaces_from_preprocess()`
+    保證），所以本函式在 default 模式下恆回傳空清單——R1b 只在 role_aware=True 時存在。
+    """
+    faces: list[tuple[str, str, int]] = []
+    for name in SURFACE_NAMES:
+        if surfaces.sources.get(name) != "clip":
+            continue
+        scope = surfaces.candidate_scope.get(name, "global")
+        if not scope.startswith("role:"):
+            continue
+        role = scope[len("role:") :]
+        candidates = ROLE_MATERIAL_CANDIDATES.get(role)
+        if candidates is None or len(candidates) >= len(CLIP_MATERIAL_PROMPTS):
+            continue
+        faces.append((name, role, len(candidates)))
+    return faces
+
+
 def compute_materials_confidence(surfaces: SurfaceMaterials) -> str:
-    """依六面材質的來源與是否退化，判定「材質」這一軸的信心（T-25，REPORT §2.5 缺陷 B）。
+    """依六面材質的來源與是否退化，判定「材質」這一軸的信心（T-25，REPORT §2.5 缺陷 B；
+    R1b 為 T-52，裁決 T-47-A 選項乙）。
 
     這是跟 `RoomEstimate.confidence`（幾何信心）**分開**的一軸——舊行為把
     分析輸出的 `confidence` 直接設成幾何信心，材質是不是用猜的完全沒有訊號透出去，
     T-17 §7-1 的臥室因此被標成 `medium`，但地板其實是 fallback（沒判到）。
 
-    規則（🔮 Opus 裁決 T-25，順序不可調換，由上而下第一個命中的就是結果）：
-      1. 六面中**任一面**的 `sources[name]` 是 `"fallback"` 或 `"out_of_domain"`
-         → `low`（CLIP 對這面沒把握，或這根本不是建築表面，是用猜的）
-      2. 六面材質**全部相同**（`is_uniform()`，約束 A 要避免的退化情況）→ `low`
-      3. 六面皆 `"clip"`（每一面都是模型自己判出來的）**且**沒有任何
+    規則（順序不可調換，由上而下第一個命中的就是結果）：
+      1.（🔮 Opus 裁決 T-25）六面中**任一面**的 `sources[name]` 是 `"fallback"` 或
+         `"out_of_domain"` → `low`（CLIP 對這面沒把握，或這根本不是建築表面，是用猜的）
+      1b.（T-52 R1b，只在 `role_aware=True` 時存在，透過 `candidate_scope` 判斷）
+         六面中任一面來源為 `"clip"` 且該面角色的候選集是收窄子集 → `low`；觸發時在
+         `surfaces.warnings` 逐面加一條未校準警示（規則原文＝CRITERIA_GATE_v2.md）。
+         default 模式（`role_aware=False`）所有面 `candidate_scope` 皆為 `"global"`，
+         本規則永不觸發。
+      2.（🔮 Opus 裁決 T-25）六面材質**全部相同**（`is_uniform()`，約束 A 要避免的
+         退化情況）→ `low`
+      3.（🔮 Opus 裁決 T-25）六面皆 `"clip"`（每一面都是模型自己判出來的）**且**沒有任何
          `surfaces.warnings` → `high`
-      4. 其餘情況 → `medium`
+      4.（🔮 Opus 裁決 T-25）其餘情況 → `medium`
 
-    只讀 `sources` / `warnings` / 六面材質 id，不碰任何聲學數值——本卡「只動
-    metadata，不得改變任何 IR 內容」。
+    只讀 `sources` / `candidate_scope` / 六面材質 id，不碰任何聲學數值——本卡「只動
+    metadata，不得改變任何 IR 內容」；R1b 觸發時會寫 `surfaces.warnings`（規則原文本身
+    要求「觸發時 warnings 加一條」），這是本規則明確允許的唯一例外寫入。
     """
     face_sources = [surfaces.sources.get(name, "") for name in SURFACE_NAMES]
     if any(s in ("fallback", "out_of_domain") for s in face_sources):
         return "low"
+
+    r1b_faces = r1b_narrowed_clip_faces(surfaces)
+    if r1b_faces:
+        for name, role, n in r1b_faces:
+            surfaces.warnings.append(
+                f"{name}：role_aware 收窄候選集（{role}，{n} 種）的 clip 判定未經校準"
+                "（裁決 T-47-A），不計入放行；請改用預設模式（拿掉 --role-aware）或用 "
+                "--override-material 覆寫"
+            )
+        return "low"
+
     if surfaces.is_uniform():
         return "low"
     if all(s == "clip" for s in face_sources) and not surfaces.warnings:

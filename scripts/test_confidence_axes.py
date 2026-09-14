@@ -53,6 +53,24 @@ def _surf_with_sources(sources_by_face: dict[str, str], warnings: list[str] | No
     return surf
 
 
+def _surf_with_scope(
+    sources_by_face: dict[str, str],
+    scope_by_face: dict[str, str] | None = None,
+    warnings: list[str] | None = None,
+) -> SurfaceMaterials:
+    """T-52【C】R1b 測試用：在 `_surf_with_sources()` 之上再逐面套用 `candidate_scope`
+    （未指定的面預設 `"global"`）。用 `hasattr` 探測而不是直接賦值——對舊碼（T-52 之前，
+    `SurfaceMaterials` 沒有 `candidate_scope` 欄位）跑本測試時，這裡會靜默跳過設定
+    （效果等同舊碼從不知道 role scope 這回事），讓測試能同時對新舊碼跑同一份斷言，
+    而不是在舊碼上因為 AttributeError 整批崩潰。"""
+    surf = _surf_with_sources(sources_by_face, warnings)
+    if hasattr(surf, "candidate_scope"):
+        scope_by_face = scope_by_face or {}
+        for name in SURFACE_NAMES:
+            surf.candidate_scope[name] = scope_by_face.get(name, "global")
+    return surf
+
+
 def main() -> int:
     print("【A】pipeline._overall_confidence()：overall = 兩軸取較低者（卡片指定的三個案例）")
     check(
@@ -129,6 +147,68 @@ def main() -> int:
         "六面材質全部相同（退化）→ low，即使來源全是 clip 且無額外警示",
         compute_materials_confidence(surf_uniform) == "low",
         f"實際={compute_materials_confidence(surf_uniform)!r}（六面材質：{surf_uniform.unique_ids()}）",
+    )
+
+    print(
+        "【C】T-52 R1b（裁決 T-47-A 選項乙，gate v2）："
+        "role_aware 收窄候選集的 clip 面不計入放行"
+    )
+    _SINGLE_PERSPECTIVE_NOTE = "單張透視照看不到背後的牆，四面牆共用同一個材質判定值。"
+
+    # (a) role_aware、floor 為 clip 且 candidate_scope["floor"]="role:floor"（收窄，6<12）→ low
+    surf_r1b_a = _surf_with_scope(
+        {n: "clip" for n in SURFACE_NAMES},
+        {"floor": "role:floor"},
+        warnings=[_SINGLE_PERSPECTIVE_NOTE],
+    )
+    result_a = compute_materials_confidence(surf_r1b_a)
+    check(
+        "(a) role_aware、floor clip 且候選集收窄（role:floor，6<12）→ low",
+        result_a == "low",
+        f"實際={result_a!r}",
+    )
+    check(
+        "(a) R1b 觸發時 warnings 有記一條含面名稱／role_aware／T-47-A 的未校準警示",
+        any("floor" in w and "role_aware" in w and "T-47-A" in w for w in surf_r1b_a.warnings),
+        f"warnings={surf_r1b_a.warnings}",
+    )
+
+    # (b) 同一組 sources，但 scope 全部 "global"（等同 default 模式）→ medium，不受影響
+    surf_r1b_b = _surf_with_scope(
+        {n: "clip" for n in SURFACE_NAMES},
+        {},
+        warnings=[_SINGLE_PERSPECTIVE_NOTE],
+    )
+    result_b = compute_materials_confidence(surf_r1b_b)
+    check(
+        "(b) 同一組 sources、scope 全 global（default 模式等效）→ medium（不受 R1b 影響）",
+        result_b == "medium",
+        f"實際={result_b!r}",
+    )
+
+    # (c) 六面 manual_override（覆寫是出口）→ medium，即使殘留 scope 仍標記收窄
+    surf_r1b_c = _surf_with_scope(
+        {n: "manual_override" for n in SURFACE_NAMES},
+        {"floor": "role:floor"},
+    )
+    result_c = compute_materials_confidence(surf_r1b_c)
+    check(
+        "(c) 六面 manual_override（覆寫是出口，R1b 只看 source=='clip'）→ medium",
+        result_c == "medium",
+        f"實際={result_c!r}",
+    )
+
+    # (d) role_aware、wall 為 clip 且 candidate_scope="role:wall"（12=12，不收窄）→ 不觸發 R1b
+    surf_r1b_d = _surf_with_scope(
+        {n: "clip" for n in SURFACE_NAMES},
+        {name: "role:wall" for name in ("west", "east", "south", "north")},
+    )
+    result_d = compute_materials_confidence(surf_r1b_d)
+    check(
+        "(d) role_aware、wall clip 且候選集不收窄（role:wall，12=12）→ 不觸發 R1b，"
+        "六面 clip 無警示 → high",
+        result_d == "high",
+        f"實際={result_d!r}；warnings={surf_r1b_d.warnings}",
     )
 
     print()
