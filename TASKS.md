@@ -9605,7 +9605,19 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
 - **交接筆記**：
 
 ### T-47 gate 校準複審量測（量測卡；裁決 T-45-A 執行卡 2/5；`src/` 零改動）
-- **狀態**：🔵 **待審（修正輪，結果 commit `5d1569c`）**——針對 Opus
+- **狀態**：🟠 **工程退回（Opus 第二輪複驗 2026-09-14，對象結果 commit `5d1569c`／腳本 `5c1cd29`，
+  複驗時 HEAD `54ce03b`，`git status --porcelain -- src scripts data` 為空）——但 Sonnet 不需要再修任何東西**。
+  上一輪退回理由**第 1 點已修妥，Opus 全部獨立實測通過**（`--fresh` 重跑 `tables.md` 與提交版零差異；
+  表 7／8 共 52 列由表 1 獨立重算一致；反向測試證明「模擬 gate」欄會隨輸入算出 `pass`，不是寫死）。
+  **唯一剩下的阻擋是上一輪退回理由第 2 點（WORKFLOW §8 不可變欄位缺漏）**：這一點上一輪已寫明
+  「交 Fable 定奪，不在此豁免」，至今 Fable 尚無裁定；依 WORKFLOW §5.4.1「若有未達項，只能退回、
+  卡關或先走 §7，不能直接綠燈」與紅旗 7（驗證者用附註豁免），Opus 不能因送審 Prompt 請求「分開看」
+  就把它略過而標「已驗證」。**下一步＝開 Fable 視窗裁定 §8（選項見下方第二輪複驗紀錄），不是回 Sonnet。**
+  Fable 裁定並補完後，Opus 只需複核 §8 區塊＋`git diff` 範圍即可轉「已驗證」，量測本體不必重跑。
+  詳見下方「🟠 Opus 第二輪複驗紀錄（2026-09-14）」。
+- **四軸狀態**：工程：退回（Opus 2026-09-14；第 1 點已驗證修妥，僅剩 §8 待 Fable 裁定）｜
+  實驗：不適用｜產品：待裁決（T-47-A）｜MVP：不適用（沿用 T-17 FAIL）
+- **狀態（修正輪 Sonnet 送審時原文，保留不覆寫）**：🔵 **待審（修正輪，結果 commit `5d1569c`）**——針對 Opus
   複驗（2026-09-13，對象 `6d95f5f`）退回理由第 1 點修正：表 7「模擬 gate」欄原填 `low`／`medium`
   （信心值，不是 gate），已改為程式產出的 `BLOCK`／`pass`，並新增「實際 gate」「模擬 overall」
   兩欄；表 8 新增「實際 gate」「模擬 overall」「模擬 gate」三欄，模擬 gate 一律由程式唯讀呼叫
@@ -9616,7 +9628,7 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
   模擬變 `BLOCK`。**退回理由第 2 點（WORKFLOW §8 不可變欄位缺漏）本輪未處理**，原樣交 Fable
   定奪；Opus 附帶發現 ⓐ～ⓕ 本輪未處理，不擴大範圍。詳見下方「交接筆記（修正輪，Sonnet 執行，
   2026-09-14）」。上一輪 Sonnet 執行輪原文與 Opus 🟠 複驗紀錄原文保留於下方，不覆寫。
-- **四軸狀態**：工程：待審（修正輪，結果 commit `5d1569c`）｜
+- **四軸狀態（修正輪 Sonnet 送審時原文，保留不覆寫）**：工程：待審（修正輪，結果 commit `5d1569c`）｜
   實驗：不適用（量測卡，只產出證據供 Fable 裁決 T-47-A，不判定任何假設成立與否）｜
   產品：待裁決（T-47-A）｜MVP：不適用（沿用 T-17 FAIL）
 - **前置**：T-46 ✅、T-42 ✅、T-49 ✅、T-43 ✅（量測產物要走交易式輸出與 provenance；
@@ -9866,6 +9878,79 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
 
   **下一步**：開 Opus 新視窗，貼 WORKFLOW §2.2 v2 複驗 Prompt，**「結果 commit」填 `5d1569c`**。
   通過後才算「工程：已驗證」，Fable 才能依四樣證據＋本輪修正下裁決 T-47-A。
+
+- **🟠 Opus 第二輪複驗紀錄（2026-09-14，新視窗；對象結果 commit `5d1569c`＋腳本 `5c1cd29`＋雜湊回填 `54ce03b`，
+  複驗時 HEAD `54ce03b`，`git status --porcelain -- src scripts data` 為空）**：
+
+  **四軸判定**：工程：退回｜實驗：不適用｜產品：待裁決（T-47-A）｜MVP：不適用（沿用 T-17 FAIL）
+
+  **A. 上一輪退回理由第 1 點——已修妥，以下全部由 Opus 本視窗實際執行（不採信交接筆記轉述）**：
+  1. **零範圍外改動**：`git diff --stat 795e348 HEAD -- src data` 為空。`795e348..HEAD` 的 `scripts/` 只有
+     `t47_gate_calibration.py` 一檔（全在 `5c1cd29`；`5d1569c` 不含 scripts——送審 Prompt 寫的
+     `git diff 5c1cd29 5d1569c -- scripts` 本來就是空的，實際腳本改動範圍是 `795e348..5c1cd29`）。逐 hunk 讀過：
+     只新增 `_gate_from_overall`／`_strip_conf_label`／`build_sim_b_row`、`run_threshold_n_simulation` 加
+     `gate_by_photo` 參數並把原 `gate_sim`（實為信心值）改名 `overall_sim`、pass 張數計數、表頭與 REPORT 句子；
+     `effective_threshold`／`simulate_method`／`build_surface_from_sim`／`simulate_narrow_clip_downgrade`
+     的判定本體在 diff 中只出現為上下文行，逐字未改。
+  2. **表 1～6 未失效**：Opus 自寫 python 對 `git show 6d95f5f:…/tables.md`、`git show 5d1569c:…/tables.md`、
+     工作區檔三者取 `## 表 7` 之前的 bytes 重算 sha256——三者皆 `b7baec6164ce51d6…5d79`，逐位元相同。
+     （小誤差：Sonnet 交接筆記寫「皆 12978 bytes」，實為 12978 **字元**／14583 bytes；hash 本身正確，不影響判定。）
+  3. **gate 欄確為程式產出**：`模擬 gate` 由 `_gate_from_overall(_overall_confidence(geometry, materials_sim))`
+     算出，`_overall_confidence` 為 `from src.image_reverb.pipeline import _overall_confidence`（腳本第 71 行，
+     `pipeline.py:76`，與 `pipeline.py:377` 產品路徑同一函式）；`實際 gate` 取自 `gate_by_photo`＝`gate_of(CLI analysis.json)`。
+     `_strip_conf_label()` 在表 8 路徑確實先於 `_overall_confidence()` 呼叫。**反向／突變測試（Opus 自寫，
+     讀本視窗重跑的快取）**：(A) 表 7 以 role_aware 資料但不縮放門檻呼叫 → `bathroom_tiled` 算出
+     `medium／medium／pass`、模擬 pass 總數 1＝實際 1；(B) 表 8 關閉降級規則 → `bathroom_tiled` 算出 `pass`，
+     正式規則下為 `BLOCK`；(C) 不經 strip 直接把帶註解字串餵 `_overall_confidence()` → KeyError 成立。
+     ⇒ 13 張全 `BLOCK` 不是寫死字串造成，gate 欄會隨輸入改變。
+  4. **Opus `--fresh` 重跑**（`python scripts/t47_gate_calibration.py --out-dir <scratchpad>/t47_opus_r2 --fresh`，
+     HEAD `54ce03b`，工作區乾淨）→ EXIT=0；印出「26 組 surfaces＋sources 逐位元相符」與「9/9 通過」；
+     **`tables.md` 與 Sonnet 提交版 `diff` 零差異**；`REPORT.md` 只差 out_dir／HEAD／產生時間三類 provenance 行。
+  5. **關鍵結論（Opus 自寫解析器從 tables.md 讀值，再以表 1 geometry 取 min 獨立重算 52 列，0 不符）**：
+     表 7 兩模式 13 張「模擬 gate」皆 `BLOCK`；表 8 `role_aware` `bathroom_tiled` 實際 gate＝`pass`、
+     模擬 gate＝`BLOCK`；表 8「實際 materials」欄與表 1 逐列相同；REPORT ⑦(a)(b) 兩句
+     「`default` 0/0、`role_aware` 0/1」與表格計數一致。另直接讀本視窗重跑的原始
+     `cli_runs/bathroom_tiled__role_aware/analysis.json`：geometry medium／materials medium／overall medium → pass，與表 1 相符。
+  6. **共同鐵則**：20 支 `scripts/test_*.py` 逐支 EXIT=0（本視窗）；T-14 兩條由 `test_ir_synth.py`【6】比對
+     `f3a763bed13cf4d6…`／`f24353b5dbecf0f6…` 通過；T-20／T-21 四條**分開各一行**重生（mtime 本視窗 11:06:57～11:07:05）
+     `output/text_bathroom`＝`2adbaa75eb698772…`、`output/text_church`＝`2dd19b6e6d351d71…`、
+     `output/neighbor_voices`＝`9a94ffdf5d8295ae…`、`output/stadium_corridor`＝`a1c21bcc3fd9aa34…`，全中；
+     複驗當下 `git status --porcelain -- src scripts data` 為空。
+  7. 卡片紅旗：`src/` diff、手打數字、只跑一種模式、REPORT 對「該不該調門檻」下結論——四項皆未觸發。
+
+  **B. 退回理由（唯一、非 Sonnet 可修）**：上一輪退回理由**第 2 點（WORKFLOW §8 不可變欄位缺漏）仍未解決**。
+  上一輪已明寫它是「退回理由（必修）」之一、「交 Fable 定奪，不在此豁免」；TASKS.md 全文查無 Fable 對 T-47 §8
+  的任何裁定。送審 Prompt 請 Opus「把第 2 點與退回理由分開看、不要因此判退回」——但 WORKFLOW §5.4.1 明文
+  「若有未達項，只能退回、卡關或先走 §7 變更控制，不能直接綠燈」，紅旗 7 亦禁止驗證者以附註豁免；且送審 Prompt
+  自身結尾也寫「若仍有未達項，只能退回或走 §7」。故工程軸維持退回。**此退回不是對 Sonnet 修正輪品質的否定**，
+  修正輪本身零瑕疵（見 A）。先例：T-49（v1 退回→🔮 裁決 T-49-A 走 §7→v2 複驗通過）。
+  **請 Fable 二選一並落卡**：(i) 以「事後補建（2026-09-14 後追加）」標記在本卡追加 §8 區塊——
+  `criteria_version: 無 pass/fail 門檻（量測卡）`、`criteria_commit`／`criteria_locked_at` 寫開卡 commit 並註明
+  「事前未鎖，事後補建」、`dataset_manifest_sha256` 由程式計算（13 張照片＋ground truth）、`implementation_commit`
+  `6d95f5f`／`5c1cd29`、`result_commit` `6d95f5f`／`5d1569c`、`reviewer`、兩個 verdict 欄、
+  `criteria_changed_after_first_result: no`、`change_record: 無`；或 (ii) 裁定「無門檻量測卡不適用 §8」並依 §7
+  修 WORKFLOW §8 文字（需使用者核准，獨立 commit）。任一路徑完成後，Opus 只需複核該區塊與範圍，量測本體不必重跑。
+
+  **C. 文件瑕疵（非退回理由，本紀錄就地補救）**：Sonnet 修正輪把本卡「狀態」欄整段換掉，而上一輪 🟠 紀錄寫
+  「退回理由（必修）：見本卡『狀態』欄第 1、2 點」——該處原文因此只剩 git 歷史（`795e348`），DEV_LOG (121)／
+  HANDOFF 稱「未改 Opus 退回紀錄原文」不完全精確。第 2 點原文（`git show 795e348:TASKS.md` 逐字）轉錄如下以免失聯：
+  > 2. **WORKFLOW §8 不可變欄位缺漏（交 Fable 定奪，不在此豁免）**：§8 明文涵蓋「量測」卡且要求執行者
+  > 開跑前填 `criteria_version`／`criteria_commit`／`criteria_locked_at`／`dataset_manifest_sha256`，
+  > 本卡卡片模板與交接筆記均無此區塊（Fable 開卡時也未附）。本卡無 pass/fail 門檻，此事前時序已無法
+  > 補救——請 Fable 裁定：(i) 以「事後補建」標記追加 §8 區塊（`criteria_version: 無門檻量測卡`、
+  > `dataset_manifest_sha256` 由程式計算）即可，或 (ii) 量測卡不適用 §8 並修 WORKFLOW 文字（走 §7）。
+
+  （第 1 點原文同見 `795e348`，已由 A 節證實修妥，不再轉錄。本次狀態欄更新改採「新狀態在上、送審原文標保留」，不刪字。）
+
+  **D. Opus 本視窗自身操作失誤（如實記錄）**：開工時誤以為腳本支援 `--help`，執行
+  `python scripts/t47_gate_calibration.py --help`，腳本不解析該旗標而以**預設 out-dir（Sonnet 的
+  `output/gate_calibration/`）、非 fresh 模式**開跑約 2 分鐘後被 Opus 手動終止。影響：`cli_runs/` 下
+  `bathroom_tiled`／`bedroom_ai_generated`／`stairwell_tiled`／`arena_ntsu_linkou` 兩模式共 8 個子目錄因指紋中
+  repo_head 變為 `54ce03b` 而被重生（8 目錄檔案齊全，無半截產物）；`detail_runs/` 未動；**進版控的
+  `REPORT.md`／`tables.md` 未被改寫**（`git status` 乾淨，mtime 仍為 10:19）。這些是 `.gitignore` 的原始產物，
+  不影響本卡任何提交證據；正式重跑一律在 scratchpad 新目錄。
+
+  **E. 附帶發現 ⓐ～ⓕ**：上一輪原樣保留，本輪未重審、未擴大，仍交 Fable 裁決 T-47-A 時參考。
 
 ### T-48 T-11／T-12 判準第二版針對性重驗（量測卡；裁決 T-45-A 執行卡 3/5；`src/` 零改動）
 - **狀態**：⬜ 未開始
