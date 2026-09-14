@@ -3341,6 +3341,8 @@
 ### T-26 低信心／域外輸入的輸出 gate（REPORT §2.6 缺陷 E）
 - **狀態**：✅ 通過（Opus 驗證 2026-08-30）
 - **🔮 裁決 T-45-A 補註（2026-09-03）**：本卡 gate 的校準前提是「固定門檻 0.4＋全域 12 候選 softmax」。T-44 的 role-aware 候選子集改變了 softmax 分佈（實證：`bathroom_tiled` 由 BLOCK 變 pass 且 floor 判錯；`bedroom_ai_generated.floor` top-1 信心 0.2436→0.3394 近失），該前提已不成立。**gate 規則本體維持不動**，但 BLOCK／pass 的校準須由 **T-47（gate 校準複審量測卡）** 依裁決 T-36-A 要求的四樣證據重新量測後再裁決（T-47-A）；T-47 裁決前 `role_aware` 預設維持 `False`（T-46 執行）。
+- **🔮 裁決 T-47-A 補註（2026-09-14）**：T-47 四樣證據已量、裁決已下——default 模式（全域候選集）規則 1～4 與 0.4 **維持不動**，上一則
+  「校準前提已變」對 default 模式解除；role_aware 模式 0.4 未校準，處置（甲／乙）等使用者核准。全文見 T-47 卡「🔮 裁決 T-47-A」。
 - **前置**：**T-25（要用 overall confidence 當判準）**
 - **問題**：`pipeline.py:225-239` 從幾何直接進聲學→合成→`export_ir()`→wet preview，
   **沒有任何一行檢查 `est.confidence` 或域外狀態**。T-17 §7-1 的實際後果：
@@ -3668,6 +3670,8 @@
   證明」已作廢並由新依據取代（區辨訊號已存在但不合格）；裁決三的複評時點重新
   錨定到 T-36（CLIP 準確度診斷）交回時就地定案，附硬性終止條款。
 - **🔮 裁決 T-45-A 補註（2026-09-03）**：本卡 gate 的校準前提是「固定門檻 0.4＋全域 12 候選 softmax」。T-44 的 role-aware 候選子集改變了 softmax 分佈（實證：`bathroom_tiled` 由 BLOCK 變 pass 且 floor 判錯；`bedroom_ai_generated.floor` top-1 信心 0.2436→0.3394 近失），該前提已不成立。**gate 規則本體維持不動**，但 BLOCK／pass 的校準須由 **T-47（gate 校準複審量測卡）** 依裁決 T-36-A 要求的四樣證據重新量測後再裁決（T-47-A）；T-47 裁決前 `role_aware` 預設維持 `False`（T-46 執行）。
+- **🔮 裁決 T-47-A 補註（2026-09-14）**：T-47 四樣證據已量、裁決已下——default 模式（全域候選集）規則 1～4 與 0.4 **維持不動**，上一則
+  「校準前提已變」對 default 模式解除；role_aware 模式 0.4 未校準，處置（甲／乙）等使用者核准。全文見 T-47 卡「🔮 裁決 T-47-A」。
 - **發現者**：Opus 規劃者，2026-08-30 T-26 驗收通過後的獨立複驗
 - **📊 實測數據**：T-26 的 gate 上線後，**專案裡 13 張照片全部 exit 3 被擋**——
   §7-2 的 8 個對照場地 8/8、§7-1 的 5 張盲聽照片 5/5，無一例外。
@@ -4865,6 +4869,8 @@ T-34 與 T-35 都動 `pipeline.py`／`cli.py`，依序做避免衝突；T-36 是
 - **四軸狀態（裁決 T-45-A 回溯標記，2026-09-03；原「狀態」欄保留不改，語義見 WORKFLOW §3）**：
   工程：已驗證（診斷完成；ground truth 由使用者逐面確認）｜實驗：🔴 **負向**（CLIP 真判定準確率 11/21＝52.4%；floor 角色 30.8%）｜產品：不適用（診斷卡；**不是產品通過**）｜MVP：不適用
 - **🔮 裁決 T-45-A 補註（2026-09-03）**：卡尾裁決 T-36-A 的「gate 規則就地定案、議題關閉」建立在**全域候選集**的量測上；T-44 role-aware 已改變該量測前提。裁決 T-36-A 的「重開需四樣證據」條款照用——由 T-47 產出四樣證據後另下裁決 T-47-A，在此之前 gate 規則零改動、`role_aware` 預設 False。
+- **🔮 裁決 T-47-A 補註（2026-09-14）**：T-47 四樣證據已量、裁決已下——default 模式（全域候選集）規則 1～4 與 0.4 **維持不動**，上一則
+  「校準前提已變」對 default 模式解除；role_aware 模式 0.4 未校準，處置（甲／乙）等使用者核准。全文見 T-47 卡「🔮 裁決 T-47-A」。
 - **前置**：T-35 ✅（程式定稿後才能量；量測期間 `src/` 一行不許改）；
   **需使用者參與**（ground truth 逐面確認，約 13 張 × 6 面）
 - **📄 執行交接**：[HANDOFF_T36.md](HANDOFF_T36.md)——五個階段的流程與要貼的
@@ -6859,6 +6865,10 @@ REPORT ② 內文硬寫的「0.4」改成引用 `config.CLIP_CONFIDENCE_THRESHOL
      `scripts/test_*.py` 全部逐支實跑 EXIT=0（實跑紀錄見 DEV_LOG.md
      `2026-09-10`）。
 
+- **🔮 裁決 T-47-A 補註（Fable 2026-09-14）**：產品軸維持 🧪 feature flag、預設關閉（依 §5.4.3／§7.8：缺絕對下限、安全 guard、held-out）；
+  升級條件追加為 T-53 校準 PASS 且 T-44-R1 PASS 且 T-17-R2 PASS（裁決 T-45-A 第 4 點不覆寫）。gate 層：role_aware 的 0.4 未校準
+  （T-47：`bathroom_tiled` 0.4044 跨線判錯、已知錯誤放行 1/5、9 面膨脹、geometry 軸亦受影響），處置甲／乙等使用者核准；實驗軸「相對正向」不動。
+  全文見 T-47 卡「🔮 裁決 T-47-A」。
 - **四軸狀態（裁決 T-45-A，2026-09-03；原「狀態」欄保留不改，語義見 WORKFLOW §3）**：
   工程：**已驗證**（Opus 第四輪複驗，2026-09-10：第三輪唯一阻擋項的三處
   無限定「逐位元相同」已全部改為限定敘述，兩項次要建議亦照做；我用原始
@@ -8468,6 +8478,11 @@ T-46 → {T-42 → T-43 → T-47｜T-48} → 裁決 T-47-A → T-44-R1 → T-17-
 T-48 平行條款不變。另開 **T-50**（`.archive` 手動清理指令）為**停滯期填充卡**，不進關鍵路徑，
 T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
 
+**🔮 排程裁決 T-47-A（Fable 2026-09-14；全文見 T-47 卡）**：T-47 四樣證據已量、裁決已下。default 模式 gate 維持不動；role_aware 的 0.4
+未校準，處置甲／乙**等使用者核准**（乙＝新開 **T-52** gate criteria v2 執行卡）；**T-44-R1 ⏸ 移出關鍵路徑**（前置追加 **T-53** 校準卡，
+T-53 為保留號、等使用者提供獨立校準集）。關鍵路徑改為：T-47 ✅ → 裁決 T-47-A → 【使用者核准 甲／乙】→（乙：`criteria:` commit → T-52 → Opus）
+→ T-17-R2（預設模式）；T-48 平行、可立即開跑。T-17-R2 前置「T-44-R1 結案」走卡片既有的「未跑→預設 `role_aware=False`」路徑。
+
 **本輪共同鐵則**：Phase 1.9 共同鐵則 1～8 全部沿用（測試全 exit 0／六條交付 IR MD5
 ／`ir_metrics.py` 零 diff／凍結目錄／新測試診斷力／gate 規則零改動／臥室紅旗／
 基線變化表），另加：
@@ -9617,6 +9632,10 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
   **下一步＝開 Fable 視窗下裁決 T-47-A**（依四樣證據＋⑦ 兩模擬＋附帶發現 ⓐ～ⓕ；Opus 不下 T-47-A）。
   詳見本卡末「✅ Opus 第三輪複核紀錄（2026-09-14）」。
 - **四軸狀態（Opus 第三輪）**：工程：已驗證｜實驗：不適用｜產品：待裁決（T-47-A）｜MVP：不適用（沿用 T-17 FAIL）
+- **🔮 裁決 T-47-A 已下（Fable 2026-09-14；全文見本卡末段「🔮 裁決 T-47-A」）**：default 模式規則 1～4 與 0.4 維持不動（不變更，不走 §7）；
+  role_aware 模式 0.4 不得視為已校準、以現有資料無法校準，處置**甲（不改碼、明文不得宣稱安全）／乙（gate criteria v2＝T-52，Fable 建議）
+  等使用者核准**；產品軸 role_aware 維持 🧪 預設關閉；T-44-R1 ⏸ 移出關鍵路徑（等 T-53）；T-17-R2 前置「裁決 T-47-A」自此滿足；T-48 平行不受影響。
+- **四軸狀態（裁決 T-47-A 後）**：工程：已驗證｜實驗：不適用｜產品：不適用（量測卡；裁決結果記於 T-44 卡產品軸＝🧪 維持）｜MVP：不適用（沿用 T-17 FAIL）
 - **（下方「狀態」「四軸狀態」兩行為 Opus 第二輪原文，保留不覆寫）**
 - **狀態**：🟠 **工程退回（Opus 第二輪複驗 2026-09-14，對象結果 commit `5d1569c`／腳本 `5c1cd29`，
   複驗時 HEAD `54ce03b`，`git status --porcelain -- src scripts data` 為空）——但 Sonnet 不需要再修任何東西**。
@@ -10064,6 +10083,73 @@ commit：本次收工 commit（訊息 `T-51: T-47 §8 資料集 manifest 程式�
      本卡轉「已驗證」的依據是裁決 T-47-M 第 5 點事前寫明的複核清單，不是驗證者附註（紅旗 7 未觸發）。
 - **明確不做**：不下裁決 T-47-A、不評「該不該調門檻」；附帶發現 ⓐ～ⓕ 原樣留給 Fable；未改本卡任何既有紀錄、表格或兩輪 Opus 判定。
 
+- **🔮 裁決 T-47-A（Fable 2026-09-14；gate 校準複審裁決；依裁決 T-36-A 裁決一第 5 點「重開需四樣證據」與裁決 T-45-A 第 6 點；只追加、不改本卡任何既有紀錄／表格／三輪 Opus 判定／§8 已填欄位）**
+
+  **證據版本鎖定**：結果 commit `5d1569c`（表 1～6 與首輪 `6d95f5f` 逐位元相同，sha256 `b7baec61…5d79`；表 7／8 由 Opus 第二輪 52 列獨立重算一致）；資料集 `dataset_manifest_sha256`＝`c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7`（13 張＋ground truth `965e51ac…`，T-51 程式產出）；裁決時 HEAD `882e1ee`、`git status --porcelain -- src scripts data` 為空。Opus 三輪皆未對「該不該調門檻」提任何建議，本裁決全由 Fable 逐項讀 `output/gate_calibration/{REPORT.md,tables.md}` 原文判讀，不靠摘要。
+
+  **0. 一段話結論**：**default 模式（產品預設路徑）的 gate 規則 1～4 與門檻 0.4 全部維持不動**——四樣證據在 default 模式零放行、零已知錯誤放行、臥室續擋，向下放寬只放錯的，兩個模擬對 default 恆等；這是「不變更」，不走 §7。**role_aware 模式的 0.4 不得視為已校準**——唯一一例跨線（0.4044，只超過門檻 0.0044）判錯、已知錯誤放行 1/5、9 面信心系統性膨脹、且同一組 13 張既是 T-44 的調參集又是本卡的驗證集，**沒有任何獨立資料可以重新校準**。因此 role_aware 的處置只有「不改碼、明文不得宣稱安全（甲）」與「改碼讓收窄候選集的 clip 面不計入放行（乙，Fable 建議）」二選一；兩者都是 gate 規則層級的決定，**依 WORKFLOW §7.4 由使用者核准，Fable 不自改自批**（T-38 `a0fe24e` 教訓），本裁決停在第 7 節等使用者。產品軸：role_aware 維持 🧪 feature flag、預設關閉。排程：T-44-R1 移出關鍵路徑（等校準卡 T-53）；T-17-R2 以預設模式重驗，其前置「裁決 T-47-A」自此滿足；T-48 平行不受影響。
+
+  **1. 證據判讀（逐項對照原文）**
+  1. **① 新基準率（表 1）**：`default` 13/13 `BLOCK`；`role_aware` 12/13 `BLOCK`，唯 `bathroom_tiled` pass（geometry medium／materials medium／overall medium）。其餘 12 張兩模式 gate 相同。
+  2. **② 被放行案例（表 2）**：`bathroom_tiled` 六面**錯 2 面**——floor `carpet`（clip，in-set 誤判，gt `gypsum_board`）、ceiling `gypsum_board`（**無來源**＝角色未觀測到的預設值，gt `vinyl_panel`）；四面牆 `generic_wall` ✓（單張透視照四面共用同一判定值，實質只算一個判定）。依附帶發現 ⓐ，本裁決以「2/6 錯」為準；REPORT 的「in-set 誤判 1/6」字面為真但分子定義較窄，不得單獨引用。
+  3. **③ 已知錯誤佔比（表 3；鐵則 12 五張）**：`default` 0/5 pass；`role_aware` 1/5 pass（`bathroom_tiled`）。→ WORKFLOW §5.4.3 第 4 條「新增放行的已知錯誤案例＝0」與第 6 條「浴室不得退步」在 role_aware 模式**皆不成立**。
+  4. **④ 臥室續擋（表 4）**：兩模式皆 `BLOCK`；floor top-1 0.2436→0.3394（兩模式皆 fallback），距門檻 0.0606。臥室紅旗未觸發，但位移方向與 ⑤ 一致。
+  5. **⑤ 信心膨脹（表 5）**：T-44 第四輪的 9 面上升 9/9 程式化重現、數值逐位元相同；floor 面位移 +0.0528～+0.2922、ceiling +0.0047～+0.2341、wall 全 0（wall 候選集兩模式皆 16，本來就是 no-op）。`bathroom_tiled.floor` 0.3516→0.4044，**跨線幅度 0.0044**。依 ⓔ 排除 `out_of_domain` 面（該門檻對域外判定不起作用：`TunnelToHell.floor`、`RacquetballCourt4.ceiling` 兩模式皆域外）後，距門檻 <0.05 的**有效面為 12**（floor 3：bathroom／stairwell／DivorceBeach；ceiling 2：stairwell／department_store；wall 7：stairwell×4、SteinmanHall east／north／south），不是表列的 14。
+  6. **⑥ 門檻敏感度（表 6）**：兩模式、三角色，向下放寬到 0.35～0.20 的每一格都是「放行後答錯 ≥ 答對」（`default` wall 0.35：放 7 錯 7；`role_aware` floor 0.20～0.30：放 2 錯 2、0.35 放 0；`role_aware` ceiling 全 0）。→ **0.4 向下沒有任何空間**，與裁決 T-36-A 引用的 T-36 表 7 結論一致；向上的資訊只有 ⑦(a) 一條公式（ⓕ）。
+  7. **⑦ 兩項模擬（表 7／表 8）**：(a) 門檻依候選數線性縮放（floor 0.64／ceiling 0.80）→ 兩模式 13/13 `BLOCK`，但 `role_aware` 有 **7 面**被翻回 fallback（bathroom／stairwell／CathedralRoom／DivorceBeach／gym 的 floor，stairwell／department_store 的 ceiling），其中含 round15 唯一命中的 `stairwell_tiled.floor`；(b) 規則 4 補丁「候選集收窄的 clip 面不得直接 medium」→ `role_aware` `bathroom_tiled` 收回 `BLOCK`，`DivorceBeach` materials medium→low 但 gate 本就由 geometry 擋（無感）；**default 模式兩個模擬皆恆等**（無收窄、n=16）。
+  8. **⑧（採附帶發現 ⓓ 為新證據）role_aware 也改變 geometry 軸**：`site_photo_department_store` geometry medium→low（floor 由 clip 0.9356 變 `out_of_domain` 0.2603，經 `geometry.py` 域外 scene cue 下修）、`car_interior_suv` floor clip 0.5421→`out_of_domain` 0.4692。同一塊區域、同一模型，只換候選集就在「自信建築材質」與「域外」之間翻轉——這是「候選集改變後 0.4 的語義失效」的第二個獨立證據（第一個是 ⑤）。旁證（round17 表 2，Opus 已驗）：role_aware 的 clip 面正確率 14/22（63.6%）、無來源面 0/10。
+
+  **2. 裁決（範圍 (1)：gate 規則／門檻 0.4）**
+  - **2.1 default 模式（`role_aware=False`）：規則 1～4、`CLIP_CONFIDENCE_THRESHOLD=0.4`、gate＝overall low → BLOCK，全部維持不動。** 這是「不變更」，不是新標準，不走 §7、不開 criteria 版號。理由：①③④ 在 default 零放行、零已知錯誤放行、臥室續擋；⑥ 向下只放錯的；⑦ 兩模擬對 default 恆等；裁決 T-36-A 裁決一在全域候選集上的每一條理由（規則 1 擋下的絕大多數真的不可信、病在上游 CLIP 準確度）重測後**仍然成立**。T-26／T-28／T-36 卡的「校準前提已變」補註自本裁決起**對 default 模式解除**，role_aware 模式由本裁決接手。**default 模式不受本裁決任何選項影響**（甲乙皆不動 default 一個 bit，見 T-52 紅線）。
+  - **2.2 role_aware 模式（`--role-aware`，🧪）：0.4 不得視為已校準，且以現有資料無法校準。** 事實鏈：(a) 0.4 是在全域 16 候選（12 材質＋4 域外）softmax 上校準的（T-36 表 7、裁決 T-36-A）；floor 收窄到 10、ceiling 到 8 後，同一個 0.4 對應的先驗與分佈都不同（⑤⑧ 是實證位移，不是理論推測）；(b) 唯一一例跨線 0.4044 判錯，已知錯誤放行 1/5（③）；(c) 13 張同時是 T-44 round15～17 的調參集與本卡的驗證集——WORKFLOW §5.4.2「13 張同時調參與驗收＝過擬合紅線」——任何用這 13 張算出來的新門檻都是對著已知答案調；(d) ⑥ 只掃向下（ⓕ），向上只有 ⑦(a) 一條線性公式且無理論依據（ⓒ）。→ **能做的不是「校準」，是「在校準資料出現前，role_aware 的 clip 判定不得被 gate 當成放行依據」**，實作方式二選一，需使用者核准（§7.4）：
+
+    **選項 甲——不改碼，明文不得宣稱安全**
+    - 內容：`src/` 零改動；role_aware 維持現狀（`bathroom_tiled` 在 `--role-aware` 下仍 pass、exit 0、寫 WAV）；本裁決明文「role_aware 的 gate 未校準、其放行不可信」，T-44 卡、T-44-R1 卡同步這句話。
+    - 利：零工程成本、零 §7 程序；T-48／T-17-R2 立刻可走。
+    - 弊：程式庫裡留著一條「自信輸出已知錯誤 IR」的路徑（SPEC §8 首要風險「分析模型安靜地失敗」的實例），只靠 stderr 一行 experimental 警告擋；T-44-R1 硬門檻 2（已知錯誤 BLOCK→pass＝0）與 3（浴室保持 BLOCK）在 13 張上**已由本卡量得不達**，held-out 不可能翻轉——T-44-R1 等於開跑前已知 FAIL，只能標「不開跑」。
+    **選項 乙（Fable 建議）——gate criteria v2：role_aware 下「收窄候選集的 clip 面不計入放行」**
+    - 內容：即 ⑦(b) 的正式化——`role_aware=True` 時，任一面來源為 `clip` 且該面角色的候選集是收窄子集（現行 floor／ceiling），`materials_confidence` 判 `low`（比模擬嚴一處：模擬只攔 medium，本規則對理論上的 high 也生效；13 張無 high 案例，結果與表 8 相同）。default 模式此規則永不觸發。gate BLOCK 訊息依 T-30 原則點名這些面並給兩條出口（改用預設模式／`--override-material`）。執行卡＝**T-52**（Sonnet），規則原文＝`output/gate_calibration/CRITERIA_GATE_v2.md`，**由使用者核准後、Fable 以獨立 commit `criteria: gate v2 …` 提交、早於 T-52 任何結果**。
+    - 利：用模擬已證的最小改動關閉已知錯誤放行（role_aware 13/13 BLOCK、bathroom 收回）；default 逐位元不變（T-47 harness 重跑可程式化證明）；T-44-R1 硬門檻 2／3／4 在結構上成立，硬門檻 5 有明確引用對象；規則語義誠實——「未校準的判定不算數」，不是假裝校準出一個新數字。
+    - 弊：role_aware 在乙之下**結構性無法通過 gate**（透視照 floor 必被觀測→收窄→low；floor 未觀測→自動幾何路徑的 floor 可見度 <2% 規則→geometry low），它的價值退回「研究用標籤層」與 `--force-low-confidence` 輸出的材質標籤；一輪 Sonnet＋Opus 成本（`src/` 三檔、新測試、harness 重跑約 20 分鐘）；T-44-R1「升候選預設啟用」在校準卡（T-53）之前無意義。
+    **否決 丙——⑦(a) 門檻依候選數縮放**：ⓒ 指出線性縮放不是等效機率門檻（softmax 機率不隨 n 線性縮放），REPORT 措辭過度；它翻回 7 面含 round15 唯一命中的 `stairwell_tiled.floor`，等於用一個無依據的公式抹掉 T-44 的全部正向；且改的是 `classify_region_material()` 的門檻邏輯，驗證面更大。**不採。**
+    **否決 丁——gate 用全域候選集判、標籤用 role_aware**：理論上最乾淨（校準基準永不變），但 T-44 在 floor 上新增的命中（`stairwell_tiled.floor` 0.3133→0.4294、`CathedralRoom.floor` 0.3448→0.4970）都是全域模式 fallback、role 模式才過線的面——丁會把它們全部丟回預設材質，效果與乙相同（13/13 BLOCK、role_aware 無產品增益），改動卻多一倍（每面跑兩次 CLIP、兩套 sources）。**不採。**
+  - **2.3 兩選項的共同結論**：在 T-53 校準卡（需獨立校準集）之前，**role_aware 都不可能被宣稱安全放行**；差別只在「未校準路徑留著（甲）」或「未校準路徑擋掉（乙）」。T-44-R1 因此移出關鍵路徑（第 5 節）。
+
+  **3. 產品軸（範圍 (2)）**：role_aware **維持 🧪 feature flag、預設關閉**（`config.ROLE_AWARE_MATERIALS_DEFAULT=False`、`--role-aware` 標 experimental，T-46 已落地，不動）。依 WORKFLOW §5.4.3／§7.8 三項全缺：絕對品質下限（使用者未核准）、安全 guard（③ 已知錯誤放行 1/5）、held-out（未提供）→ **最高只能到 🧪**，Opus 三輪未建議升級、Fable 不升。**升級條件（追加於裁決 T-45-A 第 4 點之後，不覆寫）**：T-53 校準 PASS（獨立校準集）**且** T-44-R1 PASS **且** T-17-R2 PASS。T-44 卡產品軸追加一行指向本裁決。實驗軸不動（T-44「相對正向」仍成立——標籤層的相對改善是真的；不能放行是 gate 層的事）。本卡（T-47）自身的產品軸自「待裁決（T-47-A）」改記為「不適用（量測卡；裁決結果記於 T-44 卡產品軸）」。
+
+  **4. 附帶發現 ⓐ～ⓕ 逐項處置（每點明確：採納開卡／併入某卡／不處理並寫理由）**
+  - **ⓐ 採納**：本裁決以「6 面錯 2」為準（第 1 節第 2 點）。**併入** T-44-R1 硬門檻 6 的產表規格與 T-17-R2 報告項 5：被放行照片的逐面正誤表**必須列出無來源面並依 ground truth 判正誤、獨立計數**，「錯誤放行率」的分母＝被放行照片的全部六面（不得只算 in-set）。不開卡。
+  - **ⓑ 不改規則 1，維持裁決 T-36-A 裁決一第 4 點（無來源不觸發 low），並記錄為已知侷限**。理由：(i) 把無來源接進規則 1 會改動 **default 模式**（`DivorceBeach` materials medium→low）→ T-46 凍結基線 `BASELINE.stable.md`／`EXPECTED_GATE` 13/13 全部失效，違反 2.1「default 不受影響」；(ii) 13 張裡「無來源」單獨從未翻轉任何一張的 gate——`bathroom_tiled` 在乙之下由 floor（收窄 clip）收回，`DivorceBeach` 由 geometry 擋；(iii) 自動幾何路徑的結構：floor 若未觀測（角色 mask <1%，`MIN_SURFACE_AREA_RATIO`），geometry 的 `floor_pixel_ratio<2%` 規則必然把 geometry 判 low → BLOCK（`geometry.py` 既有規則，ADE id 3／28 為兩者共用），所以剩下的洞只有「ceiling 無來源＋floor clip＋牆 clip」——default 下這正是 T-36-A 已接受的侷限（無來源命中率 0/10～1/10，病在天花板觀測覆蓋率，治療方向是分割不是 gate）；乙之下 floor clip 已收窄→low，洞不存在；(iv) `--override-dims` 路徑不套 scene cue（`estimate_room()` 直接回傳 `manual_estimate()`），floor／ceiling 皆無來源＋四牆 clip 可到 medium——兩模式相同，屬 T-36-A 已接受侷限；環景路徑 floor 視角無來源的邊角案例同此。13 張無 (iv) 型案例。**併入** T-17-R2 報告項 5（每張被放行照片列出無來源面）與 T-53 規格（無來源面單獨列）。Opus 標「重要」的部分（bathroom 能到 medium 一部分是因為 ceiling 沒判到）本裁決承認屬實；處置方式是乙（從 floor 端收回）＋報告項，不是動規則 1。
+  - **ⓒ 採納**：作為否決 丙 的理由之一。REPORT／tables 為已驗證產物、唯讀不改；本裁決在此註記「⑦(a) 是線性縮放示例，不是等效機率門檻」，日後引用 ⑦(a) 須帶此註。不開卡。
+  - **ⓓ 採納為證據 ⑧**（第 1 節第 8 點）。**併入** T-44-R1 硬門檻 6 產表（逐張列 geometry／materials／overall／gate 兩模式差異，不只 gate）與 T-53 規格（geometry 軸變化一併量）。不開卡；不改 `geometry.py` 的域外 scene cue（那條規則在 default 模式是對的——它抓到車內）。
+  - **ⓔ 採納為讀表規則**：`out_of_domain` 面不計「距門檻」；有效近門檻面 12 非 14（第 1 節第 5 點）。**併入** T-53 規格。不開卡、不改表。
+  - **ⓕ 採納**：向上掃描與獨立校準集是 T-53 的核心規格（第 5 節）；本卡交接筆記「放行後答對欄多數為 0」依表 6 `role_aware` floor／ceiling 實為**全部為 0**——此處註記更正，原文不改。不開卡。
+
+  **5. 後續任務卡（範圍 (3)；Fable 不寫程式、不動 `src/`／`scripts/`／`data/`）**
+  - **T-52**（Sonnet 執行卡；選項乙的執行卡）：已開卡 ⬜，**前置＝使用者核准乙＋`criteria: gate v2` 獨立 commit**；選甲則標「⛔ 不執行（裁決 T-47-A 選甲）」。卡片已附 §8 模板（鐵則 14）與 `CRITERIA_GATE_v2.md` 草案（未核准前不進版控）。
+  - **T-53**（保留號；role_aware gate 校準量測卡）：**開卡條件＝使用者提供獨立校準集**（≥13 張、與現行 13 張及 T-44-R1 held-out 皆不重疊、逐面 ground truth 依 T-36 手法確認）；規格要點已寫成卡片存根（含 §8 模板）。無資料不開跑；不在關鍵路徑。
+  - **T-44-R1**：狀態改 **⏸ 暫停（裁決 T-47-A）**，移出關鍵路徑；前置追加「T-53 PASS」；硬門檻 5 的引用對象＝本裁決 2.2（甲：現行 0.4 未校準、不得宣稱安全；乙：gate criteria v2）；硬門檻 6 產表規格追加 ⓐⓓ 要求；**硬門檻 1～8 的數字與條文一字不改**（無結果、無 CRITERIA commit，追加產表規格不是改門檻）。
+  - **T-17-R2**：前置「裁決 T-47-A」**自此滿足**；追加前置「T-52 結案（選乙）或使用者選甲」（驗收期間不得有 gate 程式碼變動）；以預設模式跑（T-44-R1 未跑＝卡片明列的合法路徑，REPORT 標明 `role_aware=False`）；報告項 5 追加 ⓐⓑ 要求。判準一字不改。
+  - **T-26／T-28／T-36／T-44**：各追加一行指向本裁決（default 校準前提解除、role_aware 處置）。
+  - **不開卡**：ⓑ 規則 1 改動（理由見第 4 節）、丙、丁、MINC/DMS 模型卡（維持裁決 T-45-A「併入 T-17-R2 前的 Fable 複評」）。
+
+  **6. 關鍵路徑（範圍 (4)）**
+  ```text
+  T-47 ✅ → 🔮 T-47-A（本裁決）→ 【使用者核准 甲／乙】
+      ├─ 乙：criteria: gate v2 commit（Fable）→ T-52（Sonnet）→ Opus 驗證 → T-17-R2
+      └─ 甲：（無工程動作；T-44／T-44-R1 卡補一句文件）→ T-17-R2
+  T-48：平行、可立即開跑（`src/` 零改動；與 T-52 檔案不相交；T-48 條件 (c) 的重跑觸發清單不含
+        surfaces.py／materials.py／pipeline.py，故 T-52 不觸發 T-48 重跑）
+  T-44-R1：⏸ 移出關鍵路徑（等 T-53 校準集＋held-out）；T-17-R2 依卡片「T-44-R1 未跑→預設 role_aware=False」進行
+  T-53：等使用者提供獨立校準集，不在關鍵路徑
+  ```
+  T-17-R2 其餘前置不變：T-42 ✅、T-43 ✅、T-46 ✅、T-48 ✅、T-04 來源網址補齊或使用者明確「維持未結案」、§7-1 held-out 五類照片（或降級標記）。
+
+  **7. 需使用者核准（本裁決停在這裡；Fable 不替使用者決定）**
+  請在 **甲** 與 **乙** 之間選一個（利弊見 2.2）。**選乙**：Fable 做兩件事再交 Sonnet——(1) 把 T-52 卡內「CRITERIA_GATE_v2.md 草案」逐字寫進 `output/gate_calibration/CRITERIA_GATE_v2.md`，核准者欄填「使用者 〈日期〉」，獨立 commit `criteria: gate v2 ……`（只含該檔）；(2) T-52 狀態改「⬜ 可開跑」。**選甲**：T-52 標「⛔ 不執行」、T-53 維持保留號，T-44 與 T-44-R1 卡補「role_aware gate 未校準、放行不可信」一句（純文件 commit）。兩條路 T-48 都可先跑。
+
+  **8. 明確不做**：不改 `output/gate_calibration/{REPORT.md,tables.md,DATASET_MANIFEST.json}`；不動 `src/`／`scripts/`／`data/`；不改 default 模式任何規則或數字；不改 WORKFLOW／SPEC；不寫 `MVP PASS`（T-17 FAIL 沿用，重驗只在 T-17-R2）；不改 T-44-R1／T-17-R2 既有門檻條文；不由 Fable 提交任何 `criteria:` commit（需先有使用者核准）。
+
 ### T-51 T-47 §8 事後補建：資料集 manifest 程式計算＋回填（微型卡；裁決 T-47-M 執行卡；`src/`／`scripts/`／`data/` 零改動）
 - **狀態（Opus 2026-09-14，現行）**：✅ **工程已驗證**（對象結果 commit `07ff98a`；複驗時 HEAD `07ff98a`，
   `git status --porcelain -- src scripts data` 為空）。詳見本卡末「✅ Opus 驗證紀錄（2026-09-14）」。
@@ -10187,6 +10273,113 @@ EOF
 
 （Opus 複核時只把 `OUT` 改成 scratchpad 路徑；`OUT` 路徑不進 manifest 內容，sha256 不受影響。）
 
+### T-52 gate criteria v2：role_aware 收窄候選集的 clip 面不計入放行（Sonnet 執行卡；裁決 T-47-A 選項乙執行卡；**前置＝使用者核准**）
+- **狀態**：⬜ 未開始——**等使用者核准裁決 T-47-A 選項乙**。核准後由 Fable 先提交 `criteria: gate v2 ……`（獨立 commit，只含
+  `output/gate_calibration/CRITERIA_GATE_v2.md`），本卡才准開跑；若使用者選甲，本卡改標「⛔ 不執行（裁決 T-47-A 選甲）」。
+- **四軸狀態**：工程：未開始｜實驗：待量測（預期 `role_aware` 13/13 BLOCK、default 13 張逐位元不變——預期不等於保證，量到什麼寫什麼）｜
+  產品：不適用（本卡不改產品預設；role_aware 維持 🧪）｜MVP：不適用（沿用 T-17 FAIL）
+- **前置（硬性）**：T-47 ✅、T-46 ✅、T-43 ✅；`output/gate_calibration/CRITERIA_GATE_v2.md` 已由使用者核准並以獨立 commit 提交
+  （`git log --format=%h -- output/gate_calibration/CRITERIA_GATE_v2.md` 恰一筆、訊息以 `criteria:` 開頭、早於本卡任何結果 commit）。
+- **為什麼**：裁決 T-47-A 2.2——role_aware 的 0.4 未校準且無資料可校準；⑦(b) 模擬（tables.md 表 8）已證此規則把唯一的已知錯誤放行收回，
+  且 default 恆等。本卡不是「校準」，是「未校準的判定不計入放行」。
+- **規則原文（＝CRITERIA_GATE_v2.md 的規則段，逐字；實作不得與此不同義）**：
+  > **R1b（只在 `role_aware=True` 時存在）**：`compute_materials_confidence()` 在規則 1 之後、規則 2 之前加入——六面中**任一面**的來源為
+  > `"clip"` **且**該面的角色候選集為收窄子集（定義：`len(ROLE_MATERIAL_CANDIDATES[role]) < len(CLIP_MATERIAL_PROMPTS)`；現行 floor 6<12、
+  > ceiling 4<12 為收窄，wall 12=12 不收窄）→ `low`。
+  > 觸發時 `warnings` 加一條：「{面}：role_aware 收窄候選集（{role}，{n} 種）的 clip 判定未經校準（裁決 T-47-A），不計入放行；
+  > 請改用預設模式（拿掉 --role-aware）或用 --override-material 覆寫」。
+  > default 模式（`role_aware=False`）：所有面的候選集皆為全域集，R1b 永不觸發；規則 1～4 原文與順序不變。
+  > 與 T-47 ⑦(b) 模擬的差異：模擬只把 medium 降為 low；R1b 對 high 也生效（透視照結構上到不了 high，環景可以）。
+  > 13 張兩模式無 high 案例，故 13 張結果與 tables.md 表 8 相同。
+- **範圍**：`src/` 的 diff 限縮在 `materials.py`（`SurfaceMaterials` 新增 `candidate_scope: dict[str, str]`，值 `"global"`／`"role:floor"`／
+  `"role:ceiling"`／`"role:wall"`；`set_surface()`／`set_walls()` 加可選參數，預設 `"global"`）、`surfaces.py`（`surfaces_from_preprocess()`
+  依 `role_aware` 與角色填 `candidate_scope`；`compute_materials_confidence()` 加 R1b）、`pipeline.py`（gate BLOCK 訊息：R1b 觸發的面列在
+  「低信心面」之後另段「未校準面（role_aware）」，出口導引加「改用預設模式（拿掉 --role-aware）」與 `--override-material` 骨架；
+  `role_aware=True` 時 `analysis.json` 加 `surfaces_candidate_scope` 與 `materials_gate_criteria: "v2"` 兩欄，**`role_aware=False` 時輸出
+  JSON schema 一個鍵都不多**）；`scripts/` 只得修改 `test_confidence_axes.py`（新增【C】R1b 案例），不得改 `t47_gate_calibration.py`／
+  `t46_role_flag_baseline.py` 本體。
+- **紅線**：default 模式行為逐位元不變（執行步驟 4／5 程式化證明）；`geometry.py`／`acoustics.py`／`ir_synth.py`／`ir_metrics.py`／`config.py`／
+  `data/` 零 diff；`CLIP_CONFIDENCE_THRESHOLD=0.4` 不動；`ROLE_MATERIAL_CANDIDATES` 不動；`ROLE_AWARE_MATERIALS_DEFAULT=False` 不動；
+  `output/gate_calibration/{REPORT.md,tables.md,DATASET_MANIFEST.json}` 唯讀；規則實作與 CRITERIA 原文不得不同義（例如只攔 medium）；
+  不得用舊快取（重跑寫新目錄）。
+- **執行步驟**：
+  1. 開跑前填 §8 前四欄（`dataset_manifest_sha256`：`shasum -a 256 output/gate_calibration/DATASET_MANIFEST.json` 必須仍為
+     `c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7`，不等＝🔴 卡關——本卡量的是同一批 13 張），
+     commit `T-52: §8 前四欄（開跑前）`；
+  2. 實作 R1b＋BLOCK 訊息＋JSON 欄（只在 role_aware 時出現）；
+  3. `test_confidence_axes.py` 新增【C】：(a) role_aware、floor 為 clip 且 `candidate_scope["floor"]="role:floor"` → `low`；
+     (b) 同一組 sources 但 scope 全 `"global"` → `medium`（default 不受影響）；(c) 六面 `manual_override` → `medium`（覆寫是出口）；
+     (d) role_aware、wall 為 clip 且 scope `"role:wall"`（不收窄）→ 不觸發 R1b。**對舊碼實測**（`git stash` 或 worktree）：(a) 必須 fail、
+     (b)(c)(d) 必須 pass，輸出貼交接筆記；
+  4. 鐵則 8 基線變化表：`python scripts/t47_gate_calibration.py --out-dir output/gate_calibration_v2/ --fresh`（52 次真實推論，約 20 分鐘；
+     `output/gate_calibration/` 一個 bit 不動）→ 程式化比對（貼指令與輸出）：(i) `output/gate_calibration_v2/tables.md` 表 1 的 `default`
+     四欄 13 列與 `output/gate_calibration/tables.md` 逐列相同；(ii) `role_aware` 四欄僅 `bathroom_tiled` 的 materials／overall／gate 三格
+     改變（medium／medium／pass → low／low／BLOCK），其餘 12 列相同；(iii) 表 2 `role_aware` 段變為「無 pass 案例」；(iv) 表 3 五張兩模式
+     全 BLOCK；(v) 26 組 surfaces／sources 仍 26/26 相符（R1b 不改標籤）；
+  5. `python -m src.image_reverb assets/photos/bathroom_tiled.png --role-aware --no-viz` → EXIT=3，stderr 含「未校準面（role_aware）」段與
+     兩條出口；不加 `--role-aware` → EXIT=3，stderr 與 T-52 前逐字相同（對 T-52 前的 commit 用 worktree 跑一次，`diff` 貼出）；
+  6. 20 支 `scripts/test_*.py` 全 exit 0；六條交付 IR MD5 全中；
+  7. 填 §8 `implementation_commit`／`result_commit`；收工照 WORKFLOW §4（狀態四軸、用「待審」）。
+- **自我檢查**：上列 1～7 全部有實際輸出；`git diff --stat -- src` 只含 `materials.py`／`surfaces.py`／`pipeline.py`；
+  `git diff --stat -- data scripts/t47_gate_calibration.py scripts/t46_role_flag_baseline.py src/image_reverb/geometry.py src/image_reverb/acoustics.py src/image_reverb/ir_synth.py src/image_reverb/ir_metrics.py src/image_reverb/config.py`
+  為空；`git status --porcelain -- output/gate_calibration` 為空；`grep -n 'worktree.*add.*"HEAD"' scripts/test_confidence_axes.py` 為空。
+- **Opus 驗證重點（四軸輸出）**：第一條＝§8 前四欄 commit 早於任何結果 commit（鐵則 14）；紅旗：`CRITERIA_GATE_v2.md` commit 晚於結果或
+  與結果同 commit、或內容與本卡「規則原文」不同；紅旗：default 模式任何一格變動；紅旗：R1b 實作與 CRITERIA 原文不同義；紅旗：新測試對舊碼
+  不 fail；紅旗：手打表格；紅旗：`output/gate_calibration/` 被動；紅旗：`role_aware=False` 的 `analysis.json` 多出任何鍵。
+- **§8 不可變欄位（開卡即附，鐵則 14）**：
+  ```text
+  criteria_version: gate v2（裁決 T-47-A 選項乙；規則原文＝output/gate_calibration/CRITERIA_GATE_v2.md）
+  criteria_commit: 〈Fable 提交的 criteria: gate v2 commit；必須早於本卡首個結果 commit〉
+  criteria_locked_at: 〈使用者核准日〉
+  dataset_manifest_sha256: 〈執行者開跑前填；必須＝c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7（同一批 13 張＋ground truth），不等＝卡關〉
+  implementation_commit: 〈執行者填〉
+  result_commit: 〈執行者填〉
+  reviewer: 〈Opus 填：模型＋日期＋commit〉
+  verdict_under_original_criteria: 〈Opus 填：gate v2 首跑〉
+  verdict_under_current_criteria: 〈同上；判準未變〉
+  criteria_changed_after_first_result: no（改了就是新卡）
+  change_record: 無
+  ```
+- **CRITERIA_GATE_v2.md 草案（未核准前不進版控；核准後由 Fable 逐字寫入並獨立 commit）**：
+  ```text
+  # CRITERIA — gate criteria v2（role_aware 模式）
+  version: gate v2
+  scope: 只作用於 role_aware=True；default 模式（role_aware=False）行為必須逐位元不變
+  approved_by: 使用者（〈核准日期〉）；提案者 Fable（裁決 T-47-A，2026-09-14）
+  evidence: T-47 結果 commit 5d1569c；dataset_manifest_sha256 c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7；
+            output/gate_calibration/tables.md 表 1～3／表 5／表 6／表 8
+  rule R1b: 〈T-52 卡「規則原文」四段，逐字〉
+  expected_on_13: role_aware 13/13 BLOCK（bathroom_tiled 由 pass 收回）；default 13/13 BLOCK 不變；surfaces／sources 26/26 不變
+  not_a_calibration: 本版不宣稱 role_aware 已校準；正式校準＝T-53（需獨立校準集）
+  supersedes: 無（default 模式仍為裁決 T-36-A 定案的規則 1～4＋0.4）
+  ```
+- **交接筆記**：
+
+### T-53 role_aware gate 校準量測（保留號；裁決 T-47-A 第 5 節；**未開卡——開卡條件＝使用者提供獨立校準集**）
+- **狀態**：⏸ 保留號（Fable 2026-09-14）——沒有校準集就不開跑；不在關鍵路徑。
+- **四軸狀態**：工程：未開始｜實驗：待量測｜產品：不適用｜MVP：不適用
+- **開卡條件（全部硬性）**：使用者提供 ≥13 張校準照片（五類空間各至少 2 張；與現行 13 張 `GATE_ITEMS`、T-44-R1 held-out 皆不重疊；
+  逐面 ground truth 依 T-36 手法由使用者確認，進 `data/material_ground_truth_calib.json`）；T-52 結案（選乙）或使用者選甲；`src/` 零改動（量測卡）。
+- **規格要點（裁決 T-47-A 第 4 節 ⓑⓓⓔⓕ 併入）**：按角色×模式**向上**掃描門檻（0.40→0.90）與按候選數的等效門檻候選公式至少兩種
+  （不得只有線性）；`out_of_domain` 面不計距門檻；無來源面單獨列出並依 ground truth 判正誤；逐張列 geometry／materials／overall／gate
+  兩模式差異；被放行案例逐面正誤（六面全算）；已知錯誤五張＋臥室紅旗續擋檢查；只量不改、不下結論（結論由 Fable 另下裁決 T-53-A，
+  並以 T-44-R1 held-out 驗證——校準集與 held-out 不得同一批）。
+- **§8 不可變欄位（開卡即附，鐵則 14）**：
+  ```text
+  criteria_version: 無 pass/fail 門檻（量測卡；候選門檻公式與掃描範圍於開跑前鎖定）
+  criteria_commit: 〈開卡 commit〉
+  criteria_locked_at: 〈開卡日〉
+  dataset_manifest_sha256: 〈執行者開跑前程式填：校準集照片＋ground truth 清單〉
+  implementation_commit: 〈執行者填〉
+  result_commit: 〈執行者填〉
+  reviewer: 〈Opus 填〉
+  verdict_under_original_criteria: 不適用（量測卡）
+  verdict_under_current_criteria: 不適用（判定屬裁決 T-53-A）
+  criteria_changed_after_first_result: no
+  change_record: 無
+  ```
+- **交接筆記**：
+
 ### T-48 T-11／T-12 判準第二版針對性重驗（量測卡；裁決 T-45-A 執行卡 3/5；`src/` 零改動）
 - **狀態**：⬜ 未開始
 - **四軸狀態**：工程：未開始｜實驗：待量測（雙 verdict 的第二個）｜產品：不適用｜MVP：不適用
@@ -10270,6 +10463,13 @@ EOF
 - **狀態**：⬜ 未開始（**等使用者兩件事**：核准絕對品質下限、提供 held-out 照片）
 - **四軸狀態**：工程：未開始｜實驗：待驗證｜產品：🧪 feature flag（T-46 後）→ 本卡決定是否升
   「候選預設啟用」（正式 🚀 仍須 T-17-R2 PASS）｜MVP：不適用
+- **🔮 裁決 T-47-A 補註（Fable 2026-09-14）——狀態改 ⏸ 暫停，移出關鍵路徑；硬門檻 1～8 條文與數字一字不改**：
+  (1) 前置追加「T-53 role_aware gate 校準 PASS（需使用者提供獨立校準集）」——T-47 已量得 role_aware 的 0.4 未校準（`bathroom_tiled` 0.4044
+  跨線判錯、已知錯誤放行 1/5），本卡硬門檻 2／3 在 13 張上已知不達，held-out 不可能翻轉；在校準卡之前開跑＝開跑前已知 FAIL，不開跑。
+  (2) 硬門檻 5 的引用對象＝裁決 T-47-A 2.2：使用者選甲→「現行 0.4 未校準，不得宣稱安全」；選乙→「gate criteria v2（T-52）：收窄候選集的 clip
+  面不計入放行」。(3) 硬門檻 6 產表規格追加（附帶發現 ⓐⓓ）：被放行照片逐面正誤表必須列出無來源面並依 ground truth 判正誤、獨立計數，
+  錯誤放行率分母＝六面；逐張列 geometry／materials／overall／gate 兩模式差異，不只 gate。(4) T-17-R2 依其卡片「T-44-R1 未跑→預設
+  `role_aware=False`」路徑進行，不等本卡。使用者兩件待辦（核准絕對下限、held-out 照片）仍有效，但順位在 T-53 校準集之後。
 - **前置（全部硬性）**：T-46 ✅、T-43 ✅（provenance）、裁決 T-47-A 已下（門檻是否隨候選集
   調整已定，本卡依之執行）、`output/clip_treatment/CRITERIA_T44R1.md` 經**使用者核准**並
   **單獨 commit**（`criteria: T-44-R1 v2 …`）、held-out 照片 ≥5 張（使用者提供、**未曾用於
@@ -10319,6 +10519,9 @@ EOF
 ### T-17-R2 MVP 重新驗收（SPEC §7 四項；Opus 主導；裁決 T-45-A 執行卡 5/5）
 - **狀態**：⬜ 未開始
 - **四軸狀態**：工程：未開始｜實驗：不適用｜產品：不適用｜MVP：**待重驗**（T-17 首驗 FAIL 永久保留）
+- **🔮 裁決 T-47-A 補註（Fable 2026-09-14；判準一字不改）**：前置「裁決 T-47-A」**自此滿足**；前置追加「T-52 結案（使用者選乙）或使用者選甲」
+  （驗收期間不得有 gate 程式碼變動）；T-44-R1 ⏸ 未跑 → 依本卡既有條文以預設 `role_aware=False` 重驗，REPORT 標明。報告項 5 追加
+  （附帶發現 ⓐⓑ）：被放行照片的逐面正誤含無來源面（依 ground truth 判、獨立列出），錯誤放行率分母＝六面。
 - **前置（全部硬性，缺一不跑）**：T-42 ✅、T-43 ✅、T-46 ✅、裁決 T-47-A、T-48 ✅、
   T-44-R1 結案（PASS→以 `--role-aware` 試用；FAIL／未跑→預設 `role_aware=False`，REPORT 標明
   用哪一種）、T-04 來源網址補齊**或**使用者明確決定「維持未結案」（REPORT 標明缺項）、
