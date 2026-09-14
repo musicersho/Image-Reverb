@@ -1,5 +1,19 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔮 2026-09-14 Fable：T-52 步驟 4(ii) 更正草案已擬、**等使用者核准（尚未 commit）**；`.archive` 事件已記錄（`08f36b3`，新增鐵則 15）——**現在該做的是：使用者回「核准」→ 同一 Fable 視窗提交 `criteria: T-52 步驟 4(ii) 更正` 獨立 commit → 開 Opus 視窗只複核 4(ii)**
+>
+> - **4(ii) 更正的性質判定**：「把卡片對齊事前已鎖定的判準」，**不是**結果後改門檻——`CRITERIA_GATE_v2.md`（`81bc4cd`）一字不動、
+>   更正版每一格都由早於開卡的表 8 role_aware 段＋CRITERIA「13 張結果與表 8 相同」決定、方向只嚴不寬；故不開 gate v3、
+>   `criteria_changed_after_first_result` 維持 no，但仍走 §7 完整程序（使用者核准、獨立 commit、原 verdict 保留、§8 只追加）。
+>   Fable 已程式化自檢更正版可執行（role_aware 三欄 13/13＝表 8、geometry 13/13＝T-47 表 1）。草案全文在本視窗對話中；核准後
+>   由 `apply_4ii.py`（scratchpad）以「只追加、零刪除」方式寫入 T-52 卡（頂部新狀態「待 Opus 複核 4(ii)」＋執行步驟後「🔮 步驟 4(ii) 更正」段＋§8 `change_record` 追加一行）。
+>   **若本視窗已關**：新 Fable 視窗依 T-52 卡 Opus 驗證紀錄第 9 點建議寫法＋上述判定重擬即可（內容相同）。
+> - **`.archive` 事件（`08f36b3`）**：(a) T-48 Opus 誤刪三個 T-52 重跑的 archive（已確認、⚠️）；(b) 82M 歷史 archive 消失，最可能為
+>   T-48 Sonnet 15:44 前清理（自述未列路徑，無直接證據）；不要求復原。處置＝**鐵則 15**（清理只刪本輪自建路徑、逐條列出、`.archive`
+>   一律不手動刪、不確定就不刪）；T-50 排程不調整但現在即為停滯期、可開跑；T-48 修正輪指示追加第 5 條（補列刪除路徑）。
+> - **T-48 F1～F4 裁決尚未做**：使用者訊息引用的「下一段 ③ 的要求」沒有一起貼進來，Fable 未猜測需求；等使用者補貼後另開獨立 commit。
+> - 本輪零改動：`src`／`scripts`／`data`／`output/**`／WORKFLOW／SPEC／`CRITERIA_GATE_v2.md`；未寫 MVP PASS。
+
 > ## 🟠 2026-09-14 Opus：T-52 工程退回——**現在該做的是開 Fable 視窗，依 WORKFLOW §7 更正 T-52 步驟 4(ii)**（不是回 Sonnet）
 >
 > Opus 對 `6ac3ef3` 全部驗證重點獨立實測成立：鐵則 14 順序、CRITERIA 逐字、default 模式逐位元不變（worktree 對照 stderr／stdout／WAV／JSON 鍵）、
