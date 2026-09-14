@@ -1,5 +1,24 @@
 # Dev Log
 
+## 2026-09-14 (124)
+
+- **T-51 完成**（Sonnet 執行；裁決 T-47-M 執行卡）：逐字跑卡內 heredoc 指令產出
+  `output/gate_calibration/DATASET_MANIFEST.json`（13 張 `GATE_ITEMS` 照片＋`data/material_ground_truth.json`
+  的 sha256，清單由程式從 `scripts/t36_clip_accuracy.py` 抽出）。終端輸出：`files: 14`、
+  `dataset_manifest_sha256 = c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7`、
+  `ground_truth_sha256 = 965e51ac19e2d25a61b89bb8b94c01e4f34e3e41d6300002627d212abfc430c7`（等於 T-44 §8 所記，
+  ground truth 未變）。第 4 步自檢 (a)～(d) 全部成立，未觸發卡關。
+- 已把該值回填 T-47 卡 §8 區塊 `dataset_manifest_sha256` 一行（占位符換成上述值），其餘 10 欄與 T-47 既有文字
+  一字未動，僅追加「T-51 回填紀錄」段落。`src`／`scripts`／`data` 零改動；未重跑 `t47_gate_calibration.py`；
+  `output/gate_calibration/REPORT.md`／`tables.md` 未動。
+- 自我檢查：20 支 `scripts/test_*.py` 全 `EXIT=0`；六條交付 IR MD5 全中（T-14 由 `test_ir_synth.py`【6】內建；
+  T-20 兩條 `--text 浴室`／`--text 大教堂` 重生＝`2adbaa75…`／`2dd19b6e…`；T-21 兩條
+  `assets/scenes/{neighbor_voices,stadium_corridor}.json` 重生＝`9a94ffdf…`／`a1c21bcc…`，四條與歷史記錄
+  逐位元相同）；`git diff --stat 55d0b3f HEAD -- src scripts data` 為空；`git status --porcelain -- src scripts
+  data` 為空。
+- **下一步**：開 Opus 視窗，依裁決 T-47-M 第 5 點清單複核 T-51＋T-47 §8 區塊（量測本體不必重跑）→ T-47
+  工程：已驗證（追加第三輪四軸，不覆寫既有兩輪紀錄）→ Fable 下裁決 T-47-A。
+
 ## 2026-09-14 (123)
 
 - **🔮 裁決 T-47-M（Fable）：T-47 §8 缺漏採 (i) 事後補建，WORKFLOW §8 一字不改。** 理由：§8 字面涵蓋量測卡，缺漏是

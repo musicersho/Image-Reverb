@@ -10017,7 +10017,7 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
   criteria_version: 無 pass/fail 門檻（量測卡；只產出四樣證據＋延伸量測⑤～⑦，判定由裁決 T-47-A 另下）——事後補建（2026-09-14 後追加），事前未鎖定
   criteria_commit: 96e7716（2026-09-03 開卡 commit；鎖定的是量測內容①～⑦、兩模式、紅線與「不下結論」範圍，不含 §8 區塊）——事後補建（2026-09-14 後追加），事前未鎖定
   criteria_locked_at: 2026-09-03（開卡日；§8 區塊本身未於此日鎖定）——事後補建（2026-09-14 後追加），事前未鎖定
-  dataset_manifest_sha256: 〈T-51 以程式計算後取代本占位符；Fable 不手填〉——事後補建（2026-09-14 後追加），事前未鎖定
+  dataset_manifest_sha256: c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7（output/gate_calibration/DATASET_MANIFEST.json；T-51 程式產出，結果 commit 見 T-51 卡）——事後補建（2026-09-14 後追加），事前未鎖定
   implementation_commit: 6d95f5f（首輪：scripts/t47_gate_calibration.py 新增）／5c1cd29（修正輪：表 7／8 gate 欄改程式產出）——事後補建（2026-09-14 後追加），事前未鎖定
   result_commit: 6d95f5f（首輪結果；雜湊回填 4203ba6）／5d1569c（修正輪結果；雜湊回填 54ce03b）——事後補建（2026-09-14 後追加），事前未鎖定
   reviewer: Opus 2026-09-13（795e348，🟠 退回：表 8 無 gate 欄＋§8 缺漏）；Opus 2026-09-14（55d0b3f，🟠 退回：第 1 點已獨立實測修妥，僅剩 §8 缺漏）——事後補建（2026-09-14 後追加），事前未鎖定
@@ -10027,9 +10027,19 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
   change_record: 無——事後補建（2026-09-14 後追加），事前未鎖定
   ```
 
+**T-51 回填紀錄（Sonnet，2026-09-14）**：終端輸出三行原文（卡內 heredoc 指令執行，重跑兩次結果相同）：
+
+```text
+files: 14
+dataset_manifest_sha256 = c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7
+ground_truth_sha256 = 965e51ac19e2d25a61b89bb8b94c01e4f34e3e41d6300002627d212abfc430c7
+```
+
+commit：本次收工 commit（訊息 `T-51: T-47 §8 資料集 manifest 程式計算＋回填(待驗證)`）。
+
 ### T-51 T-47 §8 事後補建：資料集 manifest 程式計算＋回填（微型卡；裁決 T-47-M 執行卡；`src/`／`scripts/`／`data/` 零改動）
-- **狀態**：⬜ 未開始
-- **四軸狀態**：工程：未開始｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
+- **狀態**：🔵 待驗證
+- **四軸狀態**：工程：待驗證｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
 - **前置**：裁決 T-47-M 已下（見 T-47 卡末段）；T-47 卡 §8 區塊已存在且 `dataset_manifest_sha256` 為占位符。
 - **為什麼**：WORKFLOW §8 要求 `dataset_manifest_sha256` 由程式產生、不得手打；T-47 的 §8 屬事後補建，資料集雜湊是唯一還能
   「補」到實質內容的欄位（釘住裁決 T-47-A 依據的 13 張照片＋ground truth 版本；13 張裡 8 張 `reference_irs` 媒體檔不在版控，
@@ -10060,7 +10070,27 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
   回填值與 Opus 自跑指令結果不同；紅旗：manifest 未進版控或內容被手改（`git show HEAD:output/gate_calibration/DATASET_MANIFEST.json |
   shasum -a 256` 必須等於回填值）；紅旗：commit 含五檔以外任何檔；紅旗：§8 其他 10 欄或 T-47 既有紀錄被動過；紅旗：
   ground truth sha256 ≠ `965e51ac…`。通過 → T-51 `工程：已驗證` **且** T-47 `工程：已驗證`（T-47 卡追加第三輪四軸，不覆寫）。
-- **交接筆記**：
+- **交接筆記（Sonnet，2026-09-14）**：
+  起點 commit `22e497b`，開工前 `git status --porcelain -- src scripts data` 為空。逐字執行卡內 T-51 指令（heredoc，
+  未改一字、未新增腳本檔）產出 `output/gate_calibration/DATASET_MANIFEST.json`，終端輸出：`files: 14`、
+  `dataset_manifest_sha256 = c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7`、
+  `ground_truth_sha256 = 965e51ac19e2d25a61b89bb8b94c01e4f34e3e41d6300002627d212abfc430c7`。
+  第 4 步自檢：(a) 重跑第二次指令，兩次 `dataset_manifest_sha256` 相同（可重現）；(b) `shasum -a 256
+  output/gate_calibration/DATASET_MANIFEST.json` 與程式印出值相同；(c) `ground_truth_sha256` 等於卡內指定的
+  `965e51ac19e2d25a61b89bb8b94c01e4f34e3e41d6300002627d212abfc430c7`；(d) `grep -c '"photo": "'
+  scripts/t36_clip_accuracy.py` 印 `13`。四項全部成立，未觸發 🔴 卡關。
+  已回填 T-47 卡 §8 區塊 `dataset_manifest_sha256` 一行（占位符換成上述值），其餘 10 欄與 T-47 卡既有文字一字未動，
+  並在 §8 區塊後追加「T-51 回填紀錄」段落。
+  自我檢查：`scripts/test_*.py` 20 支逐支 `EXIT=0`；六條交付 IR MD5 全中（T-14 由 `test_ir_synth.py`【6】內建；
+  T-20 兩條 `--text 浴室`／`--text 大教堂` 重生＝`2adbaa75…`／`2dd19b6e…`；T-21 兩條
+  `scripts/gen_ir_coupled.py assets/scenes/{neighbor_voices,stadium_corridor}.json` 重生＝`9a94ffdf…`／
+  `a1c21bcc…`，四條與歷史記錄逐位元相同）；`git diff --stat 55d0b3f HEAD -- src scripts data` 為空；
+  `git status --porcelain -- src scripts data` 為空。`output/gate_calibration/REPORT.md`／`tables.md` 未動
+  （`git status --porcelain` 對兩檔為空）；未重跑 `t47_gate_calibration.py`；`src/`／`scripts/`／`data/` 零改動
+  （只讀 `scripts/t36_clip_accuracy.py` 取照片清單，未修改）。
+  結果 commit：見下方收工 commit（`T-51: T-47 §8 資料集 manifest 程式計算＋回填(待驗證)`），只含
+  `TASKS.md`／`DEV_LOG.md`／`TODO.md`／`HANDOFF.md`／`output/gate_calibration/DATASET_MANIFEST.json` 五檔。
+  **下一步**：開 Opus 視窗，依裁決 T-47-M 第 5 點清單複核本卡＋T-47 §8 區塊（量測本體不必重跑）。
 
 **T-51 指令（原文；從 `python3` 到 `EOF` 整段複製，貼在 repo 根目錄的 shell；本區塊刻意不縮排，避免 heredoc 結尾 `EOF` 前混入空白）**：
 

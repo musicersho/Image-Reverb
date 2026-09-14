@@ -1,0 +1,76 @@
+{
+  "card": "T-47",
+  "files": [
+    {
+      "bytes": 7985446,
+      "path": "assets/photos/arena_ntsu_linkou.png",
+      "sha256": "2b72af99bbaf6ae791b4c462af1da4808a4fded5f4cb39f9a3f1eb89df0a9b10"
+    },
+    {
+      "bytes": 1008332,
+      "path": "assets/photos/bathroom_tiled.png",
+      "sha256": "1f7ced1531d50ff9ed839315ad85063d6bfc6a699cbd63467481b56a44e35d73"
+    },
+    {
+      "bytes": 4221426,
+      "path": "assets/photos/bedroom_ai_generated.png",
+      "sha256": "b108578269b96adcdcabac65641c766ff1a7e3e5243707a2ce5014858434bde5"
+    },
+    {
+      "bytes": 2741327,
+      "path": "assets/photos/car_interior_suv.png",
+      "sha256": "7dd1c6b2a154fea934e0ecc4790d18de46276be52f291d6a6eb873cf06ca0cc5"
+    },
+    {
+      "bytes": 2286401,
+      "path": "assets/photos/stairwell_tiled.png",
+      "sha256": "40859d6e815202a700b237625e33e177ec6f3193cd5e409231ef0c0385b370fa"
+    },
+    {
+      "bytes": 419282,
+      "path": "assets/reference_irs/cathedral_room_shasta_lake_caverns/CathedralRoom.jpg",
+      "sha256": "d4dcaed7c3b590546aa26e006930b1dfc1050e509cca20e4d806a050773c9d48"
+    },
+    {
+      "bytes": 1875715,
+      "path": "assets/reference_irs/divorce_beach/DivorceBeach.jpg",
+      "sha256": "746d0c7adfe71a30805ae41366d48e2195e42cd8f6094b79a2623fcd0c63928a"
+    },
+    {
+      "bytes": 2953363,
+      "path": "assets/reference_irs/mit_department_store/site_photo_department_store.png",
+      "sha256": "a3aa38e1821829ce12e0f2a25294db35a32cf297172cc0a8376e34cf9c568a5c"
+    },
+    {
+      "bytes": 2930284,
+      "path": "assets/reference_irs/mit_gym/site_photo_gym.png",
+      "sha256": "9ccc9c335ff8862a7f46f22548c1d1c90e9b4b79090cfaf9dd25f2346a96749e"
+    },
+    {
+      "bytes": 2727133,
+      "path": "assets/reference_irs/mit_restaurant/site_photo_restaurant.png",
+      "sha256": "a3576a3a2eb8993ca87b6c8df864f5e0b7421316a91880176d59c6f340d27214"
+    },
+    {
+      "bytes": 308731,
+      "path": "assets/reference_irs/racquetball_court_4/RacquetballCourt4.jpg",
+      "sha256": "878ee129bf633cb4d4e6589d04743fd7ceae7325d2e9eee2d1e753f678a835d2"
+    },
+    {
+      "bytes": 1812010,
+      "path": "assets/reference_irs/steinman_hall/SteinmanHall.jpg",
+      "sha256": "1d2e11433e4285c0453ffed64c916307c5b97b8e5ca35826650a263baa5d0696"
+    },
+    {
+      "bytes": 1564096,
+      "path": "assets/reference_irs/tunnel_to_hell/TunnelToHell.jpg",
+      "sha256": "51dde5694fca64df43ac466da52bbcb926cd048641d79c67763cbbfc42045e65"
+    },
+    {
+      "bytes": 20481,
+      "path": "data/material_ground_truth.json",
+      "sha256": "965e51ac19e2d25a61b89bb8b94c01e4f34e3e41d6300002627d212abfc430c7"
+    }
+  ],
+  "list_source": "scripts/t36_clip_accuracy.py GATE_ITEMS (13 photos) + data/material_ground_truth.json"
+}

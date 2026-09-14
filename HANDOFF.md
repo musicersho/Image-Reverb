@@ -1,5 +1,26 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔵 2026-09-14 Sonnet：T-51 完成——**現在該做的是開 Opus 新視窗複核**，結果 commit 見本次收工 commit
+>
+> 逐字執行 T-51 卡內 heredoc 指令（未改指令、未新增腳本檔），產出 `output/gate_calibration/DATASET_MANIFEST.json`。
+> 終端輸出三行：`files: 14`、`dataset_manifest_sha256 = c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7`、
+> `ground_truth_sha256 = 965e51ac19e2d25a61b89bb8b94c01e4f34e3e41d6300002627d212abfc430c7`（等於 T-44 §8 所記，ground
+> truth 未變）。第 4 步自檢 (a)～(d)：可重現、`shasum` 相符、ground truth sha256 相符、照片數 13——全部成立，未觸發
+> 🔴 卡關。已回填 T-47 卡 §8 區塊 `dataset_manifest_sha256` 一行，其餘 10 欄與 T-47 既有文字一字未動，只在 §8 區塊
+> 後追加「T-51 回填紀錄」段落。`src`／`scripts`／`data` 零改動；未重跑 `t47_gate_calibration.py`；`REPORT.md`／
+> `tables.md` 未動。
+>
+> **自我檢查**：20 支 `scripts/test_*.py` 全 `EXIT=0`；六條交付 IR MD5 全中（T-14 由 `test_ir_synth.py`【6】內建；
+> T-20 兩條 `--text 浴室`／`--text 大教堂` 重生＝`2adbaa75…`／`2dd19b6e…`；T-21 兩條
+> `assets/scenes/{neighbor_voices,stadium_corridor}.json` 重生＝`9a94ffdf…`／`a1c21bcc…`，逐位元與歷史記錄相同）；
+> `git diff --stat 55d0b3f HEAD -- src scripts data` 為空；`git status --porcelain -- src scripts data` 為空。
+> 結果 commit 只含 `TASKS.md`／`DEV_LOG.md`／`TODO.md`／`HANDOFF.md`／`output/gate_calibration/DATASET_MANIFEST.json`
+> 五檔。
+>
+> **下一步**：開 Opus 新視窗，依裁決 T-47-M 第 5 點清單複核 T-51＋T-47 §8 區塊（量測本體不必重跑）→ T-47
+> 工程：已驗證（追加第三輪四軸，不覆寫既有兩輪紀錄）→ Fable 下裁決 T-47-A。詳見 TASKS.md T-51 卡「交接筆記」
+> 與 DEV_LOG `2026-09-14 (124)`。
+
 > ## 🔮 2026-09-14 Fable：裁決 T-47-M 已下（T-47 §8 缺漏＝事後補建，WORKFLOW 不動）——**現在該做的是開 Sonnet 視窗執行 T-51**（微型卡），再送 Opus 複核
 >
 > Opus 第二輪複驗（`55d0b3f`）唯一阻擋＝WORKFLOW §8 不可變欄位缺漏。Fable 選 **(i)**：在 T-47 卡末段追加 §8 區塊，11 欄全標
