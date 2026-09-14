@@ -1,5 +1,34 @@
 # Dev Log
 
+## 2026-09-14 (130)
+
+- **T-48 完成（Sonnet 執行；裁決 T-45-A 執行卡 3/5；待 Opus 驗證）**：T-11／T-12 判準 v2 針對性重驗，
+  `src/`／`data/`／`ir_metrics.py` 全程零 diff。開跑前先等另一視窗（T-52）把 `src/` 與 `TASKS.md` 的
+  未提交改動收工乾淨（用 Monitor 輪詢 `git status --porcelain`），才依鐵則 14 建
+  `output/geometry_r2/DATASET_MANIFEST.json`（13 張照片 sha256，唯一清單來源
+  `t36_clip_accuracy.GATE_ITEMS`）並先行 commit（`5a9981a`）。
+- **A 部分**：13 張中 domain_out 3 張（arena_ntsu_linkou／RacquetballCourt4／SteinmanHall）＋
+  domain_in_with_ground_truth 1 張（bathroom_tiled）落入 v2 判準。**RacquetballCourt4 一筆 FAIL**——
+  實際最大維 12.19m >10m，但實測 `geometry_confidence=medium`（非 low）、gate 未印
+  `--override-dims` 導引，域外出口誤放；根因（唯讀確認）：`geometry.py`
+  `apply_scope_confidence()` 對環景比對的是單一視角原始牆距、不是相加後房間全長，兩側視角個別
+  ≤10m 時不觸發，即使加總全長（估 16.10m）>10m。arena_ntsu_linkou／SteinmanHall 域外出口正確；
+  bathroom_tiled 誤差 +24.0% PASS。
+- **B 部分**：三條 IR 用既有 `gen_ir_manual.py`（逐字沿用 T-12 卡指令）重生，交付
+  `output/material_r2/`。v2-a PASS（per-wall Sabine 125Hz 0.348s）。v2-b 本次交付版本 PASS
+  （−19.9%／3.97 倍），**但過程中發現 `gen_ir_manual.py` 呼叫的 pyroomacoustics ray tracing 沒有
+  固定 random seed**（同指令重跑兩次輸出 WAV sha256 不同）：本卡執行期間因程式除錯／格式修正
+  （與判準邏輯無關）先後量到三次官方結果 −21.1%（FAIL）／−22.3%（FAIL）／−19.9%（PASS），
+  已在 REPORT 誠實列出三次歷史與原因，未挑選結果、未更動 v2 數字。v1 字面條件（125Hz 八度）
+  誤差 +102.1%，如預期未達，只記錄不當門檻。
+- T-11／T-12 不可變欄位以「追加」方式回填 `verdict_under_current_criteria`／`dataset_manifest_sha256`
+  （原文一字未刪）。20 支 `scripts/test_*.py` 全 EXIT=0；六條交付 IR MD5 抽查 2 條與歷史記錄相符。
+  新增 `scripts/t48_geometry_material_r2.py`（唯一新檔）。
+- **下一步：開 Opus 新視窗複核 T-48**（依卡片「Opus 驗證重點」）。請 Opus／Fable 一併評估：
+  (1) RacquetballCourt4 域外誤放是否需開新卡修正 `apply_scope_confidence()`；
+  (2) v2-b 子判準的量測方法（單次生成、無固定 seed）鑑別力薄弱，是否要依 WORKFLOW §7 改進
+  （而非改 ±20%／3 倍門檻數字）。
+
 ## 2026-09-14 (129)
 
 - **T-52 完成（Sonnet 執行；裁決 T-47-A 選項乙執行卡）**：實作 gate v2 規則 R1b——`role_aware=True` 時任一面
