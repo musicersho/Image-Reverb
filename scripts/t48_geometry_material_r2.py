@@ -557,8 +557,8 @@ def _write_stability_appendix(cases: dict, repeats: dict) -> list[str]:
         f"這裡**額外**重跑 per_wall／control_gypsum 各 {STABILITY_REPEATS} 次"
         "（存於 `output/material_r2/stability_check/`，與正式交付檔案分開，不算入判定）：\n\n"
     )
-    lines.append(f"- per_wall 聯合帶 T30 各次量測（含官方那次）：{[round(v, 4) for v in pw_all]}\n")
-    lines.append(f"- control_gypsum 聯合帶 T30 各次量測（含官方那次）：{[round(v, 4) for v in cg_all]}\n")
+    lines.append(f"- per_wall 聯合帶 T30 各次量測（含官方那次）：{[round(float(v), 4) for v in pw_all]}\n")
+    lines.append(f"- control_gypsum 聯合帶 T30 各次量測（含官方那次）：{[round(float(v), 4) for v in cg_all]}\n")
     lines.append(
         f"- 交叉配對後的 per_wall vs control_gypsum 差異百分比範圍："
         f"{min(diffs_pct):+.1f}% ～ {max(diffs_pct):+.1f}%（判準 ≤±20%；"
