@@ -1,5 +1,17 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🟠 2026-09-14 Opus：T-52 工程退回——**現在該做的是開 Fable 視窗，依 WORKFLOW §7 更正 T-52 步驟 4(ii)**（不是回 Sonnet）
+>
+> Opus 對 `6ac3ef3` 全部驗證重點獨立實測成立：鐵則 14 順序、CRITERIA 逐字、default 模式逐位元不變（worktree 對照 stderr／stdout／WAV／JSON 鍵）、
+> R1b 與原文同義且對 high 也生效、【C】對舊碼 (a) fail／(b)(c)(d) pass、`output/gate_calibration/` 未動、`--fresh` 52 次推論重跑 `tables.md`
+> 與提交版逐字相同、20 支測試 EXIT=0、六條 IR MD5 全中。**DivorceBeach materials 格 medium→low 是 R1b 逐字實作的必然結果**，
+> 與 CRITERIA「13 張結果與表 8 相同」一致（13/13 程式比對 True）。
+>
+> **退回唯一理由**：卡片步驟 4(ii) 寫「僅 bathroom_tiled 三格改變、其餘 12 列相同」，與同卡鎖定的 R1b／CRITERIA 互相矛盾（要滿足 4(ii) 就得違反
+> 「不得不同義」紅線），驗證者不得用附註豁免。**Fable 要做的**：以獨立 commit 更正 4(ii)（建議改為「role_aware 三欄 13 列與 T-47 表 8 role_aware 段模擬值逐列相同」，
+> 全文見 T-52 卡「🟠 Opus 驗證紀錄」第 9 點），經使用者或獨立審查者核准 → Opus 只複核該項即可轉已驗證 → T-17-R2。**不需改碼、不需重跑、`src/` 不得回滾。**
+> 非阻擋觀察 (a)～(e)（v2 REPORT 樣板文字、【C】缺 high 案例、BLOCK 訊息混合情況 UX 等）見同段第 10 點。
+
 > ## 🔵 2026-09-14 Sonnet：T-52 完成——**現在該做的是開 Opus 新視窗複核**，實作＋結果 commit `6ac3ef3`
 >
 > §8 前四欄（開跑前）先行 commit `7e03a97`（`dataset_manifest_sha256` 重算＝`c15d0a14…2b01a7`，相符，未卡關），早於

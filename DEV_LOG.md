@@ -1,5 +1,16 @@
 # Dev Log
 
+## 2026-09-14 (132)
+
+- **T-52 Opus 驗證——🟠 工程退回（非執行者過失；不需改碼、不需重跑）**（對象 `6ac3ef3`／`b1e4edf`；只審不改碼）。四軸：工程：退回｜
+  實驗：正向（僅限事前鎖定 `expected_on_13`；無 held-out、不構成校準）｜產品：feature flag（建議，Fable 裁決）｜MVP：不適用。
+- **Opus 自己實測屬實**：鐵則 14 祖先鏈 `81bc4cd→9185a1c→7e03a97→6ac3ef3`、`7e03a97` 只改一行；CRITERIA 自 `81bc4cd` 未動、與卡片規則原文同文；
+  worktree @ `7e03a97`／`6ac3ef3` 跑 `bathroom_tiled` default：stderr／stdout diff 空、force 模式三 WAV MD5 相同、`analysis.json` 鍵路徑相同；
+  R1b 探針證明對 high 也降 low；【C】對舊碼 (a) fail／(b)(c)(d) pass 複現；`--fresh` 52 次推論重跑 `tables.md` 與提交版逐字相同；20 支測試 EXIT=0；六條 MD5 全中。
+- **DivorceBeach 獨立覆核**：floor clip＋`role:floor` → R1b 必然觸發，與 CRITERIA「13 張結果與表 8 相同」一致（role_aware 三欄 13/13 對表 8 相同），實作同義成立。
+- **退回唯一理由**：卡片步驟 4(ii)「僅 bathroom_tiled 三格改變、其餘 12 列相同」與鎖定判準矛盾、字面不可達；Sonnet 以附註帶過不能綠燈（§5.4.1／§7.5／紅旗 7）。
+- **下一步**：開 Fable 視窗依 §7 更正 4(ii)（Opus 建議寫法見 T-52 卡驗證紀錄第 9 點；需使用者或獨立審查者核准、獨立 commit）→ Opus 只複核該項 → 已驗證 → T-17-R2。
+
 ## 2026-09-14 (131)
 
 - **T-48 Opus 驗證——🟠 工程退回**（對象 `012a07f`；只審不改碼）。四軸：工程：退回｜實驗：負向（A：RacquetballCourt4 域外誤放

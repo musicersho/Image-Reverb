@@ -143,7 +143,12 @@
 - [x] **🔮 裁決 T-47-A 已下（Fable 2026-09-14）**——default gate 維持；role_aware 0.4 未校準、**甲／乙等使用者核准**（乙＝T-52）；產品 🧪 維持；
       T-44-R1 ⏸ 移出關鍵路徑（等 T-53）；T-17-R2 前置「裁決 T-47-A」滿足；T-48 可立即開跑。T-47 四軸：工程：已驗證｜實驗：不適用｜
       產品：不適用（量測卡）｜MVP：不適用。全文見 TASKS.md T-47 卡「🔮 裁決 T-47-A」。
-- [ ] **T-52** gate criteria v2（role_aware 收窄候選集的 clip 面不計入放行）——**🔵 Sonnet 完成，待 Opus 驗證**（§8 前四欄
+- [ ] **T-52** gate criteria v2——**🟠 Opus 工程退回（2026-09-14；非執行者過失，不需改碼／重跑）**：實作與全部紅線實測通過
+      （default 逐位元不變、R1b 同義且對 high 生效、【C】舊碼 fail、`--fresh` 重跑 tables.md 逐字相同、20 支測試、六條 MD5）；
+      唯一阻擋＝卡片步驟 4(ii)「其餘 12 列相同」與鎖定判準（R1b＋「13 張結果與表 8 相同」→DivorceBeach materials 必變 low）矛盾。
+      **下一步：開 Fable 視窗依 WORKFLOW §7 更正 4(ii)**（建議寫法見 T-52 卡 Opus 驗證紀錄第 9 點）→ Opus 複核該項。
+      四軸：工程：退回｜實驗：正向（僅限 expected_on_13，非校準）｜產品：feature flag（建議）｜MVP：不適用。
+      （以下為 Sonnet 送審原文）🔵 Sonnet 完成，待 Opus 驗證（§8 前四欄
       commit `7e03a97` 早於實作／結果 commit `6ac3ef3`）：R1b 已實作，新測試【C】對舊碼實測 (a) fail／(b)(c)(d) pass，
       基線變化表 `output/gate_calibration_v2/`（default 13 列零差異、role_aware 13/13 BLOCK），default 模式 stderr 逐位元
       不變，20 支測試 EXIT=0、六條 IR MD5 全中。附帶測得 `DivorceBeach` materials 格也 medium→low（gate 不受影響，與
