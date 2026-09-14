@@ -581,12 +581,12 @@
   criteria_version: v1（原卡步驟 5：一般室內〔浴室、走廊近端〕±30%）→ v2（SPEC v0.3：適用域 ≤10m，±30% 數字不動）→ v2.1（Steinman 對照組預期由 medium 改 low，規則不動）
   criteria_commit: v1＝T-08 細化（2026-08-16）；v2＝e14873c（2026-08-25）；v2.1＝bca6b61（2026-08-27）
   criteria_locked_at: v1 早於首次結果（fc688cd，2026-08-24）；v2／v2.1 皆晚於首次結果
-  dataset_manifest_sha256: 未建立（9 張照片＋已知尺寸 4 場地；T-48 補建並回填）
-  implementation_commit: fc688cd（與 T-12 混提，WORKFLOW §4 違規已由 Opus 記錄）→ 40bfb2f（決策補丁）
-  result_commit: fc688cd（首次評測：走廊 −57%）→ 40bfb2f（補丁後 A'/B'）
+  dataset_manifest_sha256: 未建立（9 張照片＋已知尺寸 4 場地；T-48 補建並回填）→ T-48（2026-09-14）：b2f994ccf21534ec49c0e915b92191b8976e1e374d7dee50d6841895bbe1b66e（`output/geometry_r2/DATASET_MANIFEST.json`，13 張照片＝現行 canonical 清單 t36_clip_accuracy.GATE_ITEMS，非原始 9 張——corridor_hotel_carpet 等 4 張已於 T-36 起不在 canonical 清單內，13 張已知實際尺寸的 5 張見 DATASET_MANIFEST.json）
+  implementation_commit: fc688cd（與 T-12 混提，WORKFLOW §4 違規已由 Opus 記錄）→ 40bfb2f（決策補丁）→ T-48：469abef（Part A 量測腳本）
+  result_commit: fc688cd（首次評測：走廊 −57%）→ 40bfb2f（補丁後 A'/B'）→ T-48：714703d（`output/geometry_r2/REPORT.md`）
   reviewer: Opus（2026-08-27，8531356）
   verdict_under_original_criteria: FAIL（判準 A：走廊 −57% 未達 ±30%）
-  verdict_under_current_criteria: PASS（v2.1：A' 浴室 +24%；B' 走廊／車內／體育館／Steinman 全部 low）
+  verdict_under_current_criteria: PASS（v2.1：A' 浴室 +24%；B' 走廊／車內／體育館／Steinman 全部 low）→ **T-48 域外出口實測補充（2026-09-14，13 張，Sonnet 量測，待 Opus 覆核；見 `output/geometry_r2/REPORT.md`）**：bathroom_tiled ±30% 誤差複測 PASS（估 3.72m vs 實際 3.0m，+24.0%，與原始一致）；域外項 3 張中 2 張 PASS（arena_ntsu_linkou、SteinmanHall 皆 geometry_confidence=low 且 gate 訊息含 `--override-dims` 導引）、**RacquetballCourt4 一筆 FAIL**（實際最大維 12.19m >10m，但實測 geometry_confidence=medium 非 low、gate 未印 override-dims 導引——域外出口誤放）；根因（唯讀讀 `geometry.py` `apply_scope_confidence()`）：環景量程規則比對的是單一視角原始牆距，不是相加後的房間全長，本例兩側視角個別皆 ≤10m、加總後房間全長 >10m 卻不觸發，詳見 REPORT §4；car_interior_suv 不落入 v2 兩類別判準內（見 T-48 卡），僅記錄供參考
   criteria_changed_after_first_result: yes
   change_record: e14873c（Fable 路線決策：改適用域不改數字，理由＝模型量程 ~20m 實證；核准＝Fable 自行裁決）；bca6b61（Steinman 實測牆距超標→預期改 low；核准＝Fable）；裁決 T-45-A（2026-09-03）：原域 FAIL 永久並列，域外出口是否誤放由 T-48 實測
   ```
@@ -846,11 +846,11 @@
   criteria_commit: v1＝T-08 細化（2026-08-16）；v2＝本裁決 commit（2026-09-03，早於 T-48 任何量測）
   criteria_locked_at: v1 早於首次結果（fc688cd）；v2 早於 T-48 執行
   dataset_manifest_sha256: 不適用（合成房間 4×3×2.5m，floor=carpet／其餘 gypsum_board；對照組六面 gypsum、六面 carpet）
-  implementation_commit: fc688cd
-  result_commit: fc688cd（Sabine 0.348s／實測 T30 0.748s）；f1c32ce（使用者試聽通過）
+  implementation_commit: fc688cd → T-48：d372ad9（Part B 量測腳本）
+  result_commit: fc688cd（Sabine 0.348s／實測 T30 0.748s）；f1c32ce（使用者試聽通過）→ T-48：e1183b9（`output/material_r2/REPORT.md`，最終交付 IR 由 cda6b9b 該次重跑生成）
   reviewer: Opus（2026-08-25，85d0493）
   verdict_under_original_criteria: 未達（字面條件：實測 0.748s，偏差 +115%）
-  verdict_under_current_criteria: 待 T-48（v2 尚未量測；85d0493 附註 3 的豁免不得當 PASS 用）
+  verdict_under_current_criteria: 待 T-48（v2 尚未量測；85d0493 附註 3 的豁免不得當 PASS 用）→ **T-48 v2 量測補充（2026-09-14，Sonnet 量測，待 Opus 覆核；見 `output/material_r2/REPORT.md`）**：v2-a（公式層）PASS（per-wall Sabine 125Hz 0.3480s，誤差 +0.0%）；v2-b（IR 實測層，聯合帶 T30）本次交付版本 PASS（per-wall 0.965s vs 六面 gypsum 對照 1.205s，差異 −19.9% ≤±20%；六面 carpet 對照/per-wall＝3.97 倍 ≥3 倍）——**但本卡執行期間三次獨立官方重生的差異百分比分別是 −21.1%／−22.3%／−19.9%（另有 8 次額外重跑落在 −28.4%～−10.4% 之間），PASS/FAIL 跨越 ±20% 門檻兩側，測到 pyroomacoustics ray tracing 沒有固定 random seed（同指令重跑兩次 WAV sha256 不同），這條子判準在目前量測方法下鑑別力薄弱，請 Opus／Fable 一併評估是否要依 WORKFLOW §7 修正量測方法（例如固定 seed 或多次取中位數），而非門檻數字本身；v1 字面條件（125Hz 八度 T30 ≈0.35s ±20%）本次交付版本 0.7074s、誤差 +102.1%，未達，如原卡預期只記錄不當門檻
   criteria_changed_after_first_result: yes（85d0493 附註 3 以「0.35s 是 Sabine 值」解釋豁免，未改卡、未另版——依 WORKFLOW §7 屬驗證者豁免字面條件）
   change_record: 裁決 T-45-A（2026-09-03）：豁免附註不再視為通過依據；原字面條件「未達」永久保留；v2 由 Fable 事前鎖定於 T-48 卡，T-48 只量不改
   ```
@@ -10477,8 +10477,15 @@ EOF
 - **交接筆記**：
 
 ### T-48 T-11／T-12 判準第二版針對性重驗（量測卡；裁決 T-45-A 執行卡 3/5；`src/` 零改動）
-- **狀態**：⬜ 未開始
-- **四軸狀態**：工程：未開始｜實驗：待量測（雙 verdict 的第二個）｜產品：不適用｜MVP：不適用
+- **狀態**：🔵 **Sonnet 完成，待 Opus 驗證**——§8 前四欄 commit `5a9981a` 早於實作／結果 commit（鐵則 14）。
+  A／B 兩部分皆已量測，A 部分 13 張中 1 筆 FAIL（RacquetballCourt4 域外出口誤放）、B 部分 v2-a PASS／
+  v2-b 本次交付版本 PASS 但測到量測方法本身噪聲大（詳見下方交接筆記與兩份 REPORT）。**下一步＝開
+  Opus 新視窗依本卡「Opus 驗證重點」複核。**
+- **四軸狀態**：工程：待審｜實驗：**已量測，雙 verdict 之一**——A 部分 12/13 落入 v2 判準內的項目
+  PASS、RacquetballCourt4 1 筆 FAIL（域外出口誤放，如實記錄，非預期行為）；B 部分 v2-a PASS，
+  v2-b 本次交付版本 PASS 但過程三次官方重跑分別為 FAIL／FAIL／PASS（測到 pyroomacoustics 無固定
+  seed，鑑別力薄弱，如實揭露，不代表子判準本身站得住腳）｜產品：不適用（本卡不改產品）｜
+  MVP：不適用（T-48 verdict 併入 T-17-R2）
 - **前置**：T-46 ✅（預設路徑穩定）；可與 T-47 同期由不同視窗執行（檔案不相交），但一次只給
   一個視窗一張卡。
 - **🔮 裁決 T-48-S（排程，Fable 2026-09-08；回應 HANDOFF_PHASE_1.9R.md §7）**：**T-48 可在 T-42／T-43
@@ -10512,8 +10519,8 @@ EOF
   criteria_commit: 96e7716（2026-09-03，開卡即鎖定判準 v2）＋c8f6be9（2026-09-08，裁決 T-48-S：排程放寬與硬性條件 (a)～(d)，未改任何判準數字）
   criteria_locked_at: 2026-09-03（判準 v2）／2026-09-08（條件 (a)～(d)）——皆早於本卡任何量測（截至 2026-09-14 本卡未開跑）
   dataset_manifest_sha256: b2f994ccf21534ec49c0e915b92191b8976e1e374d7dee50d6841895bbe1b66e（`output/geometry_r2/DATASET_MANIFEST.json`，程式產生＋`shasum -a 256` 複算相符；13 張照片 sha256＋已知尺寸表；manifest 檔以 `git add -f` 進版控；B 部分為合成房間，三條重生 IR 的 sha256 另記於 `output/material_r2/REPORT.md` 檔頭）
-  implementation_commit: 〈開跑前 commit＝本欄與 dataset_manifest_sha256 同批；量測腳本 `scripts/t48_geometry_material_r2.py`；src/、data/、ir_metrics.py 零 diff——待下一個 commit 回填 hash〉
-  result_commit: 〈執行者填〉
+  implementation_commit: e1183b9（`scripts/t48_geometry_material_r2.py` 最終版；完整迭代鏈 469abef→714703d→d372ad9→dd03c0e→cda6b9b→4bec212→e1183b9，逐次 commit 訊息記錄每次改動與重跑原因；src/、data/、ir_metrics.py 全程零 diff）
+  result_commit: 〈本欄下一個 commit 回填〉
   reviewer: 〈Opus 填：模型＋日期＋commit〉
   verdict_under_original_criteria: 〈Opus 填：v2 首跑結果，A／B 分列；未達＝如實 FAIL〉
   verdict_under_current_criteria: 〈同上；判準未變〉
@@ -10553,7 +10560,46 @@ EOF
   `verdict_under_current_criteria` 與 `dataset_manifest_sha256` 以「追加」方式回填（不刪原文）。
 - **Opus 驗證重點（四軸輸出）**：紅旗：v2 數字被改；紅旗：域外誤放被寫成「預期行為」而非 FAIL；
   紅旗：聯合帶量測不是走 `t30_low_combined()`；紅旗：手打數字。
-- **交接筆記**：
+- **交接筆記（Sonnet，2026-09-14）**：
+  - **開跑前**：git 樹一開始不乾淨（另一視窗 T-52 進行中，`src/` 三檔＋`TASKS.md`），已等其完整收工
+    （commit 至 `b1e4edf`）後才開始，未動 T-52 任何檔案。
+  - **新增 `scripts/t48_geometry_material_r2.py`**（唯一新檔，`src/`／`data/`／`ir_metrics.py` 全程零
+    diff）：`manifest`／`partA`／`partB`／`partB-report-only`／`all` 五個子命令。A 部分跑真實
+    `python -m src.image_reverb <photo> --no-viz`（先 `--force-low-confidence` 讀 `analysis.json`
+    完整 `warnings` 只為印出觸發規則細節、再跑不帶旗標的預設路徑取得真實 gate 判定與
+    `--override-dims` 導引訊息），B 部分呼叫既有 `scripts/gen_ir_manual.py`（逐字沿用 T-12 卡
+    「Opus 驗證結果」表格已記錄的三條指令）＋`src/image_reverb/ir_metrics.t30_low_combined()`／
+    `band_t30()`，皆唯讀引用不重新實作任何評分邏輯。
+  - **A 部分結果（`output/geometry_r2/REPORT.md`）**：13 張照片（canonical 清單，非原始 9 張）中，
+    domain_out 3 張（arena_ntsu_linkou、RacquetballCourt4、SteinmanHall）＋domain_in_with_ground_truth
+    1 張（bathroom_tiled）落入 v2 判準，其餘 8 張＋car_interior_suv 無對應 v2 類別，僅記錄供參考。
+    **FAIL 1 筆：RacquetballCourt4**——實際最大維 12.19m >10m，但實測 `geometry_confidence=medium`
+    （非 low），gate 未印 `--override-dims` 導引，域外出口誤放。根因（唯讀讀
+    `geometry.py apply_scope_confidence()` 確認）：環景量程規則比對的是**單一視角原始牆距**，
+    不是相加後的房間全長；本例兩側視角個別讀數都 ≤10m，加總後估計全長 16.10m（實際 12.19m）
+    卻不觸發規則。bathroom_tiled 誤差 +24.0%（PASS）；arena_ntsu_linkou／SteinmanHall 域外出口皆
+    正確（low＋override-dims 導引，PASS）。**這是實測結果，未修改任何規則或判準**。
+  - **B 部分結果（`output/material_r2/REPORT.md`）**：v2-a PASS（per-wall Sabine 125Hz 0.3480s，
+    誤差 +0.0%）。v2-b 本次交付版本 PASS（−19.9%／3.97 倍），**但過程中意外發現
+    `gen_ir_manual.py` 呼叫的 pyroomacoustics ray tracing 沒有固定 random seed**（同指令重跑兩次
+    輸出 WAV sha256 不同，樣本點最大絕對差約 0.099）。本卡執行期間因程式除錯／格式修正（與判準
+    邏輯無關）先後產生三次「官方」per-wall vs 六面 gypsum 差異：−21.1%（FAIL）／−22.3%
+    （FAIL）／−19.9%（PASS，本次交付版本），另外跑了 8 次額外重跑（不算入判定）落在
+    −28.4%～−10.4% 之間，PASS/FAIL 跨越 ±20% 門檻兩側。三次官方重跑的原因與 commit 均已誠實
+    列在 `output/material_r2/REPORT.md` §3（不是為了「重跑到通過為止」），**沒有挑選對自己有利
+    的結果、沒有更動 v2 數字**。v1 字面條件（125Hz 八度）誤差 +102.1%，如預期未達，只記錄不當門檻。
+  - **請 Opus／Fable 特別注意**：(1) RacquetballCourt4 的域外誤放是否需要開新卡修正
+    `apply_scope_confidence()`（本卡依規則只量不改，未動 `geometry.py`）；(2) v2-b 子判準在目前量測
+    方法（單次生成、無固定 seed）下鑑別力薄弱，是否要依 WORKFLOW §7 修正量測方法（例如固定 seed
+    或多次取中位數）——這是方法論問題，不是要改 ±20%／3 倍這兩個數字本身。
+  - **自我檢查**：20 支 `scripts/test_*.py` 全 `EXIT=0`；六條交付 IR MD5 抽查 2 條（`--text 浴室`＝
+    `2adbaa75eb698772a8c9aa693179ec47`、`--scene neighbor_voices.json`＝
+    `9a94ffdf5d8295aee7889729c39c9cd8`）與歷史記錄逐位元相同（`src/` 全程零 diff，其餘四條理論上
+    必然相同）；A／B 兩份 REPORT 皆程式產生；T-11／T-12 不可變欄位以「追加」方式回填（原文一字未刪）。
+  - **清理**：Part A 執行過程中 CLI 在 `output/<photo_stem>/` 與 `output/.archive/` 留下的暫存產物
+    （非本卡交付物，`output/geometry_r2/runs/*.log` 已保留同等的原始 stdout/stderr 證據）已清除，
+    避免與既有 `output/` 內容混淆；`output/material_r2/`（含 `stability_check/` 子目錄）與
+    `output/geometry_r2/` 為本卡實際交付。
 
 ### T-44-R1 role-aware 安全門檻重新驗證（實驗卡；裁決 T-45-A 執行卡 4/5；需使用者）
 - **狀態**：⬜ 未開始（**等使用者兩件事**：核准絕對品質下限、提供 held-out 照片）
