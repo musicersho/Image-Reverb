@@ -9605,27 +9605,18 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
 - **交接筆記**：
 
 ### T-47 gate 校準複審量測（量測卡；裁決 T-45-A 執行卡 2/5；`src/` 零改動）
-- **狀態**：🟠 **工程退回（Opus 複驗 2026-09-13，對象結果 commit `6d95f5f`／雜湊回填 `4203ba6`，
-  複驗時 HEAD `4203ba6`，`git status --porcelain -- src scripts data` 為空）**。
-  量測本體獨立實測成立（Opus `--fresh` 13 張×2 模式全量重跑，`tables.md` 與提交版**逐位元相同**；
-  20 支測試 exit 0；六條交付 IR MD5 全中；`src/`／`data/` 零 diff），**退回理由只有下列必修項**：
-  1. **REPORT 與程式產出表格不一致（WORKFLOW §5.4.1「產物、報告、原始表格互相一致」＋地雷 #15）**：
-     REPORT ⑦(b) 寫「對 gate 的影響——見 tables.md 表 8」，但表 8 **只有 materials_confidence 兩欄，
-     沒有 gate 欄**；「(b) 會把 `bathroom_tiled` 收回 `BLOCK`」這個對 T-47-A 最關鍵的結論只出現在
-     交接筆記第 7 點與 DEV_LOG（「兩個模擬都會把 `bathroom_tiled` 的放行收回」），是**手寫推導**，
-     不是程式產出（Opus 以表 1 geometry＋表 8 materials 取較低者推導，結論本身正確，但不得以此豁免）。
-     **修法**：表 8 加「實際 gate／模擬 gate」兩欄（唯讀呼叫 `_overall_confidence(geometry, materials_sim)`
-     後轉 `BLOCK`／`pass`）；表 7 的「模擬 gate」欄目前填的是 `low`／`medium`（信心值，不是 gate），
-     同步改成 `BLOCK`／`pass` 並保留模擬 overall 欄；REPORT ⑦(a)(b) 各加一句由程式填入的
-     「模擬後 pass 張數／實際 pass 張數（兩模式）」。改完 `--fresh` 重跑，並程式化或逐位元確認
-     表 1～6 與本次提交版不變。
-  2. **WORKFLOW §8 不可變欄位缺漏（交 Fable 定奪，不在此豁免）**：§8 明文涵蓋「量測」卡且要求執行者
-     開跑前填 `criteria_version`／`criteria_commit`／`criteria_locked_at`／`dataset_manifest_sha256`，
-     本卡卡片模板與交接筆記均無此區塊（Fable 開卡時也未附）。本卡無 pass/fail 門檻，此事前時序已無法
-     補救——請 Fable 裁定：(i) 以「事後補建」標記追加 §8 區塊（`criteria_version: 無門檻量測卡`、
-     `dataset_manifest_sha256` 由程式計算）即可，或 (ii) 量測卡不適用 §8 並修 WORKFLOW 文字（走 §7）。
-  詳見下方「🟠 Opus 複驗紀錄（2026-09-13）」。Sonnet 執行輪原文保留於下方，不覆寫。
-- **四軸狀態**：工程：退回（Opus 2026-09-13，理由見「狀態」欄）｜
+- **狀態**：🔵 **待審（修正輪，結果 commit 〈回填中，見下一個 docs commit〉）**——針對 Opus
+  複驗（2026-09-13，對象 `6d95f5f`）退回理由第 1 點修正：表 7「模擬 gate」欄原填 `low`／`medium`
+  （信心值，不是 gate），已改為程式產出的 `BLOCK`／`pass`，並新增「實際 gate」「模擬 overall」
+  兩欄；表 8 新增「實際 gate」「模擬 overall」「模擬 gate」三欄，模擬 gate 一律由程式唯讀呼叫
+  `_overall_confidence(geometry, materials_sim)` 換算，不再是手寫推導。REPORT ⑦(a)(b) 各加一句
+  程式填入的「模擬後 pass 張數／實際 pass 張數（兩模式）」。`--fresh` 重跑後表 1～6 與退回前的
+  提交版 `6d95f5f` **逐位元相同**（sha256 相符）；新表 7／8 的程式化結果與退回前手寫的結論一致：
+  ⑦(a) 兩模式模擬後 13 張皆 0 pass；⑦(b) `role_aware` 模式 `bathroom_tiled` 由實際 `pass`
+  模擬變 `BLOCK`。**退回理由第 2 點（WORKFLOW §8 不可變欄位缺漏）本輪未處理**，原樣交 Fable
+  定奪；Opus 附帶發現 ⓐ～ⓕ 本輪未處理，不擴大範圍。詳見下方「交接筆記（修正輪，Sonnet 執行，
+  2026-09-14）」。上一輪 Sonnet 執行輪原文與 Opus 🟠 複驗紀錄原文保留於下方，不覆寫。
+- **四軸狀態**：工程：待審（修正輪，結果 commit 〈回填中〉）｜
   實驗：不適用（量測卡，只產出證據供 Fable 裁決 T-47-A，不判定任何假設成立與否）｜
   產品：待裁決（T-47-A）｜MVP：不適用（沿用 T-17 FAIL）
 - **前置**：T-46 ✅、T-42 ✅、T-49 ✅、T-43 ✅（量測產物要走交易式輸出與 provenance；
@@ -9785,6 +9776,97 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
     該門檻對域外判定不起作用，讀 <0.05 清單時應排除或另標。
   - ⓕ 表 6 敏感度只掃 0.20～0.40（向下放寬），role_aware 的膨脹問題需要的是向上收緊的資訊，
     目前只有 ⑦(a) 單一公式提供；交接筆記「放行後答對欄多數為 0」實為全部為 0。
+
+- **交接筆記（修正輪，Sonnet 執行，2026-09-14）**：
+
+  **範圍**：只處理 Opus 複驗（2026-09-13）退回理由**第 1 點**（表 8 缺 gate 欄、(b) 的
+  gate 結論僅手寫）。退回理由第 2 點（WORKFLOW §8 不可變欄位缺漏）與附帶發現 ⓐ～ⓕ
+  本輪**未處理**，原樣交 Fable，未擴大範圍。只動 `scripts/t47_gate_calibration.py`
+  產表／產報告的部分——模擬邏輯本體（`effective_threshold`／`simulate_method`／
+  `build_surface_from_sim`／`simulate_narrow_clip_downgrade` 的判定規則）、表 1～6、
+  `src/`、`data/` 一律未改。
+
+  **改法**：
+  1. 新增 `_gate_from_overall(overall)`（`overall=="low"` → `BLOCK`，否則 `pass`，與
+     `gate_of()` 對 CLI `analysis.json` 的換算規則同一條）與 `_strip_conf_label(value)`
+     （取出 `simulate_narrow_clip_downgrade()` 可能回傳的帶註解字串裡的純 low/medium/high，
+     避免餵進 `_overall_confidence()` 時 KeyError；表格顯示仍用原始帶註解字串）。
+  2. `run_threshold_n_simulation()`（表 7／⑦a）新增 `gate_by_photo` 參數，把原本誤稱
+     `gate_sim`、實際是信心值（low/medium）的欄位改名 `overall_sim`，另外新增真正的
+     `gate_sim`（由 `_gate_from_overall(overall_sim)` 算出）與 `actual_gate`（取自
+     `gate_by_photo`，即現有的 CLI `analysis.json` gate 結果）。
+  3. 新增 `build_sim_b_row()`（表 8／⑦b）：對每張照片、每模式，唯讀呼叫
+     `_overall_confidence(geometry_by_photo[mode][name], _strip_conf_label(materials_sim))`
+     算出 `overall_sim`，再換算 `gate_sim`；`actual_gate` 同樣取自 `gate_by_photo`。
+  4. 表 7 欄位改為「照片／會翻轉的面／模擬 materials／實際 gate／模擬 overall／模擬 gate」；
+     表 8 欄位改為「照片／實際 materials_confidence／模擬 materials_confidence／實際 gate／
+     模擬 overall／模擬 gate」（原本「實際／模擬 materials_confidence」兩欄保留不動）。
+  5. `main()` 新增 `actual_pass_counts`／`sim_a_pass_counts`／`sim_b_pass_counts`（三者皆
+     由程式對 `gate_by_photo`／`sim_a_rows`／`sim_b_rows` 算 `pass` 張數，不手打），傳入
+     `build_report_md()`；REPORT ⑦(a)(b) 段落各加一句「模擬後 pass 張數／實際 pass 張數：
+     `default` X/Y、`role_aware` X/Y」。
+
+  **重跑與比對（依卡片要求，重跑前先 commit 腳本讓工作區乾淨）**：
+  - 動手前把改動前的 `output/gate_calibration/{tables.md,REPORT.md}`（對應退回時的結果
+    commit `6d95f5f`）複製到 scratchpad 當對照組。
+  - `git add scripts/t47_gate_calibration.py && git commit`（commit `5c1cd29`，
+    `T-47: 修正輪——表 7/8 gate 欄改由程式產出（待驗證）`），之後
+    `git status --porcelain -- src scripts data` 為空。
+  - `python scripts/t47_gate_calibration.py --out-dir output/gate_calibration/ --fresh`
+    （52 次真實模型推論，約 17 分鐘）exit 0；輸出印出「✅ 兩條資料來源（真實 CLI／harness）
+    26 組 surfaces＋sources 逐位元相符」與「✅ T-44 第四輪信心上升交叉檢查全部通過
+    （9/9 在本卡量測資料中出現且方向一致）」。
+  - **表 1～6 逐位元比對**（`## 表 7` 之前的全部內容）：
+    ```
+    >>> python3 -c "
+    ... old = open('<scratchpad>/t47_before/tables.md', encoding='utf-8').read()
+    ... new = open('output/gate_calibration/tables.md', encoding='utf-8').read()
+    ... old_part = old[:old.index('## 表 7')]
+    ... new_part = new[:new.index('## 表 7')]
+    ... print('identical:', old_part == new_part)
+    ... print('old sha256:', __import__('hashlib').sha256(old_part.encode()).hexdigest())
+    ... print('new sha256:', __import__('hashlib').sha256(new_part.encode()).hexdigest())
+    ... "
+    identical: True
+    old sha256: b7baec6164ce51d6062b4197c8b6a094d8735eb2dbad256f7c882d61f8be5d79
+    new sha256: b7baec6164ce51d6062b4197c8b6a094d8735eb2dbad256f7c882d61f8be5d79
+    ```
+    （舊、新 tables.md 表 1～6 部分皆 12978 bytes，sha256 相同——退回前已驗證通過的表 1～6
+    未因本輪改動失效。）
+  - **新表 7／8 與 REPORT 的結果，與退回前手寫的結論一致**（以程式輸出為準，非改程式湊出來）：
+    - 表 7（⑦a）：`default`／`role_aware` 兩模式全部 13 張「模擬 gate」欄皆為 `BLOCK`；
+      `bathroom_tiled`（role_aware）「實際 gate」＝`pass`、「模擬 gate」＝`BLOCK`——與退回前
+      「模擬後 13 張兩模式的 gate 全部維持 low／BLOCK」逐字吻合。
+    - 表 8（⑦b）：`role_aware` 模式 `bathroom_tiled`「實際 gate」＝`pass`、「模擬 materials」＝
+      `low（模擬：候選集收窄的 clip 面不得直接 medium）`、「模擬 gate」＝`BLOCK`——與退回前
+      「這條模擬同樣會把 `bathroom_tiled` 收回 `BLOCK`」逐字吻合；`DivorceBeach`（role_aware）
+      實際／模擬 gate 皆 `BLOCK`（geometry 本來就 low，這條模擬對它的 gate 無感），與退回前
+      附帶說明一致。
+    - REPORT ⑦(a)(b) 程式填入的句子：`default` 模擬後 0/0、`role_aware` 模擬後 0/1
+      （兩個模擬都把 role_aware 唯一的 1 張 pass 收回）。
+
+  **自我檢查**：
+  - `scripts/test_*.py` 20 支逐支 `EXIT=0`（重跑前後各測一次，皆全過）。
+  - 六條交付 IR MD5 全中：T-14 兩條由 `test_ir_synth.py`【6】內建比對通過
+    （`f3a763be…`／`f24353b5…`）；T-20／T-21 四條**分開各自一行**（未用 for 迴圈塞 `$變數`，
+    避免 zsh 不拆字的坑）實跑：
+    `python -m src.image_reverb --text 浴室` → `2adbaa75…`；
+    `python -m src.image_reverb --text 大教堂` → `2dd19b6e…`；
+    `python -m src.image_reverb --scene assets/scenes/neighbor_voices.json` → `9a94ffdf…`；
+    `python -m src.image_reverb --scene assets/scenes/stadium_corridor.json` → `a1c21bcc…`；
+    四條與歷史記錄逐位元相同，檔案 mtime 為本次重生時間（非殘留舊檔）。
+  - `git diff --stat 795e348 HEAD -- src data` 為空（本輪起點 `795e348`）。
+  - `git status --porcelain -- src scripts data` 在 `--fresh` 重跑當下為空（腳本已於
+    `5c1cd29` commit）。
+
+  **範圍確認**：只新增／修改 `scripts/t47_gate_calibration.py` 產表／產報告部分＋重跑後的
+  `output/gate_calibration/{REPORT.md,tables.md}`；未動既有 Sonnet 交接筆記／Opus 退回紀錄
+  原文（皆保留在上方）；未處理 WORKFLOW §8 缺漏與附帶發現 ⓐ～ⓕ；未對 REPORT「該不該調門檻」
+  下任何結論。
+
+  **下一步**：開 Opus 新視窗，貼 WORKFLOW §2.2 v2 複驗 Prompt，「結果 commit」填本輪 commit
+  雜湊（見下方 docs commit 回填）。通過後才算「工程：已驗證」，Fable 才能依四樣證據＋本輪修正
+  下裁決 T-47-A。
 
 ### T-48 T-11／T-12 判準第二版針對性重驗（量測卡；裁決 T-45-A 執行卡 3/5；`src/` 零改動）
 - **狀態**：⬜ 未開始

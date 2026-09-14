@@ -10,19 +10,13 @@
 
 | provenance（只記錄，不比對） | 值 |
 |---|---|
-| 主 repo HEAD（產生本報告時） | `808a6ff510e101446bc8e42baff3a70e6218fdb3` |
+| 主 repo HEAD（產生本報告時） | `5c1cd2925b442d78b6320011a072bfafdf9259ef` |
 | git status --porcelain -- src scripts data | 見下方 |
-| 產生時間（UTC） | 2026-09-11T09:37:19.291255+00:00 |
+| 產生時間（UTC） | 2026-09-14T02:19:20.820515+00:00 |
 | 環境 | macOS-15.7.7-arm64-arm-64bit；python 3.9.6；torch 2.8.0 |
-| code_fingerprint.repo_head（跑 CLI 當下） | `808a6ff510e101446bc8e42baff3a70e6218fdb3` |
+| code_fingerprint.repo_head（跑 CLI 當下） | `5c1cd2925b442d78b6320011a072bfafdf9259ef` |
 
-`git status --porcelain -- src scripts data`：
-```
-?? scripts/t47_gate_calibration.py
-
-```
-
-⚠️ 執行者本次跑的當下工作區有未 commit 變更，不因此視為斷言失敗；Opus 複驗那次應為空（同 T-42／T-43／T-49 既有慣例）。
+`git status --porcelain -- src scripts data`：（空，工作區乾淨）
 
 本報告由 `scripts/t47_gate_calibration.py` 對 13 張照片各跑一次真實 CLI（`python -m src.image_reverb <photo> --force-low-confidence --no-viz`，預設模式與加 `--role-aware` 各一次）＋一次逐面判定明細 harness（唯讀重用 `t36_clip_accuracy.py`／`t44_role_eval.py`／`eval_cache.py`），兩條資料來源的 `surfaces`／`surfaces_sources` 已程式化核對逐位元相符。詳表見 [tables.md](tables.md)。
 
@@ -43,8 +37,8 @@
 ⑥ 門檻敏感度（表 7' 型）按角色、按模式各一張——見 tables.md 表 6。
 
 ⑦ 兩種唯讀模擬（只算不採用，`compute_materials_confidence()`／gate 判定段／門檻 0.4 零改動）：
-  (a) 門檻依候選數 n 調整（等效全域 16 候選 softmax 的機率門檻）對 gate 的影響——見 tables.md 表 7；
-  (b) `compute_materials_confidence()` 規則 4 加「候選集收窄的 clip 面不得直接 medium」對 gate 的影響——見 tables.md 表 8。
+  (a) 門檻依候選數 n 調整（等效全域 16 候選 softmax 的機率門檻）對 gate 的影響——見 tables.md 表 7；模擬後 pass 張數／實際 pass 張數：`default` 0/0、`role_aware` 0/1。
+  (b) `compute_materials_confidence()` 規則 4 加「候選集收窄的 clip 面不得直接 medium」對 gate 的影響——見 tables.md 表 8；模擬後 pass 張數／實際 pass 張數：`default` 0/0、`role_aware` 0/1。
 
 ## ⚠️ 本卡不下結論（範圍紅線）
 

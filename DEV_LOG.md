@@ -1,5 +1,29 @@
 # Dev Log
 
+## 2026-09-14 (121)
+
+- **T-47 修正輪**（針對 Opus 複驗 2026-09-13 退回理由第 1 點：REPORT ⑦(b) 指向表 8 看 gate
+  影響，但表 8 無 gate 欄；(b) 會把 `bathroom_tiled` 收回 `BLOCK` 這個結論只在手寫交接筆記／
+  DEV_LOG，不是程式產出）。只改 `scripts/t47_gate_calibration.py` 產表／產報告部分：新增
+  `_gate_from_overall()`／`_strip_conf_label()`；表 7（⑦a）把原本誤稱「模擬 gate」、實際是
+  信心值的欄位改名「模擬 overall」，另加真正由程式換算的「模擬 gate」（BLOCK/pass）與
+  「實際 gate」；表 8（⑦b）新增「實際 gate」「模擬 overall」「模擬 gate」三欄，模擬 gate
+  一律唯讀呼叫 `_overall_confidence()` 換算；REPORT ⑦(a)(b) 各加一句程式填入的「模擬後
+  pass 張數／實際 pass 張數」。模擬邏輯本體、表 1～6、`src/`、`data/` 零改動。
+- **重跑與比對**：先 commit 腳本（`5c1cd29`）讓工作區乾淨，再 `--fresh` 重跑（52 次真實
+  模型推論），exit 0，26/26 交叉核對相符、T-44 第四輪 9 面信心上升交叉檢查 9/9 通過。
+  程式化比對表 1～6（`## 表 7` 之前的內容）與退回前提交版 `6d95f5f` **sha256 逐位元相同**。
+  新表 7／8 的程式化結果與退回前手寫結論一致：⑦(a) 兩模式模擬後 13 張皆 0 pass；⑦(b)
+  `role_aware` 模式 `bathroom_tiled` 由實際 `pass` 模擬變 `BLOCK`；REPORT 程式填入
+  `default` 0/0、`role_aware` 0/1（兩個模擬都收回唯一一張 pass）。
+- **自我檢查**：20 支 `scripts/test_*.py` 全 EXIT=0；六條交付 IR MD5 全中（T-14
+  內建；T-20／T-21 四條分開各一行重生，逐位元相同）；`git diff --stat 795e348 HEAD -- src data`
+  為空；`git status --porcelain -- src scripts data` 於 `--fresh` 重跑當下為空。
+- **範圍**：退回理由第 2 點（WORKFLOW §8 不可變欄位缺漏）與 Opus 附帶發現 ⓐ～ⓕ 本輪未處理，
+  交 Fable；未改既有 Sonnet 交接筆記／Opus 退回紀錄原文，只在 TASKS.md T-47 卡下方追加新段落。
+- **下一步**：開 Opus 新視窗複驗，結果 commit 見 HANDOFF.md／TASKS.md。通過後才算「工程：
+  已驗證」，Fable 才能下裁決 T-47-A。
+
 ## 2026-09-11 (120)
 
 - **T-47 gate 校準複審量測完成**（前置 T-46／T-42／T-49／T-43 全數 ✅ 已於開工前核對）。

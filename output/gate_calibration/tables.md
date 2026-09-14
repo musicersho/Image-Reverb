@@ -247,39 +247,39 @@
 
 ### `default` 模式
 
-| 照片 | 會翻轉的面（method 變化＋等效門檻） | 模擬 materials | 模擬 gate |
-|---|---|---|---|
-| bathroom_tiled | （無） | low | low |
-| bedroom_ai_generated | （無） | low | low |
-| stairwell_tiled | （無） | low | low |
-| arena_ntsu_linkou | （無） | low | low |
-| car_interior_suv | （無） | low | low |
-| CathedralRoom | （無） | low | low |
-| DivorceBeach | （無） | medium | low |
-| site_photo_department_store | （無） | low | low |
-| site_photo_gym | （無） | low | low |
-| site_photo_restaurant | （無） | low | low |
-| RacquetballCourt4 | （無） | low | low |
-| SteinmanHall | （無） | low | low |
-| TunnelToHell | （無） | low | low |
+| 照片 | 會翻轉的面（method 變化＋等效門檻） | 模擬 materials | 實際 gate | 模擬 overall | 模擬 gate |
+|---|---|---|---|---|---|
+| bathroom_tiled | （無） | low | BLOCK | low | BLOCK |
+| bedroom_ai_generated | （無） | low | BLOCK | low | BLOCK |
+| stairwell_tiled | （無） | low | BLOCK | low | BLOCK |
+| arena_ntsu_linkou | （無） | low | BLOCK | low | BLOCK |
+| car_interior_suv | （無） | low | BLOCK | low | BLOCK |
+| CathedralRoom | （無） | low | BLOCK | low | BLOCK |
+| DivorceBeach | （無） | medium | BLOCK | low | BLOCK |
+| site_photo_department_store | （無） | low | BLOCK | low | BLOCK |
+| site_photo_gym | （無） | low | BLOCK | low | BLOCK |
+| site_photo_restaurant | （無） | low | BLOCK | low | BLOCK |
+| RacquetballCourt4 | （無） | low | BLOCK | low | BLOCK |
+| SteinmanHall | （無） | low | BLOCK | low | BLOCK |
+| TunnelToHell | （無） | low | BLOCK | low | BLOCK |
 
 ### `role_aware` 模式
 
-| 照片 | 會翻轉的面（method 變化＋等效門檻） | 模擬 materials | 模擬 gate |
-|---|---|---|---|
-| bathroom_tiled | floor（clip→fallback，eff_threshold=0.640） | low | low |
-| bedroom_ai_generated | （無） | low | low |
-| stairwell_tiled | floor（clip→fallback，eff_threshold=0.640）；ceiling（clip→fallback，eff_threshold=0.800） | low | low |
-| arena_ntsu_linkou | （無） | low | low |
-| car_interior_suv | （無） | low | low |
-| CathedralRoom | floor（clip→fallback，eff_threshold=0.640） | low | low |
-| DivorceBeach | floor（clip→fallback，eff_threshold=0.640） | low | low |
-| site_photo_department_store | ceiling（clip→fallback，eff_threshold=0.800） | low | low |
-| site_photo_gym | floor（clip→fallback，eff_threshold=0.640） | low | low |
-| site_photo_restaurant | （無） | low | low |
-| RacquetballCourt4 | （無） | low | low |
-| SteinmanHall | （無） | low | low |
-| TunnelToHell | （無） | low | low |
+| 照片 | 會翻轉的面（method 變化＋等效門檻） | 模擬 materials | 實際 gate | 模擬 overall | 模擬 gate |
+|---|---|---|---|---|---|
+| bathroom_tiled | floor（clip→fallback，eff_threshold=0.640） | low | pass | low | BLOCK |
+| bedroom_ai_generated | （無） | low | BLOCK | low | BLOCK |
+| stairwell_tiled | floor（clip→fallback，eff_threshold=0.640）；ceiling（clip→fallback，eff_threshold=0.800） | low | BLOCK | low | BLOCK |
+| arena_ntsu_linkou | （無） | low | BLOCK | low | BLOCK |
+| car_interior_suv | （無） | low | BLOCK | low | BLOCK |
+| CathedralRoom | floor（clip→fallback，eff_threshold=0.640） | low | BLOCK | low | BLOCK |
+| DivorceBeach | floor（clip→fallback，eff_threshold=0.640） | low | BLOCK | low | BLOCK |
+| site_photo_department_store | ceiling（clip→fallback，eff_threshold=0.800） | low | BLOCK | low | BLOCK |
+| site_photo_gym | floor（clip→fallback，eff_threshold=0.640） | low | BLOCK | low | BLOCK |
+| site_photo_restaurant | （無） | low | BLOCK | low | BLOCK |
+| RacquetballCourt4 | （無） | low | BLOCK | low | BLOCK |
+| SteinmanHall | （無） | low | BLOCK | low | BLOCK |
+| TunnelToHell | （無） | low | BLOCK | low | BLOCK |
 
 
 ## 表 8（證據⑦b，唯讀模擬，只算不採用）：`compute_materials_confidence()` 規則 4 加「候選集收窄的 clip 面不得直接 medium」對 gate 的影響
@@ -287,36 +287,36 @@
 
 ### `default` 模式
 
-| 照片 | 實際 materials_confidence | 模擬 materials_confidence |
-|---|---|---|
-| bathroom_tiled | low | low |
-| bedroom_ai_generated | low | low |
-| stairwell_tiled | low | low |
-| arena_ntsu_linkou | low | low |
-| car_interior_suv | low | low |
-| CathedralRoom | low | low |
-| DivorceBeach | medium | medium |
-| site_photo_department_store | low | low |
-| site_photo_gym | low | low |
-| site_photo_restaurant | low | low |
-| RacquetballCourt4 | low | low |
-| SteinmanHall | low | low |
-| TunnelToHell | low | low |
+| 照片 | 實際 materials_confidence | 模擬 materials_confidence | 實際 gate | 模擬 overall | 模擬 gate |
+|---|---|---|---|---|---|
+| bathroom_tiled | low | low | BLOCK | low | BLOCK |
+| bedroom_ai_generated | low | low | BLOCK | low | BLOCK |
+| stairwell_tiled | low | low | BLOCK | low | BLOCK |
+| arena_ntsu_linkou | low | low | BLOCK | low | BLOCK |
+| car_interior_suv | low | low | BLOCK | low | BLOCK |
+| CathedralRoom | low | low | BLOCK | low | BLOCK |
+| DivorceBeach | medium | medium | BLOCK | low | BLOCK |
+| site_photo_department_store | low | low | BLOCK | low | BLOCK |
+| site_photo_gym | low | low | BLOCK | low | BLOCK |
+| site_photo_restaurant | low | low | BLOCK | low | BLOCK |
+| RacquetballCourt4 | low | low | BLOCK | low | BLOCK |
+| SteinmanHall | low | low | BLOCK | low | BLOCK |
+| TunnelToHell | low | low | BLOCK | low | BLOCK |
 
 ### `role_aware` 模式
 
-| 照片 | 實際 materials_confidence | 模擬 materials_confidence |
-|---|---|---|
-| bathroom_tiled | medium | low（模擬：候選集收窄的 clip 面不得直接 medium） |
-| bedroom_ai_generated | low | low |
-| stairwell_tiled | low | low |
-| arena_ntsu_linkou | low | low |
-| car_interior_suv | low | low |
-| CathedralRoom | low | low |
-| DivorceBeach | medium | low（模擬：候選集收窄的 clip 面不得直接 medium） |
-| site_photo_department_store | low | low |
-| site_photo_gym | low | low |
-| site_photo_restaurant | low | low |
-| RacquetballCourt4 | low | low |
-| SteinmanHall | low | low |
-| TunnelToHell | low | low |
+| 照片 | 實際 materials_confidence | 模擬 materials_confidence | 實際 gate | 模擬 overall | 模擬 gate |
+|---|---|---|---|---|---|
+| bathroom_tiled | medium | low（模擬：候選集收窄的 clip 面不得直接 medium） | pass | low | BLOCK |
+| bedroom_ai_generated | low | low | BLOCK | low | BLOCK |
+| stairwell_tiled | low | low | BLOCK | low | BLOCK |
+| arena_ntsu_linkou | low | low | BLOCK | low | BLOCK |
+| car_interior_suv | low | low | BLOCK | low | BLOCK |
+| CathedralRoom | low | low | BLOCK | low | BLOCK |
+| DivorceBeach | medium | low（模擬：候選集收窄的 clip 面不得直接 medium） | BLOCK | low | BLOCK |
+| site_photo_department_store | low | low | BLOCK | low | BLOCK |
+| site_photo_gym | low | low | BLOCK | low | BLOCK |
+| site_photo_restaurant | low | low | BLOCK | low | BLOCK |
+| RacquetballCourt4 | low | low | BLOCK | low | BLOCK |
+| SteinmanHall | low | low | BLOCK | low | BLOCK |
+| TunnelToHell | low | low | BLOCK | low | BLOCK |
