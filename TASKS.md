@@ -584,7 +584,7 @@
   dataset_manifest_sha256: 未建立（9 張照片＋已知尺寸 4 場地；T-48 補建並回填）→ T-48（2026-09-14）：b2f994ccf21534ec49c0e915b92191b8976e1e374d7dee50d6841895bbe1b66e（`output/geometry_r2/DATASET_MANIFEST.json`，13 張照片＝現行 canonical 清單 t36_clip_accuracy.GATE_ITEMS，非原始 9 張——corridor_hotel_carpet 等 4 張已於 T-36 起不在 canonical 清單內，13 張已知實際尺寸的 5 張見 DATASET_MANIFEST.json）
   implementation_commit: fc688cd（與 T-12 混提，WORKFLOW §4 違規已由 Opus 記錄）→ 40bfb2f（決策補丁）→ T-48：469abef（Part A 量測腳本）→ Opus 更正（2026-09-14，回應驗證紀錄 R6）：T-48 Part A 最終程式其實是 714703d（469abef 只是初版；__main__ 分派修正在 e1183b9，皆不影響 REPORT 內容本身）（第二修正輪澄清，Sonnet 2026-09-14，回應 N2：本行標題「Opus 更正」是沿用 Opus 修正輪指示的既定寫法，實際文字由 Sonnet 依 Opus 驗證紀錄 R6 指示代筆填入，非 Opus 本人書寫——見 T-12 §8 對應行已註明「修正輪 Sonnet 執行」，本行補註同義）
   result_commit: fc688cd（首次評測：走廊 −57%）→ 40bfb2f（補丁後 A'/B'）→ T-48：714703d（`output/geometry_r2/REPORT.md`）→ Opus 更正（2026-09-14，回應驗證紀錄 R6）：`output/geometry_r2/REPORT.md` 首次進版控其實是 012a07f（714703d 只改了 Part A 腳本的 `__main__` 分派，尚未含 REPORT.md 本身）（第二修正輪澄清，Sonnet 2026-09-14，回應 N2：同上，本行「Opus 更正」文字由 Sonnet 依驗證紀錄 R6 指示代筆，非 Opus 本人書寫）
-  reviewer: Opus（2026-08-27，8531356）
+  reviewer: Opus（2026-08-27，8531356）→ T-48 域外項補充覆核：Opus 5（2026-09-14，T-48 第二修正輪工程已驗證，HEAD `92bfd63`；verdict 補充行內「待 Opus 覆核」即此）
   verdict_under_original_criteria: FAIL（判準 A：走廊 −57% 未達 ±30%）
   verdict_under_current_criteria: PASS（v2.1：A' 浴室 +24%；B' 走廊／車內／體育館／Steinman 全部 low）→ **T-48 域外出口實測補充（2026-09-14，13 張，Sonnet 量測，待 Opus 覆核；見 `output/geometry_r2/REPORT.md`）**：bathroom_tiled ±30% 誤差複測 PASS（估 3.72m vs 實際 3.0m，+24.0%，與原始一致）；域外項 3 張中 2 張 PASS（arena_ntsu_linkou、SteinmanHall 皆 geometry_confidence=low 且 gate 訊息含 `--override-dims` 導引）、**RacquetballCourt4 一筆 FAIL**（實際最大維 12.19m >10m，但實測 geometry_confidence=medium 非 low、gate 未印 override-dims 導引——域外出口誤放）；根因（唯讀讀 `geometry.py` `apply_scope_confidence()`）：環景量程規則比對的是單一視角原始牆距，不是相加後的房間全長，本例兩側視角個別皆 ≤10m、加總後房間全長 >10m 卻不觸發，詳見 REPORT §4；car_interior_suv 不落入 v2 兩類別判準內（見 T-48 卡），僅記錄供參考 → Opus 更正（2026-09-14，回應裁決 T-48-F 第 3 點 F3）：car_interior_suv 原記「不適用」，v2 判準文字本身自相矛盾（「已知實際尺寸」列了車內 ~2m，誤差判準括號卻寫「目前只有浴室」）——改記 **inconclusive（判準文字自相矛盾）**，不是 PASS、不是 FAIL、也不是「不適用」；v3（T-55）將車內歸類 `domain_out_non_room`（與 >10m 域外同款判準）
   criteria_changed_after_first_result: yes
@@ -848,7 +848,7 @@
   dataset_manifest_sha256: 不適用（合成房間 4×3×2.5m，floor=carpet／其餘 gypsum_board；對照組六面 gypsum、六面 carpet）
   implementation_commit: fc688cd → T-48：d372ad9（Part B 量測腳本）
   result_commit: fc688cd（Sabine 0.348s／實測 T30 0.748s）；f1c32ce（使用者試聽通過）→ T-48：e1183b9（`output/material_r2/REPORT.md`，最終交付 IR 由 cda6b9b 該次重跑生成）→ Opus 更正（2026-09-14，回應驗證紀錄 R6）：`output/material_r2/REPORT.md` 首次進版控其實是 012a07f（e1183b9 只改了 Part B 腳本，尚未含 REPORT.md 本身；最終交付 IR 仍是 cda6b9b 該次重跑生成，未變）
-  reviewer: Opus（2026-08-25，85d0493）
+  reviewer: Opus（2026-08-25，85d0493）→ T-48 v2 量測覆核：Opus 5（2026-09-14，T-48 第二修正輪工程已驗證，HEAD `92bfd63`；verdict 補充行內「待 Opus 覆核」即此，v2-b 以 inconclusive 為準）
   verdict_under_original_criteria: 未達（字面條件：實測 0.748s，偏差 +115%）
   verdict_under_current_criteria: 待 T-48（v2 尚未量測；85d0493 附註 3 的豁免不得當 PASS 用）→ **T-48 v2 量測補充（2026-09-14，Sonnet 量測，待 Opus 覆核；見 `output/material_r2/REPORT.md`）**：v2-a（公式層）PASS（per-wall Sabine 125Hz 0.3480s，誤差 +0.0%）；v2-b（IR 實測層，聯合帶 T30）本次交付版本 PASS（per-wall 0.965s vs 六面 gypsum 對照 1.205s，差異 −19.9% ≤±20%；六面 carpet 對照/per-wall＝3.97 倍 ≥3 倍）——**但本卡執行期間三次獨立官方重生的差異百分比分別是 −21.1%／−22.3%／−19.9%（另有 8 次額外重跑落在 −28.4%～−10.4% 之間），PASS/FAIL 跨越 ±20% 門檻兩側，測到 pyroomacoustics ray tracing 沒有固定 random seed（同指令重跑兩次 WAV sha256 不同），這條子判準在目前量測方法下鑑別力薄弱，請 Opus／Fable 一併評估是否要依 WORKFLOW §7 修正量測方法（例如固定 seed 或多次取中位數），而非門檻數字本身；v1 字面條件（125Hz 八度 T30 ≈0.35s ±20%）本次交付版本 0.7074s、誤差 +102.1%，未達，如原卡預期只記錄不當門檻 → **Opus 更正（2026-09-14，修正輪 Sonnet 執行，回應驗證紀錄 R2／R5）**：(R2) 上一行「另有 8 次額外重跑落在 −28.4%～−10.4% 之間」與交付 REPORT §3（及 Opus 自跑 `stability_check/`）實際範圍 **−23.1%～−12.3%** 不符，前者疑似來自已被後續重跑覆蓋的 `dd03c0e` 那次穩定性重跑、原始產物已不存在、不可複核，正確範圍以現行 `output/material_r2/REPORT.md` §3 為準。(R5) 「v2-b 本次交付版本 PASS」的呈現方式違反本卡 §8「`verdict_under_original_criteria`＝v2 首跑結果」與 WORKFLOW §7.5——v2-b 首跑（`d372ad9`，2026-09-14）diff 子判準結果是 **−21.1% FAIL**，本卡執行期間三次官方重跑（−21.1%／−22.3%／−19.9%）跨越 ±20% 門檻兩側，證明量測方法非決定性。依裁決 T-48-F F2（Fable，2026-09-14）：v2-b 正確記法為「**diff 子判準：首跑 FAIL、方法 inconclusive**（永久保留，不因交付版本剛好落在門檻內就回頭改記 PASS）；**ratio 子判準：PASS**（3.97 倍 ≥3 倍，未受本卡實測到的隨機噪聲量級影響）」；v2-a 維持 PASS，但屬同義反覆（裁決 T-48-F F4：目標值即同一公式輸出，鑑別力為零，只作公式回歸性測試，不構成材質模組正確性證據）；v1 字面條件維持未達，數字不變
   criteria_changed_after_first_result: yes（85d0493 附註 3 以「0.35s 是 Sabine 值」解釋豁免，未改卡、未另版——依 WORKFLOW §7 屬驗證者豁免字面條件）
@@ -10866,7 +10866,15 @@ EOF
 - **交接筆記**：
 
 ### T-48 T-11／T-12 判準第二版針對性重驗（量測卡；裁決 T-45-A 執行卡 3/5；`src/` 零改動）
-- **狀態**：🔵 **待審（第二修正輪，Sonnet 2026-09-14；結果 commit `0c1174d`，腳本修正 commit `3c234c1`＋`778ac18`）**——
+- **狀態**：✅ **工程已驗證（Opus 第二修正輪複驗 2026-09-14；對象 `3c234c1`＋`778ac18`＋`0c1174d`＋`92bfd63`，驗證時 HEAD `92bfd63`；只審不改碼）**——
+  Q1～Q3、N1～N3 全部 Opus 實測修妥；六條 IR MD5 自跑全中、20 支測試 EXIT=0、`src`／`data`／`gen_ir_manual.py` 零 diff、
+  report-only 自重產與提交版逐位元相同（除產生時間與 HEAD 雜湊）、交付 WAV 未重生。**結果本身仍是負向**：A 部分 RacquetballCourt4
+  域外出口誤放 FAIL（→ T-54／T-55）；B 部分 v2-b inconclusive（→ T-56）。逐項證據見本卡末「✅ Opus 第二修正輪複驗紀錄（2026-09-14）」。
+- **四軸狀態（Opus 第二修正輪複驗，2026-09-14）**：工程：已驗證｜實驗：負向（A：RacquetballCourt4 域外出口誤放 FAIL；B：v2-a 正向
+  〔同義反覆，無鑑別力〕、v2-b inconclusive——diff 子判準首跑 −21.1% FAIL〔執行者自述、不可複核〕、方法非決定性，ratio 子判準 PASS）｜
+  產品：不適用｜MVP：不適用（併入 T-17-R2；T-17-R2 前置已追加 T-54 ✅＋T-55 結案）
+  （以下保留 Sonnet 第二修正輪原狀態與歷次 Opus 紀錄，不覆寫：）
+- **狀態（Sonnet 第二修正輪原狀態，保留）**：🔵 **待審（第二修正輪，Sonnet 2026-09-14；結果 commit `0c1174d`，腳本修正 commit `3c234c1`＋`778ac18`）**——
   回應下方「🟠 Opus 修正輪複驗紀錄」退回理由 Q1～Q3，順手處理 N1～N3，範圍依同段「Sonnet 第二修正輪指示」1～4 條：
   Q1（R4 殘留）＝腳本 `_write_stability_appendix()` 那句與 §0 矛盾的字串已改成與 §0 一致（官方 verdict＝首跑
   `d372ad9`，本附錄與 §1 數字量自 `cda6b9b` 交付 WAV）；Q2（溯源失實）＝新增 `PART_A_MEASUREMENT_COMMIT`／
@@ -10962,11 +10970,11 @@ EOF
   dataset_manifest_sha256: b2f994ccf21534ec49c0e915b92191b8976e1e374d7dee50d6841895bbe1b66e（`output/geometry_r2/DATASET_MANIFEST.json`，程式產生＋`shasum -a 256` 複算相符；13 張照片 sha256＋已知尺寸表；manifest 檔以 `git add -f` 進版控；B 部分為合成房間，三條重生 IR 的 sha256 另記於 `output/material_r2/REPORT.md` 檔頭）
   implementation_commit: e1183b9（`scripts/t48_geometry_material_r2.py` 最終版；完整迭代鏈 469abef→714703d→d372ad9→dd03c0e→cda6b9b→4bec212→e1183b9，逐次 commit 訊息記錄每次改動與重跑原因；src/、data/、ir_metrics.py 全程零 diff）→ 修正輪追加（Sonnet，2026-09-14）：`8bfe262`（修正輪腳本修正 R3／R4／R5／R7／F3，report-only 兩模式；src/、data/ 全程零 diff）→ 第二修正輪追加（Sonnet，2026-09-14）：`3c234c1`（腳本修正 Q1／Q2／N3：`_write_stability_appendix()` 矛盾句、`PART_A_MEASUREMENT_COMMIT`／`PART_B_MEASUREMENT_COMMIT` 具名常數、report-only 檔頭溯源、actual_dims_m 格式化）＋`778ac18`（純排版：反引號前漏空格）
   result_commit: 012a07f（`output/geometry_r2/REPORT.md`＋`output/material_r2/{REPORT.md,CRITERIA_T12_v2.md}`＋T-11／T-12 不可變欄位追加）→ 修正輪追加（Sonnet，2026-09-14）：`cbc117b`（修正輪文件與報表更正，R1/R2/R6/R8）＋`31f4a34`（雜湊回填）＋`2fe9480`（補四軸狀態）→ 第二修正輪追加（Sonnet，2026-09-14）：`0c1174d`（第二修正輪文件與報表更正，Q1/Q2/Q3/N1/N2/N3）
-  reviewer: 〈Opus 填：模型＋日期＋commit〉
-  verdict_under_original_criteria: 〈Opus 填：v2 首跑結果，A／B 分列；未達＝如實 FAIL〉
-  verdict_under_current_criteria: 〈同上；判準未變〉
+  reviewer: 〈Opus 填：模型＋日期＋commit〉 → Opus 5（2026-09-14）：首輪退回 `f09792a`（對象 `012a07f`）→ 修正輪退回 `2d21b32`（對象 `8bfe262`＋`cbc117b`）→ 第二修正輪**工程已驗證**（對象 `3c234c1`＋`778ac18`＋`0c1174d`＋`92bfd63`，驗證時 HEAD `92bfd63`）
+  verdict_under_original_criteria: 〈Opus 填：v2 首跑結果，A／B 分列；未達＝如實 FAIL〉 → **A（T-11 域外項 v2，量測 commit `714703d`）：FAIL**——RacquetballCourt4（實際 12.19m）geometry=medium、無 --override-dims 導引＝域外出口誤放；arena_ntsu_linkou／SteinmanHall PASS；bathroom_tiled 誤差 +24.0% PASS；car_interior_suv inconclusive（v2 判準文字自相矛盾，裁決 T-48-F F3）；其餘 8 張無 ground truth 不判。**B（T-12 v2）**：v2-a PASS（0.3480s，同義反覆、無鑑別力，F4）；v2-b **diff 子判準首跑（`d372ad9`）−21.1% FAIL**（執行者自述、無殘存產物不可複核）＋量測方法非決定性（無固定 seed，三次官方重跑跨 ±20% 兩側）→ **inconclusive**（F2，永久保留，不得改記 PASS）；ratio 子判準 PASS（交付版 3.97 倍，穩定性最差 3.80 倍）；v1 字面 125Hz 八度 0.7074s 未達（只記錄）
+  verdict_under_current_criteria: 〈同上；判準未變〉 → 同上（v2 未變更；v3 另開 T-54／T-55／T-56，不回溯本卡）
   criteria_changed_after_first_result: no（改了就是新卡）
-  change_record: 無
+  change_record: 無 → Opus 追加（2026-09-14）：v2 本身未變更；裁決 T-48-F（Fable）只裁定判讀（car_interior_suv inconclusive、v2-b inconclusive）並另開 v3 卡，無本卡門檻變更
   ```
   **開跑規則（鐵則 14）**：執行者在**首個結果 commit 之前**填妥前四欄（`dataset_manifest_sha256` 由程式產生，不手打）；
   Opus 驗證重點第一條＝核對填前四欄的 commit 早於任何 `output/geometry_r2/`／`output/material_r2/` 結果 commit，
@@ -11436,6 +11444,39 @@ EOF
     v2-b inconclusive）｜產品：不適用｜MVP：不適用（併入 T-17-R2）」——依 F1／F2 裁決，實驗軸不會因
     修正輪變好；接著才進 T-54 → T-55 → T-17-R2（T-54／T-55／T-56 三份 criteria 草案仍等使用者核准，
     本輪未動）。
+
+- **✅ Opus 第二修正輪複驗紀錄（2026-09-14；對象 `3c234c1`＋`778ac18`＋`0c1174d`＋`92bfd63`，驗證時 HEAD `92bfd63`；只審不改碼）**
+  - **四軸判定**：工程：已驗證｜實驗：負向（A FAIL；B v2-a 正向〔同義反覆〕、v2-b inconclusive）｜產品：不適用｜MVP：不適用（併入 T-17-R2）
+  - **Opus 自己實跑的驗證**：
+    - X1 範圍：`git diff --stat 2d21b32 HEAD -- src data scripts/gen_ir_manual.py` **空**；`3c234c1`／`778ac18` 只改 `scripts/t48_geometry_material_r2.py`；
+      `0c1174d` 六檔（DEV_LOG／HANDOFF／TASKS／TODO＋兩份 REPORT）；`92bfd63` 只回填雜湊。
+    - X2 **六條 IR MD5（全部自己驗）**：`OUTPUT_ROOT` 導向 scratchpad 呼叫 `cli.main()`——`--text 浴室` `2adbaa75…`、`--text 大教堂` `2dd19b6e…`、
+      `--scene neighbor_voices` `9a94ffdf…`、`--scene stadium_corridor` `a1c21bcc…` 四條 rc=0 **MATCH**；T-14 兩條 `test_ir_synth.py`【6】`f3a763be…`／`f24353b5…` 相同。
+    - X3 全套測試：20 支 `scripts/test_*.py` 自跑 **全部 EXIT=0**；跑前後 `output/`（深度 3）清單 diff 為空。
+    - X4 report-only 可重現：自跑 `cmd_part_a_report_only()`（`GEOMETRY_OUT` 導 scratchpad）與 `cmd_part_b_report_only()`（攔截 `write_text` 導 scratchpad、讀真實 WAV），
+      三份產物與已提交版在正規化「產生日期」與 40 碼 HEAD 後 **逐位元相同**。
+    - X5 交付 WAV sha256 `0c3e1f6d…`／`fb9248d4…`／`91d4af0f…` 不變，mtime 仍 15:32:58–15:33:23；自算聯合帶 T30 0.9650／1.2052／3.8319s、−19.9%、3.97 倍，與 REPORT §0／§1 一致。
+  - **Q／N 逐條**：
+    - **Q1 修妥**：`material_r2/REPORT.md` §3 首段現為「§0 的官方 verdict＝首跑（`d372ad9`）；本附錄與 §1 的數字量自 `cda6b9b` 生成的交付 WAV」，與 §0 一致；
+      `grep "也是唯一交付"` 零匹配。
+    - **Q2 修妥**：兩份 REPORT 檔頭另列「本報表為 report-only 重產於 `778ac18…`，未重跑 CLI／未重生 IR」＋量測 commit。**量測 commit 常數 Opus 以時序獨立核對**：
+      `runs/*/*.log` mtime 15:19:26～15:26:53，落在 `714703d`（15:19:08）與 `d372ad9`（15:28:36）之間 → A＝`714703d` 屬實；交付 WAV 15:32:58～15:33:05、
+      `stability_check/` 至 15:33:23，落在 `cda6b9b`（15:32:52）與 `4bec212`（15:36:38）之間 → B＝`cda6b9b` 屬實。B 內文「本次重生／本次執行／搬移前後」全部改為
+      「`cda6b9b` 那次…」，`grep "本次重生\|本次執行的 stdout"` 零匹配。`cmd_part_a()`／`cmd_part_b()` 真跑模式 `report_only=False` 文字不變，無副作用。
+    - **Q3 修妥**：「B 部分結果」段後追加更正「至少兩輪穩定性重跑（`dd03c0e`、`cda6b9b`，各每 case 4 次），只有 `cda6b9b` 那輪產物留存」，原文未刪；
+      `git show dd03c0e:`／`cda6b9b:` 腳本 `STABILITY_REPEATS = 4` 皆屬實。
+    - **N1 修妥**：本卡 §8 `implementation_commit` 追加 `8bfe262`／`3c234c1`／`778ac18`，`result_commit` 追加 `cbc117b`／`31f4a34`／`2fe9480`／`0c1174d`（`92bfd63` 回填，無佔位符殘留）。
+    - **N2 修妥**：T-11 §8 兩行「Opus 更正」行尾追加「由 Sonnet 依 R6 指示代筆」澄清，原文未刪。
+    - **N3 修妥**：A 報表 §4 現為「實際 12.19×6.10×6.10m」。
+  - **觀察（不影響判定，只記錄）**：(O1) B 報表 §3「這裡**額外**重跑 per_wall／control_gypsum 各 4 次」在 report-only 產生的報表裡仍是現在式口吻，但檔頭已明示量測於
+    `cda6b9b`、`stability_check/` 產物也確為該輪，讀者不會誤判，不列缺陷。(O2) v2-b「首跑 −21.1% FAIL」始終是執行者自述、不可複核，本卡以 inconclusive
+    記錄已足夠保守；T-56（seed 鎖定＋10 次中位數）才是可複核的量測。(O3) 實驗軸不因三輪修正變好：修正全在報表文字，量測結果未變。
+  - **§8**：已填 `reviewer`／`verdict_under_original_criteria`／`verdict_under_current_criteria`，並在 `change_record` 追加「v2 未變更」說明；T-11／T-12 §8 `reviewer` 各追加本次覆核。
+  - **§7 變更控制**：未發現門檻本身錯誤，不開變更（v3 已由裁決 T-48-F 另開 T-54～T-56，屬新卡，不回溯本卡）。
+  - **T-48-S (c) 重跑規則基準點**：T-17-R2 開跑前 `git diff <T-48 result_commit>..HEAD -- geometry.py acoustics.py ir_synth.py ir_metrics.py config.py data/` 的
+    `<T-48 result_commit>` 以量測內容為準取 **`012a07f`**（量測數字首次進版控；其後 `cbc117b`／`0c1174d` 只改報表文字）。T-54 將改 `geometry.py` → A 部分由 T-55 在新 HEAD 重量（已排程）。
+  - **本輪 Opus 建立的路徑（鐵則 15）**：只在 scratchpad `r2/` 下建立 `md5_out/`、`regen/`、`regen_a.py`、`test_*.log`、`tests.log`、`output_before.txt`（沿用上一輪的
+    `md5_check.py`／`regen_b.py`）；**專案 `output/` 零新增零刪除，`output/.archive/` 未碰**，無需清理。
 
 ### T-44-R1 role-aware 安全門檻重新驗證（實驗卡；裁決 T-45-A 執行卡 4/5；需使用者）
 - **狀態**：⬜ 未開始（**等使用者兩件事**：核准絕對品質下限、提供 held-out 照片）

@@ -160,7 +160,7 @@
       T-47 表 8 預測一致）。**下一步：開 Opus 視窗複核**。詳見 TASKS.md T-52 卡「交接筆記」。
 - [ ] **T-53** role_aware gate 校準量測（保留號；等使用者提供獨立校準集；不在關鍵路徑）
 - [ ] **T-54** 量程規則 v2：`apply_scope_confidence()` 環景分支加三維檢查（Sonnet；裁決 T-48-F；**等使用者核准 CRITERIA_GEOMETRY_SCOPE_v2 草案**；
-      前置 T-48 修正輪已驗證；預期 13 張只有 CathedralRoom／RacquetballCourt4 geometry medium→low、gate 零變化；V5 情境改 EXIT=3）
+      前置 T-48 修正輪已驗證〔✅ 2026-09-14 Opus 第二修正輪複驗通過〕；預期 13 張只有 CathedralRoom／RacquetballCourt4 geometry medium→low、gate 零變化；V5 情境改 EXIT=3）
 - [ ] **T-55** T-11 域外出口 v3 重驗（Sonnet；14 張＋V5；等 T-54 ✅＋使用者核准 CRITERIA_T11_v3；`src/` 零改動；T-17-R2 前置）
 - [ ] **T-56** T-12 v2-b 量測方法 v3（Sonnet；seed 鎖定＋10 次中位數；等使用者核准 CRITERIA_T12_v3〔含★守門條款留刪〕；停滯期填充卡，不進關鍵路徑）
 - [x] **T-47 ✅ 工程已驗證（Opus 第三輪 2026-09-14；依裁決 T-47-M 第 5 點複核 §8 事後補建區塊＋T-51 manifest）**——
@@ -175,7 +175,8 @@
       MVP：不適用（沿用 T-17 FAIL）。Opus scratchpad 重算 `dataset_manifest_sha256`＝`c15d0a14…2b01a7`，與 T-47 §8 回填值、
       HEAD manifest blob 三方相同；ground truth＝`965e51ac…`；26/26 CLI 指紋 `photo_sha256` 相符；commit 恰五檔；
       TASKS diff 只三個合法 hunk；20 支測試 EXIT=0、六條 IR MD5 全中。詳見 TASKS.md T-51 卡「✅ Opus 驗證紀錄」。
-- [ ] **T-48** T-11／T-12 判準 v2 針對性重驗——**🔵 待審（第二修正輪，Sonnet 2026-09-14；結果 commit `0c1174d`，腳本修正 commit `3c234c1`＋`778ac18`）**。
+- [x] **T-48** T-11／T-12 判準 v2 針對性重驗——**✅ 工程已驗證（Opus 第二修正輪複驗 2026-09-14，HEAD `92bfd63`）**。四軸：工程：已驗證｜實驗：負向（A：RacquetballCourt4 域外出口誤放 FAIL；B：v2-a 正向〔同義反覆〕、v2-b inconclusive）｜產品：不適用｜MVP：不適用（併入 T-17-R2）。Q1～Q3／N1～N3 Opus 實測修妥；六條 IR MD5 自跑全中、20 支測試 EXIT=0、`src`／`data` 零 diff。後續＝T-54 → T-55 → T-17-R2（T-56 平行），三份 criteria 草案等使用者核准。
+      （以下為 Sonnet 第二修正輪原記錄，保留：）🔵 待審（第二修正輪，Sonnet 2026-09-14；結果 commit `0c1174d`，腳本修正 commit `3c234c1`＋`778ac18`）。
       原 🟠 工程退回（Opus 修正輪複驗 2026-09-14，對象 `8bfe262`＋`cbc117b`）理由 Q1～Q3 已於第二修正輪逐項處理：Q1＝腳本
       `_write_stability_appendix()` 與 §0 矛盾的字串改成一致（官方 verdict＝首跑 `d372ad9`，數字量自 `cda6b9b` 交付 WAV）；
       Q2＝新增 `PART_A_MEASUREMENT_COMMIT`／`PART_B_MEASUREMENT_COMMIT` 具名常數，report-only 檔頭另列量測 commit 與

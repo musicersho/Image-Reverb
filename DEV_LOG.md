@@ -1,5 +1,14 @@
 # Dev Log
 
+## 2026-09-14 (141)
+
+- **T-48 第二修正輪 Opus 複驗——✅ 工程已驗證**。對象 `3c234c1`＋`778ac18`＋`0c1174d`＋`92bfd63`，驗證時 HEAD `92bfd63`。
+- Opus 自跑：六條 IR MD5 全中（四條導向 scratchpad、T-14 兩條 `test_ir_synth.py`【6】）；20 支測試 EXIT=0；`git diff 2d21b32 HEAD -- src data gen_ir_manual.py` 空；
+  report-only 自重產與提交版逐位元相同（正規化時間／HEAD 後）；交付 WAV sha256 與 T30 不變。量測 commit 常數以檔案 mtime 對 commit 時序獨立核對（A `714703d`、B `cda6b9b`）屬實。
+- Q1（§3 與 §0 矛盾）、Q2（report-only 溯源）、Q3（重跑次數）、N1～N3 全部修妥。§8 已填 reviewer／verdict；T-11／T-12 §8 reviewer 追加本次覆核。
+- 四軸：工程：已驗證｜實驗：負向（A RacquetballCourt4 域外誤放 FAIL；B v2-a 同義反覆、v2-b inconclusive）｜產品：不適用｜MVP：不適用。未開 §7 變更。
+- **下一步**：使用者核准 T-54／T-55／T-56 三份 criteria 草案 → T-54 → T-55 → T-17-R2（T-56 平行）；T-52 第三輪 Opus 複核照舊。Opus 本輪專案 `output/` 零新增零刪除。
+
 ## 2026-09-14 (140)
 
 - **T-48 第二修正輪完成（Sonnet 執行）——現在該做的是開 Opus 新視窗複驗**，結果 commit 見本次收工 commit。
