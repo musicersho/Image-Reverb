@@ -559,24 +559,46 @@ def _write_stability_appendix(cases: dict, repeats: dict) -> list[str]:
     )
     lines.append(f"- per_wall 聯合帶 T30 各次量測（含官方那次）：{[round(float(v), 4) for v in pw_all]}\n")
     lines.append(f"- control_gypsum 聯合帶 T30 各次量測（含官方那次）：{[round(float(v), 4) for v in cg_all]}\n")
+    official_diff = _pct_diff(pw_official, cg_official)
+    official_verdict = "PASS" if abs(official_diff) <= 20.0 else "FAIL"
     lines.append(
         f"- 交叉配對後的 per_wall vs control_gypsum 差異百分比範圍："
         f"{min(diffs_pct):+.1f}% ～ {max(diffs_pct):+.1f}%（判準 ≤±20%；"
-        f"官方那次配對＝{_pct_diff(pw_official, cg_official):+.1f}%）\n"
+        f"官方那次配對＝{official_diff:+.1f}% → {official_verdict}）\n"
     )
-    if min(diffs_pct) <= -20.0 <= max(diffs_pct) or (min(diffs_pct) < 20.0 < max(diffs_pct)):
+    straddles = min(diffs_pct) < -20.0 < max(diffs_pct) or min(diffs_pct) < 20.0 < max(diffs_pct)
+    if straddles:
         lines.append(
-            "\n**觀察**：不同次重跑的差異百分比跨越 ±20% 門檻兩側，"
-            "代表官方判定的 PASS/FAIL 對這次隨機重跑的結果敏感——"
-            "v2-b 的 FAIL 判定本身站得住腳（依官方那次重生的數字如實記錄），"
-            "但門檻本身的鑑別力在這個量級的隨機噪聲下很薄弱，這點誠實列出，"
-            "是否需要改進量測方法（例如多次取中位數、固定 seed）留給 Fable 依 "
-            "WORKFLOW §7 另行裁決，本卡不自行更動判準或判定方式。\n"
+            f"\n**觀察**：不同次重跑的差異百分比跨越 ±20% 門檻兩側，"
+            f"代表官方判定的 PASS/FAIL 對這次隨機重跑的結果敏感——"
+            f"v2-b 的 {official_verdict} 判定本身依官方那次重生的數字如實記錄、站得住腳，"
+            f"但門檻本身的鑑別力在這個量級的隨機噪聲下很薄弱，這點誠實列出，"
+            f"是否需要改進量測方法（例如多次取中位數、固定 seed）留給 Fable 依 "
+            f"WORKFLOW §7 另行裁決，本卡不自行更動判準或判定方式。\n"
         )
+
+    lines.append(
+        "\n**本卡執行過程中的官方量測歷史（誠實揭露，非結果篩選）**：本卡執行期間因程式"
+        "本身的修正（除錯與格式修正，與量測邏輯／判準無關）重新跑過三次「官方」"
+        "per_wall／control_gypsum 生成＋量測，每一次都是當時唯一交付到 "
+        "`output/material_r2/` 的版本（前一次的交付檔案在下一次重跑時被覆蓋，"
+        "紅線要求不得重用舊 IR，所以每次重跑本來就必須用新生成的檔案）：\n\n"
+        "| 官方重跑對應 commit | per_wall vs control_gypsum 差異 | v2-b diff 子判準 |\n"
+        "|---|---|---|\n"
+        "| `d372ad9`（Part B 首次實作，隨即執行） | -21.1% | FAIL |\n"
+        "| `dd03c0e`（新增本附錄後重跑） | -22.3% | FAIL |\n"
+        f"| `cda6b9b`（修正附錄 numpy 顯示格式後重跑，**本次交付版本**） | {official_diff:+.1f}% | {official_verdict} |\n\n"
+        "三次都不是為了「重跑到通過為止」而執行——每次重跑的直接原因記在對應 commit"
+        "訊息裡（附錄程式碼新增、顯示格式修正），跟 v2-b 的判定方向無關；但三次結果"
+        "本身（-21.1%／-22.3%／" + f"{official_diff:+.1f}%" + "）都群聚在 ±20% 門檻附近，"
+        "印證上面「觀察」段的結論：**這個判準在目前的量測方法下沒有穩定的鑑別力，"
+        "本次交付版本剛好是 PASS，但不代表 v2-b 這條子判準本身站得住腳**，請 Opus／Fable"
+        "依 WORKFLOW §7 一併評估是否要修正量測方法（而非門檻數字）。\n"
+    )
     return lines
 
 
-def _write_part_b_report(cases: dict) -> None:
+def _write_part_b_report(cases: dict, repeats: dict | None = None) -> None:
     head = git_head()
     dirty_check = git_status_clean(["src", "data", "scripts"])
     pw = cases["per_wall"]
@@ -647,8 +669,9 @@ def _write_part_b_report(cases: dict) -> None:
         "4. `ir_metrics.py`、`src/`、`data/` 全程零 diff（本卡只呼叫既有函式，不修改）。\n"
     )
 
-    print("執行量測穩定性附錄（額外重跑，不影響官方判定）…")
-    repeats = run_stability_check()
+    if repeats is None:
+        print("執行量測穩定性附錄（額外重跑，不影響官方判定）…")
+        repeats = run_stability_check()
     lines.extend(_write_stability_appendix(cases, repeats))
 
     MATERIAL_OUT.mkdir(parents=True, exist_ok=True)
@@ -690,8 +713,53 @@ def cmd_part_b() -> None:
           f"v1（不當門檻，僅記錄）={'PASS' if verdicts['v1_pass'] else '未達'}")
 
 
+def cmd_part_b_report_only() -> None:
+    """只重新產生 REPORT.md 的文字／表格（例如修正顯示格式），**完全讀已在磁碟上的
+    交付 WAV／log，不再呼叫 gen_ir_manual.py**——因為 pyroomacoustics 沒有固定 seed，
+    每多跑一次官方生成就是再多一個獨立隨機draw，會製造出看起來像「重跑到滿意為止」
+    的觀感。純文字/格式修正時必須走這條路徑，不能重新生成。"""
+    cases = {}
+    for spec in IR_CASES:
+        final_path = MATERIAL_OUT / spec["final_name"]
+        log_path = MATERIAL_OUT / "runs" / f"{spec['case']}.log"
+        if not final_path.exists() or not log_path.exists():
+            print(f"❌ 錯誤：{final_path} 或 {log_path} 不存在，無法只重產報表——請跑 partB 完整流程一次。")
+            sys.exit(1)
+        stdout = log_path.read_text(encoding="utf-8")
+        ir, fs = sf.read(str(final_path))
+        cases[spec["case"]] = {
+            **spec,
+            "final_path": str(final_path.relative_to(PROJECT_ROOT)),
+            "pre_sha256": None,
+            "post_sha256": sha256_file(final_path),
+            "regenerated": True,
+            "sabine_125hz_s": _sabine_125hz_from_stdout(stdout),
+            "t30_low_combined_s": t30_low_combined(ir, fs),
+            "t30_125hz_octave_s": band_t30(ir, fs, [125])[0],
+            "fs": fs,
+        }
+
+    stability_dir = MATERIAL_OUT / "stability_check"
+    repeats = {"per_wall": [], "control_gypsum": []}
+    for case in ("per_wall", "control_gypsum"):
+        i = 0
+        while (p := stability_dir / f"{case}_rep{i}.wav").exists():
+            ir, fs = sf.read(str(p))
+            repeats[case].append(t30_low_combined(ir, fs))
+            i += 1
+    if not repeats["per_wall"]:
+        print(f"❌ 錯誤：{stability_dir} 底下找不到既有重跑檔，無法只重產報表。")
+        sys.exit(1)
+
+    verdicts = _write_part_b_report(cases, repeats=repeats)
+    print(f"\nPart B（只重產報表，未重新生成任何 IR）完成："
+          f"v2-a={'PASS' if verdicts['v2a_pass'] else 'FAIL'} "
+          f"v2-b={'PASS' if verdicts['v2b_pass'] else 'FAIL'} "
+          f"v1（不當門檻，僅記錄）={'PASS' if verdicts['v1_pass'] else '未達'}")
+
+
 if __name__ == "__main__":
-    if len(sys.argv) < 2 or sys.argv[1] not in ("manifest", "partA", "partB", "all"):
+    if len(sys.argv) < 2 or sys.argv[1] not in ("manifest", "partA", "partB", "partB-report-only", "all"):
         print(__doc__)
         sys.exit(2)
     mode = sys.argv[1]
@@ -701,6 +769,8 @@ if __name__ == "__main__":
         cmd_part_a()
     elif mode == "partB":
         cmd_part_b()
+    elif mode == "partB-report-only":
+        cmd_part_b_report_only()
     elif mode == "all":
         cmd_part_a()
         cmd_part_b()
