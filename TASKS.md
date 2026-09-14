@@ -10511,8 +10511,8 @@ EOF
   criteria_version: v2（裁決 T-45-A 事前鎖定——A 部分＝T-11 域外項判準 v2〔實際最大維 >10m 者 geometry_confidence 必須 low 且 gate 訊息含 --override-dims 導引；≤10m 有 ground truth 者誤差 ≤±30%〕；B 部分＝T-12 v2-a 公式層 Sabine 125Hz＝0.348s ±20%、v2-b 聯合帶 T30 與六面 gypsum 對照差異 ≤±20% 且六面 carpet 對照 ≥ per-wall 3 倍；v1 字面 125Hz 八度條件照量照列、只記錄不當門檻）
   criteria_commit: 96e7716（2026-09-03，開卡即鎖定判準 v2）＋c8f6be9（2026-09-08，裁決 T-48-S：排程放寬與硬性條件 (a)～(d)，未改任何判準數字）
   criteria_locked_at: 2026-09-03（判準 v2）／2026-09-08（條件 (a)～(d)）——皆早於本卡任何量測（截至 2026-09-14 本卡未開跑）
-  dataset_manifest_sha256: 〈開跑前由執行者以程式填：output/geometry_r2/DATASET_MANIFEST.json（13 張照片 sha256＋已知尺寸表）的 sha256，manifest 檔以 git add -f 進版控；B 部分為合成房間，三條重生 IR 的 sha256 另記於 REPORT 檔頭〉
-  implementation_commit: 〈執行者填：量測腳本 commit；src/、data/、ir_metrics.py 零 diff〉
+  dataset_manifest_sha256: b2f994ccf21534ec49c0e915b92191b8976e1e374d7dee50d6841895bbe1b66e（`output/geometry_r2/DATASET_MANIFEST.json`，程式產生＋`shasum -a 256` 複算相符；13 張照片 sha256＋已知尺寸表；manifest 檔以 `git add -f` 進版控；B 部分為合成房間，三條重生 IR 的 sha256 另記於 `output/material_r2/REPORT.md` 檔頭）
+  implementation_commit: 〈開跑前 commit＝本欄與 dataset_manifest_sha256 同批；量測腳本 `scripts/t48_geometry_material_r2.py`；src/、data/、ir_metrics.py 零 diff——待下一個 commit 回填 hash〉
   result_commit: 〈執行者填〉
   reviewer: 〈Opus 填：模型＋日期＋commit〉
   verdict_under_original_criteria: 〈Opus 填：v2 首跑結果，A／B 分列；未達＝如實 FAIL〉

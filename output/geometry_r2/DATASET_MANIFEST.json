@@ -1,0 +1,128 @@
+{
+  "task": "T-48",
+  "generated_at": "2026-09-14T07:04:36.976503+00:00",
+  "git_head_at_manifest_time": "b1e4edfa7c2bbb51cc77e6bcfbe640ad2f604e1a",
+  "photo_list_source": "scripts/t36_clip_accuracy.GATE_ITEMS（唯一可信來源，13 張，不重打）",
+  "photo_count": 13,
+  "photos": [
+    {
+      "name": "bathroom_tiled",
+      "path": "assets/photos/bathroom_tiled.png",
+      "sha256": "1f7ced1531d50ff9ed839315ad85063d6bfc6a699cbd63467481b56a44e35d73"
+    },
+    {
+      "name": "bedroom_ai_generated",
+      "path": "assets/photos/bedroom_ai_generated.png",
+      "sha256": "b108578269b96adcdcabac65641c766ff1a7e3e5243707a2ce5014858434bde5"
+    },
+    {
+      "name": "stairwell_tiled",
+      "path": "assets/photos/stairwell_tiled.png",
+      "sha256": "40859d6e815202a700b237625e33e177ec6f3193cd5e409231ef0c0385b370fa"
+    },
+    {
+      "name": "arena_ntsu_linkou",
+      "path": "assets/photos/arena_ntsu_linkou.png",
+      "sha256": "2b72af99bbaf6ae791b4c462af1da4808a4fded5f4cb39f9a3f1eb89df0a9b10"
+    },
+    {
+      "name": "car_interior_suv",
+      "path": "assets/photos/car_interior_suv.png",
+      "sha256": "7dd1c6b2a154fea934e0ecc4790d18de46276be52f291d6a6eb873cf06ca0cc5"
+    },
+    {
+      "name": "CathedralRoom",
+      "path": "assets/reference_irs/cathedral_room_shasta_lake_caverns/CathedralRoom.jpg",
+      "sha256": "d4dcaed7c3b590546aa26e006930b1dfc1050e509cca20e4d806a050773c9d48"
+    },
+    {
+      "name": "DivorceBeach",
+      "path": "assets/reference_irs/divorce_beach/DivorceBeach.jpg",
+      "sha256": "746d0c7adfe71a30805ae41366d48e2195e42cd8f6094b79a2623fcd0c63928a"
+    },
+    {
+      "name": "site_photo_department_store",
+      "path": "assets/reference_irs/mit_department_store/site_photo_department_store.png",
+      "sha256": "a3aa38e1821829ce12e0f2a25294db35a32cf297172cc0a8376e34cf9c568a5c"
+    },
+    {
+      "name": "site_photo_gym",
+      "path": "assets/reference_irs/mit_gym/site_photo_gym.png",
+      "sha256": "9ccc9c335ff8862a7f46f22548c1d1c90e9b4b79090cfaf9dd25f2346a96749e"
+    },
+    {
+      "name": "site_photo_restaurant",
+      "path": "assets/reference_irs/mit_restaurant/site_photo_restaurant.png",
+      "sha256": "a3576a3a2eb8993ca87b6c8df864f5e0b7421316a91880176d59c6f340d27214"
+    },
+    {
+      "name": "RacquetballCourt4",
+      "path": "assets/reference_irs/racquetball_court_4/RacquetballCourt4.jpg",
+      "sha256": "878ee129bf633cb4d4e6589d04743fd7ceae7325d2e9eee2d1e753f678a835d2"
+    },
+    {
+      "name": "SteinmanHall",
+      "path": "assets/reference_irs/steinman_hall/SteinmanHall.jpg",
+      "sha256": "1d2e11433e4285c0453ffed64c916307c5b97b8e5ca35826650a263baa5d0696"
+    },
+    {
+      "name": "TunnelToHell",
+      "path": "assets/reference_irs/tunnel_to_hell/TunnelToHell.jpg",
+      "sha256": "51dde5694fca64df43ac466da52bbcb926cd048641d79c67763cbbfc42045e65"
+    }
+  ],
+  "known_dimensions": {
+    "bathroom_tiled": {
+      "actual_depth_range_m": [
+        2.5,
+        3.5
+      ],
+      "actual_depth_point_m": 3.0,
+      "actual_max_dim_m": 3.5,
+      "v2_category": "domain_in_with_ground_truth",
+      "note": "唯一落入 v2「≤10m 且有 ground truth」誤差 ±30% 判準的照片（卡片原文「目前只有浴室」）。"
+    },
+    "car_interior_suv": {
+      "actual_max_dim_m": 2.0,
+      "v2_category": "not_applicable",
+      "note": "實際 ~2m，不 >10m 故不落入域外項；卡片原文「目前只有浴室」明示 ≤10m+ground truth誤差判準只適用浴室一張，車內不在兩類別判準內——僅記錄估計值供參考，不列入 FAIL/PASS 判定。"
+    },
+    "arena_ntsu_linkou": {
+      "actual_max_dim_m": 150.0,
+      "v2_category": "domain_out",
+      "note": "體育館，實際最大維 ~150m，落入 v2 域外項（>10m 必須 low＋override-dims 導引）。"
+    },
+    "RacquetballCourt4": {
+      "actual_dims_m": [
+        12.19,
+        6.1,
+        6.1
+      ],
+      "actual_max_dim_m": 12.19,
+      "v2_category": "domain_out",
+      "note": "壁球場，實際 12.19×6.10×6.10m，最大維 12.19m >10m，落入 v2 域外項。"
+    },
+    "SteinmanHall": {
+      "actual_wall_distances_m": [
+        12.2,
+        10.4,
+        5.25,
+        11.1
+      ],
+      "actual_max_dim_m": 12.2,
+      "v2_category": "domain_out",
+      "note": "環景音樂廳，實測牆距 12.2/10.4/5.25/11.1m，最大單面牆距 12.2m >10m，落入 v2 域外項（環景走單面牆距判定，見 geometry.py apply_scope_confidence）。"
+    }
+  },
+  "material_r2_synthetic_room": {
+    "note": "B 部分為合成房間，非本清單管的照片資料；三條重生 IR 的 sha256 另記於 output/material_r2/REPORT.md 檔頭（見 T-48 卡§8 dataset_manifest_sha256 說明）。",
+    "dimensions_m": [
+      4.0,
+      3.0,
+      2.5
+    ],
+    "per_wall": "floor=carpet／其餘 gypsum_board",
+    "control_a": "六面 gypsum_board",
+    "control_b": "六面 carpet"
+  }
+}
