@@ -582,8 +582,8 @@
   criteria_commit: v1＝T-08 細化（2026-08-16）；v2＝e14873c（2026-08-25）；v2.1＝bca6b61（2026-08-27）
   criteria_locked_at: v1 早於首次結果（fc688cd，2026-08-24）；v2／v2.1 皆晚於首次結果
   dataset_manifest_sha256: 未建立（9 張照片＋已知尺寸 4 場地；T-48 補建並回填）→ T-48（2026-09-14）：b2f994ccf21534ec49c0e915b92191b8976e1e374d7dee50d6841895bbe1b66e（`output/geometry_r2/DATASET_MANIFEST.json`，13 張照片＝現行 canonical 清單 t36_clip_accuracy.GATE_ITEMS，非原始 9 張——corridor_hotel_carpet 等 4 張已於 T-36 起不在 canonical 清單內，13 張已知實際尺寸的 5 張見 DATASET_MANIFEST.json）
-  implementation_commit: fc688cd（與 T-12 混提，WORKFLOW §4 違規已由 Opus 記錄）→ 40bfb2f（決策補丁）→ T-48：469abef（Part A 量測腳本）→ Opus 更正（2026-09-14，回應驗證紀錄 R6）：T-48 Part A 最終程式其實是 714703d（469abef 只是初版；__main__ 分派修正在 e1183b9，皆不影響 REPORT 內容本身）
-  result_commit: fc688cd（首次評測：走廊 −57%）→ 40bfb2f（補丁後 A'/B'）→ T-48：714703d（`output/geometry_r2/REPORT.md`）→ Opus 更正（2026-09-14，回應驗證紀錄 R6）：`output/geometry_r2/REPORT.md` 首次進版控其實是 012a07f（714703d 只改了 Part A 腳本的 `__main__` 分派，尚未含 REPORT.md 本身）
+  implementation_commit: fc688cd（與 T-12 混提，WORKFLOW §4 違規已由 Opus 記錄）→ 40bfb2f（決策補丁）→ T-48：469abef（Part A 量測腳本）→ Opus 更正（2026-09-14，回應驗證紀錄 R6）：T-48 Part A 最終程式其實是 714703d（469abef 只是初版；__main__ 分派修正在 e1183b9，皆不影響 REPORT 內容本身）（第二修正輪澄清，Sonnet 2026-09-14，回應 N2：本行標題「Opus 更正」是沿用 Opus 修正輪指示的既定寫法，實際文字由 Sonnet 依 Opus 驗證紀錄 R6 指示代筆填入，非 Opus 本人書寫——見 T-12 §8 對應行已註明「修正輪 Sonnet 執行」，本行補註同義）
+  result_commit: fc688cd（首次評測：走廊 −57%）→ 40bfb2f（補丁後 A'/B'）→ T-48：714703d（`output/geometry_r2/REPORT.md`）→ Opus 更正（2026-09-14，回應驗證紀錄 R6）：`output/geometry_r2/REPORT.md` 首次進版控其實是 012a07f（714703d 只改了 Part A 腳本的 `__main__` 分派，尚未含 REPORT.md 本身）（第二修正輪澄清，Sonnet 2026-09-14，回應 N2：同上，本行「Opus 更正」文字由 Sonnet 依驗證紀錄 R6 指示代筆，非 Opus 本人書寫）
   reviewer: Opus（2026-08-27，8531356）
   verdict_under_original_criteria: FAIL（判準 A：走廊 −57% 未達 ±30%）
   verdict_under_current_criteria: PASS（v2.1：A' 浴室 +24%；B' 走廊／車內／體育館／Steinman 全部 low）→ **T-48 域外出口實測補充（2026-09-14，13 張，Sonnet 量測，待 Opus 覆核；見 `output/geometry_r2/REPORT.md`）**：bathroom_tiled ±30% 誤差複測 PASS（估 3.72m vs 實際 3.0m，+24.0%，與原始一致）；域外項 3 張中 2 張 PASS（arena_ntsu_linkou、SteinmanHall 皆 geometry_confidence=low 且 gate 訊息含 `--override-dims` 導引）、**RacquetballCourt4 一筆 FAIL**（實際最大維 12.19m >10m，但實測 geometry_confidence=medium 非 low、gate 未印 override-dims 導引——域外出口誤放）；根因（唯讀讀 `geometry.py` `apply_scope_confidence()`）：環景量程規則比對的是單一視角原始牆距，不是相加後的房間全長，本例兩側視角個別皆 ≤10m、加總後房間全長 >10m 卻不觸發，詳見 REPORT §4；car_interior_suv 不落入 v2 兩類別判準內（見 T-48 卡），僅記錄供參考 → Opus 更正（2026-09-14，回應裁決 T-48-F 第 3 點 F3）：car_interior_suv 原記「不適用」，v2 判準文字本身自相矛盾（「已知實際尺寸」列了車內 ~2m，誤差判準括號卻寫「目前只有浴室」）——改記 **inconclusive（判準文字自相矛盾）**，不是 PASS、不是 FAIL、也不是「不適用」；v3（T-55）將車內歸類 `domain_out_non_room`（與 >10m 域外同款判準）
@@ -10866,7 +10866,24 @@ EOF
 - **交接筆記**：
 
 ### T-48 T-11／T-12 判準第二版針對性重驗（量測卡；裁決 T-45-A 執行卡 3/5；`src/` 零改動）
-- **狀態**：🟠 **工程退回（Opus 修正輪複驗 2026-09-14；對象 `8bfe262`＋`cbc117b`，驗證時 HEAD `dc4fb27`；只審不改碼）**——
+- **狀態**：🔵 **待審（第二修正輪，Sonnet 2026-09-14；結果 commit 待本輪收工時回填，腳本修正 commit `3c234c1`＋`778ac18`）**——
+  回應下方「🟠 Opus 修正輪複驗紀錄」退回理由 Q1～Q3，順手處理 N1～N3，範圍依同段「Sonnet 第二修正輪指示」1～4 條：
+  Q1（R4 殘留）＝腳本 `_write_stability_appendix()` 那句與 §0 矛盾的字串已改成與 §0 一致（官方 verdict＝首跑
+  `d372ad9`，本附錄與 §1 數字量自 `cda6b9b` 交付 WAV）；Q2（溯源失實）＝新增 `PART_A_MEASUREMENT_COMMIT`／
+  `PART_B_MEASUREMENT_COMMIT` 具名常數，report-only 兩模式檔頭另列「本報表為 report-only 重產於 <HEAD>，
+  未重跑 CLI／未重生 IR」＋真正量測 commit，B 報表「本次重生」等字句依模式改寫；Q3（R2 殘留）＝卡片下方
+  「B 部分結果」段落以**追加更正**方式修正次數敘述（原文不刪）；N1＝本卡 §8 `implementation_commit`／
+  `result_commit` 以「→ 修正輪追加」補上 `8bfe262`／`cbc117b`／本輪 commit；N2＝T-11 §8「Opus 更正」兩行
+  各追加一句澄清（實為 Sonnet 依指示代筆）；N3＝REPORT A §4 `actual_dims_m` 格式化為 `12.19×6.10×6.10m`。
+  只跑 `partA-report-only`／`partB-report-only`，未呼叫 `gen_ir_manual.py`、未重跑 Part A CLI；`src`／`data`／
+  `scripts/gen_ir_manual.py` 全程零 diff；`output/geometry_r2/runs/`／`output/material_r2/*.wav` 全程未碰。
+  完整過程見本卡末「交接筆記（第二修正輪，Sonnet 執行，2026-09-14）」。
+- **四軸狀態（第二修正輪後，待 Opus 複驗；WORKFLOW §3）**：工程：**待審**（第二修正輪已提交，等 Opus 複驗）｜
+  實驗：負向（A：RacquetballCourt4 域外出口誤放 FAIL；B：v2-a 正向〔同義反覆〕、v2-b inconclusive——diff 子判準
+  首跑 FAIL、方法非決定性，ratio 子判準 PASS；依 §7.5 不得記 PASS，此軸判定不因修正輪改變）｜產品：不適用｜
+  MVP：不適用（併入 T-17-R2）
+  （以下保留 Opus 修正輪複驗紀錄與其四軸狀態，不覆寫：）
+- **狀態（Opus 修正輪複驗紀錄，2026-09-14，保留）**：🟠 **工程退回（Opus 修正輪複驗 2026-09-14；對象 `8bfe262`＋`cbc117b`，驗證時 HEAD `dc4fb27`；只審不改碼）**——
   R1／R3／R5／R6／R7／R8、F3、第 7／8 條 **Opus 實測修妥**（六條 IR MD5 自跑全中、`src`／`data` 零 diff、20 支測試 EXIT=0、
   報表 report-only 自己重產逐位元相同、13 張 log 自己解析與 §1 表逐列相符、三條交付 WAV sha256／T30 自己重算相符）；
   退回只因 **REPORT 文字仍與事實／§0 矛盾（WORKFLOW §5.4.1、紅旗 6）**：**(Q1＝R4 殘留)** `output/material_r2/REPORT.md` §3 首段
@@ -10943,8 +10960,8 @@ EOF
   criteria_commit: 96e7716（2026-09-03，開卡即鎖定判準 v2）＋c8f6be9（2026-09-08，裁決 T-48-S：排程放寬與硬性條件 (a)～(d)，未改任何判準數字）
   criteria_locked_at: 2026-09-03（判準 v2）／2026-09-08（條件 (a)～(d)）——皆早於本卡任何量測（截至 2026-09-14 本卡未開跑）
   dataset_manifest_sha256: b2f994ccf21534ec49c0e915b92191b8976e1e374d7dee50d6841895bbe1b66e（`output/geometry_r2/DATASET_MANIFEST.json`，程式產生＋`shasum -a 256` 複算相符；13 張照片 sha256＋已知尺寸表；manifest 檔以 `git add -f` 進版控；B 部分為合成房間，三條重生 IR 的 sha256 另記於 `output/material_r2/REPORT.md` 檔頭）
-  implementation_commit: e1183b9（`scripts/t48_geometry_material_r2.py` 最終版；完整迭代鏈 469abef→714703d→d372ad9→dd03c0e→cda6b9b→4bec212→e1183b9，逐次 commit 訊息記錄每次改動與重跑原因；src/、data/、ir_metrics.py 全程零 diff）
-  result_commit: 012a07f（`output/geometry_r2/REPORT.md`＋`output/material_r2/{REPORT.md,CRITERIA_T12_v2.md}`＋T-11／T-12 不可變欄位追加）
+  implementation_commit: e1183b9（`scripts/t48_geometry_material_r2.py` 最終版；完整迭代鏈 469abef→714703d→d372ad9→dd03c0e→cda6b9b→4bec212→e1183b9，逐次 commit 訊息記錄每次改動與重跑原因；src/、data/、ir_metrics.py 全程零 diff）→ 修正輪追加（Sonnet，2026-09-14）：`8bfe262`（修正輪腳本修正 R3／R4／R5／R7／F3，report-only 兩模式；src/、data/ 全程零 diff）→ 第二修正輪追加（Sonnet，2026-09-14）：`3c234c1`（腳本修正 Q1／Q2／N3：`_write_stability_appendix()` 矛盾句、`PART_A_MEASUREMENT_COMMIT`／`PART_B_MEASUREMENT_COMMIT` 具名常數、report-only 檔頭溯源、actual_dims_m 格式化）＋`778ac18`（純排版：反引號前漏空格）
+  result_commit: 012a07f（`output/geometry_r2/REPORT.md`＋`output/material_r2/{REPORT.md,CRITERIA_T12_v2.md}`＋T-11／T-12 不可變欄位追加）→ 修正輪追加（Sonnet，2026-09-14）：`cbc117b`（修正輪文件與報表更正，R1/R2/R6/R8）＋`31f4a34`（雜湊回填）＋`2fe9480`（補四軸狀態）→ 第二修正輪追加（Sonnet，2026-09-14）：〈本輪收工 commit，收工時回填〉
   reviewer: 〈Opus 填：模型＋日期＋commit〉
   verdict_under_original_criteria: 〈Opus 填：v2 首跑結果，A／B 分列；未達＝如實 FAIL〉
   verdict_under_current_criteria: 〈同上；判準未變〉
@@ -11018,6 +11035,14 @@ EOF
     永久保留，不因交付版本剛好 PASS 就改記 PASS（修正輪更正，Sonnet 2026-09-14，回應驗證紀錄 R5：
     原文「v2-b 本次交付版本 PASS」的呈現方式違反本卡 §8「`verdict_under_original_criteria`＝v2 首跑
     結果」與 WORKFLOW §7.5）。v1 字面條件（125Hz 八度）誤差 +102.1%，如預期未達，只記錄不當門檻。
+  → **第二修正輪更正（Sonnet，2026-09-14，回應 Opus 修正輪複驗紀錄 Q3＝R2 殘留；原文不刪，本行為追加更正）**：
+    上面一句「另外跑了 4 次額外重跑（每個 case 各 4 次）」次數描述不實——本卡執行期間穩定性重跑實際
+    **至少兩輪**：`dd03c0e`（新增本附錄程式碼後重跑）與 `cda6b9b`（修正附錄 numpy 顯示格式後重跑，
+    即交付版本）各對 per_wall／control_gypsum 每 case 跑 4 次；上面寫的「4 次」只描述了 `cda6b9b`
+    這一輪（唯一留存至今、在 `output/material_r2/stability_check/` 有產物可複核的一輪），`dd03c0e`
+    那一輪的 4 次重跑產物已被下一輪覆蓋、無殘存可複核（另有手動 sha256 對比，同樣無殘存產物）。
+    正確敘述：至少兩輪穩定性重跑（`dd03c0e`、`cda6b9b`，各每 case 4 次），只有 `cda6b9b` 那輪產物
+    留存；REPORT §3 現行文字（`output/material_r2/REPORT.md`）已標示這點「無殘存產物、不可複核」。
   - **請 Opus／Fable 特別注意**：(1) RacquetballCourt4 的域外誤放是否需要開新卡修正
     `apply_scope_confidence()`（本卡依規則只量不改，未動 `geometry.py`）；(2) v2-b 子判準在目前量測
     方法（單次生成、無固定 seed）下鑑別力薄弱，是否要依 WORKFLOW §7 修正量測方法（例如固定 seed
@@ -11327,6 +11352,90 @@ EOF
   - **§8 reviewer／verdict 欄位**：工程仍退回，暫不填（實驗軸判定已確定如上，待第二修正輪複驗通過時一併填）。
   - **本輪 Opus 建立並清理的路徑（鐵則 15）**：只在 scratchpad 建立 `md5_out/`（四個 text/scene 輸出）、`regen/`（兩份 REPORT 複本）、`md5_check.py`、`regen.py`、
     `regen_b.py`、`test_*.log`、`output_before.txt`／`output_after.txt`；**專案 `output/` 未新增、未刪除任何路徑，`output/.archive/` 未碰**。scratchpad 為 session 暫存區，不需手動清理。
+
+- **交接筆記（第二修正輪，Sonnet 執行，2026-09-14）**：
+  - **開跑前**：`git pull` 顯示 Already up to date；`git status --porcelain` 為空，確認無其他視窗未提交改動後才開始。
+  - **範圍確認**：只改報表文字與卡片文字；未改 `src/`；未改判準（v2 數字一字未動）；只用
+    `partA-report-only`／`partB-report-only`，未呼叫 `gen_ir_manual.py`、未重跑 Part A CLI、未跑
+    `partA`／`partB`／`all`；未動 `output/geometry_r2/runs/` 與 `output/material_r2/*.wav`；未預先執行
+    T-54／T-55／T-56 任何步驟；T-52 等其他任務的卡片與檔案全程未碰。
+  - **腳本修正（`scripts/t48_geometry_material_r2.py`，commit `3c234c1`＋排版微調 `778ac18`，只有這一個檔案改動）**：
+    1. **Q1**：`_write_stability_appendix()` 內「§0 的官方判定只用每個 case 第一次（也是唯一交付到
+       `output/material_r2/` 的那次）重生結果」——這句與 §0「官方 verdict＝首跑 `d372ad9`、交付檔是
+       第三次 `cda6b9b`」正面矛盾（`d372ad9` 那次根本不是「唯一交付」的那次）。改成「§0 的官方
+       verdict＝首跑（`d372ad9`）；本附錄與 §1 的數字量自 `cda6b9b` 生成的交付 WAV」，與 §0 一致。
+    2. **Q2**：新增具名常數 `PART_A_MEASUREMENT_COMMIT = "714703d"`（Part A 最終真跑 CLI 的 commit）
+       與 `PART_B_MEASUREMENT_COMMIT = "cda6b9b"`（交付 WAV 實際生成的 commit），各附註解說明來源。
+       `_write_part_a_report()`／`_write_part_b_report()` 新增 `report_only: bool = False` 參數：
+       report_only=True 時檔頭另外印一段「本報表為 report-only 重產於 `<HEAD>`，未重跑 CLI／未重生任何
+       IR」＋真正量測 commit；B 報表「本次重生」「sha256（本次重生）」「本次執行的 stdout」「搬移前後
+       都算過」四處依模式改寫（report-only 時改寫成「`cda6b9b` 那次重生」「讀自 `output/material_r2/
+       runs/*.log`，本次未重新呼叫 `gen_ir_manual.py`」）；`cmd_part_a_report_only()`／
+       `cmd_part_b_report_only()` 呼叫時傳 `report_only=True`，`cmd_part_a()`／`cmd_part_b()`（真跑）維持
+       `report_only=False`（預設值，文字不變）。
+    3. **N3**（順手處理）：REPORT A §4 的 `actual_dims_m` 原本是 Python list repr（例如
+       `[12.19, 6.1, 6.1]`）原樣輸出，改成與估計尺寸同款的 `12.19×6.10×6.10m` 格式，純外觀、不改數值；
+       §3「已知實際尺寸對照表」的同一數字维持原樣未動（Opus 只點名 §4，不擴大範圍）。
+    4. 額外修了兩處反引號前漏空格的排版小問題（`778ac18`），不影響語意。
+  - **報表重產（未重跑 CLI、未重生 IR）**：
+    ```
+    $ python scripts/t48_geometry_material_r2.py partA-report-only
+    已寫入：output/geometry_r2/REPORT.md
+    Part A（只重產報表，未重新呼叫 CLI）完成：FAIL 筆數 = 1
+
+    $ python scripts/t48_geometry_material_r2.py partB-report-only
+    已寫入：output/material_r2/REPORT.md
+    已寫入：output/material_r2/CRITERIA_T12_v2.md
+    Part B（只重產報表，未重新生成任何 IR）完成：v2-a=PASS
+    v2-b=inconclusive（diff 子判準：首跑 FAIL，方法非決定性；ratio 子判準：PASS）
+    v1（不當門檻，僅記錄）=未達
+    ```
+  - **自我檢查 1：`git diff` 兩份 REPORT.md（證明只改了文字，數字沒變）**——`output/geometry_r2/REPORT.md`
+    只有檔頭多一行 report-only 說明、§4 的 `actual_dims_m` 格式化兩處變動；`output/material_r2/REPORT.md`
+    只有檔頭多一段、§0 之前的交付表欄名、§2 方法三句、§3 首句共五處文字改寫，**逐張表格數值、sha256、
+    T30／Sabine 數字、v2-a／v2-b／v1 判定結果全部逐位元不變**（實際 diff 只新增／改寫敘述性文字，無任何
+    數字 hunk）。
+  - **自我檢查 2：`git diff --stat -- src data scripts/gen_ir_manual.py`**：
+    ```
+    $ git diff --stat -- src data scripts/gen_ir_manual.py
+    （無輸出，空）
+    ```
+  - **自我檢查 3：`shasum -a 256 output/material_r2/*.wav`**：
+    ```
+    $ shasum -a 256 output/material_r2/*.wav
+    91d4af0f0b81dcd1715481552a2f8d82859a4f7ada712b37ed89a1c6174d41c7  output/material_r2/control_six_face_carpet.wav
+    fb9248d49229ba6a238701cbf759ad22ce1028a5f2ebb7861a6690c368838295  output/material_r2/control_six_face_gypsum_board.wav
+    0c3e1f6ddcbf856a82043ce3538ecf77e4078b45887ae11fe5928246e83f2fba  output/material_r2/per_wall_floor_carpet.wav
+    ```
+    三條與 `output/material_r2/REPORT.md` 交付檔案表逐字相同（逐條核對過），也與上一輪 `cbc117b`
+    自我檢查、Opus 修正輪複驗紀錄 W6 記錄的 sha256 一致——確認本輪未重生任何 IR。
+  - **自我檢查 4：`grep -n "本次重生\|也是唯一" output/material_r2/REPORT.md`**：
+    ```
+    $ grep -n "本次重生\|也是唯一" output/material_r2/REPORT.md
+    （無輸出，exit 1）
+    ```
+    另外精確核對「也是唯一交付」「本次執行的 stdout」兩個舊有矛盾片語同樣為零匹配（新增的
+    「也是唯一留存至今的交付版本」句子語意正確、不在被禁字句之列，不算矛盾殘留）。
+  - **自我檢查 5：20 支 `scripts/test_*.py` 全部 `EXIT=0`**——逐支重跑，`test_acoustics.py` 到
+    `test_t46_role_flag.py` 全數 `EXIT=0`，無一失敗。
+  - **文字更正（Q3，追加更正方式，原文不刪）**：本卡上方「B 部分結果」段落末尾追加一段
+    「第二修正輪更正（回應 Q3＝R2 殘留）」，把「另外跑了 4 次額外重跑」的次數描述更正為「至少兩輪
+    穩定性重跑（`dd03c0e`、`cda6b9b`，各每 case 4 次），只有 `cda6b9b` 那輪產物留存」；原句一字未刪。
+  - **N1**：本卡 §8 `implementation_commit`／`result_commit` 以「→ 修正輪追加」／「→ 第二修正輪追加」
+    行補上 `8bfe262`／`cbc117b`／`31f4a34`／`2fe9480`／`3c234c1`／`778ac18`，`result_commit` 的第二修正輪
+    行暫留「〈本輪收工 commit，收工時回填〉」，將在收工 commit 後另開一個小 commit 補上（沿用上一輪的
+    雜湊回填慣例）。
+  - **N2**：T-11 §8 `implementation_commit`／`result_commit` 兩行標題「Opus 更正」處，各追加一句澄清
+    「（第二修正輪澄清……本行『Opus 更正』文字由 Sonnet 依 Opus 驗證紀錄 R6 指示代筆，非 Opus 本人書寫）」；
+    原文一字未刪。T-12 §8 對應行本來就已註明「修正輪 Sonnet 執行」，不需再改。
+  - **清理**：本輪**未建立任何暫存路徑**（只讀既有 `output/geometry_r2/runs/`、`output/material_r2/`
+    既有檔案，`partA-report-only`／`partB-report-only` 皆不寫入任何新目錄，只覆寫兩份 `REPORT.md`／
+    `CRITERIA_T12_v2.md` 本身）——本輪需要刪除的路徑：**無**。`output/.archive/` 本輪未碰。
+  - **下一步**：開 Opus 新視窗複驗第二修正輪（對象＝本節之後的收工 commit），依「Sonnet 第二修正輪指示」
+    1～4 條逐項核對；通過後狀態改「工程：已驗證｜實驗：負向（A FAIL；B v2-a 正向〔同義反覆〕、
+    v2-b inconclusive）｜產品：不適用｜MVP：不適用（併入 T-17-R2）」——依 F1／F2 裁決，實驗軸不會因
+    修正輪變好；接著才進 T-54 → T-55 → T-17-R2（T-54／T-55／T-56 三份 criteria 草案仍等使用者核准，
+    本輪未動）。
 
 ### T-44-R1 role-aware 安全門檻重新驗證（實驗卡；裁決 T-45-A 執行卡 4/5；需使用者）
 - **狀態**：⬜ 未開始（**等使用者兩件事**：核准絕對品質下限、提供 held-out 照片）

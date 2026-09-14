@@ -1,6 +1,8 @@
 # T-48 A 部分 — T-11 域外出口無誤放重驗（判準 v2）
 
-> 產生日期：2026-09-14T09:32:50.504144+00:00　git_head：`8bfe262b33117bc9d5e5b0c8df4c33b247d9a48a`　git status --porcelain -- src data scripts：(空)
+> 產生日期：2026-09-14T10:03:31.525912+00:00　git_head：`778ac185f6e694c9ca8639c3e1f13021ed486595`　git status --porcelain -- src data scripts：(空)
+
+> **本報表為 report-only 重產於 `778ac185f6e694c9ca8639c3e1f13021ed486595`，未重跑 CLI**——13 張照片的真實 CLI 量測（`default`／`force_low_confidence` 兩次執行、寫入 `output/geometry_r2/runs/` 的原始 log）實際發生於 **量測 commit `714703d`**（Part A 最終程式版本，見 T-11 §8「Opus 更正」）；本次只讀既有 log 重新組字串／表格，數字不會、也不可能因此改變。
 
 判準 v2（事前鎖定，見 TASKS.md T-48 卡 §8）：實際最大維 >10m 的照片，`geometry_confidence` 必須為 low 且 gate 訊息含 `--override-dims` 導引；實際 ≤10m 且有 ground truth 的照片誤差 ≤ ±30%（目前只有浴室）。任一域外照片拿到 medium／high＝域外出口誤放，記 FAIL。
 
@@ -73,7 +75,7 @@
 根因（讀 `src/image_reverb/geometry.py` `apply_scope_confidence()` 唯讀確認，本卡未改動該函式）：環景量程規則檢查的是**單一視角的原始牆距**（`wall_distances_m` 逐值比對 `GEOMETRY_SCOPE_MAX_M`），不是相加後的房間全長——這是刻意設計（避免對牆相加把有效上限拉高到約 40m，見該函式 docstring）。但代價是：當房間的實際全長 >10m、卻是由兩側**個別皆 ≤10m** 的視角相加而成時（本例估計 16.10×9.39×5.55m，沒有任何單一視角讀數本身超過 10m），量程規則不會觸發，`geometry_confidence` 停在 medium——這正是 v2 判準想抓的「域外出口誤放」，如實記為 FAIL，不得用附註豁免（WORKFLOW §5.4.1）。
 
 **gate 實際擋在哪一軸**：預設路徑 `blocked=True`（`geometry_confidence=medium`、`materials_confidence=low`），擋下的軸＝materials。
-即：本張是被**材質軸**擋下，幾何軸維持 medium（未觸發 low），所以 gate 給的出口只有材質覆寫（低信心面：ceiling、north），**沒有**提供 `--override-dims` 這個出口——使用者如果只照 gate 訊息字面操作（覆寫上述材質面），程式不會再擋幾何，會直接用這張的**錯誤估計尺寸**（16.10×9.39×5.55m，實際 [12.19, 6.1, 6.1]）輸出 IR，exit 0。**這一步已由 Opus 驗證紀錄 V5（2026-09-14，驗證時 HEAD `153155b`）實測確認**：對 RacquetballCourt4 加 `--override-material north=gypsum_board --override-material ceiling=wood_panel` 後，`geometry=medium, materials=medium, overall=medium`、exit 0，以 16.10×9.39×5.55m 錯誤幾何（實際 12.19×6.10×6.10m）輸出 IR——即使用者依 gate 導引走完整個「怎麼繼續」流程仍會拿到錯誤空間的 IR。這是本卡交 Fable 的 F1 建議（修 `apply_scope_confidence()` 環景分支，裁決 T-48-F 已開 T-54 執行）的根本原因，本卡本身不改 `geometry.py`。
+即：本張是被**材質軸**擋下，幾何軸維持 medium（未觸發 low），所以 gate 給的出口只有材質覆寫（低信心面：ceiling、north），**沒有**提供 `--override-dims` 這個出口——使用者如果只照 gate 訊息字面操作（覆寫上述材質面），程式不會再擋幾何，會直接用這張的**錯誤估計尺寸**（16.10×9.39×5.55m，實際 12.19×6.10×6.10m）輸出 IR，exit 0。**這一步已由 Opus 驗證紀錄 V5（2026-09-14，驗證時 HEAD `153155b`）實測確認**：對 RacquetballCourt4 加 `--override-material north=gypsum_board --override-material ceiling=wood_panel` 後，`geometry=medium, materials=medium, overall=medium`、exit 0，以 16.10×9.39×5.55m 錯誤幾何（實際 12.19×6.10×6.10m）輸出 IR——即使用者依 gate 導引走完整個「怎麼繼續」流程仍會拿到錯誤空間的 IR。這是本卡交 Fable 的 F1 建議（修 `apply_scope_confidence()` 環景分支，裁決 T-48-F 已開 T-54 執行）的根本原因，本卡本身不改 `geometry.py`。
 
 
 

@@ -1,10 +1,12 @@
 # T-48 B 部分 — T-12 判準 v2 量測
 
-> 產生日期：2026-09-14T09:32:53.539675+00:00　git_head：`8bfe262b33117bc9d5e5b0c8df4c33b247d9a48a`　git status --porcelain -- src data scripts：(空)
+> 產生日期：2026-09-14T10:03:32.280614+00:00　git_head：`778ac185f6e694c9ca8639c3e1f13021ed486595`　git status --porcelain -- src data scripts：(空)
 
-三條 IR 由 `scripts/gen_ir_manual.py`（不改動，逐字沿用 T-12 卡「Opus 驗證結果」表格已記錄的指令）本次重生，交付到 `output/material_r2/`（紅線：不得重用 `output/` 舊 IR）：
+> **本報表為 report-only 重產於 `778ac185f6e694c9ca8639c3e1f13021ed486595`，未重跑 CLI／未重生任何 IR**——三條交付 WAV 的真實生成（`gen_ir_manual.py` 呼叫）實際發生於 **量測 commit `cda6b9b`**（本卡執行期間第三次「官方」重跑，也是唯一留存至今的交付版本）；本次只讀既有 WAV 與 log 重新量測（`t30_low_combined()`／`band_t30()` 對現存 bytes 直接計算）並重組文字，數字不會、也不可能因此改變。
 
-| case | 指令 | 房間 | 交付檔案 | sha256（本次重生） |
+三條 IR 由 `scripts/gen_ir_manual.py`（不改動，逐字沿用 T-12 卡「Opus 驗證結果」表格已記錄的指令）`cda6b9b` 那次重生，交付到 `output/material_r2/`（紅線：不得重用 `output/` 舊 IR）：
+
+| case | 指令 | 房間 | 交付檔案 | sha256（`cda6b9b` 那次重生） |
 |---|---|---|---|---|
 | per-wall：floor=carpet／其餘 gypsum_board（4×3×2.5m） | `python scripts/gen_ir_manual.py small --materials floor=carpet,walls=gypsum_board` | 4×3×2.5m | `output/material_r2/per_wall_floor_carpet.wav` | `0c3e1f6ddcbf856a82043ce3538ecf77e4078b45887ae11fe5928246e83f2fba` |
 | 對照組：六面 gypsum_board（4×3×2.5m） | `python scripts/gen_ir_manual.py small --materials floor=gypsum_board` | 4×3×2.5m | `output/material_r2/control_six_face_gypsum_board.wav` | `fb9248d49229ba6a238701cbf759ad22ce1028a5f2ebb7861a6690c368838295` |
@@ -27,15 +29,15 @@
 
 ## 2. 方法
 
-1. `scripts/gen_ir_manual.py`（**零改動**）依上表指令重生三條 IR，程式預設寫到 `output/`，本腳本立即搬到 `output/material_r2/`（sha256 在搬移前後都算過，確認 bytes 未在搬移過程變動）。
-2. v2-a：Sabine 125Hz 數字讀自 `gen_ir_manual.py` 本次執行的 stdout（程式印出，不手打）。
-3. v2-b／v1：讀 `src/image_reverb/ir_metrics.py` 既有函式——`t30_low_combined()`（T-18，88.4–353.6Hz 聯合帶）與 `band_t30(ir, fs, [125])`（單一 125Hz 八度，v1 字面條件用）——對本次重生的 WAV 直接量測，不重新實作任何頻段濾波／Schroeder 積分邏輯。
+1. `scripts/gen_ir_manual.py`（**零改動**）依上表指令重生三條 IR，程式預設寫到 `output/`，本腳本立即搬到 `output/material_r2/`（`cda6b9b` 那次生成時搬移前後都算過 sha256；本次 report-only 只讀既有交付 WAV 重新量測與重組文字，未搬移、未重新生成任何檔案）。
+2. v2-a：Sabine 125Hz 數字讀自 `gen_ir_manual.py` `cda6b9b` 那次執行的 stdout（讀自 `output/material_r2/runs/*.log`，本次未重新呼叫 `gen_ir_manual.py`）。
+3. v2-b／v1：讀 `src/image_reverb/ir_metrics.py` 既有函式——`t30_low_combined()`（T-18，88.4–353.6Hz 聯合帶）與 `band_t30(ir, fs, [125])`（單一 125Hz 八度，v1 字面條件用）——對 `cda6b9b` 那次重生的 WAV 直接量測，不重新實作任何頻段濾波／Schroeder 積分邏輯。
 4. `ir_metrics.py`、`src/`、`data/` 全程零 diff（本卡只呼叫既有函式，不修改）。
 
 
 ## 3. 附錄：量測穩定性檢查（不影響上方 §0 官方判定——§0 依裁決 T-48-F F2 記「首跑 FAIL、方法 inconclusive」，本次交付版本數字僅供參考）
 
-`gen_ir_manual.py` 呼叫的 pyroomacoustics ray tracing **沒有固定 random seed**（已實測：同一指令重跑兩次，輸出 WAV sha256 不同，樣本點最大絕對差約 0.099——見本卡交接筆記）。§0 的官方判定只用**每個 case 第一次（也是唯一交付到 `output/material_r2/` 的那次）重生結果**，不做多次重跑取平均（判準本身沒有要求，本卡也不得另外發明「取平均」這種未鎖定的判定方式）。
+`gen_ir_manual.py` 呼叫的 pyroomacoustics ray tracing **沒有固定 random seed**（已實測：同一指令重跑兩次，輸出 WAV sha256 不同，樣本點最大絕對差約 0.099——見本卡交接筆記）。**§0 的官方 verdict＝首跑（`d372ad9`）；本附錄與 §1 的數字量自 `cda6b9b` 生成的交付 WAV**（見上方交付檔案表），不做多次重跑取平均（判準本身沒有要求，本卡也不得另外發明「取平均」這種未鎖定的判定方式）。
 
 為了讓 Opus／Fable 判斷 v2-b 這筆 **PASS**（本次交付版本，-19.9%）是否落在量測噪聲量級內，這裡**額外**重跑 per_wall／control_gypsum 各 4 次（存於 `output/material_r2/stability_check/`，與正式交付檔案分開，不算入判定）：
 

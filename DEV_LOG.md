@@ -1,5 +1,29 @@
 # Dev Log
 
+## 2026-09-14 (140)
+
+- **T-48 第二修正輪完成（Sonnet 執行）——現在該做的是開 Opus 新視窗複驗**，結果 commit 見本次收工 commit。
+  回應 Opus 修正輪複驗紀錄（對象 `8bfe262`＋`cbc117b`）退回理由 Q1～Q3，順手處理 N1～N3，範圍依「Sonnet 第二
+  修正輪指示」1～4 條：Q1（R4 殘留）＝`scripts/t48_geometry_material_r2.py` `_write_stability_appendix()` 那句
+  「§0 的官方判定只用每個 case 第一次（也是唯一交付……）」改成與 §0 一致（官方 verdict＝首跑 `d372ad9`，數字
+  量自 `cda6b9b` 交付 WAV）；Q2（溯源失實）＝新增 `PART_A_MEASUREMENT_COMMIT`（`714703d`）／
+  `PART_B_MEASUREMENT_COMMIT`（`cda6b9b`）具名常數，`_write_part_a_report()`／`_write_part_b_report()` 加
+  `report_only` 參數，report-only 檔頭另列「本報表為 report-only 重產於 `<HEAD>`，未重跑 CLI／未重生 IR」＋
+  真正量測 commit，B 報表「本次重生」「本次執行的 stdout」「搬移前後都算過」依模式改寫；Q3（R2 殘留）＝卡片
+  「B 部分結果」段落以追加更正方式修正次數敘述（原文不刪：至少兩輪穩定性重跑 `dd03c0e`／`cda6b9b` 各每 case
+  4 次，只有 `cda6b9b` 那輪產物留存）；N1＝T-48 §8 補 commit 引用；N2＝T-11 §8「Opus 更正」兩行追加代筆澄清；
+  N3＝REPORT A §4 尺寸格式化為 `12.19×6.10×6.10m`。
+- **腳本修正 commit `3c234c1`＋排版微調 `778ac18`**，只改 `scripts/t48_geometry_material_r2.py` 一檔；`src`／
+  `data`／`scripts/gen_ir_manual.py` 全程零 diff。全程只跑 `partA-report-only`／`partB-report-only`，未呼叫
+  `gen_ir_manual.py`、未重跑 Part A CLI，`output/geometry_r2/runs/`／`output/material_r2/*.wav` 全程未碰。
+- **自我檢查全部通過**：兩份 REPORT.md 的 `git diff` 只有敘述性文字變動、逐位元核對數值不變；
+  `git diff --stat -- src data scripts/gen_ir_manual.py` 為空；`shasum -a 256 output/material_r2/*.wav` 三條
+  與 REPORT 記錄相同；`grep -n "本次重生\|也是唯一" output/material_r2/REPORT.md` 零匹配；20 支
+  `scripts/test_*.py` 全 `EXIT=0`。本輪未新增任何暫存路徑，清理項為「無」；`output/.archive/` 未碰。
+- **下一步**：開 Opus 新視窗，依「Sonnet 第二修正輪指示」1～4 條逐項複驗（對象＝本次收工 commit）→ 通過後
+  「工程：已驗證｜實驗：負向（A FAIL；B v2-a 正向〔同義反覆〕、v2-b inconclusive）」→ T-54 → T-55 → T-17-R2。
+  詳見 TASKS.md T-48 卡「交接筆記（第二修正輪，Sonnet 執行，2026-09-14）」。
+
 ## 2026-09-14 (139)
 
 - **T-48 修正輪 Opus 複驗——🟠 工程退回（範圍很窄，只剩報表文字）**。對象 `8bfe262`＋`cbc117b`，驗證時 HEAD `dc4fb27`。

@@ -175,7 +175,16 @@
       MVP：不適用（沿用 T-17 FAIL）。Opus scratchpad 重算 `dataset_manifest_sha256`＝`c15d0a14…2b01a7`，與 T-47 §8 回填值、
       HEAD manifest blob 三方相同；ground truth＝`965e51ac…`；26/26 CLI 指紋 `photo_sha256` 相符；commit 恰五檔；
       TASKS diff 只三個合法 hunk；20 支測試 EXIT=0、六條 IR MD5 全中。詳見 TASKS.md T-51 卡「✅ Opus 驗證紀錄」。
-- [ ] **T-48** T-11／T-12 判準 v2 針對性重驗——**🟠 工程退回（Opus 修正輪複驗 2026-09-14，對象 `8bfe262`＋`cbc117b`）**。四軸：工程：退回｜實驗：負向（A FAIL；B v2-a 正向〔同義反覆〕、v2-b inconclusive）｜產品：不適用｜MVP：不適用。R1／R3／R5～R8、F3、第 7／8 條 Opus 實測修妥（六條 IR MD5 自跑全中、20 支測試 EXIT=0、`src`／`data` 零 diff）；退回只因報表文字：Q1 material REPORT §3 首段仍稱「交付版＝官方」與 §0 矛盾、Q2 report-only 重產後檔頭 HEAD 變 `8bfe262` 卻未註明量測 commit、B 內文仍寫「本次重生」、Q3 卡片「4 次額外重跑」次數仍不實。**下一步：Sonnet 第二修正輪（只改腳本報表文字＋卡片；仍禁止重生 IR／重跑 CLI）→ Opus 複驗**（詳見 TASKS.md T-48 卡「🟠 Opus 修正輪複驗紀錄」）。
+- [ ] **T-48** T-11／T-12 判準 v2 針對性重驗——**🔵 待審（第二修正輪，Sonnet 2026-09-14；結果 commit 待回填，腳本修正 commit `3c234c1`＋`778ac18`）**。
+      原 🟠 工程退回（Opus 修正輪複驗 2026-09-14，對象 `8bfe262`＋`cbc117b`）理由 Q1～Q3 已於第二修正輪逐項處理：Q1＝腳本
+      `_write_stability_appendix()` 與 §0 矛盾的字串改成一致（官方 verdict＝首跑 `d372ad9`，數字量自 `cda6b9b` 交付 WAV）；
+      Q2＝新增 `PART_A_MEASUREMENT_COMMIT`／`PART_B_MEASUREMENT_COMMIT` 具名常數，report-only 檔頭另列量測 commit 與
+      「未重跑 CLI／未重生 IR」聲明，B 報表「本次重生」等字句依模式改寫；Q3＝卡片以追加更正方式修正次數敘述（原文不刪）。
+      N1～N3（非退回，順手處理）：T-48／T-11 §8 追加 commit 引用與代筆澄清；REPORT A §4 尺寸格式化。全程只跑
+      `partA-report-only`／`partB-report-only`，`src`／`data`／`scripts/gen_ir_manual.py` 零 diff、20 支測試 EXIT=0、
+      三條交付 WAV sha256 不變。**下一步：開 Opus 新視窗複驗第二修正輪**（詳見 TASKS.md T-48 卡「交接筆記（第二修正輪，
+      Sonnet 執行，2026-09-14）」）；通過後四軸：工程：已驗證｜實驗：負向（A FAIL；B v2-a 正向〔同義反覆〕、
+      v2-b inconclusive）｜產品：不適用｜MVP：不適用（併入 T-17-R2）。
       （以下為 Sonnet 修正輪原記錄，保留：）🔵 待審（修正輪，Sonnet 2026-09-14；結果 commit `cbc117b`）。原
       🟠 工程退回（Opus 2026-09-14，對象 `012a07f`）理由 R1～R8 已於修正輪逐項處理：R1／R2 卡片文字直接更正、
       R3／R4／R5／R7 為 `scripts/t48_geometry_material_r2.py` 報表產生邏輯修正（commit `8bfe262`，未改任何量測數值／判準）、
