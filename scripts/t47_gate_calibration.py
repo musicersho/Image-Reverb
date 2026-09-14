@@ -172,6 +172,19 @@ def gate_of(analysis: dict) -> str:
     return "BLOCK" if analysis["confidence"] == "low" else "pass"
 
 
+def _gate_from_overall(overall: str) -> str:
+    """依 `_overall_confidence()` 回傳的 low/medium/high 換算 gate（與 `gate_of()`
+    對 CLI `analysis.json` 的換算規則同一條：overall=="low" → BLOCK，否則 pass）。"""
+    return "BLOCK" if overall == "low" else "pass"
+
+
+def _strip_conf_label(value: str) -> str:
+    """`simulate_narrow_clip_downgrade()` 可能回傳帶註解的字串（例如
+    `low（模擬：候選集收窄的 clip 面不得直接 medium）`），丟進 `_overall_confidence()`
+    前先取出純 low/medium/high，否則會 KeyError；表格顯示仍用原始帶註解字串。"""
+    return value.split("（", 1)[0]
+
+
 def parse_args(argv: list[str]) -> tuple[Path, bool]:
     fresh = "--fresh" in argv
     out_dir = DEFAULT_OUT_DIR
@@ -305,7 +318,10 @@ def build_surface_from_sim(payload: dict, method_sim: dict[str, str]) -> Surface
     return surf
 
 
-def run_threshold_n_simulation(all_data: dict[str, dict], role_aware: bool, geometry_by_photo: dict[str, str]) -> list[dict]:
+def run_threshold_n_simulation(
+    all_data: dict[str, dict], role_aware: bool, geometry_by_photo: dict[str, str],
+    gate_by_photo: dict[str, str],
+) -> list[dict]:
     rows = []
     for item in t36.GATE_ITEMS:
         name = item["name"]
@@ -328,10 +344,13 @@ def run_threshold_n_simulation(all_data: dict[str, dict], role_aware: bool, geom
         # 唯讀呼叫現行 compute_materials_confidence()（規則 1～4 零改動），不重新
         # 實作評分邏輯——只有餵進去的 surf_sim（method 依模擬門檻重算）是模擬的。
         materials_sim = surfaces_mod.compute_materials_confidence(surf_sim)
-        gate_sim = _overall_confidence(geometry_by_photo[name], materials_sim)
+        overall_sim = _overall_confidence(geometry_by_photo[name], materials_sim)
         rows.append({
             "photo": name, "flips": flips,
-            "materials_sim": materials_sim, "gate_sim": gate_sim,
+            "materials_sim": materials_sim,
+            "actual_gate": gate_by_photo[name],
+            "overall_sim": overall_sim,
+            "gate_sim": _gate_from_overall(overall_sim),
         })
     return rows
 
@@ -354,6 +373,24 @@ def simulate_narrow_clip_downgrade(
         if payload["sources"].get(name) == "clip" and ROLE_OF_FACE[name] in narrowed_roles:
             return "low（模擬：候選集收窄的 clip 面不得直接 medium）"
     return base
+
+
+def build_sim_b_row(
+    name: str, mode: str, cli_data: dict, detail_data: dict,
+    geometry_by_photo: dict[str, dict[str, str]], gate_by_photo: dict[str, dict[str, str]],
+) -> dict:
+    materials_sim = simulate_narrow_clip_downgrade(detail_data[mode][name], mode == "role_aware")
+    # 唯讀呼叫現行 _overall_confidence()（gate rank 單一事實來源，零改動）——
+    # materials_sim 可能帶模擬註解文字，先取出純 low/medium/high 再餵進去。
+    overall_sim = _overall_confidence(geometry_by_photo[mode][name], _strip_conf_label(materials_sim))
+    return {
+        "photo": name,
+        "materials_real": cli_data[mode][name]["materials_confidence"],
+        "materials_sim": materials_sim,
+        "actual_gate": gate_by_photo[mode][name],
+        "overall_sim": overall_sim,
+        "gate_sim": _gate_from_overall(overall_sim),
+    }
 
 
 # ------------------------------------------------------------------
@@ -539,19 +576,26 @@ def main() -> int:
 
     # ---------------- ⑦(a)(b) 唯讀模擬 ----------------
     sim_a_rows = {
-        mode: run_threshold_n_simulation(detail_data[mode], mode == "role_aware", geometry_by_photo[mode])
+        mode: run_threshold_n_simulation(
+            detail_data[mode], mode == "role_aware", geometry_by_photo[mode], gate_by_photo[mode]
+        )
         for mode in MODES
     }
     sim_b_rows = {
         mode: [
-            {
-                "photo": name,
-                "materials_real": cli_data[mode][name]["materials_confidence"],
-                "materials_sim": simulate_narrow_clip_downgrade(detail_data[mode][name], mode == "role_aware"),
-            }
+            build_sim_b_row(name, mode, cli_data, detail_data, geometry_by_photo, gate_by_photo)
             for name in detail_data[mode]
         ]
         for mode in MODES
+    }
+    actual_pass_counts = {
+        mode: sum(1 for g in gate_by_photo[mode].values() if g == "pass") for mode in MODES
+    }
+    sim_a_pass_counts = {
+        mode: sum(1 for r in sim_a_rows[mode] if r["gate_sim"] == "pass") for mode in MODES
+    }
+    sim_b_pass_counts = {
+        mode: sum(1 for r in sim_b_rows[mode] if r["gate_sim"] == "pass") for mode in MODES
     }
 
     # ---------------- 寫 tables.md / REPORT.md ----------------
@@ -572,6 +616,8 @@ def main() -> int:
         pass_case_rows=pass_case_rows, known_error_gate=known_error_gate,
         n_nine_faces=n_nine_faces, n_nine_faces_ok=n_nine_faces_ok,
         n_photos=len(t36.GATE_ITEMS),
+        actual_pass_counts=actual_pass_counts,
+        sim_a_pass_counts=sim_a_pass_counts, sim_b_pass_counts=sim_b_pass_counts,
     )
     (out_dir / "REPORT.md").write_text(report_md, encoding="utf-8")
 
@@ -665,8 +711,9 @@ def build_tables_md(
         parts.append(f"\n### `{mode}` 模式\n")
         rows = sim_a_rows[mode]
         parts.append(_md_table(
-            ["照片", "會翻轉的面（method 變化＋等效門檻）", "模擬 materials", "模擬 gate"],
-            [[r["photo"], "；".join(r["flips"]) if r["flips"] else "（無）", r["materials_sim"], r["gate_sim"]] for r in rows],
+            ["照片", "會翻轉的面（method 變化＋等效門檻）", "模擬 materials", "實際 gate", "模擬 overall", "模擬 gate"],
+            [[r["photo"], "；".join(r["flips"]) if r["flips"] else "（無）", r["materials_sim"],
+              r["actual_gate"], r["overall_sim"], r["gate_sim"]] for r in rows],
         ))
 
     parts.append(
@@ -677,8 +724,10 @@ def build_tables_md(
         parts.append(f"\n### `{mode}` 模式\n")
         rows = sim_b_rows[mode]
         parts.append(_md_table(
-            ["照片", "實際 materials_confidence", "模擬 materials_confidence"],
-            [[r["photo"], r["materials_real"], r["materials_sim"]] for r in rows],
+            ["照片", "實際 materials_confidence", "模擬 materials_confidence",
+             "實際 gate", "模擬 overall", "模擬 gate"],
+            [[r["photo"], r["materials_real"], r["materials_sim"],
+              r["actual_gate"], r["overall_sim"], r["gate_sim"]] for r in rows],
         ))
 
     return "\n".join(parts) + "\n"
@@ -688,6 +737,7 @@ def build_report_md(
     *, out_dir, fresh, code_fp, accuracy_by_mode, error_types_by_mode,
     in_set_error_in_pass, scored_faces_in_pass, pass_case_rows, known_error_gate,
     n_nine_faces, n_nine_faces_ok, n_photos,
+    actual_pass_counts, sim_a_pass_counts, sim_b_pass_counts,
 ) -> str:
     hard_table = _md_table(
         ["硬（欄位）", "值"],
@@ -756,9 +806,13 @@ def build_report_md(
         f"（程式化核對，{n_nine_faces_ok}/{n_nine_faces} 通過）。\n\n"
         "⑥ 門檻敏感度（表 7' 型）按角色、按模式各一張——見 tables.md 表 6。\n\n"
         "⑦ 兩種唯讀模擬（只算不採用，`compute_materials_confidence()`／gate 判定段／門檻 0.4 零改動）：\n"
-        "  (a) 門檻依候選數 n 調整（等效全域 16 候選 softmax 的機率門檻）對 gate 的影響——見 tables.md 表 7；\n"
+        "  (a) 門檻依候選數 n 調整（等效全域 16 候選 softmax 的機率門檻）對 gate 的影響——見 tables.md 表 7；"
+        f"模擬後 pass 張數／實際 pass 張數：`default` {sim_a_pass_counts['default']}/{actual_pass_counts['default']}、"
+        f"`role_aware` {sim_a_pass_counts['role_aware']}/{actual_pass_counts['role_aware']}。\n"
         "  (b) `compute_materials_confidence()` 規則 4 加「候選集收窄的 clip 面不得直接 medium」對 gate 的影響"
-        "——見 tables.md 表 8。\n\n"
+        "——見 tables.md 表 8；"
+        f"模擬後 pass 張數／實際 pass 張數：`default` {sim_b_pass_counts['default']}/{actual_pass_counts['default']}、"
+        f"`role_aware` {sim_b_pass_counts['role_aware']}/{actual_pass_counts['role_aware']}。\n\n"
     )
     lines.append(
         "## ⚠️ 本卡不下結論（範圍紅線）\n\n"
