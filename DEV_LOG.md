@@ -1,5 +1,16 @@
 # Dev Log
 
+## 2026-09-14 (139)
+
+- **T-48 修正輪 Opus 複驗——🟠 工程退回（範圍很窄，只剩報表文字）**。對象 `8bfe262`＋`cbc117b`，驗證時 HEAD `dc4fb27`。
+- Opus 自跑成立：六條 IR MD5 全中（四條以 `OUTPUT_ROOT` 導向 scratchpad 呼叫 CLI、T-14 兩條由 `test_ir_synth.py`【6】）；20 支測試 EXIT=0；
+  `git diff 012a07f HEAD -- src data scripts/gen_ir_manual.py` 空；report-only 自己重產與提交版逐位元相同（除檔頭）；13 份 log 獨立解析與 §1 新欄逐列相符；
+  交付 WAV sha256／T30／倍數／穩定性範圍自算相符。R1／R3／R5／R6／R7／R8、F3、第 7／8 條修妥。
+- 退回理由：Q1 `material_r2/REPORT.md` §3 首段「官方判定只用唯一交付的那次」與 §0「官方＝首跑 d372ad9」矛盾（腳本 :666 漏改）；Q2 report-only 重產後檔頭
+  `git_head` 變 `8bfe262` 卻未註明量測 commit（A＝714703d／B＝cda6b9b），B 內文仍寫「本次重生／本次執行」；Q3 卡片「4 次額外重跑」次數仍不實（至少兩輪）。
+- 四軸：工程：退回｜實驗：負向（A FAIL；B v2-a 正向〔同義反覆〕、v2-b inconclusive）｜產品：不適用｜MVP：不適用。未開 §7 變更。
+- **下一步**：Sonnet 第二修正輪（只改 `t48_geometry_material_r2.py` 報表文字＋卡片，仍 report-only）→ Opus 複驗。Opus 本輪專案 `output/` 零新增零刪除、`.archive` 未碰。
+
 ## 2026-09-14 (138)
 
 - **T-52 步驟 4(ii) 更正已落地（Fable；使用者核准 2026-09-14）**：獨立 commit `1b36c27`（`criteria: T-52 步驟 4(ii) 更正…`，只含 TASKS.md T-52 卡追加

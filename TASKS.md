@@ -10866,7 +10866,21 @@ EOF
 - **交接筆記**：
 
 ### T-48 T-11／T-12 判準第二版針對性重驗（量測卡；裁決 T-45-A 執行卡 3/5；`src/` 零改動）
-- **狀態**：🔵 **待審（修正輪，Sonnet 2026-09-14；結果 commit `cbc117b`，腳本修正 commit `8bfe262`）**——回應下方「🟠 Opus 驗證紀錄」
+- **狀態**：🟠 **工程退回（Opus 修正輪複驗 2026-09-14；對象 `8bfe262`＋`cbc117b`，驗證時 HEAD `dc4fb27`；只審不改碼）**——
+  R1／R3／R5／R6／R7／R8、F3、第 7／8 條 **Opus 實測修妥**（六條 IR MD5 自跑全中、`src`／`data` 零 diff、20 支測試 EXIT=0、
+  報表 report-only 自己重產逐位元相同、13 張 log 自己解析與 §1 表逐列相符、三條交付 WAV sha256／T30 自己重算相符）；
+  退回只因 **REPORT 文字仍與事實／§0 矛盾（WORKFLOW §5.4.1、紅旗 6）**：**(Q1＝R4 殘留)** `output/material_r2/REPORT.md` §3 首段
+  仍寫「§0 的官方判定只用每個 case 第一次（也是唯一交付到 `output/material_r2/` 的那次）重生結果」——與 §0「官方＝首跑
+  `d372ad9`、交付檔是第三次 `cda6b9b`」正面矛盾（腳本 `:666` 寫死字串，`8bfe262` 漏改）；**(Q2 溯源失實)** 兩份 REPORT
+  經 report-only 重產後檔頭 `git_head` 變成 `8bfe262`，卻未註明「本報表為 report-only 重產、量測發生於 A＝`714703d`／
+  B＝`cda6b9b`」；B 報表內文仍寫「本次重生」「sha256（本次重生）」「sha256 在搬移前後都算過」「讀自本次執行的 stdout」
+  （腳本 `:760`／`:762`／`:801`／`:802`／`:805`）——在 `8bfe262` 並未重生任何 IR，屬 T-48-S (a)「歷史標記誠實」違反；
+  **(Q3＝R2 殘留)** 卡片更正寫「另外跑了 4 次額外重跑（每個 case 各 4 次）」仍不實：R2 已記錄穩定性重跑至少兩輪
+  （`dd03c0e`、`cda6b9b` 各每 case 4 次），僅 `cda6b9b` 那輪產物殘存。**逐項證據與修正指示見本卡末「🟠 Opus 修正輪複驗紀錄（2026-09-14）」。**
+- **四軸狀態（Opus 修正輪複驗，2026-09-14）**：工程：退回｜實驗：負向（A：RacquetballCourt4 域外出口誤放 FAIL；B：v2-a 正向
+  〔同義反覆〕、v2-b inconclusive——diff 子判準首跑 FAIL、方法非決定性，ratio 子判準 PASS）｜產品：不適用｜MVP：不適用（併入 T-17-R2）
+  （以下保留 Sonnet 修正輪原狀態與四軸，不覆寫：）
+- **狀態（Sonnet 修正輪原狀態，保留）**：🔵 **待審（修正輪，Sonnet 2026-09-14；結果 commit `cbc117b`，腳本修正 commit `8bfe262`）**——回應下方「🟠 Opus 驗證紀錄」
   退回理由 R1～R8 全部處理，範圍依同段「Sonnet 修正輪指示」1～5 條＋裁決 T-48-F 追加第 6～8 條：
   R1／R2 直接更正卡片文字（本卡下方 A/B 部分結果段落、T-11／T-12 §8，原文一字未刪，只加更正）；
   R3／R4／R5／R7 是 `scripts/t48_geometry_material_r2.py` 的報表產生邏輯修正（commit `8bfe262`，只改文字／標籤產生方式，
@@ -11258,6 +11272,61 @@ EOF
     B v2-a 正向〔同義反覆〕、v2-b inconclusive）｜產品：不適用｜MVP：不適用（併入 T-17-R2）」——
     依 F1／F2 裁決，實驗軸不會因修正輪變好；接著才進 T-54 → T-55 → T-17-R2（T-54／T-55／T-56
     三份 criteria 草案仍等使用者核准，本輪未動）。
+
+- **🟠 Opus 修正輪複驗紀錄（2026-09-14；對象 `8bfe262`＋`cbc117b`＋`31f4a34`／`2fe9480`，驗證時 HEAD `dc4fb27`；只審不改碼）**
+  - **四軸判定**：工程：退回｜實驗：負向（A FAIL；B v2-a 正向〔同義反覆〕、v2-b inconclusive）｜產品：不適用｜MVP：不適用（併入 T-17-R2）
+  - **Opus 自己實跑的驗證（不採信交接筆記貼上的輸出）**：
+    - W1 範圍：`git diff --stat 012a07f HEAD -- src data scripts/gen_ir_manual.py` 與 `git diff --stat b1e4edf HEAD -- 同` **皆空**；
+      `8bfe262` 只改 `scripts/t48_geometry_material_r2.py` 一檔；`cbc117b` 六檔（DEV_LOG／HANDOFF／TASKS／TODO＋兩份 REPORT）；
+      驗證期間另一視窗提交的 `1b36c27`／`dc4fb27` 只動 T-52 段與 DEV_LOG／HANDOFF／TODO，不涉 T-48。
+    - W2 **R8 六條 IR MD5（全部自己驗）**：以 `pipeline.OUTPUT_ROOT` 導向 scratchpad 呼叫 `cli.main()`（不寫專案 `output/`，事後
+      `find output -newermt` 為空）：`--text 浴室`＝`2adbaa75eb698772a8c9aa693179ec47`、`--text 大教堂`＝`2dd19b6e6d351d713887636fe45cd67e`、
+      `--scene neighbor_voices.json`＝`9a94ffdf5d8295aee7889729c39c9cd8`、`--scene stadium_corridor.json`＝`a1c21bcc3fd9aa3480df203a89c8cd05`，
+      四條 rc=0 **MATCH**；T-14 兩條由 `test_ir_synth.py`【6】自跑：`small_surf_carpet`＝`f3a763be…`、`hall`＝`f24353b5…` 與交付版相同。**R8 修妥。**
+    - W3 全套測試：20 支 `scripts/test_*.py` Opus 逐支自跑 **全部 EXIT=0**；跑前後 `find output -mindepth 1 -maxdepth 3` 清單 diff 為空。
+    - W4 report-only 可重現性：把 `output/geometry_r2`／`material_r2` 複製到 scratchpad（B 部分以攔截 `write_text` 導出、讀真實 WAV），
+      自跑 `cmd_part_a_report_only()`／`cmd_part_b_report_only()`，產出與已提交 `REPORT.md`／`CRITERIA_T12_v2.md` **除第 3 行檔頭外逐位元相同**。
+    - W5 **R7**：Opus 用獨立 grep 解析 13 份 `runs/*/default.log`（confidence 行、「已擋下輸出」、「幾何不可信 → 用 --override-dims」、
+      `--override-material`）——13 張 blocked 全是、geometry／materials／導引有無與 REPORT §1 新欄**逐列相符**；RacquetballCourt4
+      log 原文＝`geometry=medium, materials=low`、出口只有 `--override-material north／ceiling`，§4 補寫的「被材質軸擋、照導引覆寫即以
+      錯誤幾何放行（引用 V5）」屬實。**R7 修妥。**
+    - W6 Part B 數值：三條交付 WAV sha256（`0c3e1f6d…`／`fb9248d4…`／`91d4af0f…`）與 REPORT 相符、mtime 仍 15:32:58–15:33:05（未重生）；
+      `t30_low_combined()` 自算 0.9650／1.2052／3.8319s、差 −19.93%、倍數 3.971；`band_t30` 125Hz 0.7074s；`stability_check/` 交叉範圍
+      −23.1%～−12.3%；`runs/per_wall.log` Sabine 125Hz 0.348。**與 REPORT §0／§1／§3 全部相符。**
+    - W7 **R5**：REPORT §0 v2-b＝「inconclusive（diff 首跑 `d372ad9` −21.1% FAIL、方法非決定性；ratio PASS）」、交付版數字降為次要；T-12 §8
+      追加行同義。**R5 修妥。** **R3**：歷史表兩筆標「執行者自述、無殘存產物、不可複核」，常數 `FIRST_RUN_V2B_*` 有註解說明來源——依修正輪指示第 2 條可接受。
+    - W8 **R6**：`git show --stat` 核對——`469abef`／`714703d`／`d372ad9`／`e1183b9` 皆只改腳本，兩份 REPORT 首次進版控＝`012a07f`
+      （`--diff-filter=A` 確認）；T-11／T-12 §8 追加的更正**屬實**。**R6 修妥。** **R1**：現行摘要與 REPORT 一致，「12/13」只剩標為「原」的歷史保留文字。**R1 修妥。**
+    - W9 **F3**：REPORT §1／§3 與 T-11 §8 `car_interior_suv`＝inconclusive＋v3 `domain_out_non_room`；分類邏輯只改標籤。**修妥。**
+      **第 7 條**：T-11 §8 change_record 追加 T-54／T-55、T-12 §8 追加 T-56／v2-a 同義反覆。**修妥。** **第 8 條**：未碰 `gen_ir_manual.py`／`src`／WAV／`runs/`。**遵守。**
+    - W10 清理聲明：`output/.archive/` 現存 10 個 stem（15:55–16:04 建立）完好；根目錄 mtime 17:24:53 來自 `test_output_gate.py` 自建自清的測試 stem
+      （該測試 `:302-306` 明文），非手動刪除。R8 覆寫的 `output/text_*`／`neighbor_voices`／`stadium_corridor` 為既有 gitignored 目錄、MD5 不變，可接受。
+  - **退回理由（WORKFLOW §5.4.1「報告互相一致」＋紅旗 6；皆為報表／卡片文字，非量測或判準問題）**：
+    - **Q1（R4 殘留）**：`output/material_r2/REPORT.md` §3 首段「§0 的官方判定只用**每個 case 第一次（也是唯一交付到 `output/material_r2/` 的那次）**
+      重生結果」與 §0（官方＝首跑 `d372ad9` −21.1%；交付檔＝第三次 `cda6b9b` −19.9%）正面矛盾。來源＝腳本 `_write_stability_appendix()` `:666` 寫死字串，
+      `8bfe262` 改了同函式其他句子卻漏此句。這正是 R4／R5 要消除的「交付版＝官方」敘述。
+    - **Q2（溯源失實）**：report-only 重產後，兩份 REPORT 檔頭 `git_head` 由量測當時的 `714703d`（A）／`e1183b9`（B）變成 `8bfe262`，且**未註明**
+      本報表是 report-only 重產、量測實際發生在哪個 commit（A：CLI 於 `714703d` 執行；B：交付 WAV 於 `cda6b9b` 生成）。B 報表內文更寫「三條 IR 由
+      `gen_ir_manual.py` **本次重生**」「sha256（**本次重生**）」「sha256 在搬移前後都算過」「Sabine 讀自 `gen_ir_manual.py` **本次執行**的 stdout」「對**本次重生**的 WAV
+      直接量測」（腳本 `:760`／`:762`／`:801`／`:802`／`:805`）——在 `8bfe262` 這次產生時一條 IR 都沒重生，文字與事實矛盾。T-48-S (a) 要求檔頭
+      溯源「歷史標記誠實」；A 報表 §5 雖有 report-only 說明，檔頭仍缺量測 commit。
+    - **Q3（R2 殘留）**：本卡「B 部分結果」更正為「另外跑了 **4 次**額外重跑（每個 case 各 4 次）」——R2 原文已指出穩定性重跑至少兩輪（`dd03c0e`、`cda6b9b`
+      各每 case 4 次，另有手動 sha256 對比），只有 `cda6b9b` 那輪留在 `stability_check/`。現寫法把次數寫少，仍與已記錄事實不符。
+  - **不構成退回、但請一併處理**：(N1) T-48 §8 `implementation_commit`／`result_commit` 尚未追加 `8bfe262`／`cbc117b`（現行 REPORT 內容來自
+    `cbc117b`）——複驗通過時由 Opus 追加，或修正輪以「→ 修正輪追加」行先補；(N2) T-11 §8 `:585`／`:586`／`:591` 追加行標「Opus 更正」，實為 Sonnet
+    依指示代筆（T-12 §8 已註明「修正輪 Sonnet 執行」，T-11 未註）——可追加一句澄清，不刪原文；(N3) REPORT A §4「實際 [12.19, 6.1, 6.1]」是 Python list
+    原樣輸出，建議格式化為 12.19×6.10×6.10m（純外觀）。
+  - **Sonnet 第二修正輪指示（範圍更窄；不改判準、不改 `src/`、不動 `runs/`／WAV）**：
+    1. 腳本 `:666` 那句改成與 §0 一致（例如「§0 的官方 verdict＝首跑 `d372ad9`；本附錄與 §1 的數字量自 `cda6b9b` 生成的交付 WAV」）。
+    2. report-only 兩模式：檔頭**另列**「量測 commit」（A＝`714703d`、B＝`cda6b9b`，以具名常數＋註解標來源，或由 WAV／log mtime 對應 commit 時序說明）與
+       「本報表為 report-only 重產於 <HEAD>，未重跑 CLI／未重生 IR」；B 報表 `:760`／`:762`／`:801`／`:802`／`:805` 的「本次重生／本次執行／搬移前後」
+       依模式改寫（report-only 時寫「`cda6b9b` 那次重生」「讀自 `runs/*.log`」）。
+    3. 卡片 Q3 以追加更正方式修次數敘述；N1～N3 可順手處理。
+    4. 仍一律 `partA-report-only`／`partB-report-only`；**禁止**呼叫 `gen_ir_manual.py` 或重跑 Part A CLI。交接筆記附 `git diff` 兩份 REPORT 的輸出。
+  - **§7 變更控制**：本輪未發現門檻本身錯誤（v2 車內文字矛盾已由裁決 T-48-F F3 處置），不開 criteria 變更。
+  - **§8 reviewer／verdict 欄位**：工程仍退回，暫不填（實驗軸判定已確定如上，待第二修正輪複驗通過時一併填）。
+  - **本輪 Opus 建立並清理的路徑（鐵則 15）**：只在 scratchpad 建立 `md5_out/`（四個 text/scene 輸出）、`regen/`（兩份 REPORT 複本）、`md5_check.py`、`regen.py`、
+    `regen_b.py`、`test_*.log`、`output_before.txt`／`output_after.txt`；**專案 `output/` 未新增、未刪除任何路徑，`output/.archive/` 未碰**。scratchpad 為 session 暫存區，不需手動清理。
 
 ### T-44-R1 role-aware 安全門檻重新驗證（實驗卡；裁決 T-45-A 執行卡 4/5；需使用者）
 - **狀態**：⬜ 未開始（**等使用者兩件事**：核准絕對品質下限、提供 held-out 照片）
