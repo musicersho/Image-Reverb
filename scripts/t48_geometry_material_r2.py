@@ -29,6 +29,9 @@ sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 
 from t36_clip_accuracy import GATE_ITEMS  # noqa: E402  （唯讀引用，13 張清單，唯一可信來源）
 
+import soundfile as sf  # noqa: E402
+from src.image_reverb.ir_metrics import band_t30, t30_low_combined  # noqa: E402  （唯讀引用，T-18 既有量測函式，不重新實作）
+
 GEOMETRY_OUT = PROJECT_ROOT / "output" / "geometry_r2"
 MATERIAL_OUT = PROJECT_ROOT / "output" / "material_r2"
 GEOMETRY_SCOPE_MAX_M = 10.0  # 與 src/image_reverb/config.py 的 GEOMETRY_SCOPE_MAX_M 對照用（唯讀常數，不 import 以免誤會成 src 依賴；本卡自我檢查另有 grep 核對兩邊一致）
@@ -393,6 +396,224 @@ def cmd_part_a() -> None:
     print(f"\nPart A 完成：FAIL 筆數 = {fail_count}")
 
 
+# ------------------------------------------------------------
+# Part B — T-12 判準 v2 量測（合成房間，三條 IR 用既有 scripts/gen_ir_manual.py 重生）
+# ------------------------------------------------------------
+
+GEN_IR_SCRIPT = PROJECT_ROOT / "scripts" / "gen_ir_manual.py"
+LEGACY_OUTPUT = PROJECT_ROOT / "output"
+
+# 三條 IR 的 gen_ir_manual.py 呼叫方式與輸出檔名，逐字對照 T-12 卡「Opus 驗證結果」
+# 表格已記錄的命令（不重打、與 T-12 交接筆記同設定）：
+#   per-wall：      --materials floor=carpet,walls=gypsum_board → ir_room_small_surf_carpet.wav
+#   六面 gypsum：   --materials floor=gypsum_board              → ir_room_small_surf_gypsum_board.wav
+#   六面 carpet：   --material carpet（舊六面同材質模式）        → ir_room_small_carpet.wav
+IR_CASES = [
+    {
+        "case": "per_wall",
+        "args": ["small", "--materials", "floor=carpet,walls=gypsum_board"],
+        "legacy_name": "ir_room_small_surf_carpet.wav",
+        "final_name": "per_wall_floor_carpet.wav",
+        "desc": "per-wall：floor=carpet／其餘 gypsum_board（4×3×2.5m）",
+    },
+    {
+        "case": "control_gypsum",
+        "args": ["small", "--materials", "floor=gypsum_board"],
+        "legacy_name": "ir_room_small_surf_gypsum_board.wav",
+        "final_name": "control_six_face_gypsum_board.wav",
+        "desc": "對照組：六面 gypsum_board（4×3×2.5m）",
+    },
+    {
+        "case": "control_carpet",
+        "args": ["small", "--material", "carpet"],
+        "legacy_name": "ir_room_small_carpet.wav",
+        "final_name": "control_six_face_carpet.wav",
+        "desc": "對照組：六面 carpet（4×3×2.5m，舊六面同材質模式）",
+    },
+]
+
+
+def _sabine_125hz_from_stdout(stdout: str) -> float | None:
+    m = re.search(r"125 Hz　RT60 ≈ ([\d.]+) 秒", stdout)
+    return float(m.group(1)) if m else None
+
+
+def run_part_b() -> dict:
+    dirty = git_status_clean(["src", "data", "scripts"])
+    if dirty:
+        print("❌ 錯誤：git status --porcelain -- src data scripts 非空，依 T-48 條件 (a) 不得送審：")
+        print(dirty)
+        sys.exit(1)
+
+    MATERIAL_OUT.mkdir(parents=True, exist_ok=True)
+    runs_dir = MATERIAL_OUT / "runs"
+    runs_dir.mkdir(parents=True, exist_ok=True)
+
+    cases = {}
+    for spec in IR_CASES:
+        legacy_path = LEGACY_OUTPUT / spec["legacy_name"]
+        pre_sha256 = sha256_file(legacy_path) if legacy_path.exists() else None
+
+        proc = subprocess.run(
+            ["python", str(GEN_IR_SCRIPT)] + spec["args"],
+            cwd=PROJECT_ROOT, capture_output=True, text=True,
+        )
+        (runs_dir / f"{spec['case']}.log").write_text(
+            proc.stdout + "\n--- stderr ---\n" + proc.stderr, encoding="utf-8"
+        )
+        if proc.returncode != 0 or not legacy_path.exists():
+            print(f"❌ 錯誤：{spec['case']} 生成失敗（exit={proc.returncode}），見 {runs_dir / (spec['case'] + '.log')}")
+            sys.exit(1)
+
+        post_sha256 = sha256_file(legacy_path)
+        sabine_125hz = _sabine_125hz_from_stdout(proc.stdout)
+
+        # 本卡的交付檔案在 output/material_r2/（紅線：不得重用 output/ 舊 IR）——
+        # 把 gen_ir_manual.py 剛剛「本次重新生成」的檔案移到 material_r2/，
+        # 移動前後都算過 sha256：post_sha256 就是這次重生的真實 bytes 指紋
+        # （若與 pre_sha256 相同，代表模擬本身是確定性的，不代表沒有重新執行——
+        # 本次執行的 stdout log 與 exit code 就是「有真的重新跑」的證據）。
+        final_path = MATERIAL_OUT / spec["final_name"]
+        legacy_path.replace(final_path)
+        final_sha256 = sha256_file(final_path)
+        assert final_sha256 == post_sha256
+
+        ir, fs = sf.read(str(final_path))
+        t30_combined = t30_low_combined(ir, fs)
+        t30_125_octave = band_t30(ir, fs, [125])[0]
+
+        cases[spec["case"]] = {
+            **spec,
+            "final_path": str(final_path.relative_to(PROJECT_ROOT)),
+            "pre_sha256": pre_sha256,
+            "post_sha256": post_sha256,
+            "regenerated": True,
+            "sabine_125hz_s": sabine_125hz,
+            "t30_low_combined_s": t30_combined,
+            "t30_125hz_octave_s": t30_125_octave,
+            "fs": fs,
+        }
+        print(f"{spec['case']}: sabine_125hz={sabine_125hz} t30_combined={t30_combined:.3f}s "
+              f"t30_125hz_octave={t30_125_octave:.3f}s sha256={final_sha256[:12]}…")
+
+    return cases
+
+
+def _pct_diff(a: float, b: float) -> float:
+    """(a-b)/b*100，b 為對照基準。"""
+    return (a - b) / b * 100.0
+
+
+def _write_part_b_report(cases: dict) -> None:
+    head = git_head()
+    dirty_check = git_status_clean(["src", "data", "scripts"])
+    pw = cases["per_wall"]
+    cg = cases["control_gypsum"]
+    cc = cases["control_carpet"]
+
+    # v2-a：per-wall Sabine 125Hz ≈0.348s ±20%
+    v2a_target = 0.348
+    v2a_error_pct = _pct_diff(pw["sabine_125hz_s"], v2a_target)
+    v2a_pass = abs(v2a_error_pct) <= 20.0
+
+    # v2-b：per-wall 聯合帶 T30 與六面 gypsum 對照差異 ≤±20%；六面 carpet 對照 ≥ per-wall 3 倍
+    v2b_diff_pct = _pct_diff(pw["t30_low_combined_s"], cg["t30_low_combined_s"])
+    v2b_ratio = cc["t30_low_combined_s"] / pw["t30_low_combined_s"]
+    v2b_diff_pass = abs(v2b_diff_pct) <= 20.0
+    v2b_ratio_pass = v2b_ratio >= 3.0
+    v2b_pass = v2b_diff_pass and v2b_ratio_pass
+
+    # v1 字面條件：125Hz 八度 T30 ≈0.35s ±20%（照量照列，預期未達，只記錄不當門檻）
+    v1_target = 0.35
+    v1_error_pct = _pct_diff(pw["t30_125hz_octave_s"], v1_target)
+    v1_pass = abs(v1_error_pct) <= 20.0
+
+    lines = []
+    lines.append("# T-48 B 部分 — T-12 判準 v2 量測\n")
+    lines.append(f"> 產生日期：{datetime.now(timezone.utc).isoformat()}　"
+                 f"git_head：`{head}`　"
+                 f"git status --porcelain -- src data scripts：{'(空)' if not dirty_check else dirty_check}\n")
+    lines.append(
+        "三條 IR 由 `scripts/gen_ir_manual.py`（不改動，逐字沿用 T-12 卡「Opus 驗證結果」表格"
+        "已記錄的指令）本次重生，交付到 `output/material_r2/`（紅線：不得重用 `output/` 舊 IR）：\n"
+    )
+    lines.append("| case | 指令 | 房間 | 交付檔案 | sha256（本次重生） |")
+    lines.append("|---|---|---|---|---|")
+    for c in cases.values():
+        cmd = "python scripts/gen_ir_manual.py " + " ".join(c["args"])
+        lines.append(f"| {c['desc']} | `{cmd}` | 4×3×2.5m | `{c['final_path']}` | `{c['post_sha256']}` |")
+
+    lines.append("\n## 0. 結論\n")
+    lines.append(
+        f"- **v2-a（公式層）**：{'PASS' if v2a_pass else 'FAIL'}——per-wall Sabine 125Hz "
+        f"{pw['sabine_125hz_s']:.4f}s，目標 {v2a_target}s ±20%，誤差 {v2a_error_pct:+.1f}%\n"
+        f"- **v2-b（IR 實測層，聯合帶 T30）**：{'PASS' if v2b_pass else 'FAIL'}——"
+        f"per-wall {pw['t30_low_combined_s']:.4f}s vs 六面 gypsum 對照 {cg['t30_low_combined_s']:.4f}s"
+        f"（差異 {v2b_diff_pct:+.1f}%，判準 ≤±20% → {'PASS' if v2b_diff_pass else 'FAIL'}）；"
+        f"六面 carpet 對照 {cc['t30_low_combined_s']:.4f}s / per-wall = {v2b_ratio:.2f} 倍"
+        f"（判準 ≥3 倍 → {'PASS' if v2b_ratio_pass else 'FAIL'}）\n"
+        f"- **v1 字面條件（只記錄不當門檻）**：{'PASS' if v1_pass else '未達'}——per-wall 125Hz 八度 T30 "
+        f"{pw['t30_125hz_octave_s']:.4f}s，字面目標 {v1_target}s ±20%，誤差 {v1_error_pct:+.1f}%"
+        f"（裁決 B 已證八度量測受鄰帶耦合污染，此數字**不當作判準**，僅照量照列）\n"
+    )
+
+    lines.append("\n## 1. 逐案數值（程式量測，未手打）\n")
+    lines.append("| case | Sabine 125Hz (s) | 125Hz 八度 T30 (s) | 88.4–353.6Hz 聯合帶 T30 (s) |")
+    lines.append("|---|---|---|---|")
+    for c in cases.values():
+        sab = f"{c['sabine_125hz_s']:.4f}" if c["sabine_125hz_s"] is not None else "—"
+        lines.append(f"| {c['desc']} | {sab} | {c['t30_125hz_octave_s']:.4f} | {c['t30_low_combined_s']:.4f} |")
+
+    lines.append(
+        "\n## 2. 方法\n\n"
+        "1. `scripts/gen_ir_manual.py`（**零改動**）依上表指令重生三條 IR，程式預設寫到 `output/`，"
+        "本腳本立即搬到 `output/material_r2/`（sha256 在搬移前後都算過，確認 bytes 未在搬移過程變動）。\n"
+        "2. v2-a：Sabine 125Hz 數字讀自 `gen_ir_manual.py` 本次執行的 stdout（程式印出，不手打）。\n"
+        "3. v2-b／v1：讀 `src/image_reverb/ir_metrics.py` 既有函式——`t30_low_combined()`（T-18，"
+        "88.4–353.6Hz 聯合帶）與 `band_t30(ir, fs, [125])`（單一 125Hz 八度，v1 字面條件用）——"
+        "對本次重生的 WAV 直接量測，不重新實作任何頻段濾波／Schroeder 積分邏輯。\n"
+        "4. `ir_metrics.py`、`src/`、`data/` 全程零 diff（本卡只呼叫既有函式，不修改）。\n"
+    )
+
+    MATERIAL_OUT.mkdir(parents=True, exist_ok=True)
+    (MATERIAL_OUT / "REPORT.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"已寫入：{MATERIAL_OUT / 'REPORT.md'}")
+
+    criteria_text = """# T-12 判準 v2（複製自 TASKS.md T-48 卡 §8，供追溯；內容不得與本卡不同）
+
+criteria_version: v2（裁決 T-45-A 於 T-48 卡事前鎖定：v2-a 公式層 Sabine 125Hz＝0.348s ±20%；
+v2-b IR 實測層改量 T-18 聯合帶 T30，判準見 T-48 卡）
+
+B 部分——T-12 判準 v2 量測：
+1. 用 `scripts/gen_ir_manual.py` 重生三條 IR：per-wall（4×3×2.5m，floor=carpet／其餘
+   gypsum_board）、對照組六面 gypsum_board、對照組六面 carpet（與 T-12 交接筆記同設定）；
+2. v2-a（公式層）：`compute_acoustics()`／Sabine 125Hz 對 per-wall 房間＝0.348s ±20%
+   （重跑確認，預期達成）；
+3. v2-b（IR 實測層，聯合帶）：用 T-18 `t30_low_combined()`（88.4–353.6Hz）量三條 IR。
+   判準：per-wall IR 的聯合帶 T30 與六面 gypsum 對照組差異 ≤ ±20%，且六面 carpet 對照組
+   的聯合帶 T30 ≥ per-wall 的 3 倍；
+4. 原 v1 字面條件（125Hz 八度 T30 ≈0.35s ±20%）照量照列，預期仍未達（裁決 B 已證八度
+   量測受鄰帶耦合污染），只記錄不當門檻；
+5. `output/material_r2/REPORT.md`（程式產表）＋`CRITERIA_T12_v2.md`（本檔）。
+"""
+    (MATERIAL_OUT / "CRITERIA_T12_v2.md").write_text(criteria_text, encoding="utf-8")
+    print(f"已寫入：{MATERIAL_OUT / 'CRITERIA_T12_v2.md'}")
+
+    return {
+        "v2a_pass": v2a_pass,
+        "v2b_pass": v2b_pass,
+        "v1_pass": v1_pass,
+    }
+
+
+def cmd_part_b() -> None:
+    cases = run_part_b()
+    verdicts = _write_part_b_report(cases)
+    print(f"\nPart B 完成：v2-a={'PASS' if verdicts['v2a_pass'] else 'FAIL'} "
+          f"v2-b={'PASS' if verdicts['v2b_pass'] else 'FAIL'} "
+          f"v1（不當門檻，僅記錄）={'PASS' if verdicts['v1_pass'] else '未達'}")
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2 or sys.argv[1] not in ("manifest", "partA", "partB", "all"):
         print(__doc__)
@@ -402,6 +623,8 @@ if __name__ == "__main__":
         cmd_manifest()
     elif mode == "partA":
         cmd_part_a()
-    else:
-        print(f"模式 {mode} 尚未實作於本次呼叫（分階段開發中）")
-        sys.exit(2)
+    elif mode == "partB":
+        cmd_part_b()
+    elif mode == "all":
+        cmd_part_a()
+        cmd_part_b()
