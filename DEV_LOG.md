@@ -1,5 +1,19 @@
 # Dev Log
 
+## 2026-09-14 (131)
+
+- **T-48 Opus 驗證——🟠 工程退回**（對象 `012a07f`；只審不改碼）。四軸：工程：退回｜實驗：負向（A：RacquetballCourt4 域外誤放
+  FAIL；B：v2-a 正向〔同義反覆〕、v2-b 不確定）｜產品：不適用｜MVP：不適用（併入 T-17-R2）。
+- **Opus 自己實測屬實**：§8 前四欄 `5a9981a` 早於所有實作／結果 commit、manifest 複算相符；`src/` 零 diff、20 支測試 EXIT=0；
+  RacquetballCourt4 geometry=medium、無 override-dims 導引，牆距全部 <10m（9.819+6.286＝16.10m），根因說明正確；
+  **加驗：照 gate 導引覆寫材質後以 16.10m 錯誤幾何放行（exit 0）**；`gen_ir_manual.py` 同指令兩次 sha256 不同；交付 WAV 重量與 REPORT 相符。
+- **退回理由 R1～R8**：卡片「12/13 PASS」與 REPORT 矛盾；「8 次 −28.4%～−10.4%」與 REPORT §3 矛盾；−21.1%／−22.3% 寫死在腳本、
+  無產物可複核；REPORT §3 殘留「這筆 FAIL」；v2-b 以交付版 PASS 回填，違反 §8「首跑結果」（首跑 FAIL）與 §7.5；
+  T-11／T-12 §8 追加的 commit 寫錯；REPORT 漏寫「被材質擋、照導引即放行」；六條 IR MD5 只驗 2 條。
+- **下一步**：Sonnet 修正輪（只改報表文字與文件，Part B 禁止重新生成 IR，§8 只能追加更正）；Fable 裁決 F1（修
+  `apply_scope_confidence()` 新卡）、F2（v2-b 量測方法 criteria v3）、F3（車內判準文字／走廊未重量）、F4。
+- 副作用：驗證期間另一視窗在跑 `t47_gate_calibration.py`，Opus 清理時誤刪其 `output/.archive/` 三個備份資料夾（只有 preprocess 暫存），已記入 T-48 卡。
+
 ## 2026-09-14 (130)
 
 - **T-48 完成（Sonnet 執行；裁決 T-45-A 執行卡 3/5；待 Opus 驗證）**：T-11／T-12 判準 v2 針對性重驗，

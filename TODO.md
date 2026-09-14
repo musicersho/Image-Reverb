@@ -20,8 +20,8 @@
   預設套用）、T-36（CLIP 52.4%，診斷）、T-38 原卡（六輪不達標）、T-38B（四輪劣化）、
   T-39（30→24）。
 - **雙 verdict 並列**：T-11（原域 FAIL／v0.3 域內 PASS）、T-12（字面 125Hz 未達／Sabine 達成）
-  → **T-48 已量第二個 verdict（待 Opus 驗證）**：T-11 域外項 3/4 PASS、RacquetballCourt4 1 筆
-  FAIL（域外出口誤放）；T-12 v2-a PASS、v2-b 本次交付版本 PASS 但量測方法噪聲大（詳見 TASKS.md T-48 卡）。
+  → **T-48 已量第二個 verdict（🟠 Opus 2026-09-14 工程退回，待修正輪）**：T-11 域外項 3/4 PASS、RacquetballCourt4 1 筆
+  FAIL（域外出口誤放，照 gate 導引覆寫材質即放行）；T-12 v2-a PASS、v2-b **不確定**（首跑 FAIL、交付版 PASS，無固定 seed）（詳見 TASKS.md T-48 卡）。
 - **T-04 未結案**（9 張照片來源網址等使用者）。
 - **gate 校準前提已變**（T-26／T-28／T-36-A）→ T-47 重量四樣證據後裁決 T-47-A。
   → **🔮 裁決 T-47-A 已下（2026-09-14）**：default 維持不動；role_aware 0.4 未校準，**使用者已核准乙**（criteria `81bc4cd`）→ T-52。
@@ -161,12 +161,11 @@
       MVP：不適用（沿用 T-17 FAIL）。Opus scratchpad 重算 `dataset_manifest_sha256`＝`c15d0a14…2b01a7`，與 T-47 §8 回填值、
       HEAD manifest blob 三方相同；ground truth＝`965e51ac…`；26/26 CLI 指紋 `photo_sha256` 相符；commit 恰五檔；
       TASKS diff 只三個合法 hunk；20 支測試 EXIT=0、六條 IR MD5 全中。詳見 TASKS.md T-51 卡「✅ Opus 驗證紀錄」。
-- [ ] **T-48** T-11／T-12 判準 v2 針對性重驗——**🔵 Sonnet 完成，待 Opus 驗證**（§8 前四欄 commit `5a9981a` 早於結果 commit `012a07f`，鐵則 14）。
-      A 部分：13 張中 1 筆 **FAIL**（RacquetballCourt4 域外出口誤放，`geometry_confidence=medium` 非 low；根因＝環景量程規則比對單一
-      視角牆距、非相加後全長）；bathroom_tiled／arena_ntsu_linkou／SteinmanHall 皆 PASS。B 部分：v2-a PASS；v2-b 本次交付版本 PASS
-      （−19.9%／3.97 倍）但**測到 pyroomacoustics 無固定 seed**，三次官方重跑分別 FAIL/−21.1%、FAIL/−22.3%、PASS/−19.9%，如實揭露、
-      未挑結果、未改 v2 數字。詳見 TASKS.md T-48 卡「交接筆記」與 `output/geometry_r2/REPORT.md`／`output/material_r2/REPORT.md`。
-      **下一步：開 Opus 視窗複核**。
+- [ ] **T-48** T-11／T-12 判準 v2 針對性重驗——**🟠 工程退回（Opus 2026-09-14，對象 `012a07f`）**。四軸：工程：退回｜實驗：負向
+      （A：RacquetballCourt4 域外誤放 FAIL；B：v2-a 正向、v2-b 不確定）｜產品：不適用｜MVP：不適用。核心發現 Opus 實測屬實；退回理由
+      R1～R8＝報告／卡片數字矛盾、腳本寫死 −21.1%／−22.3%、v2-b 以交付版 PASS 回填（違反 §8 首跑結果）、§8 追加 commit 寫錯、
+      REPORT 漏寫「被材質擋、照導引覆寫材質即放行」、六條 IR MD5 只驗 2 條。**下一步：Sonnet 修正輪（Part B 禁止重新生成 IR）；
+      Fable 裁決 F1～F4**（詳見 TASKS.md T-48 卡「🟠 Opus 驗證紀錄」）。
 - [ ] ⏸ **T-44-R1**（裁決 T-47-A 移出關鍵路徑：前置追加 T-53 校準 PASS；使用者兩件待辦〔核准絕對下限 A／B、≥5 張 held-out〕仍有效但順位在後）
 - [ ] **T-17-R2** MVP 重新驗收（新盲測種子與編號、T-43 provenance、結果寫 `output/mvp_acceptance_r2/`；前置「裁決 T-47-A」已滿足，
       T-44-R1 未跑→預設模式重驗；追加前置 T-52 結案〔選乙〕或選甲）
