@@ -9981,6 +9981,24 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
         rebase 解，不得覆寫對方卡片。
 - **性質**：本卡**只量不改**。判準 v2 已由 Fable 在本卡事前鎖定（criteria_commit＝本裁決
   commit，早於任何量測）；量到什麼寫什麼，未達＝如實記 FAIL，**不得再改 v2**。
+- **🔮 §8 不可變欄位（裁決 T-47-M 連動，Fable 2026-09-14 於開跑前補建；本卡截至今日無任何結果，故屬**事前鎖定**，
+  不是事後補建；欄位一經填寫只能追加不得刪改）**：
+  ```text
+  criteria_version: v2（裁決 T-45-A 事前鎖定——A 部分＝T-11 域外項判準 v2〔實際最大維 >10m 者 geometry_confidence 必須 low 且 gate 訊息含 --override-dims 導引；≤10m 有 ground truth 者誤差 ≤±30%〕；B 部分＝T-12 v2-a 公式層 Sabine 125Hz＝0.348s ±20%、v2-b 聯合帶 T30 與六面 gypsum 對照差異 ≤±20% 且六面 carpet 對照 ≥ per-wall 3 倍；v1 字面 125Hz 八度條件照量照列、只記錄不當門檻）
+  criteria_commit: 96e7716（2026-09-03，開卡即鎖定判準 v2）＋c8f6be9（2026-09-08，裁決 T-48-S：排程放寬與硬性條件 (a)～(d)，未改任何判準數字）
+  criteria_locked_at: 2026-09-03（判準 v2）／2026-09-08（條件 (a)～(d)）——皆早於本卡任何量測（截至 2026-09-14 本卡未開跑）
+  dataset_manifest_sha256: 〈開跑前由執行者以程式填：output/geometry_r2/DATASET_MANIFEST.json（13 張照片 sha256＋已知尺寸表）的 sha256，manifest 檔以 git add -f 進版控；B 部分為合成房間，三條重生 IR 的 sha256 另記於 REPORT 檔頭〉
+  implementation_commit: 〈執行者填：量測腳本 commit；src/、data/、ir_metrics.py 零 diff〉
+  result_commit: 〈執行者填〉
+  reviewer: 〈Opus 填：模型＋日期＋commit〉
+  verdict_under_original_criteria: 〈Opus 填：v2 首跑結果，A／B 分列；未達＝如實 FAIL〉
+  verdict_under_current_criteria: 〈同上；判準未變〉
+  criteria_changed_after_first_result: no（改了就是新卡）
+  change_record: 無
+  ```
+  **開跑規則（鐵則 14）**：執行者在**首個結果 commit 之前**填妥前四欄（`dataset_manifest_sha256` 由程式產生，不手打）；
+  Opus 驗證重點第一條＝核對填前四欄的 commit 早於任何 `output/geometry_r2/`／`output/material_r2/` 結果 commit，
+  缺＝退回、不得附註豁免。
 - **A 部分——T-11 域外出口無誤放（回填 T-11 `verdict_under_current_criteria` 的域外項）**：
   1. 對 13 張照片跑幾何（預設路徑，`--no-viz`），程式產表：估計三維／最大維、是否觸發
      `GEOMETRY_SCOPE_MAX_M` 量程規則、觸發的是哪條規則、`geometry_confidence`、已知實際尺寸
