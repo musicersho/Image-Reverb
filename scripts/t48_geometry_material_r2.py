@@ -504,6 +504,78 @@ def _pct_diff(a: float, b: float) -> float:
     return (a - b) / b * 100.0
 
 
+STABILITY_REPEATS = 4  # 額外重跑次數（附錄用，不影響官方判定）
+
+
+def run_stability_check() -> dict:
+    """pyroomacoustics 的 ray tracing 沒有固定 seed，同一指令重跑 bytes 不同
+    （已用 shasum 實測確認）。這裡額外重跑 per_wall／control_gypsum 各
+    `STABILITY_REPEATS` 次，寫進 `output/material_r2/stability_check/`（與正式交付檔案
+    分開存放，不覆蓋、不算入 §0 官方判定），只為了讓 Opus／Fable 看到量測本身的
+    隨機噪聲量級——**不改變本卡官方判定**（判準與流程不因此改動，WORKFLOW §7）。
+    """
+    stability_dir = MATERIAL_OUT / "stability_check"
+    stability_dir.mkdir(parents=True, exist_ok=True)
+    repeats = {"per_wall": [], "control_gypsum": []}
+    specs_by_case = {s["case"]: s for s in IR_CASES}
+    for case in ("per_wall", "control_gypsum"):
+        spec = specs_by_case[case]
+        legacy_path = LEGACY_OUTPUT / spec["legacy_name"]
+        for i in range(STABILITY_REPEATS):
+            proc = subprocess.run(
+                ["python", str(GEN_IR_SCRIPT)] + spec["args"],
+                cwd=PROJECT_ROOT, capture_output=True, text=True,
+            )
+            if proc.returncode != 0 or not legacy_path.exists():
+                continue
+            dest = stability_dir / f"{case}_rep{i}.wav"
+            legacy_path.replace(dest)
+            ir, fs = sf.read(str(dest))
+            repeats[case].append(t30_low_combined(ir, fs))
+    return repeats
+
+
+def _write_stability_appendix(cases: dict, repeats: dict) -> list[str]:
+    pw_official = cases["per_wall"]["t30_low_combined_s"]
+    cg_official = cases["control_gypsum"]["t30_low_combined_s"]
+    pw_all = [pw_official] + repeats.get("per_wall", [])
+    cg_all = [cg_official] + repeats.get("control_gypsum", [])
+    diffs_pct = [
+        _pct_diff(pw_v, cg_v)
+        for pw_v in pw_all
+        for cg_v in cg_all
+    ]
+    lines = []
+    lines.append("\n## 3. 附錄：量測穩定性檢查（不影響上方 §0 官方判定）\n")
+    lines.append(
+        "`gen_ir_manual.py` 呼叫的 pyroomacoustics ray tracing **沒有固定 random seed**"
+        "（已實測：同一指令重跑兩次，輸出 WAV sha256 不同，樣本點最大絕對差"
+        "約 0.099——見本卡交接筆記）。§0 的官方判定只用**每個 case 第一次（也是唯一"
+        "交付到 `output/material_r2/` 的那次）重生結果**，不做多次重跑取平均"
+        "（判準本身沒有要求，本卡也不得另外發明「取平均」這種未鎖定的判定方式）。\n\n"
+        f"為了讓 Opus／Fable 判斷 v2-b 這筆 FAIL 是否落在量測噪聲量級內，"
+        f"這裡**額外**重跑 per_wall／control_gypsum 各 {STABILITY_REPEATS} 次"
+        "（存於 `output/material_r2/stability_check/`，與正式交付檔案分開，不算入判定）：\n\n"
+    )
+    lines.append(f"- per_wall 聯合帶 T30 各次量測（含官方那次）：{[round(v, 4) for v in pw_all]}\n")
+    lines.append(f"- control_gypsum 聯合帶 T30 各次量測（含官方那次）：{[round(v, 4) for v in cg_all]}\n")
+    lines.append(
+        f"- 交叉配對後的 per_wall vs control_gypsum 差異百分比範圍："
+        f"{min(diffs_pct):+.1f}% ～ {max(diffs_pct):+.1f}%（判準 ≤±20%；"
+        f"官方那次配對＝{_pct_diff(pw_official, cg_official):+.1f}%）\n"
+    )
+    if min(diffs_pct) <= -20.0 <= max(diffs_pct) or (min(diffs_pct) < 20.0 < max(diffs_pct)):
+        lines.append(
+            "\n**觀察**：不同次重跑的差異百分比跨越 ±20% 門檻兩側，"
+            "代表官方判定的 PASS/FAIL 對這次隨機重跑的結果敏感——"
+            "v2-b 的 FAIL 判定本身站得住腳（依官方那次重生的數字如實記錄），"
+            "但門檻本身的鑑別力在這個量級的隨機噪聲下很薄弱，這點誠實列出，"
+            "是否需要改進量測方法（例如多次取中位數、固定 seed）留給 Fable 依 "
+            "WORKFLOW §7 另行裁決，本卡不自行更動判準或判定方式。\n"
+        )
+    return lines
+
+
 def _write_part_b_report(cases: dict) -> None:
     head = git_head()
     dirty_check = git_status_clean(["src", "data", "scripts"])
@@ -574,6 +646,10 @@ def _write_part_b_report(cases: dict) -> None:
         "對本次重生的 WAV 直接量測，不重新實作任何頻段濾波／Schroeder 積分邏輯。\n"
         "4. `ir_metrics.py`、`src/`、`data/` 全程零 diff（本卡只呼叫既有函式，不修改）。\n"
     )
+
+    print("執行量測穩定性附錄（額外重跑，不影響官方判定）…")
+    repeats = run_stability_check()
+    lines.extend(_write_stability_appendix(cases, repeats))
 
     MATERIAL_OUT.mkdir(parents=True, exist_ok=True)
     (MATERIAL_OUT / "REPORT.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
