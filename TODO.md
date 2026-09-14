@@ -138,7 +138,7 @@
       `git worktree` 比對，geometry/materials/overall/gate 與 IR md5 全數相符、
       臥室紅旗仍 BLOCK）。19 支測試 EXIT=0、六條交付 IR MD5 全中、`git diff`
       限縮在兩檔。詳見 TASKS.md T-42 卡「交接筆記」。
-- [ ] **T-47** 🔵 待審（修正輪，結果 commit 〈回填中，見 TASKS.md〉）——針對 Opus 複驗
+- [ ] **T-47** 🔵 待審（修正輪，結果 commit `5d1569c`）——針對 Opus 複驗
       （2026-09-13，對象 `6d95f5f`）退回理由第 1 點：表 7「模擬 gate」欄改由 BLOCK/pass（原填
       信心值），表 8 新增「實際 gate／模擬 overall／模擬 gate」三欄（唯讀呼叫
       `_overall_confidence()` 換算，不再手寫）；`--fresh` 重跑後表 1～6 與退回前 sha256 相同，

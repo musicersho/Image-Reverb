@@ -1,6 +1,6 @@
 # 交接文件 — 給下一個視窗
 
-> ## 🔵 2026-09-14 Sonnet：T-47 修正輪完成——**現在該做的是開 Opus 新視窗複驗**，結果 commit 〈回填中，見下一則 docs commit／TASKS.md〉
+> ## 🔵 2026-09-14 Sonnet：T-47 修正輪完成——**現在該做的是開 Opus 新視窗複驗**，結果 commit `5d1569c`
 >
 > Opus 複驗（2026-09-13，對象結果 commit `6d95f5f`）🟠 工程退回，理由只有兩點：①REPORT
 > ⑦(b) 指向 `tables.md` 表 8 看「對 gate 的影響」，但表 8 只有 materials_confidence 兩欄，
@@ -32,8 +32,7 @@
 > 重跑當下為空。未改既有 Sonnet 交接筆記／Opus 退回紀錄原文，只在 TASKS.md T-47 卡下方
 > 追加新段落「交接筆記（修正輪，Sonnet 執行，2026-09-14）」。
 >
-> **下一步**：開 Opus 新視窗，貼 WORKFLOW §2.2 v2 複驗 Prompt，**「結果 commit」填本輪
-> 結果 commit 雜湊**（見下一則 docs commit 回填，或直接查 TASKS.md T-47 卡「狀態」欄）。
+> **下一步**：開 Opus 新視窗，貼 WORKFLOW §2.2 v2 複驗 Prompt，**「結果 commit」填 `5d1569c`**。
 > 通過後才算「工程：已驗證」，Fable 才能依四樣證據＋本輪修正下裁決 T-47-A，之後才能開
 > T-44-R1。詳見 TASKS.md T-47 卡「交接筆記（修正輪，Sonnet 執行，2026-09-14）」與 DEV_LOG
 > `2026-09-14 (121)`。
