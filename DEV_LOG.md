@@ -1,5 +1,27 @@
 # Dev Log
 
+## 2026-09-14 (129)
+
+- **T-52 完成（Sonnet 執行；裁決 T-47-A 選項乙執行卡）**：實作 gate v2 規則 R1b——`role_aware=True` 時任一面
+  來源為 `clip` 且該面角色候選集收窄（floor 6<12、ceiling 4<12；wall 12=12 不收窄）→ `materials_confidence`
+  判 `low`，觸發時記一條未校準警示。§8 前四欄先行 commit `7e03a97`（早於任何結果，鐵則 14），實作＋結果
+  commit `6ac3ef3`（`materials.py`／`surfaces.py`／`pipeline.py`／`test_confidence_axes.py`＋
+  `output/gate_calibration_v2/{REPORT.md,tables.md}`）。
+- 新測試【C】(a)(b)(c)(d) 對舊碼（worktree @ `7e03a97`）實測：(a) fail（實際 medium≠low）、(b)(c)(d) pass，
+  證明新行為確實被鎖定。`t47_gate_calibration.py --fresh` 基線變化表：default 四欄 13 列與原表逐位元相同；
+  role_aware 如預期 `bathroom_tiled` 收回 BLOCK；**另量到**本卡步驟 4(ii) 文字沒明講的一點——`DivorceBeach`
+  的 `materials` 格也 medium→low（`overall`／`gate` 不變，本已由 geometry 擋），與 T-47 表 8 ⑦(b) 模擬預測
+  的位移方向一致，`CRITERIA_GATE_v2.md` 本身也載明「13 張結果與 tables.md 表 8 相同」，判斷不是規則實作
+  誤差，已如實記入 T-52 卡交接筆記與四軸狀態，留給 Opus 獨立覆核。
+- default 模式 `bathroom_tiled` stderr（不加 `--role-aware`）與 T-52 前（同一 commit worktree）逐位元相同
+  （diff 為空）；`--role-aware` 時 EXIT=3、stderr 新增「未校準面（role_aware）」段與兩條出口。20 支
+  `scripts/test_*.py` 全 EXIT=0；六條交付 IR MD5 全中。`output/gate_calibration/` 全程零 diff。
+- 零改動：`data`／`geometry.py`／`acoustics.py`／`ir_synth.py`／`ir_metrics.py`／`config.py`／
+  `t47_gate_calibration.py`／`t46_role_flag_baseline.py`／WORKFLOW／SPEC；`CLIP_CONFIDENCE_THRESHOLD`／
+  `ROLE_MATERIAL_CANDIDATES`／`ROLE_AWARE_MATERIALS_DEFAULT` 皆不動。
+- **下一步：開 Opus 新視窗複核 T-52**（依卡片「Opus 驗證重點」，第一條＝§8 前四欄 commit 早於結果 commit）→
+  通過後 T-17-R2；T-48 若尚未跑可平行。
+
 ## 2026-09-14 (128)
 
 - **使用者核准裁決 T-47-A 選項乙**（gate criteria v2：role_aware 收窄候選集的 clip 面不計入放行）。

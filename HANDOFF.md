@@ -1,5 +1,29 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔵 2026-09-14 Sonnet：T-52 完成——**現在該做的是開 Opus 新視窗複核**，實作＋結果 commit `6ac3ef3`
+>
+> §8 前四欄（開跑前）先行 commit `7e03a97`（`dataset_manifest_sha256` 重算＝`c15d0a14…2b01a7`，相符，未卡關），早於
+> `6ac3ef3`（鐵則 14）。R1b 實作在 `materials.py`（新增 `candidate_scope` 欄位）／`surfaces.py`（`surfaces_from_preprocess()`
+> 填 scope、新增 `r1b_narrowed_clip_faces()`、`compute_materials_confidence()` 加 R1b）／`pipeline.py`（gate BLOCK 訊息加
+> 「未校準面（role_aware）」段＋兩條出口；`role_aware=True` 時 `analysis.json` 加 `surfaces_candidate_scope`／
+> `materials_gate_criteria`）；`scripts/` 只改了 `test_confidence_axes.py`。
+>
+> 新測試【C】(a)(b)(c)(d)：對舊碼（`git worktree add 7e03a97`）實測 (a) fail（實際 medium≠low）、(b)(c)(d) pass，證明鎖定
+> 新行為。`t47_gate_calibration.py --out-dir output/gate_calibration_v2/ --fresh`（52 次真實推論）：default 四欄 13 列
+> 與原表逐位元相同；role_aware 如預期 `bathroom_tiled` 收回 BLOCK（`medium/medium/medium/pass → medium/low/low/BLOCK`）；
+> **附帶測得本卡步驟 4(ii) 文字沒明講的一點**——`DivorceBeach` 的 `materials` 格也 medium→low（`overall`／`gate` 不變，
+> 本已由 `geometry=low` 擋），與 T-47 表 8 ⑦(b) 模擬預測的位移方向一致，`CRITERIA_GATE_v2.md` 本身也載明「13 張結果與
+> tables.md 表 8 相同」；判斷不是規則實作誤差，已寫進 T-52 卡四軸狀態與交接筆記，**留給 Opus 獨立覆核**。表 2 role_aware
+> 段變「無 pass 案例」、表 3 五張已知錯誤全 BLOCK、26/26 surfaces／sources 相符（harness 內建交叉檢查）。
+>
+> `bathroom_tiled --role-aware --no-viz` EXIT=3、stderr 含新段落；不加 `--role-aware` EXIT=3，與 T-52 前（同 commit
+> worktree、同路徑呼叫）diff 為空，default 模式逐位元不變。20 支 `scripts/test_*.py` 全 EXIT=0；六條交付 IR MD5 全中。
+> 零改動：`data`／`geometry.py`／`acoustics.py`／`ir_synth.py`／`ir_metrics.py`／`config.py`／`t47_gate_calibration.py`／
+> `t46_role_flag_baseline.py`／WORKFLOW／SPEC；`output/gate_calibration/` 全程零 diff。
+>
+> **下一步**：開 Opus 新視窗，依 T-52 卡「Opus 驗證重點」複核（第一條＝§8 前四欄 commit `7e03a97` 早於結果 commit
+> `6ac3ef3`）→ 通過後 T-17-R2；T-48 若尚未平行開跑仍可進行。詳見 TASKS.md T-52 卡「交接筆記」與 DEV_LOG `2026-09-14 (129)`。
+
 > ## 🔮 2026-09-14 Fable：裁決 T-47-A 已下且**使用者已核准乙**——**現在該做的是開 Sonnet 視窗執行 T-52**（T-48 可另一視窗平行）
 >
 > - 使用者選乙後，Fable 已提交獨立 `criteria: gate v2` commit `81bc4cd`（只含 `output/gate_calibration/CRITERIA_GATE_v2.md`；

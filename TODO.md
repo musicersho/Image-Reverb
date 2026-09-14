@@ -142,8 +142,11 @@
 - [x] **🔮 裁決 T-47-A 已下（Fable 2026-09-14）**——default gate 維持；role_aware 0.4 未校準、**甲／乙等使用者核准**（乙＝T-52）；產品 🧪 維持；
       T-44-R1 ⏸ 移出關鍵路徑（等 T-53）；T-17-R2 前置「裁決 T-47-A」滿足；T-48 可立即開跑。T-47 四軸：工程：已驗證｜實驗：不適用｜
       產品：不適用（量測卡）｜MVP：不適用。全文見 TASKS.md T-47 卡「🔮 裁決 T-47-A」。
-- [ ] **T-52** gate criteria v2（role_aware 收窄候選集的 clip 面不計入放行；Sonnet；**⬜ 可開跑**——使用者已核准乙，criteria commit `81bc4cd`；
-      開跑前先填 §8 `dataset_manifest_sha256`）
+- [ ] **T-52** gate criteria v2（role_aware 收窄候選集的 clip 面不計入放行）——**🔵 Sonnet 完成，待 Opus 驗證**（§8 前四欄
+      commit `7e03a97` 早於實作／結果 commit `6ac3ef3`）：R1b 已實作，新測試【C】對舊碼實測 (a) fail／(b)(c)(d) pass，
+      基線變化表 `output/gate_calibration_v2/`（default 13 列零差異、role_aware 13/13 BLOCK），default 模式 stderr 逐位元
+      不變，20 支測試 EXIT=0、六條 IR MD5 全中。附帶測得 `DivorceBeach` materials 格也 medium→low（gate 不受影響，與
+      T-47 表 8 預測一致）。**下一步：開 Opus 視窗複核**。詳見 TASKS.md T-52 卡「交接筆記」。
 - [ ] **T-53** role_aware gate 校準量測（保留號；等使用者提供獨立校準集；不在關鍵路徑）
 - [x] **T-47 ✅ 工程已驗證（Opus 第三輪 2026-09-14；依裁決 T-47-M 第 5 點複核 §8 事後補建區塊＋T-51 manifest）**——
       四軸：工程：已驗證｜實驗：不適用｜產品：待裁決（T-47-A）｜MVP：不適用（沿用 T-17 FAIL）。

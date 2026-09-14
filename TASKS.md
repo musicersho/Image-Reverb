@@ -10279,11 +10279,15 @@ EOF
 （Opus 複核時只把 `OUT` 改成 scratchpad 路徑；`OUT` 路徑不進 manifest 內容，sha256 不受影響。）
 
 ### T-52 gate criteria v2：role_aware 收窄候選集的 clip 面不計入放行（Sonnet 執行卡；裁決 T-47-A 選項乙執行卡；**前置＝使用者核准**）
-- **狀態**：⬜ **可開跑**——使用者已於 2026-09-14 核准裁決 T-47-A 選項乙；`output/gate_calibration/CRITERIA_GATE_v2.md` 已由 Fable 以獨立
-  commit `81bc4cd`（`criteria: gate v2 ……`，只含該一檔）提交，早於本卡任何結果。Sonnet 貼 WORKFLOW §2.1 Prompt 即可開工；
-  開跑前先做執行步驟 1（§8 前四欄；`criteria_commit`／`criteria_locked_at` 已由 Fable 填，執行者填 `dataset_manifest_sha256`）。
-- **四軸狀態**：工程：未開始｜實驗：待量測（預期 `role_aware` 13/13 BLOCK、default 13 張逐位元不變——預期不等於保證，量到什麼寫什麼）｜
-  產品：不適用（本卡不改產品預設；role_aware 維持 🧪）｜MVP：不適用（沿用 T-17 FAIL）
+- **狀態**：🔵 **Sonnet 完成，待 Opus 驗證**——§8 前四欄（開跑前）commit `7e03a97` 早於實作／結果 commit `6ac3ef3`（鐵則 14）。
+  R1b 已實作、新測試【C】對舊碼實測 (a) fail／(b)(c)(d) pass、`t47_gate_calibration.py --fresh` 基線變化表已產出於
+  `output/gate_calibration_v2/`、20 支 `scripts/test_*.py` 全 EXIT=0、六條交付 IR MD5 全中、default 模式 stderr 與
+  T-52 前逐位元相同。**下一步＝開 Opus 新視窗依本卡「Opus 驗證重點」複核**。
+- **四軸狀態**：工程：待審｜實驗：已量測——`role_aware` 13/13 BLOCK（bathroom_tiled 由 pass 收回）、default 13/13 BLOCK 逐位元不變，
+  與 CRITERIA_GATE_v2.md 的 `expected_on_13` 相符；**附帶測得**（預期之外，如實記）：`DivorceBeach` 的 `materials_confidence`
+  在 role_aware 模式也由 medium→low（floor 為 clip 且收窄），但 `overall`／`gate` 兩欄不變（`low`／`BLOCK`，本已由 `geometry=low`
+  擋下）——這與 T-47 表 8 ⑦(b) 模擬的預測位移方向一致，CRITERIA_GATE_v2.md 本身也註明「13 張結果與 tables.md 表 8 相同」，
+  不是規則實作錯誤，細節見下方交接筆記｜產品：不適用（本卡不改產品預設；role_aware 維持 🧪）｜MVP：不適用（沿用 T-17 FAIL）
 - **前置（硬性）**：T-47 ✅、T-46 ✅、T-43 ✅；`output/gate_calibration/CRITERIA_GATE_v2.md` 已由使用者核准並以獨立 commit 提交
   （`git log --format=%h -- output/gate_calibration/CRITERIA_GATE_v2.md` 恰一筆、訊息以 `criteria:` 開頭、早於本卡任何結果 commit）。
 - **為什麼**：裁決 T-47-A 2.2——role_aware 的 0.4 未校準且無資料可校準；⑦(b) 模擬（tables.md 表 8）已證此規則把唯一的已知錯誤放行收回，
@@ -10338,8 +10342,8 @@ EOF
   criteria_commit: 81bc4cd（criteria: gate v2……，2026-09-14；只含 CRITERIA_GATE_v2.md 一檔；早於本卡任何結果 commit）
   criteria_locked_at: 2026-09-14（使用者核准日＝criteria commit 日）
   dataset_manifest_sha256: c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7（開跑前 shasum -a 256 output/gate_calibration/DATASET_MANIFEST.json 重算，與本卡要求值相符）
-  implementation_commit: 〈執行者填〉
-  result_commit: 〈執行者填〉
+  implementation_commit: 6ac3ef3（materials.py／surfaces.py／pipeline.py／scripts/test_confidence_axes.py＋output/gate_calibration_v2/{REPORT.md,tables.md}）
+  result_commit: 6ac3ef3（同一 commit；基線變化表與程式碼同批產出提交）
   reviewer: 〈Opus 填：模型＋日期＋commit〉
   verdict_under_original_criteria: 〈Opus 填：gate v2 首跑〉
   verdict_under_current_criteria: 〈同上；判準未變〉
@@ -10359,7 +10363,93 @@ EOF
   not_a_calibration: 本版不宣稱 role_aware 已校準；正式校準＝T-53（需獨立校準集）
   supersedes: 無（default 模式仍為裁決 T-36-A 定案的規則 1～4＋0.4）
   ```
-- **交接筆記**：
+- **交接筆記（Sonnet，2026-09-14）**：
+
+  **1. §8 前四欄先行 commit（鐵則 14）**：`7e03a97`（只含 TASKS.md 一行 `dataset_manifest_sha256` 回填），
+  早於實作／結果 commit `6ac3ef3`。開跑前 `shasum -a 256 output/gate_calibration/DATASET_MANIFEST.json`
+  ＝`c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7`，與本卡要求值相符，未卡關。
+
+  **2. 執行步驟 3：新測試【C】對舊碼實測**（`git worktree add /tmp/t52-old-code 7e03a97`，複製新版
+  `scripts/test_confidence_axes.py` 進舊碼 worktree 跑；舊碼 `SurfaceMaterials` 沒有 `candidate_scope`
+  欄位，測試的 `_surf_with_scope()` 用 `hasattr()` 探測，偵不到就跳過設定 scope，讓同一份斷言能同時對
+  新舊碼跑，不會直接因 `AttributeError` 整批崩潰）：
+  ```
+  舊碼（worktree @ 7e03a97）：
+    ❌ (a) role_aware、floor clip 且候選集收窄（role:floor，6<12）→ low：實際='medium'
+    ❌ (a) R1b 觸發時 warnings 有記一條含面名稱／role_aware／T-47-A 的未校準警示：warnings=['單張透視照看不到背後的牆，四面牆共用同一個材質判定值。']
+    ✅ (b) 同一組 sources、scope 全 global（default 模式等效）→ medium（不受 R1b 影響）：實際='medium'
+    ✅ (c) 六面 manual_override（覆寫是出口，R1b 只看 source=='clip'）→ medium：實際='medium'
+    ✅ (d) role_aware、wall clip 且候選集不收窄（role:wall，12=12）→ 不觸發 R1b，六面 clip 無警示 → high：實際='high'
+    ❌ 2 項失敗：(a) 兩條斷言；EXIT=1
+
+  新碼（HEAD 6ac3ef3）：
+    ✅ (a)(b)(c)(d) 全部通過；EXIT=0
+  ```
+  (a) 必須 fail、(b)(c)(d) 必須 pass——符合本卡要求，證明新測試確實鎖定 R1b 這個新行為，不是恆成立的空案例。
+
+  **3. 執行步驟 4：基線變化表程式化比對**（`python scripts/t47_gate_calibration.py --out-dir
+  output/gate_calibration_v2/ --fresh`，52 次真實推論，實跑約 24 分鐘；`output/gate_calibration/` 全程
+  `git status --porcelain` 為空，一個 bit 未動）：
+  - **(i) default 四欄 13 列**：與 `output/gate_calibration/tables.md` 表 1 逐列比對（程式化字串比較，
+    非肉眼看），**完全相同，零差異**。
+  - **(ii) role_aware 四欄**：`bathroom_tiled` 如預期 `medium/medium/medium/pass → medium/low/low/BLOCK`。
+    **另外量到本卡文字沒有明講的一項**：`DivorceBeach` 的 `materials` 格也從 `medium` 變成 `low`
+    （`geometry/overall/gate` 三格不變，仍是 `low/low/BLOCK`）——`DivorceBeach` 的 floor 來源是 clip 且
+    候選集收窄（`role:floor`），R1b 依規則原文（「任一面…→low」，沒有「僅在 gate 結果因此改變時才觸發」
+    這種但書）必然觸發，這是逐字照規則實作的結果，不是誤判。且這**不是新發現**：T-47 的表 8（⑦(b) 模擬，
+    首輪已產出、`CRITERIA_GATE_v2.md` 本身也引用）就已經寫著「`DivorceBeach` materials medium→low（模擬：
+    候選集收窄的 clip 面不得直接 medium）……gate 本就由 geometry 擋（無感）」——本卡量到的行為與該預測
+    完全吻合。因此本卡步驟 4(ii) 原文「僅 bathroom_tiled 的 materials／overall／gate 三格改變，其餘 12
+    列相同」在字面上不精確（正確列數應是「11 列相同，DivorceBeach 的 materials 格也變但 overall／gate
+    不變」），如實記錄於此，未回頭修改本卡「執行步驟」原文（不在本卡授權範圍內；規則本身與實作皆未改，
+    這只是對步驟描述的量測結果補正）。
+  - **(iii)** 表 2 `role_aware` 段變為「（本模式下 13 張全數 BLOCK，無 pass 案例）」，相符。
+  - **(iv)** 表 3 五張已知錯誤案例（鐵則 12）兩模式全 `BLOCK`（`bathroom_tiled` role_aware 欄從 `pass`
+    變 `BLOCK`），相符。
+  - **(v)** harness 內建交叉檢查印出「✅ 兩條資料來源（真實 CLI／harness）26 組 surfaces＋sources 逐位元
+    相符」，相符（R1b 不改材質標籤，只改 `materials_confidence` 這一軸）。
+
+  **4. 執行步驟 5：`bathroom_tiled` EXIT=3 驗證**：
+  - `--role-aware --no-viz`：EXIT=3，stderr 含新增段落：
+    ```
+      未校準面（role_aware）：
+        floor：目前推測 carpet（角色 floor，候選 6 種，來源：clip；未經校準，裁決 T-47-A，不計入放行）
+      怎麼繼續：
+        1a) 改用預設模式（拿掉 --role-aware）→ 上列面改用全域候選集，不再受 R1b 影響（裁決 T-47-A gate v2）
+        1b) 或人工確認上列面的實際材質後覆寫，例如：python -m src.image_reverb assets/photos/bathroom_tiled.png --override-material floor=<材質id>
+        2) 仍要照樣輸出 → 加 --force-low-confidence（結果會標記 forced_low_confidence=true，不建議當常規路徑）
+    ```
+  - 不加 `--role-aware`：EXIT=3；對 T-52 前的 commit（`worktree add 7e03a97`，同一相對路徑
+    `assets/photos/bathroom_tiled.png` 呼叫，避免路徑字串本身造成假差異）跑一次，`diff` 輸出為空——
+    default 模式 stderr 逐位元不變。
+
+  **5. 執行步驟 6**：20 支 `scripts/test_*.py`（含 `test_depth`／`test_furnishings`／`test_segmentation`／
+  `test_output_gate`／`test_pipeline_dedup`／`test_surface_trusted_scope`／`test_t44_role_partition`／
+  `test_t46_role_flag` 這些會載入真模型的）全部 `EXIT=0`。六條交付 IR MD5：T-14（`test_ir_synth.py`
+  【6】內建 `EXIT=0`）；T-20 `--text 浴室`＝`2adbaa75eb698772a8c9aa693179ec47`、`--text 大教堂`＝
+  `2dd19b6e6d351d713887636fe45cd67e`；T-21 `--scene assets/scenes/neighbor_voices.json`＝
+  `9a94ffdf5d8295aee7889729c39c9cd8`、`--scene assets/scenes/stadium_corridor.json`＝
+  `a1c21bcc3fd9aa3480df203a89c8cd05`——六條均與歷史記錄逐位元相同。
+
+  **6. 自我檢查**（`git diff --stat -- src` 只含 `materials.py`／`surfaces.py`／`pipeline.py`；
+  `git diff --stat` 對 `data`／`t47_gate_calibration.py`／`t46_role_flag_baseline.py`／`geometry.py`／
+  `acoustics.py`／`ir_synth.py`／`ir_metrics.py`／`config.py` 為空；`git status --porcelain --
+  output/gate_calibration` 為空；`grep -n 'worktree.*add.*"HEAD"' scripts/test_confidence_axes.py`
+  為空）全部確認通過。
+
+  **7. 範圍外但值得一提**：`implementation_commit`／`result_commit` 是同一個 commit `6ac3ef3`
+  （程式碼、新測試、`output/gate_calibration_v2/{REPORT.md,tables.md}` 同批提交，理由：三者是本卡
+  單一執行步驟的產出，拆開不會增加可驗證性，只會讓 Opus 多切一次上下文；沿用 T-46 卡的先例
+  「implementation_commit: 73aaa3b / result_commit: 73aaa3b」）；`output/gate_calibration_v2/`
+  底下的 `cli_runs/`／`detail_runs/`（二進位 WAV／逐張 JSON）維持 `.gitignore` 的 `output/**` 規則
+  不進版控，只有 `.md` 兩檔（`!output/**/*.md`）進版控，與 `output/gate_calibration/` 當初的作法一致。
+
+  **8. Opus 下一步**：依本卡「Opus 驗證重點」複核，特別是第一條（§8 前四欄 commit `7e03a97` 早於
+  `6ac3ef3`）與「default 模式任何一格變動」紅旗（本卡步驟 4(i) 已程式化證明零差異，可重跑
+  `output/gate_calibration/tables.md` 表 1 與 `output/gate_calibration_v2/tables.md` 表 1 的
+  default 四欄比對複驗）；另請一併評估第 3 點「DivorceBeach materials 格也變」是否需要視為
+  「規則實作與 CRITERIA 原文不同義」紅旗——本卡判讀是不需要（規則原文逐字照實作，且與 T-47 表 8
+  預測一致），但這屬於判斷，留給 Opus 獨立覆核。
 
 ### T-53 role_aware gate 校準量測（保留號；裁決 T-47-A 第 5 節；**未開卡——開卡條件＝使用者提供獨立校準集**）
 - **狀態**：⏸ 保留號（Fable 2026-09-14）——沒有校準集就不開跑；不在關鍵路徑。
