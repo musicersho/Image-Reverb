@@ -1,5 +1,12 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🟠 2026-09-14 Opus：T-52 第二輪複核 4(ii)——**工程退回維持：4(ii) 更正根本還沒提交**——**現在該做的是：使用者對 Fable 的 4(ii) 更正草案回「核准」→ Fable 提交獨立 `criteria: T-52 步驟 4(ii) 更正` commit → 再開 Opus 視窗只複核 4(ii)**
+>
+> - 實查 HEAD `2fe9480`：`81bc4cd` 之後沒有任何 `criteria:` commit（遠端也沒有）、repo 內無使用者核准紀錄、T-52 卡自 `53bffb9` 起一字未動。
+> - 其餘三項實測成立：`CRITERIA_GATE_v2.md` 未動；`git diff 6ac3ef3 HEAD -- src data` 空；`output/gate_calibration` 未動；`test_confidence_axes.py` EXIT=0。
+> - 程式比對兩份 `tables.md`：Opus 首輪建議寫法字面成立、原 4(ii) 仍不成立；建議寫法屬「對齊事前鎖定判準」（表 8 早於開卡、方向較嚴）。**不需 Sonnet、不需重跑任何東西。**
+> - 四軸：工程：退回｜實驗：正向（僅限 expected_on_13）｜產品：feature flag（建議）｜MVP：不適用。全文見 T-52 卡「Opus 第二輪複核紀錄」、DEV_LOG (137)。
+
 > ## 🔵 2026-09-14 Sonnet：T-48 修正輪完成——**現在該做的是開 Opus 新視窗複驗**，結果 commit 見本次收工 commit
 >
 > 回應 Opus 驗證紀錄（對象結果 commit `012a07f`）退回理由 R1～R8＋裁決 T-48-F 追加第 6～8 條，範圍限「只改報表文字

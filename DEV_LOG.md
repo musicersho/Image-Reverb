@@ -1,5 +1,15 @@
 # Dev Log
 
+## 2026-09-14 (137)
+
+- **T-52 Opus 第二輪複核 4(ii)——🟠 工程退回（維持）：受審的 4(ii) 更正尚未落地**。HEAD `2fe9480` 查無 `81bc4cd` 之後的 `criteria:` commit（遠端亦無）、
+  repo 內無使用者核准紀錄（HANDOFF／DEV_LOG (134)(135) 皆寫「等使用者核准、尚未 commit」）、T-52 卡自 `53bffb9` 起逐字零變動。
+- 其餘實測成立：`CRITERIA_GATE_v2.md` 自 `81bc4cd` 零 diff；`git diff 6ac3ef3 HEAD -- src data` 空；`output/gate_calibration` porcelain 空；`test_confidence_axes.py` EXIT=0。
+- 程式比對 v1／v2 `tables.md`：首輪第 9 點建議寫法字面成立（role_aware 三欄 13/13＝表 8 模擬、gate 僅 bathroom_tiled 變、geometry 13/13 同）；原 4(ii) 仍不成立。
+  性質判斷：建議寫法屬對齊事前鎖定判準（表 8 `5d1569c` 早於開卡與 CRITERIA、方向較嚴），但 Opus 不宜兼任核准人，仍需使用者核准。
+- 四軸：工程：退回｜實驗：正向（僅限 expected_on_13）｜產品：feature flag（建議）｜MVP：不適用。§8 追加 `verdict_under_current_criteria` 一行（原行保留）。
+- **下一步**：使用者核准 Fable 草案 → Fable 提交 `criteria: T-52 步驟 4(ii) 更正` → Opus 只複核 4(ii) 文字。零改動：`src`／`scripts`／`data`／`output/**`。
+
 ## 2026-09-14 (136)
 
 - **T-48 修正輪完成（Sonnet 執行）——現在該做的是開 Opus 新視窗複驗**，結果 commit 見本次收工 commit。

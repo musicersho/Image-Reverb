@@ -145,7 +145,8 @@
 - [x] **🔮 裁決 T-47-A 已下（Fable 2026-09-14）**——default gate 維持；role_aware 0.4 未校準、**甲／乙等使用者核准**（乙＝T-52）；產品 🧪 維持；
       T-44-R1 ⏸ 移出關鍵路徑（等 T-53）；T-17-R2 前置「裁決 T-47-A」滿足；T-48 可立即開跑。T-47 四軸：工程：已驗證｜實驗：不適用｜
       產品：不適用（量測卡）｜MVP：不適用。全文見 TASKS.md T-47 卡「🔮 裁決 T-47-A」。
-- [ ] **T-52** gate criteria v2——**🔮 Fable 2026-09-14：步驟 4(ii) 更正草案已擬（性質＝對齊事前鎖定判準、不開 gate v3），等使用者核准後
+- [ ] **T-52** gate criteria v2——**🟠 Opus 第二輪複核（2026-09-14）：工程退回維持——4(ii) 更正尚未落地（無 `criteria:` commit、無使用者核准紀錄、卡片未變）；建議寫法程式比對字面成立、性質屬對齊事前判準；src/data 零 diff、test_confidence_axes EXIT=0。下一步＝使用者核准→Fable 提交 criteria commit→Opus 複核 4(ii)。**
+      **🔮 Fable 2026-09-14：步驟 4(ii) 更正草案已擬（性質＝對齊事前鎖定判準、不開 gate v3），等使用者核准後
       提交獨立 `criteria: T-52 步驟 4(ii) 更正` commit → 狀態改「待 Opus 複核 4(ii)」→ Opus 只複核該項。** 以下為 Opus 退回原文：
       **🟠 Opus 工程退回（2026-09-14；非執行者過失，不需改碼／重跑）**：實作與全部紅線實測通過
       （default 逐位元不變、R1b 同義且對 high 生效、【C】舊碼 fail、`--fresh` 重跑 tables.md 逐字相同、20 支測試、六條 MD5）；
