@@ -7,10 +7,12 @@
 13 張照片清單唯一可信來源＝`scripts/t36_clip_accuracy.GATE_ITEMS`（不重打）。
 
 用法：
-    python scripts/t48_geometry_material_r2.py manifest   # 只建 DATASET_MANIFEST.json（開跑前置）
-    python scripts/t48_geometry_material_r2.py partA       # T-11 域外出口重驗
-    python scripts/t48_geometry_material_r2.py partB       # T-12 判準 v2 量測
-    python scripts/t48_geometry_material_r2.py all         # A+B
+    python scripts/t48_geometry_material_r2.py manifest             # 只建 DATASET_MANIFEST.json（開跑前置）
+    python scripts/t48_geometry_material_r2.py partA                # T-11 域外出口重驗（真跑 CLI）
+    python scripts/t48_geometry_material_r2.py partA-report-only    # 只讀既有 runs/ log 重產 REPORT.md，不重跑 CLI
+    python scripts/t48_geometry_material_r2.py partB                # T-12 判準 v2 量測（真跑 gen_ir_manual.py）
+    python scripts/t48_geometry_material_r2.py partB-report-only    # 只讀既有交付 WAV／log 重產 REPORT.md，不重生 IR
+    python scripts/t48_geometry_material_r2.py all                  # A+B（皆真跑）
 """
 
 from __future__ import annotations
@@ -50,8 +52,16 @@ KNOWN_DIMENSIONS = {
     "car_interior_suv": {
         "actual_max_dim_m": 2.0,
         "v2_category": "not_applicable",
-        "note": "實際 ~2m，不 >10m 故不落入域外項；卡片原文「目前只有浴室」明示「≤10m 且有 ground truth」"
-        "誤差判準只適用浴室一張，車內不在兩類別判準內——僅記錄估計值供參考，不列入 FAIL/PASS 判定。",
+        # 修正輪（Sonnet，2026-09-14）依裁決 T-48-F 第 3 點（Fable）：v2 判準文字本身自相矛盾
+        # （「已知實際尺寸」列了車內 ~2m，但誤差判準括號卻寫「目前只有浴室」），只改標籤與說明
+        # 文字、不改任何量測數字、不改分類邏輯（v2_category 仍是 not_applicable，只是顯示的
+        # verdict 從「不適用」改成 inconclusive，理由見下）。
+        "v2_verdict": "inconclusive",
+        "note": "v2 判準文字自相矛盾（「已知實際尺寸」列了車內 ~2m，但誤差判準括號卻寫「目前只有浴室」）——"
+        "依裁決 T-48-F 第 3 點（Fable，2026-09-14），v2 記 inconclusive（判準文字自相矛盾），"
+        "不是 PASS、不是 FAIL，也不是原記的「不適用」。v3（T-55）將車內歸類 domain_out_non_room"
+        "（依 T-11 原卡步驟 5「車內與超大空間允許數字不準」，與 >10m 域外同款判準：geometry_confidence "
+        "必須 low 且 gate 訊息含 --override-dims 導引；估計誤差只記錄不判）。",
     },
     "arena_ntsu_linkou": {
         "actual_max_dim_m": 150.0,
@@ -185,12 +195,100 @@ def _run_cli(photo: str, extra_args: list[str], log_path: Path) -> tuple[int, st
     return proc.returncode, combined
 
 
-def _matched_rules(warnings: list[str]) -> list[str]:
+def _matched_rules(text: str) -> list[str]:
     tags = []
     for tag, marker in _RULE_MARKERS:
-        if any(marker in w for w in warnings):
+        if marker in text:
             tags.append(tag)
     return tags
+
+
+# 修正輪（Sonnet，2026-09-14）新增，回應 Opus 驗證紀錄 R7：從 default_log／force_log 的原始文字
+# 直接解析（不依賴 analysis.json——blocked 案例的 analysis.json 會被 pipeline 清空／搬進
+# output/.archive/，report-only 模式讀不到），一併算出「被哪一軸擋下」與「gate 給的出口」，
+# 讓 §1／§4 能誠實列出 R7 指出的缺漏（RacquetballCourt4 被材質軸擋、不是幾何軸）。
+def _build_result(name: str, photo: str, known: dict | None, default_log: str, force_log: str,
+                   default_exit: int | None, force_exit: int | None) -> dict:
+    conf_match = _CONF_LINE_RE.search(default_log)
+    dims_match = _DIMS_LINE_RE.search(default_log)
+    geometry_confidence = conf_match.group(1) if conf_match else None
+    materials_confidence = conf_match.group(2) if conf_match else None
+    overall_confidence = conf_match.group(3) if conf_match else None
+    blocked = "已擋下輸出" in default_log
+    override_dims_guidance = "幾何不可信 → 用 --override-dims" in default_log
+    override_material_guidance = "--override-material" in default_log
+    low_confidence_faces = sorted(set(re.findall(r"\n\s+(\w+)：目前推測", default_log)))
+
+    blocking_axes = []
+    if blocked:
+        if geometry_confidence == "low":
+            blocking_axes.append("geometry")
+        if materials_confidence == "low":
+            blocking_axes.append("materials")
+
+    if dims_match:
+        length_m, width_m, height_m = (float(dims_match.group(i)) for i in (1, 2, 3))
+        dims_source = dims_match.group(4)
+    else:
+        length_m = width_m = height_m = None
+        dims_source = None
+
+    max_dim = max((v for v in (length_m, width_m, height_m) if v is not None), default=None)
+    matched_rules = _matched_rules(force_log)
+
+    v2_category = known["v2_category"] if known else "unknown_no_ground_truth"
+
+    verdict = None
+    verdict_detail = ""
+    if v2_category == "domain_out":
+        ok = (geometry_confidence == "low") and override_dims_guidance
+        verdict = "PASS" if ok else "FAIL"
+        verdict_detail = (
+            f"實際最大維 {known['actual_max_dim_m']}m >10m，要求 geometry_confidence=low 且"
+            f" gate 訊息含 --override-dims 導引；實測 geometry_confidence={geometry_confidence}，"
+            f"override-dims 導引={'有' if override_dims_guidance else '無'}"
+        )
+    elif v2_category == "domain_in_with_ground_truth":
+        actual = known["actual_depth_point_m"]
+        error_pct = (length_m - actual) / actual * 100.0 if length_m is not None else None
+        ok = error_pct is not None and abs(error_pct) <= 30.0
+        verdict = "PASS" if ok else "FAIL"
+        verdict_detail = (
+            f"實際進深 {actual}m（範圍 {known['actual_depth_range_m']}），估計進深 {length_m:.2f}m，"
+            f"誤差 {error_pct:+.1f}%（判準 ≤±30%）"
+        )
+    elif v2_category == "not_applicable":
+        verdict = known.get("v2_verdict", "不適用")
+        verdict_detail = known["note"]
+    else:
+        verdict = "不適用（未知，不列入 v2 判定）"
+        verdict_detail = "無已知實際尺寸，僅記錄估計值供參考，不列入 FAIL/PASS 判定。"
+
+    return {
+        "name": name,
+        "photo": photo,
+        "dims_source": dims_source,
+        "length_m": length_m,
+        "width_m": width_m,
+        "height_m": height_m,
+        "max_dim_m": max_dim,
+        "volume_m3": (length_m or 0) * (width_m or 0) * (height_m or 0),
+        "geometry_confidence": geometry_confidence,
+        "materials_confidence": materials_confidence,
+        "overall_confidence": overall_confidence,
+        "blocked": blocked,
+        "blocking_axes": blocking_axes,
+        "override_dims_guidance": override_dims_guidance,
+        "override_material_guidance": override_material_guidance,
+        "low_confidence_faces": low_confidence_faces,
+        "matched_scope_rules": matched_rules,
+        "v2_category": v2_category,
+        "known": known,
+        "verdict": verdict,
+        "verdict_detail": verdict_detail,
+        "default_exit": default_exit,
+        "force_exit": force_exit,
+    }
 
 
 def run_part_a() -> list[dict]:
@@ -207,91 +305,45 @@ def run_part_a() -> list[dict]:
         photo = item["photo"]
         print(f"=== {name} ===", flush=True)
 
-        # 1) force-low-confidence 先跑：只是為了讀 analysis.json 裡完整的 warnings/notes
+        # 1) force-low-confidence 先跑：只是為了讀 stdout 裡完整的 warnings/notes
         #    （量程規則觸發細節），不影響、不重新計算 gate 判定本身。
         force_exit, force_log = _run_cli(
             photo, ["--force-low-confidence"], runs_dir / name / "force_low_confidence.log"
         )
-        analysis_path = PROJECT_ROOT / "output" / Path(photo).stem / "analysis.json"
-        analysis = json.loads(analysis_path.read_text(encoding="utf-8")) if analysis_path.exists() else {}
 
         # 2) 預設路徑（無旗標）：這才是真正的 production gate 行為，域外判準看這次的輸出。
         default_exit, default_log = _run_cli(
             photo, [], runs_dir / name / "default.log"
         )
-        conf_match = _CONF_LINE_RE.search(default_log)
-        dims_match = _DIMS_LINE_RE.search(default_log)
-        geometry_confidence = conf_match.group(1) if conf_match else analysis.get("geometry_confidence")
-        overall_confidence = conf_match.group(3) if conf_match else None
-        blocked = "已擋下輸出" in default_log
-        override_dims_guidance = "幾何不可信 → 用 --override-dims" in default_log
-
-        if dims_match:
-            length_m, width_m, height_m = (float(dims_match.group(i)) for i in (1, 2, 3))
-            dims_source = dims_match.group(4)
-        else:
-            dims_m = analysis.get("dims_m", {})
-            length_m = dims_m.get("length")
-            width_m = dims_m.get("width")
-            height_m = dims_m.get("height")
-            dims_source = analysis.get("dims_source")
-
-        max_dim = max(v for v in (length_m, width_m, height_m) if v is not None)
-        warnings_list = analysis.get("warnings", [])
-        matched_rules = _matched_rules(warnings_list)
 
         known = KNOWN_DIMENSIONS.get(name)
-        v2_category = known["v2_category"] if known else "unknown_no_ground_truth"
+        r = _build_result(name, photo, known, default_log, force_log, default_exit, force_exit)
+        results.append(r)
+        print(f"    dims={r['length_m']:.2f}x{r['width_m']:.2f}x{r['height_m']:.2f} "
+              f"geometry_confidence={r['geometry_confidence']} materials_confidence={r['materials_confidence']}"
+              f" v2_category={r['v2_category']} verdict={r['verdict']}")
+    return results
 
-        verdict = None
-        verdict_detail = ""
-        if v2_category == "domain_out":
-            ok = (geometry_confidence == "low") and override_dims_guidance
-            verdict = "PASS" if ok else "FAIL"
-            verdict_detail = (
-                f"實際最大維 {known['actual_max_dim_m']}m >10m，要求 geometry_confidence=low 且"
-                f" gate 訊息含 --override-dims 導引；實測 geometry_confidence={geometry_confidence}，"
-                f"override-dims 導引={'有' if override_dims_guidance else '無'}"
-            )
-        elif v2_category == "domain_in_with_ground_truth":
-            actual = known["actual_depth_point_m"]
-            error_pct = (length_m - actual) / actual * 100.0 if length_m is not None else None
-            ok = error_pct is not None and abs(error_pct) <= 30.0
-            verdict = "PASS" if ok else "FAIL"
-            verdict_detail = (
-                f"實際進深 {actual}m（範圍 {known['actual_depth_range_m']}），估計進深 {length_m:.2f}m，"
-                f"誤差 {error_pct:+.1f}%（判準 ≤±30%）"
-            )
-        elif v2_category == "not_applicable":
-            verdict = "不適用"
-            verdict_detail = known["note"]
-        else:
-            verdict = "不適用（未知，不列入 v2 判定）"
-            verdict_detail = "無已知實際尺寸，僅記錄估計值供參考，不列入 FAIL/PASS 判定。"
 
-        results.append({
-            "name": name,
-            "photo": photo,
-            "dims_source": dims_source,
-            "length_m": length_m,
-            "width_m": width_m,
-            "height_m": height_m,
-            "max_dim_m": max_dim,
-            "volume_m3": (length_m or 0) * (width_m or 0) * (height_m or 0),
-            "geometry_confidence": geometry_confidence,
-            "overall_confidence": overall_confidence,
-            "blocked": blocked,
-            "override_dims_guidance": override_dims_guidance,
-            "matched_scope_rules": matched_rules,
-            "v2_category": v2_category,
-            "known": known,
-            "verdict": verdict,
-            "verdict_detail": verdict_detail,
-            "default_exit": default_exit,
-            "force_exit": force_exit,
-        })
-        print(f"    dims={length_m:.2f}x{width_m:.2f}x{height_m:.2f} geometry_confidence={geometry_confidence}"
-              f" v2_category={v2_category} verdict={verdict}")
+def run_part_a_report_only() -> list[dict]:
+    """修正輪（Sonnet，2026-09-14）新增，回應 Opus 修正輪指示第 1 條「Part A 不必重跑」：
+    完全讀 output/geometry_r2/runs/<name>/{default,force_low_confidence}.log 這些既有真實 CLI
+    輸出（Part A 首跑時已寫入、未曾刪改），不再呼叫任何 subprocess，只用來重產 REPORT.md 的
+    文字／表格／欄位（例如本輪新加的 materials_confidence／blocking_axes 欄）。"""
+    runs_dir = GEOMETRY_OUT / "runs"
+    results = []
+    for item in GATE_ITEMS:
+        name = item["name"]
+        photo = item["photo"]
+        default_log_path = runs_dir / name / "default.log"
+        force_log_path = runs_dir / name / "force_low_confidence.log"
+        if not default_log_path.exists() or not force_log_path.exists():
+            print(f"❌ 錯誤：{default_log_path} 或 {force_log_path} 不存在，無法只重產報表——請先跑 partA 一次。")
+            sys.exit(1)
+        default_log = default_log_path.read_text(encoding="utf-8")
+        force_log = force_log_path.read_text(encoding="utf-8")
+        known = KNOWN_DIMENSIONS.get(name)
+        results.append(_build_result(name, photo, known, default_log, force_log, None, None))
     return results
 
 
@@ -315,17 +367,24 @@ def _write_part_a_report(results: list[dict]) -> None:
                  f"（FAIL 筆數：{fail_count}）\n")
 
     lines.append("## 1. 逐張結果（全部 13 張，沒有只挑好看的）\n")
-    lines.append("| 照片 | 估計 L×W×H (m) | 最大維 | dims_source | geometry_confidence | override-dims 導引 | v2 類別 | 判定 | 細節 |")
-    lines.append("|---|---|---|---|---|---|---|---|---|")
+    lines.append(
+        "（修正輪，Sonnet 2026-09-14，回應 Opus 驗證紀錄 R7：新增 `materials_confidence`／`擋在哪軸` 欄——"
+        "原表只列 geometry_confidence，讀者無法判斷 gate 是被幾何軸還是材質軸擋下，"
+        "RacquetballCourt4 正是被 materials 軸擋、geometry 軸沒擋，見下方 §4。）\n"
+    )
+    lines.append("| 照片 | 估計 L×W×H (m) | 最大維 | dims_source | geometry_confidence | materials_confidence | 已擋下 | 擋在哪軸 | override-dims 導引 | v2 類別 | 判定 | 細節 |")
+    lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
     for r in results:
         lines.append(
             f"| {r['name']} | {r['length_m']:.2f}×{r['width_m']:.2f}×{r['height_m']:.2f} "
             f"| {r['max_dim_m']:.2f} | {r['dims_source']} | {r['geometry_confidence']} "
+            f"| {r['materials_confidence']} | {'是' if r['blocked'] else '否'} "
+            f"| {'、'.join(r['blocking_axes']) if r['blocking_axes'] else '—'} "
             f"| {'有' if r['override_dims_guidance'] else '無'} | {r['v2_category']} "
             f"| {r['verdict']} | {r['verdict_detail']} |"
         )
 
-    lines.append("\n## 2. 觸發的量程／場景線索規則（讀自 `--force-low-confidence` 重跑的 analysis.json warnings，"
+    lines.append("\n## 2. 觸發的量程／場景線索規則（讀自 `--force-low-confidence` 重跑的真實 CLI stdout warnings，"
                  "只為了印出「觸發哪條規則」的細節，不影響／不重算 gate 判定本身——判定一律依上表的預設路徑真實 CLI 輸出）\n")
     lines.append("| 照片 | 觸發規則 |")
     lines.append("|---|---|")
@@ -371,17 +430,45 @@ def _write_part_a_report(results: list[dict]) -> None:
                     f"`geometry_confidence` 停在 medium——這正是 v2 判準想抓的「域外出口誤放」，"
                     f"如實記為 FAIL，不得用附註豁免（WORKFLOW §5.4.1）。\n"
                 )
+            # 修正輪（Sonnet，2026-09-14）新增，回應 Opus 驗證紀錄 R7：原 REPORT 只寫
+            # 「gate 未印 override-dims 導引」，沒說預設路徑其實已經被「材質軸」擋下（不是幾何軸沒擋
+            # 就等於 gate 放行），也沒說 gate 給的出口是什麼、使用者照做的後果是什麼——這裡補齊。
+            lines.append(
+                f"**gate 實際擋在哪一軸**：預設路徑 `blocked={r['blocked']}`"
+                f"（`geometry_confidence={r['geometry_confidence']}`、"
+                f"`materials_confidence={r['materials_confidence']}`），"
+                f"擋下的軸＝{('、'.join(r['blocking_axes']) or '無（本張預設路徑未被擋下）')}。"
+            )
+            if "materials" in r["blocking_axes"] and "geometry" not in r["blocking_axes"]:
+                lines.append(
+                    f"即：本張是被**材質軸**擋下，幾何軸維持 medium（未觸發 low），"
+                    f"所以 gate 給的出口只有材質覆寫（低信心面：{('、'.join(r['low_confidence_faces']) or '無')}），"
+                    f"**沒有**提供 `--override-dims` 這個出口——使用者如果只照 gate 訊息字面操作"
+                    f"（覆寫上述材質面），程式不會再擋幾何，會直接用這張的**錯誤估計尺寸**"
+                    f"（{r['length_m']:.2f}×{r['width_m']:.2f}×{r['height_m']:.2f}m，"
+                    f"實際 {r['known']['actual_dims_m'] if r['known'] and 'actual_dims_m' in r['known'] else r['known']['actual_max_dim_m']}）"
+                    f"輸出 IR，exit 0。**這一步已由 Opus 驗證紀錄 V5（2026-09-14，驗證時 HEAD "
+                    f"`153155b`）實測確認**：對 RacquetballCourt4 加 "
+                    f"`--override-material north=gypsum_board --override-material ceiling=wood_panel` 後，"
+                    f"`geometry=medium, materials=medium, overall=medium`、exit 0，"
+                    f"以 16.10×9.39×5.55m 錯誤幾何（實際 12.19×6.10×6.10m）輸出 IR——"
+                    f"即使用者依 gate 導引走完整個「怎麼繼續」流程仍會拿到錯誤空間的 IR。"
+                    f"這是本卡交 Fable 的 F1 建議（修 `apply_scope_confidence()` 環景分支，"
+                    f"裁決 T-48-F 已開 T-54 執行）的根本原因，本卡本身不改 `geometry.py`。\n"
+                )
         lines.append("")
 
     lines.append(
         "\n## 5. 方法\n\n"
         "每張照片跑兩次真實 CLI（`python -m src.image_reverb <photo> --no-viz`）：\n"
-        "1. 先加 `--force-low-confidence` 跑一次，只為了讀 `output/<stem>/analysis.json` 的完整 "
+        "1. 先加 `--force-low-confidence` 跑一次，只為了讀該次 stdout 的完整 "
         "`warnings`（量程/場景線索規則的詳細文字），不影響任何判定。\n"
         "2. 再跑一次**不帶任何旗標**（真正的預設 production 路徑），這次的 stdout/stderr 才是 gate 判定"
-        "與 `--override-dims` 導引訊息的真實來源——v2 判準完全依這次輸出判定。\n\n"
+        "與 `--override-dims`／`--override-material` 導引訊息的真實來源——v2 判準完全依這次輸出判定。\n\n"
         "13 張照片清單與路徑唯一來源：`scripts/t36_clip_accuracy.GATE_ITEMS`（不重打）。"
-        "逐張原始 CLI 輸出存於 `output/geometry_r2/runs/<name>/{default,force_low_confidence}.log`。\n"
+        "逐張原始 CLI 輸出存於 `output/geometry_r2/runs/<name>/{default,force_low_confidence}.log`"
+        "（本卡首跑產生；修正輪 `partA-report-only` 模式只讀這些既有 log 重產本報表文字，"
+        "不重新呼叫 CLI，不重跑 Part A——Opus 修正輪指示第 1 條）。\n"
     )
 
     GEOMETRY_OUT.mkdir(parents=True, exist_ok=True)
@@ -394,6 +481,13 @@ def cmd_part_a() -> None:
     _write_part_a_report(results)
     fail_count = sum(1 for r in results if r["verdict"] == "FAIL")
     print(f"\nPart A 完成：FAIL 筆數 = {fail_count}")
+
+
+def cmd_part_a_report_only() -> None:
+    results = run_part_a_report_only()
+    _write_part_a_report(results)
+    fail_count = sum(1 for r in results if r["verdict"] == "FAIL")
+    print(f"\nPart A（只重產報表，未重新呼叫 CLI）完成：FAIL 筆數 = {fail_count}")
 
 
 # ------------------------------------------------------------
@@ -436,6 +530,17 @@ IR_CASES = [
 def _sabine_125hz_from_stdout(stdout: str) -> float | None:
     m = re.search(r"125 Hz　RT60 ≈ ([\d.]+) 秒", stdout)
     return float(m.group(1)) if m else None
+
+
+# 修正輪（Sonnet，2026-09-14）新增，回應 Opus 驗證紀錄 R5／裁決 T-48-F F2：v2-b diff 子判準的
+# 官方 verdict 是「首跑」（commit d372ad9，本卡 Part B 第一次實作後隨即執行的那次）的結果，
+# 不是「本次交付版本」的結果——量測方法已證實非決定性（同指令重跑三次落在門檻兩側），
+# 依 WORKFLOW §7.5「舊量測方法被證明無效時，舊結果不能直接改成 PASS」，永久記首跑 verdict。
+# 原始 WAV／stdout log 已於本卡執行期間的後續重跑覆蓋，此數字是執行者自述、無殘存產物可複核
+# （Opus 驗證紀錄 R3），標示清楚後仍照實引用（不是憑空捏造，三次重跑本身有 commit 時序佐證）。
+FIRST_RUN_V2B_DIFF_PCT = -21.1
+FIRST_RUN_V2B_VERDICT = "FAIL"
+FIRST_RUN_V2B_COMMIT = "d372ad9"
 
 
 def run_part_b() -> dict:
@@ -545,22 +650,29 @@ def _write_stability_appendix(cases: dict, repeats: dict) -> list[str]:
         for pw_v in pw_all
         for cg_v in cg_all
     ]
+    # 修正輪（Sonnet，2026-09-14）回應 Opus 驗證紀錄 R4：official_diff／official_verdict 移到
+    # 段落文字組出之前計算，讓下面所有句子都能動態代入，不再有任何手打的 PASS/FAIL 字面值。
+    official_diff = _pct_diff(pw_official, cg_official)
+    official_verdict = "PASS" if abs(official_diff) <= 20.0 else "FAIL"
+
     lines = []
-    lines.append("\n## 3. 附錄：量測穩定性檢查（不影響上方 §0 官方判定）\n")
+    lines.append(
+        "\n## 3. 附錄：量測穩定性檢查（不影響上方 §0 官方判定——§0 依裁決 T-48-F F2 記"
+        "「首跑 FAIL、方法 inconclusive」，本次交付版本數字僅供參考）\n"
+    )
     lines.append(
         "`gen_ir_manual.py` 呼叫的 pyroomacoustics ray tracing **沒有固定 random seed**"
         "（已實測：同一指令重跑兩次，輸出 WAV sha256 不同，樣本點最大絕對差"
         "約 0.099——見本卡交接筆記）。§0 的官方判定只用**每個 case 第一次（也是唯一"
         "交付到 `output/material_r2/` 的那次）重生結果**，不做多次重跑取平均"
         "（判準本身沒有要求，本卡也不得另外發明「取平均」這種未鎖定的判定方式）。\n\n"
-        f"為了讓 Opus／Fable 判斷 v2-b 這筆 FAIL 是否落在量測噪聲量級內，"
+        f"為了讓 Opus／Fable 判斷 v2-b 這筆 **{official_verdict}**（本次交付版本，"
+        f"{official_diff:+.1f}%）是否落在量測噪聲量級內，"
         f"這裡**額外**重跑 per_wall／control_gypsum 各 {STABILITY_REPEATS} 次"
         "（存於 `output/material_r2/stability_check/`，與正式交付檔案分開，不算入判定）：\n\n"
     )
     lines.append(f"- per_wall 聯合帶 T30 各次量測（含官方那次）：{[round(float(v), 4) for v in pw_all]}\n")
     lines.append(f"- control_gypsum 聯合帶 T30 各次量測（含官方那次）：{[round(float(v), 4) for v in cg_all]}\n")
-    official_diff = _pct_diff(pw_official, cg_official)
-    official_verdict = "PASS" if abs(official_diff) <= 20.0 else "FAIL"
     lines.append(
         f"- 交叉配對後的 per_wall vs control_gypsum 差異百分比範圍："
         f"{min(diffs_pct):+.1f}% ～ {max(diffs_pct):+.1f}%（判準 ≤±20%；"
@@ -568,32 +680,40 @@ def _write_stability_appendix(cases: dict, repeats: dict) -> list[str]:
     )
     straddles = min(diffs_pct) < -20.0 < max(diffs_pct) or min(diffs_pct) < 20.0 < max(diffs_pct)
     if straddles:
+        # 修正輪（Sonnet，2026-09-14）回應 Opus 驗證紀錄 R4：刪除原本「v2-b 的 {official_verdict}
+        # 判定本身……站得住腳」與下段「不代表……站得住腳」互相矛盾的句子，改成單一、前後一致的
+        # 說法——直接呼應裁決 T-48-F F2 的「首跑 FAIL、方法 inconclusive」結論。
         lines.append(
-            f"\n**觀察**：不同次重跑的差異百分比跨越 ±20% 門檻兩側，"
-            f"代表官方判定的 PASS/FAIL 對這次隨機重跑的結果敏感——"
-            f"v2-b 的 {official_verdict} 判定本身依官方那次重生的數字如實記錄、站得住腳，"
-            f"但門檻本身的鑑別力在這個量級的隨機噪聲下很薄弱，這點誠實列出，"
-            f"是否需要改進量測方法（例如多次取中位數、固定 seed）留給 Fable 依 "
-            f"WORKFLOW §7 另行裁決，本卡不自行更動判準或判定方式。\n"
+            f"\n**觀察**：不同次重跑的差異百分比跨越 ±20% 門檻兩側，代表這個判準在目前的量測方法"
+            f"（單次生成、無固定 seed）下對隨機重跑結果敏感、鑑別力薄弱——這正是本卡 §0 記"
+            f"「v2-b 首跑 FAIL、方法 inconclusive」、不採用本次交付版本 {official_verdict}"
+            f"（{official_diff:+.1f}%）當作最終結論的原因（WORKFLOW §7.5：量測方法被證明無效時，"
+            f"舊結果不能直接改成 PASS）。是否改進量測方法（例如固定 seed、多次取中位數）已交由 "
+            f"T-56（criteria v3，裁決 T-48-F F2）處理，本卡不自行更動判準或判定方式。\n"
         )
 
     lines.append(
-        "\n**本卡執行過程中的官方量測歷史（誠實揭露，非結果篩選）**：本卡執行期間因程式"
+        "\n**本卡執行過程中的官方量測歷史（誠實揭露，非結果篩選；修正輪 R3 更正標示，Sonnet 2026-09-14："
+        "前兩筆原始 WAV／log 已於後續重跑覆蓋，數字為執行者自述，無殘存產物可複核）**：本卡執行期間因程式"
         "本身的修正（除錯與格式修正，與量測邏輯／判準無關）重新跑過三次「官方」"
         "per_wall／control_gypsum 生成＋量測，每一次都是當時唯一交付到 "
         "`output/material_r2/` 的版本（前一次的交付檔案在下一次重跑時被覆蓋，"
         "紅線要求不得重用舊 IR，所以每次重跑本來就必須用新生成的檔案）：\n\n"
-        "| 官方重跑對應 commit | per_wall vs control_gypsum 差異 | v2-b diff 子判準 |\n"
-        "|---|---|---|\n"
-        "| `d372ad9`（Part B 首次實作，隨即執行） | -21.1% | FAIL |\n"
-        "| `dd03c0e`（新增本附錄後重跑） | -22.3% | FAIL |\n"
-        f"| `cda6b9b`（修正附錄 numpy 顯示格式後重跑，**本次交付版本**） | {official_diff:+.1f}% | {official_verdict} |\n\n"
+        "| 官方重跑對應 commit | per_wall vs control_gypsum 差異 | v2-b diff 子判準 | 資料來源 |\n"
+        "|---|---|---|---|\n"
+        "| `d372ad9`（Part B 首次實作，隨即執行，**首跑 verdict**） | -21.1% | FAIL | "
+        "執行者自述、無殘存產物、不可複核（Opus 驗證紀錄 R3） |\n"
+        "| `dd03c0e`（新增本附錄後重跑） | -22.3% | FAIL | 執行者自述、無殘存產物、不可複核（同上） |\n"
+        f"| `cda6b9b`（修正附錄 numpy 顯示格式後重跑，本次交付版本） | {official_diff:+.1f}% | {official_verdict} | "
+        f"可複核：`output/material_r2/` 現存交付 WAV（sha256 見上表） |\n\n"
         "三次都不是為了「重跑到通過為止」而執行——每次重跑的直接原因記在對應 commit "
         "訊息裡（附錄程式碼新增、顯示格式修正），跟 v2-b 的判定方向無關；但三次結果"
-        "本身（-21.1%／-22.3%／" + f"{official_diff:+.1f}%" + "）都群聚在 ±20% 門檻附近，"
-        "印證上面「觀察」段的結論：**這個判準在目前的量測方法下沒有穩定的鑑別力，"
-        f"本次交付版本剛好是 {official_verdict}，但不代表 v2-b 這條子判準本身站得住腳**，"
-        "請 Opus／Fable 依 WORKFLOW §7 一併評估是否要修正量測方法（而非門檻數字）。\n"
+        f"本身（-21.1%／-22.3%／{official_diff:+.1f}%）都群聚在 ±20% 門檻附近，"
+        "印證上面「觀察」段的結論：這個判準在目前的量測方法下沒有穩定的鑑別力。"
+        "**依裁決 T-48-F F2（Fable，2026-09-14）：本卡 §0 官方記錄＝「首跑 FAIL、方法 inconclusive」，"
+        "永久保留，不因本次交付版本剛好是 PASS 就回頭改記 PASS**（WORKFLOW §7.5）；"
+        "量測方法是否修正（固定 seed／多次取中位數）由 T-56（criteria v3）另行處理，"
+        "本卡不自行更動判準或判定方式。\n"
     )
     return lines
 
@@ -611,11 +731,19 @@ def _write_part_b_report(cases: dict, repeats: dict | None = None) -> None:
     v2a_pass = abs(v2a_error_pct) <= 20.0
 
     # v2-b：per-wall 聯合帶 T30 與六面 gypsum 對照差異 ≤±20%；六面 carpet 對照 ≥ per-wall 3 倍
+    # 修正輪（Sonnet，2026-09-14）回應 R5／裁決 T-48-F F2：diff 子判準的官方 verdict＝首跑
+    # （FIRST_RUN_V2B_VERDICT，見上方常數），本次交付版本的數字（v2b_diff_pct／v2b_diff_pass_delivered）
+    # 降為次要參考，不再是 §0 的結論來源。ratio 子判準不受這個問題影響（見 §3 穩定性附錄，
+    # per_wall 的隨機變動範圍不足以讓 3.97 倍掉到 3 倍以下），繼續照量照列。
     v2b_diff_pct = _pct_diff(pw["t30_low_combined_s"], cg["t30_low_combined_s"])
     v2b_ratio = cc["t30_low_combined_s"] / pw["t30_low_combined_s"]
-    v2b_diff_pass = abs(v2b_diff_pct) <= 20.0
+    v2b_diff_pass_delivered = abs(v2b_diff_pct) <= 20.0
     v2b_ratio_pass = v2b_ratio >= 3.0
-    v2b_pass = v2b_diff_pass and v2b_ratio_pass
+    v2b_verdict_label = (
+        "inconclusive（diff 子判準：首跑 FAIL，方法非決定性；ratio 子判準：PASS）"
+        if v2b_ratio_pass else
+        "inconclusive（diff 子判準：首跑 FAIL，方法非決定性；ratio 子判準：FAIL）"
+    )
 
     # v1 字面條件：125Hz 八度 T30 ≈0.35s ±20%（照量照列，預期未達，只記錄不當門檻）
     v1_target = 0.35
@@ -640,12 +768,21 @@ def _write_part_b_report(cases: dict, repeats: dict | None = None) -> None:
     lines.append("\n## 0. 結論\n")
     lines.append(
         f"- **v2-a（公式層）**：{'PASS' if v2a_pass else 'FAIL'}——per-wall Sabine 125Hz "
-        f"{pw['sabine_125hz_s']:.4f}s，目標 {v2a_target}s ±20%，誤差 {v2a_error_pct:+.1f}%\n"
-        f"- **v2-b（IR 實測層，聯合帶 T30）**：{'PASS' if v2b_pass else 'FAIL'}——"
-        f"per-wall {pw['t30_low_combined_s']:.4f}s vs 六面 gypsum 對照 {cg['t30_low_combined_s']:.4f}s"
-        f"（差異 {v2b_diff_pct:+.1f}%，判準 ≤±20% → {'PASS' if v2b_diff_pass else 'FAIL'}）；"
-        f"六面 carpet 對照 {cc['t30_low_combined_s']:.4f}s / per-wall = {v2b_ratio:.2f} 倍"
-        f"（判準 ≥3 倍 → {'PASS' if v2b_ratio_pass else 'FAIL'}）\n"
+        f"{pw['sabine_125hz_s']:.4f}s，目標 {v2a_target}s ±20%，誤差 {v2a_error_pct:+.1f}%"
+        f"（同義反覆：目標值本身就是同一公式的輸出，PASS 鑑別力為零，見裁決 T-48-F F4，只記錄"
+        f"作為公式回歸性測試，不構成材質模組正確性證據）\n"
+        f"- **v2-b（IR 實測層，聯合帶 T30）**：**{v2b_verdict_label}**——"
+        f"**首跑**（`{FIRST_RUN_V2B_COMMIT}`，Part B 首次實作後隨即執行）diff 子判準 "
+        f"per-wall vs 六面 gypsum 對照差異 {FIRST_RUN_V2B_DIFF_PCT:+.1f}% → **{FIRST_RUN_V2B_VERDICT}**"
+        f"（判準 ≤±20%；原始 WAV／log 已於本卡執行期間的後續重跑覆蓋，此數字為執行者自述、"
+        f"無殘存產物可複核，見 §3）。依裁決 T-48-F F2（Fable，2026-09-14）：diff 子判準永久記"
+        f"首跑 verdict，量測方法（單次生成、無固定 seed）已證實非決定性，不得因後續重跑改記 PASS"
+        f"（WORKFLOW §7.5）。**本次交付版本數字（次要，僅供參考，不是結論）**：per-wall "
+        f"{pw['t30_low_combined_s']:.4f}s vs 六面 gypsum 對照 {cg['t30_low_combined_s']:.4f}s"
+        f"（差異 {v2b_diff_pct:+.1f}% → {'PASS' if v2b_diff_pass_delivered else 'FAIL'}）。"
+        f"ratio 子判準（六面 carpet 對照 {cc['t30_low_combined_s']:.4f}s / per-wall = "
+        f"{v2b_ratio:.2f} 倍，判準 ≥3 倍）不受本卡實測到的隨機噪聲量級影響（見 §3）"
+        f"→ {'PASS' if v2b_ratio_pass else 'FAIL'}\n"
         f"- **v1 字面條件（只記錄不當門檻）**：{'PASS' if v1_pass else '未達'}——per-wall 125Hz 八度 T30 "
         f"{pw['t30_125hz_octave_s']:.4f}s，字面目標 {v1_target}s ±20%，誤差 {v1_error_pct:+.1f}%"
         f"（裁決 B 已證八度量測受鄰帶耦合污染，此數字**不當作判準**，僅照量照列）\n"
@@ -700,7 +837,7 @@ B 部分——T-12 判準 v2 量測：
 
     return {
         "v2a_pass": v2a_pass,
-        "v2b_pass": v2b_pass,
+        "v2b_verdict_label": v2b_verdict_label,
         "v1_pass": v1_pass,
     }
 
@@ -709,7 +846,7 @@ def cmd_part_b() -> None:
     cases = run_part_b()
     verdicts = _write_part_b_report(cases)
     print(f"\nPart B 完成：v2-a={'PASS' if verdicts['v2a_pass'] else 'FAIL'} "
-          f"v2-b={'PASS' if verdicts['v2b_pass'] else 'FAIL'} "
+          f"v2-b={verdicts['v2b_verdict_label']} "
           f"v1（不當門檻，僅記錄）={'PASS' if verdicts['v1_pass'] else '未達'}")
 
 
@@ -754,12 +891,13 @@ def cmd_part_b_report_only() -> None:
     verdicts = _write_part_b_report(cases, repeats=repeats)
     print(f"\nPart B（只重產報表，未重新生成任何 IR）完成："
           f"v2-a={'PASS' if verdicts['v2a_pass'] else 'FAIL'} "
-          f"v2-b={'PASS' if verdicts['v2b_pass'] else 'FAIL'} "
+          f"v2-b={verdicts['v2b_verdict_label']} "
           f"v1（不當門檻，僅記錄）={'PASS' if verdicts['v1_pass'] else '未達'}")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2 or sys.argv[1] not in ("manifest", "partA", "partB", "partB-report-only", "all"):
+    valid_modes = ("manifest", "partA", "partA-report-only", "partB", "partB-report-only", "all")
+    if len(sys.argv) < 2 or sys.argv[1] not in valid_modes:
         print(__doc__)
         sys.exit(2)
     mode = sys.argv[1]
@@ -767,6 +905,8 @@ if __name__ == "__main__":
         cmd_manifest()
     elif mode == "partA":
         cmd_part_a()
+    elif mode == "partA-report-only":
+        cmd_part_a_report_only()
     elif mode == "partB":
         cmd_part_b()
     elif mode == "partB-report-only":
