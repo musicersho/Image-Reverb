@@ -588,12 +588,12 @@ def _write_stability_appendix(cases: dict, repeats: dict) -> list[str]:
         "| `d372ad9`（Part B 首次實作，隨即執行） | -21.1% | FAIL |\n"
         "| `dd03c0e`（新增本附錄後重跑） | -22.3% | FAIL |\n"
         f"| `cda6b9b`（修正附錄 numpy 顯示格式後重跑，**本次交付版本**） | {official_diff:+.1f}% | {official_verdict} |\n\n"
-        "三次都不是為了「重跑到通過為止」而執行——每次重跑的直接原因記在對應 commit"
+        "三次都不是為了「重跑到通過為止」而執行——每次重跑的直接原因記在對應 commit "
         "訊息裡（附錄程式碼新增、顯示格式修正），跟 v2-b 的判定方向無關；但三次結果"
         "本身（-21.1%／-22.3%／" + f"{official_diff:+.1f}%" + "）都群聚在 ±20% 門檻附近，"
         "印證上面「觀察」段的結論：**這個判準在目前的量測方法下沒有穩定的鑑別力，"
-        "本次交付版本剛好是 PASS，但不代表 v2-b 這條子判準本身站得住腳**，請 Opus／Fable"
-        "依 WORKFLOW §7 一併評估是否要修正量測方法（而非門檻數字）。\n"
+        f"本次交付版本剛好是 {official_verdict}，但不代表 v2-b 這條子判準本身站得住腳**，"
+        "請 Opus／Fable 依 WORKFLOW §7 一併評估是否要修正量測方法（而非門檻數字）。\n"
     )
     return lines
 
