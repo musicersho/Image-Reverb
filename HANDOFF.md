@@ -1,5 +1,14 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔮 2026-09-14 Fable：T-52 步驟 4(ii) 更正**已落地**（使用者核准；獨立 commit `1b36c27`）——**現在該做的是：開 Opus 視窗做第三輪，只複核落地後的 4(ii) 文字**（不需 Sonnet、不需重跑）
+>
+> - 落地內容（只追加、零刪除）：T-52 卡頂新狀態「🟠 待 Opus 複核 4(ii)（第三輪）」＋執行步驟後「🔮 步驟 4(ii) 更正」段＋§8 `change_record` 追加一行
+>   （核准者＝使用者 2026-09-14）。`CRITERIA_GATE_v2.md`（`81bc4cd`）未動、`criteria_version` 維持 gate v2、`criteria_changed_after_first_result` 維持 no。
+> - Opus 第三輪複核範圍（T-52 卡「🔮 步驟 4(ii) 更正」末段）：更正版 4(ii) 對 `output/gate_calibration_v2/tables.md` 程式化比對是否成立（第二輪 `check4ii.py`
+>   可重用）；`CRITERIA_GATE_v2.md` 是否仍與 `81bc4cd` 逐字相同；`1b36c27` 是否只含本項且 `git show --numstat` 零刪除。通過→§8 追加
+>   `verdict_under_current_criteria` 一行（回填 hash `1b36c27`）＋四軸「工程：已驗證」，原兩輪 🟠 verdict 保留。
+> - 其餘待辦不變：T-48 修正輪（`cbc117b`）等 Opus 複驗；T-54／T-55／T-56 三份 criteria 草案等使用者核准（見上一則 Fable 交接）。
+
 > ## 🟠 2026-09-14 Opus：T-52 第二輪複核 4(ii)——**工程退回維持：4(ii) 更正根本還沒提交**——**現在該做的是：使用者對 Fable 的 4(ii) 更正草案回「核准」→ Fable 提交獨立 `criteria: T-52 步驟 4(ii) 更正` commit → 再開 Opus 視窗只複核 4(ii)**
 >
 > - 實查 HEAD `2fe9480`：`81bc4cd` 之後沒有任何 `criteria:` commit（遠端也沒有）、repo 內無使用者核准紀錄、T-52 卡自 `53bffb9` 起一字未動。

@@ -1,5 +1,14 @@
 # Dev Log
 
+## 2026-09-14 (138)
+
+- **T-52 步驟 4(ii) 更正已落地（Fable；使用者核准 2026-09-14）**：獨立 commit `1b36c27`（`criteria: T-52 步驟 4(ii) 更正…`，只含 TASKS.md T-52 卡追加
+  42 行、零刪除）。內容＝卡頂新狀態「🟠 待 Opus 複核 4(ii)（第三輪）」＋執行步驟後「🔮 步驟 4(ii) 更正」段（原文引用、更正版、性質判定五點理由、
+  可執行性自檢、Opus 複核範圍）＋§8 `change_record` 追加一行（核准者＝使用者）。`CRITERIA_GATE_v2.md` 未動、`criteria_version` 維持 gate v2。
+- Opus 第二輪（`99c17e7`）指出的兩件缺項（獨立 `criteria:` commit、核准紀錄）即本 commit；第二輪已對同一寫法程式比對字面成立並判性質為對齊事前判準。
+- **下一步：開 Opus 視窗做第三輪，只複核落地後的 4(ii) 文字**（比對腳本可重用）→ 工程：已驗證 → T-17-R2 前置之一。三份 criteria 草案
+  （T-54／T-55／T-56）仍等使用者核准。零改動：`src`／`scripts`／`data`／`output/**`／WORKFLOW／SPEC。
+
 ## 2026-09-14 (137)
 
 - **T-52 Opus 第二輪複核 4(ii)——🟠 工程退回（維持）：受審的 4(ii) 更正尚未落地**。HEAD `2fe9480` 查無 `81bc4cd` 之後的 `criteria:` commit（遠端亦無）、
