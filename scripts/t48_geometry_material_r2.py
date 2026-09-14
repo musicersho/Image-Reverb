@@ -47,7 +47,7 @@ KNOWN_DIMENSIONS = {
     "car_interior_suv": {
         "actual_max_dim_m": 2.0,
         "v2_category": "not_applicable",
-        "note": "實際 ~2m，不 >10m 故不落入域外項；卡片原文「目前只有浴室」明示 ≤10m+ground truth"
+        "note": "實際 ~2m，不 >10m 故不落入域外項；卡片原文「目前只有浴室」明示「≤10m 且有 ground truth」"
         "誤差判準只適用浴室一張，車內不在兩類別判準內——僅記錄估計值供參考，不列入 FAIL/PASS 判定。",
     },
     "arena_ntsu_linkou": {
@@ -342,8 +342,36 @@ def _write_part_a_report(results: list[dict]) -> None:
                 or known.get("actual_wall_distances_m") or known.get("actual_max_dim_m")
             lines.append(f"| {r['name']} | {known_desc} | {r['v2_category']} | {known['note']} |")
 
+    fails = [r for r in results if r["verdict"] == "FAIL" and r["v2_category"] == "domain_out"]
+    if fails:
+        lines.append("\n## 4. 域外誤放根因（程式判定：v2_category=domain_out 且 verdict=FAIL 的每一筆）\n")
+        for r in fails:
+            no_rule = not r["matched_scope_rules"]
+            lines.append(f"### {r['name']}\n")
+            lines.append(
+                f"實際最大維 {r['known']['actual_max_dim_m']}m（{r['known']['note']}），"
+                f"但預設路徑實測 `geometry_confidence={r['geometry_confidence']}`（非 low），"
+                f"gate 未印 `--override-dims` 導引。程式重跑 `--force-low-confidence` 版讀出的 "
+                f"warnings {'不含' if no_rule else '含'}「超出已驗證量程」字樣"
+                f"（觸發規則：{('、'.join(r['matched_scope_rules']) or '無')}）。\n"
+            )
+            if no_rule and r["dims_source"] == "equirect_multiview":
+                lines.append(
+                    f"根因（讀 `src/image_reverb/geometry.py` `apply_scope_confidence()` 唯讀確認，"
+                    f"本卡未改動該函式）：環景量程規則檢查的是**單一視角的原始牆距**"
+                    f"（`wall_distances_m` 逐值比對 `GEOMETRY_SCOPE_MAX_M`），"
+                    f"不是相加後的房間全長——這是刻意設計（避免對牆相加把有效上限拉高到約 40m，"
+                    f"見該函式 docstring）。但代價是：當房間的實際全長 >10m、"
+                    f"卻是由兩側**個別皆 ≤10m** 的視角相加而成時（本例估計 "
+                    f"{r['length_m']:.2f}×{r['width_m']:.2f}×{r['height_m']:.2f}m，"
+                    f"沒有任何單一視角讀數本身超過 10m），量程規則不會觸發，"
+                    f"`geometry_confidence` 停在 medium——這正是 v2 判準想抓的「域外出口誤放」，"
+                    f"如實記為 FAIL，不得用附註豁免（WORKFLOW §5.4.1）。\n"
+                )
+        lines.append("")
+
     lines.append(
-        "\n## 4. 方法\n\n"
+        "\n## 5. 方法\n\n"
         "每張照片跑兩次真實 CLI（`python -m src.image_reverb <photo> --no-viz`）：\n"
         "1. 先加 `--force-low-confidence` 跑一次，只為了讀 `output/<stem>/analysis.json` 的完整 "
         "`warnings`（量程/場景線索規則的詳細文字），不影響任何判定。\n"
