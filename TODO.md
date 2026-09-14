@@ -175,7 +175,7 @@
       MVP：不適用（沿用 T-17 FAIL）。Opus scratchpad 重算 `dataset_manifest_sha256`＝`c15d0a14…2b01a7`，與 T-47 §8 回填值、
       HEAD manifest blob 三方相同；ground truth＝`965e51ac…`；26/26 CLI 指紋 `photo_sha256` 相符；commit 恰五檔；
       TASKS diff 只三個合法 hunk；20 支測試 EXIT=0、六條 IR MD5 全中。詳見 TASKS.md T-51 卡「✅ Opus 驗證紀錄」。
-- [ ] **T-48** T-11／T-12 判準 v2 針對性重驗——**🔵 待審（第二修正輪，Sonnet 2026-09-14；結果 commit 待回填，腳本修正 commit `3c234c1`＋`778ac18`）**。
+- [ ] **T-48** T-11／T-12 判準 v2 針對性重驗——**🔵 待審（第二修正輪，Sonnet 2026-09-14；結果 commit `0c1174d`，腳本修正 commit `3c234c1`＋`778ac18`）**。
       原 🟠 工程退回（Opus 修正輪複驗 2026-09-14，對象 `8bfe262`＋`cbc117b`）理由 Q1～Q3 已於第二修正輪逐項處理：Q1＝腳本
       `_write_stability_appendix()` 與 §0 矛盾的字串改成一致（官方 verdict＝首跑 `d372ad9`，數字量自 `cda6b9b` 交付 WAV）；
       Q2＝新增 `PART_A_MEASUREMENT_COMMIT`／`PART_B_MEASUREMENT_COMMIT` 具名常數，report-only 檔頭另列量測 commit 與

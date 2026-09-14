@@ -10866,7 +10866,7 @@ EOF
 - **交接筆記**：
 
 ### T-48 T-11／T-12 判準第二版針對性重驗（量測卡；裁決 T-45-A 執行卡 3/5；`src/` 零改動）
-- **狀態**：🔵 **待審（第二修正輪，Sonnet 2026-09-14；結果 commit 待本輪收工時回填，腳本修正 commit `3c234c1`＋`778ac18`）**——
+- **狀態**：🔵 **待審（第二修正輪，Sonnet 2026-09-14；結果 commit `0c1174d`，腳本修正 commit `3c234c1`＋`778ac18`）**——
   回應下方「🟠 Opus 修正輪複驗紀錄」退回理由 Q1～Q3，順手處理 N1～N3，範圍依同段「Sonnet 第二修正輪指示」1～4 條：
   Q1（R4 殘留）＝腳本 `_write_stability_appendix()` 那句與 §0 矛盾的字串已改成與 §0 一致（官方 verdict＝首跑
   `d372ad9`，本附錄與 §1 數字量自 `cda6b9b` 交付 WAV）；Q2（溯源失實）＝新增 `PART_A_MEASUREMENT_COMMIT`／
@@ -10961,7 +10961,7 @@ EOF
   criteria_locked_at: 2026-09-03（判準 v2）／2026-09-08（條件 (a)～(d)）——皆早於本卡任何量測（截至 2026-09-14 本卡未開跑）
   dataset_manifest_sha256: b2f994ccf21534ec49c0e915b92191b8976e1e374d7dee50d6841895bbe1b66e（`output/geometry_r2/DATASET_MANIFEST.json`，程式產生＋`shasum -a 256` 複算相符；13 張照片 sha256＋已知尺寸表；manifest 檔以 `git add -f` 進版控；B 部分為合成房間，三條重生 IR 的 sha256 另記於 `output/material_r2/REPORT.md` 檔頭）
   implementation_commit: e1183b9（`scripts/t48_geometry_material_r2.py` 最終版；完整迭代鏈 469abef→714703d→d372ad9→dd03c0e→cda6b9b→4bec212→e1183b9，逐次 commit 訊息記錄每次改動與重跑原因；src/、data/、ir_metrics.py 全程零 diff）→ 修正輪追加（Sonnet，2026-09-14）：`8bfe262`（修正輪腳本修正 R3／R4／R5／R7／F3，report-only 兩模式；src/、data/ 全程零 diff）→ 第二修正輪追加（Sonnet，2026-09-14）：`3c234c1`（腳本修正 Q1／Q2／N3：`_write_stability_appendix()` 矛盾句、`PART_A_MEASUREMENT_COMMIT`／`PART_B_MEASUREMENT_COMMIT` 具名常數、report-only 檔頭溯源、actual_dims_m 格式化）＋`778ac18`（純排版：反引號前漏空格）
-  result_commit: 012a07f（`output/geometry_r2/REPORT.md`＋`output/material_r2/{REPORT.md,CRITERIA_T12_v2.md}`＋T-11／T-12 不可變欄位追加）→ 修正輪追加（Sonnet，2026-09-14）：`cbc117b`（修正輪文件與報表更正，R1/R2/R6/R8）＋`31f4a34`（雜湊回填）＋`2fe9480`（補四軸狀態）→ 第二修正輪追加（Sonnet，2026-09-14）：〈本輪收工 commit，收工時回填〉
+  result_commit: 012a07f（`output/geometry_r2/REPORT.md`＋`output/material_r2/{REPORT.md,CRITERIA_T12_v2.md}`＋T-11／T-12 不可變欄位追加）→ 修正輪追加（Sonnet，2026-09-14）：`cbc117b`（修正輪文件與報表更正，R1/R2/R6/R8）＋`31f4a34`（雜湊回填）＋`2fe9480`（補四軸狀態）→ 第二修正輪追加（Sonnet，2026-09-14）：`0c1174d`（第二修正輪文件與報表更正，Q1/Q2/Q3/N1/N2/N3）
   reviewer: 〈Opus 填：模型＋日期＋commit〉
   verdict_under_original_criteria: 〈Opus 填：v2 首跑結果，A／B 分列；未達＝如實 FAIL〉
   verdict_under_current_criteria: 〈同上；判準未變〉
