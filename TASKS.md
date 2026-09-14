@@ -10789,7 +10789,11 @@ EOF
   `output/geometry_r2/runs/` log 重產報表）；Part B **未重生 IR**（`partB-report-only`，只讀既有交付 WAV）。
   F3（裁決 T-48-F）car_interior_suv 改記 inconclusive 已同步進 REPORT／§8／腳本標籤。判準 v2 數字全部未動、
   `src/`／`data/` 全程零 diff。完整過程見本卡末「交接筆記（修正輪，Sonnet 執行，2026-09-14）」。
-  （以下保留 Opus 原始退回記錄，不覆寫：）
+- **四軸狀態（修正輪後，待 Opus 複驗；WORKFLOW §3）**：工程：**待審**（修正輪已提交，等 Opus 複驗轉「已驗證」或再退回）｜
+  實驗：負向（A：RacquetballCourt4 域外出口誤放 FAIL；B：v2-a 正向〔同義反覆〕、v2-b inconclusive——diff 子判準首跑
+  FAIL、方法非決定性，ratio 子判準 PASS；依 §7.5 不得記 PASS，此軸判定不因修正輪改變）｜產品：不適用｜
+  MVP：不適用（併入 T-17-R2）
+  （以下保留 Opus 原始退回記錄與其四軸狀態，不覆寫：）
 - **狀態（Opus 原始退回記錄，2026-09-14，保留）**：🟠 **工程退回（Opus 驗證 2026-09-14；對象結果 commit `012a07f`、驗證時 HEAD `153155b`；只審不改碼）**——
   量測跑得起來、`src/` 零 diff、兩個核心發現（RacquetballCourt4 域外誤放、ray tracing 無固定 seed）Opus 自己實測**屬實**；
   退回是因為：**(R1) 卡片寫「A 部分 12/13 PASS」與 REPORT（落入判準僅 4 張：3 PASS／1 FAIL）矛盾；(R2) 卡片／T-12 §8／commit
