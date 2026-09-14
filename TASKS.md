@@ -10520,7 +10520,7 @@ EOF
   criteria_locked_at: 2026-09-03（判準 v2）／2026-09-08（條件 (a)～(d)）——皆早於本卡任何量測（截至 2026-09-14 本卡未開跑）
   dataset_manifest_sha256: b2f994ccf21534ec49c0e915b92191b8976e1e374d7dee50d6841895bbe1b66e（`output/geometry_r2/DATASET_MANIFEST.json`，程式產生＋`shasum -a 256` 複算相符；13 張照片 sha256＋已知尺寸表；manifest 檔以 `git add -f` 進版控；B 部分為合成房間，三條重生 IR 的 sha256 另記於 `output/material_r2/REPORT.md` 檔頭）
   implementation_commit: e1183b9（`scripts/t48_geometry_material_r2.py` 最終版；完整迭代鏈 469abef→714703d→d372ad9→dd03c0e→cda6b9b→4bec212→e1183b9，逐次 commit 訊息記錄每次改動與重跑原因；src/、data/、ir_metrics.py 全程零 diff）
-  result_commit: 〈本欄下一個 commit 回填〉
+  result_commit: 012a07f（`output/geometry_r2/REPORT.md`＋`output/material_r2/{REPORT.md,CRITERIA_T12_v2.md}`＋T-11／T-12 不可變欄位追加）
   reviewer: 〈Opus 填：模型＋日期＋commit〉
   verdict_under_original_criteria: 〈Opus 填：v2 首跑結果，A／B 分列；未達＝如實 FAIL〉
   verdict_under_current_criteria: 〈同上；判準未變〉
