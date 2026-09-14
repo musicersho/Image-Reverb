@@ -15,6 +15,8 @@
 - 未做：未下裁決 T-47-A（工程未「已驗證」，附帶發現 ⓐ～ⓕ 留到 T-47-A）；未改 T-47 任何結果／表格／Opus 判定；
   `src`／`scripts`／`data`／WORKFLOW 零改動。
 - **下一步**：Sonnet 執行 T-51 → Opus 複核（裁決 T-47-M 第 5 點；量測本體不重跑）→ T-47 工程：已驗證 → Fable 裁決 T-47-A。
+- T-45 補漏：`AGENTS.md`（Codex 入口說明，與 CLAUDE.md 只差「Claude→Codex」兩處）自 2026-09-03 起一直是未追蹤檔，
+  使用者指示補 commit。
 
 ## 2026-09-14 (122)
 
