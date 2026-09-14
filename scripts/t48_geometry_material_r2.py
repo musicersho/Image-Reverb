@@ -699,7 +699,7 @@ def _write_stability_appendix(cases: dict, repeats: dict) -> list[str]:
         # 「§0 的官方判定只用每個 case 第一次（也是唯一交付到 output/material_r2/ 的那次）重生
         # 結果」，與 §0「官方 verdict＝首跑 d372ad9、交付檔是第三次 cda6b9b」正面矛盾——
         # d372ad9 那次不是「唯一交付」的那次，交付版是後來的 cda6b9b。改成與 §0 一致的說法。
-        f"**§0 的官方 verdict＝首跑（`{FIRST_RUN_V2B_COMMIT}`）；本附錄與 §1 的數字量自"
+        f"**§0 的官方 verdict＝首跑（`{FIRST_RUN_V2B_COMMIT}`）；本附錄與 §1 的數字量自 "
         f"`{PART_B_MEASUREMENT_COMMIT}` 生成的交付 WAV**（見上方交付檔案表），不做多次重跑取平均"
         "（判準本身沒有要求，本卡也不得另外發明「取平均」這種未鎖定的判定方式）。\n\n"
         f"為了讓 Opus／Fable 判斷 v2-b 這筆 **{official_verdict}**（本次交付版本，"
@@ -859,7 +859,7 @@ def _write_part_b_report(cases: dict, repeats: dict | None = None, report_only: 
         f"2. v2-a：Sabine 125Hz 數字讀自 `gen_ir_manual.py` {regen_stdout_phrase}。\n"
         f"3. v2-b／v1：讀 `src/image_reverb/ir_metrics.py` 既有函式——`t30_low_combined()`（T-18，"
         f"88.4–353.6Hz 聯合帶）與 `band_t30(ir, fs, [125])`（單一 125Hz 八度，v1 字面條件用）——"
-        f"對{regen_phrase}的 WAV 直接量測，不重新實作任何頻段濾波／Schroeder 積分邏輯。\n"
+        f"對 {regen_phrase}的 WAV 直接量測，不重新實作任何頻段濾波／Schroeder 積分邏輯。\n"
         f"4. `ir_metrics.py`、`src/`、`data/` 全程零 diff（本卡只呼叫既有函式，不修改）。\n"
     )
 
