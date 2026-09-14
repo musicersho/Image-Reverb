@@ -1,5 +1,17 @@
 # 交接文件 — 給下一個視窗
 
+> ## ✅ 2026-09-14 Opus：T-51 與 T-47 工程已驗證——**現在該做的是開 Fable 新視窗下裁決 T-47-A**
+>
+> - **T-51**（`5f83558`）：工程：已驗證｜實驗：不適用｜產品：不適用｜MVP：不適用。scratchpad 重算 `dataset_manifest_sha256`
+>   ＝`c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7`，與 T-47 §8 回填值、HEAD manifest blob 三方相同；
+>   ground truth `965e51ac…`；26/26 CLI 指紋相符；`src`／`scripts`／`data` 零 diff；結果 commit `07ff98a` 恰五檔。
+> - **T-47**（第三輪）：工程：已驗證｜實驗：不適用｜產品：待裁決（T-47-A）｜MVP：不適用（沿用 T-17 FAIL）。§8 事後補建區塊
+>   11 欄齊全、雜湊日期與 git 歷史相符，已填 `verdict_under_current_criteria`；量測本體沿用第二輪獨立實測，未重跑。
+> - **Fable 下一步**：裁決 T-47-A（依四樣證據＋⑦ 兩模擬＋T-47 卡附帶發現 ⓐ～ⓕ，Opus 未下任何建議）→ 之後 T-44-R1
+>   （等使用者核准絕對下限＋held-out 照片）；T-48 可平行（開跑前先填 §8 前四欄，鐵則 14）。
+> - 小瑕疵（非退回）：Sonnet 狀態用「待驗證」而非 WORKFLOW §3.2「待審」；Opus 第二輪 scratchpad 已清除，指紋抽查改用
+>   `output/gate_calibration/cli_runs/` 與 `eval_cache.sha256_file` 補證（已如實記錄於 T-51 卡）。
+
 > ## 🔵 2026-09-14 Sonnet：T-51 完成——**現在該做的是開 Opus 新視窗複核**，結果 commit 見本次收工 commit
 >
 > 逐字執行 T-51 卡內 heredoc 指令（未改指令、未新增腳本檔），產出 `output/gate_calibration/DATASET_MANIFEST.json`。
