@@ -143,10 +143,10 @@
       → **🔮 裁決 T-47-M 已下（Fable 2026-09-14）：採 (i) 事後補建、WORKFLOW 不動**；§8 區塊已追加於 T-47 卡
       （11 欄全標「事後補建，事前未鎖定」），`dataset_manifest_sha256` 由微型卡 T-51 程式計算後回填。
       → Sonnet 執行 T-51 → Opus 第三輪只複核 §8 區塊與範圍（裁決 T-47-M 第 5 點）→ 工程：已驗證 → 🔮 裁決 T-47-A
-- [ ] **T-51** 🔵 待驗證（Sonnet 完成，2026-09-14）——T-47 §8 資料集 manifest 程式計算＋回填，`dataset_manifest_sha256`＝
-      `c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7` 已回填 T-47 卡 §8 區塊；20 支測試 EXIT=0、
-      六條交付 IR MD5 全中、`src`／`scripts`／`data` 零改動 → **下一步：開 Opus 視窗複核（裁決 T-47-M 第 5 點清單），
-      同一視窗一併複核 T-47 §8 區塊（量測本體不重跑）**
+- [x] **T-51 ✅ 工程已驗證（Opus 2026-09-14；結果 commit `07ff98a`）**——四軸：工程：已驗證｜實驗：不適用｜產品：不適用｜
+      MVP：不適用（沿用 T-17 FAIL）。Opus scratchpad 重算 `dataset_manifest_sha256`＝`c15d0a14…2b01a7`，與 T-47 §8 回填值、
+      HEAD manifest blob 三方相同；ground truth＝`965e51ac…`；26/26 CLI 指紋 `photo_sha256` 相符；commit 恰五檔；
+      TASKS diff 只三個合法 hunk；20 支測試 EXIT=0、六條 IR MD5 全中。詳見 TASKS.md T-51 卡「✅ Opus 驗證紀錄」。
 - [ ] **T-48** T-11／T-12 判準 v2 針對性重驗（只量不改；裁決 T-48-S 2026-09-08：前置只有 T-46 ✅，可與 T-49／T-43 平行；
       **§8 區塊已於開跑前補建（`ebf4117`，事前鎖定）——開跑前執行者先填前四欄，鐵則 14**）
 - [ ] **T-44-R1**（等使用者：核准絕對下限選項 A／B、提供 ≥5 張 held-out 照片並逐面確認）

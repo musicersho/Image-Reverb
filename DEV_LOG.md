@@ -1,5 +1,14 @@
 # Dev Log
 
+## 2026-09-14 (125)
+
+- **T-51 ✅ 工程已驗證（Opus）**，對象結果 commit `07ff98a`。四軸：工程：已驗證｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）。
+- 依裁決 T-47-M 第 5 點 (b)～(e) 實測：scratchpad 重算 `dataset_manifest_sha256`＝`c15d0a14…2b01a7`，與 T-47 §8 回填值、
+  `git show HEAD:…/DATASET_MANIFEST.json | shasum` 三方相同；ground truth＝`965e51ac…`（自 `103674c` 未變）；
+  `cli_runs/` 26 份指紋 `photo_sha256` 26/26 相符（第二輪 Opus scratchpad 已不存在，如實揭露並以 `eval_cache.sha256_file` 14/14 補證）。
+- `src`／`scripts`／`data` 對 `55d0b3f` 零 diff；commit 恰五檔；`git diff 22e497b HEAD -- TASKS.md` 三 hunk 皆合法。
+  20 支測試 EXIT=0、六條交付 IR MD5 全中。文件瑕疵（非退回）：狀態用「待驗證」非 §3.2「待審」；回填紀錄無 commit 雜湊（補記 `07ff98a`）。
+
 ## 2026-09-14 (124)
 
 - **T-51 完成**（Sonnet 執行；裁決 T-47-M 執行卡）：逐字跑卡內 heredoc 指令產出

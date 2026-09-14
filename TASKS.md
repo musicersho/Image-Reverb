@@ -10038,6 +10038,10 @@ ground_truth_sha256 = 965e51ac19e2d25a61b89bb8b94c01e4f34e3e41d6300002627d212abf
 commit：本次收工 commit（訊息 `T-51: T-47 §8 資料集 manifest 程式計算＋回填(待驗證)`）。
 
 ### T-51 T-47 §8 事後補建：資料集 manifest 程式計算＋回填（微型卡；裁決 T-47-M 執行卡；`src/`／`scripts/`／`data/` 零改動）
+- **狀態（Opus 2026-09-14，現行）**：✅ **工程已驗證**（對象結果 commit `07ff98a`；複驗時 HEAD `07ff98a`，
+  `git status --porcelain -- src scripts data` 為空）。詳見本卡末「✅ Opus 驗證紀錄（2026-09-14）」。
+- **四軸狀態（Opus 2026-09-14，現行）**：工程：已驗證｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
+- **（下兩行為 Sonnet 送審時原文，保留不覆寫）**
 - **狀態**：🔵 待驗證
 - **四軸狀態**：工程：待驗證｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
 - **前置**：裁決 T-47-M 已下（見 T-47 卡末段）；T-47 卡 §8 區塊已存在且 `dataset_manifest_sha256` 為占位符。
@@ -10091,6 +10095,40 @@ commit：本次收工 commit（訊息 `T-51: T-47 §8 資料集 manifest 程式�
   結果 commit：見下方收工 commit（`T-51: T-47 §8 資料集 manifest 程式計算＋回填(待驗證)`），只含
   `TASKS.md`／`DEV_LOG.md`／`TODO.md`／`HANDOFF.md`／`output/gate_calibration/DATASET_MANIFEST.json` 五檔。
   **下一步**：開 Opus 視窗，依裁決 T-47-M 第 5 點清單複核本卡＋T-47 §8 區塊（量測本體不必重跑）。
+- **✅ Opus 驗證紀錄（2026-09-14；對象結果 commit `07ff98a`；只審不改碼）**
+  - **四軸判定**：工程：已驗證｜實驗：不適用（無假設可驗；純紀錄性微型卡）｜產品：不適用（不進任何產品路徑）｜
+    MVP：不適用（沿用 T-17 FAIL；`MVP PASS` 只能由 T-17 系列寫）
+  - **理由（每項皆本視窗實際執行）**：
+    1. **重算（裁決 T-47-M 第 5 點 (b)）**：卡內 T-51 指令逐字執行，只把 `OUT` 改為 scratchpad 路徑，終端輸出
+       `files: 14`／`dataset_manifest_sha256 = c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7`／
+       `ground_truth_sha256 = 965e51ac19e2d25a61b89bb8b94c01e4f34e3e41d6300002627d212abfc430c7`。三方相同：
+       ① Opus 重算值、② T-47 卡 §8 回填值、③ `git show HEAD:output/gate_calibration/DATASET_MANIFEST.json | shasum -a 256`
+       ＝`c15d0a14…2b01a7`；另 `cmp` scratchpad 檔與 HEAD blob 逐位元相同；`git ls-files` 確認 manifest 已進版控（未被手改）。
+    2. **ground truth（(c) 前半）**：manifest 內 `data/material_ground_truth.json` sha256＝`965e51ac…430c7`，等於 T-44 §8
+       所記（TASKS.md 第 6200／6889 行）；`git log 103674c..HEAD -- data/material_ground_truth.json` 為空（自 `103674c` 後未變）。
+    3. **照片清單與指紋交叉核對（(c) 後半）**：`GATE_ITEMS` 第 86～98 行恰 13 條 `"photo"`，manifest 13 條路徑與之一一對應、
+       無其他 regex 誤抓。`output/gate_calibration/cli_runs/` 26 個 `.fingerprint.json`（13 張×兩模式）的 `photo_sha256`
+       **26/26 與 manifest 同名檔相符**；其中 `bathroom_tiled`／`bedroom_ai_generated`／`stairwell_tiled`／`arena_ntsu_linkou`
+       兩模式 8 份是 **Opus 第二輪（`repo_head=54ce03b`，11:00 前後，見 T-47 卡第二輪紀錄 D 節）CLI 實際重跑產生**；
+       `reference_irs` 8 張與 `car_interior_suv` 的指紋來自產出提交版 `tables.md` 的那次執行（`repo_head=5c1cd29`，10:10～10:19）。
+       **如實揭露**：Opus 第二輪 `--fresh` 重跑的 scratchpad（`t47_opus_r2`）已不存在，無法讀回；故 `reference_irs` 抽查改以
+       上述 CLI 指紋＋本視窗以 `scripts/eval_cache.sha256_file()`（指紋機制同一函式）獨立重算 14 檔，**14/14 相符**。
+    4. **範圍（(d)）**：`git diff --stat 55d0b3f HEAD -- src scripts data` 為空；`git status --porcelain -- src scripts data` 為空。
+    5. **commit 檔案（(e) 前半）**：`git show --name-status 07ff98a` 恰五檔——M `DEV_LOG.md`／M `HANDOFF.md`／M `TASKS.md`／
+       M `TODO.md`／A `output/gate_calibration/DATASET_MANIFEST.json`；無其他檔。
+    6. **TASKS.md 逐 hunk（(e) 後半）**：`git diff 22e497b HEAD -- TASKS.md` 共 3 個 hunk：①T-47 §8 只動 `dataset_manifest_sha256`
+       一行（占位符→值，行尾「——事後補建（2026-09-14 後追加），事前未鎖定」保留）；②在 T-47 §8 區塊後追加「T-51 回填紀錄」一段
+       ＋T-51 卡自身狀態兩行；③T-51 卡交接筆記。其餘 10 欄與 T-47 既有紀錄一字未動（`b4f7a38` 未碰 TASKS.md）。
+    7. **自我檢查重跑**：20 支 `scripts/test_*.py` 逐支 EXIT=0（本視窗）；T-14 兩條由 `test_ir_synth.py`【6】比對
+       `f3a763bed13cf4d6…`／`f24353b5dbecf0f6…` 通過；T-20／T-21 四條分開各一行重生（mtime 13:29:25～13:29:29）
+       `text_bathroom`＝`2adbaa75eb698772…`、`text_church`＝`2dd19b6e6d351d71…`、`coupled_neighbor_voices`＝`9a94ffdf5d8295ae…`、
+       `coupled_stadium_corridor`＝`a1c21bcc3fd9aa34…`，全中。未重跑 `t47_gate_calibration.py`；`REPORT.md`／`tables.md` 未動。
+    8. **紅旗**（卡內五條）：回填值≠自跑值、manifest 未進版控或被手改、commit 含五檔以外、§8 其他 10 欄或 T-47 既有紀錄被動、
+       ground truth≠`965e51ac…`——**五條皆未觸發**。
+  - **文件瑕疵（非退回理由）**：(i) Sonnet 把狀態寫成「🔵 待驗證／工程：待驗證」，WORKFLOW §3.2 工程軸用語是「待審」；
+    (ii) 「T-51 回填紀錄」與交接筆記的 commit 只寫「本次收工 commit」無雜湊（同一 commit 內本就寫不進自身雜湊）——
+    **結果 commit＝`07ff98a`**，於此補記。兩者皆不影響任何交付物或證據鏈。
+  - **下一步**：同視窗依裁決 T-47-M 第 5 點 (a) 複核 T-47 §8 區塊 → T-47 追加第三輪四軸（見 T-47 卡）。
 
 **T-51 指令（原文；從 `python3` 到 `EOF` 整段複製，貼在 repo 根目錄的 shell；本區塊刻意不縮排，避免 heredoc 結尾 `EOF` 前混入空白）**：
 
