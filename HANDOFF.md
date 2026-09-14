@@ -1,5 +1,16 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔮 2026-09-14 Fable：裁決 T-47-A 已下且**使用者已核准乙**——**現在該做的是開 Sonnet 視窗執行 T-52**（T-48 可另一視窗平行）
+>
+> - 使用者選乙後，Fable 已提交獨立 `criteria: gate v2` commit `81bc4cd`（只含 `output/gate_calibration/CRITERIA_GATE_v2.md`；
+>   規則 R1b 原文＝T-52 卡「規則原文」逐字；早於 T-52 任何結果）。T-52 狀態「⬜ 可開跑」，§8 的 `criteria_commit`／`criteria_locked_at`
+>   已由 Fable 填，執行者開跑前填 `dataset_manifest_sha256`（必須仍＝`c15d0a14…2b01a7`）。
+> - **T-52 給 Sonnet 的重點**：只動 `materials.py`／`surfaces.py`／`pipeline.py`；R1b 只在 `role_aware=True` 生效、default 逐位元不變
+>   （`role_aware=False` 的 `analysis.json` 一個鍵都不能多）；新測試對舊碼必須 fail；基線變化表用 `t47_gate_calibration.py --out-dir
+>   output/gate_calibration_v2/ --fresh`（原 `output/gate_calibration/` 唯讀）；預期 role_aware 13/13 BLOCK、default 13 列不變。
+> - 關鍵路徑：T-52（Sonnet）→ Opus 驗證 → T-17-R2（預設模式）；T-48 平行；T-44-R1 ⏸（等 T-53 校準集＋held-out）。
+> - 裁決本體見下一則與 TASKS.md T-47 卡「🔮 裁決 T-47-A」；DEV_LOG `2026-09-14 (128)`。
+
 > ## 🔮 2026-09-14 Fable：裁決 T-47-A 已下——**現在該做的是：使用者在「甲／乙」二選一**（T-47 卡「🔮 裁決 T-47-A」第 7 節）；T-48 可先開 Sonnet 視窗平行跑
 >
 > - **裁決摘要**：default 模式 gate 規則 1～4 與 0.4 **維持不動**（四樣證據零放行、零已知錯誤放行、臥室續擋、向下放寬只放錯的、兩模擬對 default 恆等；

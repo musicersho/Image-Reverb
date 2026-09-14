@@ -23,7 +23,7 @@
   → 第二個 verdict 由 T-48 量。
 - **T-04 未結案**（9 張照片來源網址等使用者）。
 - **gate 校準前提已變**（T-26／T-28／T-36-A）→ T-47 重量四樣證據後裁決 T-47-A。
-  → **🔮 裁決 T-47-A 已下（2026-09-14）**：default 維持不動；role_aware 0.4 未校準，甲／乙等使用者核准（乙＝T-52）。
+  → **🔮 裁決 T-47-A 已下（2026-09-14）**：default 維持不動；role_aware 0.4 未校準，**使用者已核准乙**（criteria `81bc4cd`）→ T-52。
 - [x] **T-45 審查制度修正 ✅（Fable 2026-09-03）**：WORKFLOW v2、CLAUDE/AGENTS 同步、
       12 卡回溯重標、新卡 T-46～T-48／T-44-R1／T-17-R2、HANDOFF/TODO/DEV_LOG/ROADMAP 同步。
 - [x] **T-46 ✅ 工程已驗證（Opus 第四輪複驗 2026-09-10，依 criteria v3 §5；結果 commit `7b1384e`）**
@@ -142,7 +142,8 @@
 - [x] **🔮 裁決 T-47-A 已下（Fable 2026-09-14）**——default gate 維持；role_aware 0.4 未校準、**甲／乙等使用者核准**（乙＝T-52）；產品 🧪 維持；
       T-44-R1 ⏸ 移出關鍵路徑（等 T-53）；T-17-R2 前置「裁決 T-47-A」滿足；T-48 可立即開跑。T-47 四軸：工程：已驗證｜實驗：不適用｜
       產品：不適用（量測卡）｜MVP：不適用。全文見 TASKS.md T-47 卡「🔮 裁決 T-47-A」。
-- [ ] **T-52** gate criteria v2（role_aware 收窄候選集的 clip 面不計入放行；Sonnet；**前置＝使用者核准乙＋`criteria:` commit**；選甲→不執行）
+- [ ] **T-52** gate criteria v2（role_aware 收窄候選集的 clip 面不計入放行；Sonnet；**⬜ 可開跑**——使用者已核准乙，criteria commit `81bc4cd`；
+      開跑前先填 §8 `dataset_manifest_sha256`）
 - [ ] **T-53** role_aware gate 校準量測（保留號；等使用者提供獨立校準集；不在關鍵路徑）
 - [x] **T-47 ✅ 工程已驗證（Opus 第三輪 2026-09-14；依裁決 T-47-M 第 5 點複核 §8 事後補建區塊＋T-51 manifest）**——
       四軸：工程：已驗證｜實驗：不適用｜產品：待裁決（T-47-A）｜MVP：不適用（沿用 T-17 FAIL）。
@@ -530,8 +531,7 @@
 
 ## 等使用者（AI 推不動）
 
-- [ ] 🔮 **（新，最優先）核准裁決 T-47-A 的甲／乙**（TASKS.md T-47 卡「🔮 裁決 T-47-A」第 2.2／第 7 節；Fable 建議乙；
-      選乙後 Fable 才會提交 `criteria: gate v2` commit 並放 T-52 開跑）
+- [x] 🔮 ~~核准裁決 T-47-A 的甲／乙~~ **✅ 已核准乙（2026-09-14）**：criteria commit `81bc4cd`，T-52 已可開跑
 - [ ] 🧾 **（新，T-44-R1 前置）核准 `CRITERIA_T44R1.md` 的絕對品質下限**：TASKS.md T-44-R1 卡
       選項 A（內部準確率下限）或選項 B（以 T-17-R2 端到端為下限，Fable 建議）
 - [ ] 📷 **（新，T-44-R1／T-17-R2 前置）提供 ≥5 張未曾用於調參的 held-out 照片**（五類空間各

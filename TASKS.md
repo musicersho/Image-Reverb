@@ -8482,6 +8482,7 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
 未校準，處置甲／乙**等使用者核准**（乙＝新開 **T-52** gate criteria v2 執行卡）；**T-44-R1 ⏸ 移出關鍵路徑**（前置追加 **T-53** 校準卡，
 T-53 為保留號、等使用者提供獨立校準集）。關鍵路徑改為：T-47 ✅ → 裁決 T-47-A → 【使用者核准 甲／乙】→（乙：`criteria:` commit → T-52 → Opus）
 → T-17-R2（預設模式）；T-48 平行、可立即開跑。T-17-R2 前置「T-44-R1 結案」走卡片既有的「未跑→預設 `role_aware=False`」路徑。
+**2026-09-14 使用者已核准乙**（criteria commit `81bc4cd`）：關鍵路徑＝T-52（Sonnet）→ Opus → T-17-R2；T-48 平行。
 
 **本輪共同鐵則**：Phase 1.9 共同鐵則 1～8 全部沿用（測試全 exit 0／六條交付 IR MD5
 ／`ir_metrics.py` 零 diff／凍結目錄／新測試診斷力／gate 規則零改動／臥室紅旗／
@@ -9636,6 +9637,7 @@ T-53 為保留號、等使用者提供獨立校準集）。關鍵路徑改為：
   role_aware 模式 0.4 不得視為已校準、以現有資料無法校準，處置**甲（不改碼、明文不得宣稱安全）／乙（gate criteria v2＝T-52，Fable 建議）
   等使用者核准**；產品軸 role_aware 維持 🧪 預設關閉；T-44-R1 ⏸ 移出關鍵路徑（等 T-53）；T-17-R2 前置「裁決 T-47-A」自此滿足；T-48 平行不受影響。
 - **四軸狀態（裁決 T-47-A 後）**：工程：已驗證｜實驗：不適用｜產品：不適用（量測卡；裁決結果記於 T-44 卡產品軸＝🧪 維持）｜MVP：不適用（沿用 T-17 FAIL）
+- **使用者核准（2026-09-14）**：選**乙**；`criteria: gate v2` commit `81bc4cd`；**下一步＝開 Sonnet 視窗執行 T-52**（T-48 可另一視窗平行）。
 - **（下方「狀態」「四軸狀態」兩行為 Opus 第二輪原文，保留不覆寫）**
 - **狀態**：🟠 **工程退回（Opus 第二輪複驗 2026-09-14，對象結果 commit `5d1569c`／腳本 `5c1cd29`，
   複驗時 HEAD `54ce03b`，`git status --porcelain -- src scripts data` 為空）——但 Sonnet 不需要再修任何東西**。
@@ -10147,6 +10149,9 @@ commit：本次收工 commit（訊息 `T-51: T-47 §8 資料集 manifest 程式�
 
   **7. 需使用者核准（本裁決停在這裡；Fable 不替使用者決定）**
   請在 **甲** 與 **乙** 之間選一個（利弊見 2.2）。**選乙**：Fable 做兩件事再交 Sonnet——(1) 把 T-52 卡內「CRITERIA_GATE_v2.md 草案」逐字寫進 `output/gate_calibration/CRITERIA_GATE_v2.md`，核准者欄填「使用者 〈日期〉」，獨立 commit `criteria: gate v2 ……`（只含該檔）；(2) T-52 狀態改「⬜ 可開跑」。**選甲**：T-52 標「⛔ 不執行」、T-53 維持保留號，T-44 與 T-44-R1 卡補「role_aware gate 未校準、放行不可信」一句（純文件 commit）。兩條路 T-48 都可先跑。
+  **使用者核准紀錄（2026-09-14，追加）**：使用者選**乙**。Fable 已提交 `criteria: gate v2` 獨立 commit `81bc4cd`
+  （只含 `output/gate_calibration/CRITERIA_GATE_v2.md`，規則 R1b 原文＝T-52 卡「規則原文」逐字）；T-52 狀態改「⬜ 可開跑」；
+  關鍵路徑走乙分支：T-52（Sonnet）→ Opus 驗證 → T-17-R2；T-48 平行。甲分支作廢。
 
   **8. 明確不做**：不改 `output/gate_calibration/{REPORT.md,tables.md,DATASET_MANIFEST.json}`；不動 `src/`／`scripts/`／`data/`；不改 default 模式任何規則或數字；不改 WORKFLOW／SPEC；不寫 `MVP PASS`（T-17 FAIL 沿用，重驗只在 T-17-R2）；不改 T-44-R1／T-17-R2 既有門檻條文；不由 Fable 提交任何 `criteria:` commit（需先有使用者核准）。
 
@@ -10274,8 +10279,9 @@ EOF
 （Opus 複核時只把 `OUT` 改成 scratchpad 路徑；`OUT` 路徑不進 manifest 內容，sha256 不受影響。）
 
 ### T-52 gate criteria v2：role_aware 收窄候選集的 clip 面不計入放行（Sonnet 執行卡；裁決 T-47-A 選項乙執行卡；**前置＝使用者核准**）
-- **狀態**：⬜ 未開始——**等使用者核准裁決 T-47-A 選項乙**。核准後由 Fable 先提交 `criteria: gate v2 ……`（獨立 commit，只含
-  `output/gate_calibration/CRITERIA_GATE_v2.md`），本卡才准開跑；若使用者選甲，本卡改標「⛔ 不執行（裁決 T-47-A 選甲）」。
+- **狀態**：⬜ **可開跑**——使用者已於 2026-09-14 核准裁決 T-47-A 選項乙；`output/gate_calibration/CRITERIA_GATE_v2.md` 已由 Fable 以獨立
+  commit `81bc4cd`（`criteria: gate v2 ……`，只含該一檔）提交，早於本卡任何結果。Sonnet 貼 WORKFLOW §2.1 Prompt 即可開工；
+  開跑前先做執行步驟 1（§8 前四欄；`criteria_commit`／`criteria_locked_at` 已由 Fable 填，執行者填 `dataset_manifest_sha256`）。
 - **四軸狀態**：工程：未開始｜實驗：待量測（預期 `role_aware` 13/13 BLOCK、default 13 張逐位元不變——預期不等於保證，量到什麼寫什麼）｜
   產品：不適用（本卡不改產品預設；role_aware 維持 🧪）｜MVP：不適用（沿用 T-17 FAIL）
 - **前置（硬性）**：T-47 ✅、T-46 ✅、T-43 ✅；`output/gate_calibration/CRITERIA_GATE_v2.md` 已由使用者核准並以獨立 commit 提交
@@ -10329,8 +10335,8 @@ EOF
 - **§8 不可變欄位（開卡即附，鐵則 14）**：
   ```text
   criteria_version: gate v2（裁決 T-47-A 選項乙；規則原文＝output/gate_calibration/CRITERIA_GATE_v2.md）
-  criteria_commit: 〈Fable 提交的 criteria: gate v2 commit；必須早於本卡首個結果 commit〉
-  criteria_locked_at: 〈使用者核准日〉
+  criteria_commit: 81bc4cd（criteria: gate v2……，2026-09-14；只含 CRITERIA_GATE_v2.md 一檔；早於本卡任何結果 commit）
+  criteria_locked_at: 2026-09-14（使用者核准日＝criteria commit 日）
   dataset_manifest_sha256: 〈執行者開跑前填；必須＝c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7（同一批 13 張＋ground truth），不等＝卡關〉
   implementation_commit: 〈執行者填〉
   result_commit: 〈執行者填〉
@@ -10340,7 +10346,7 @@ EOF
   criteria_changed_after_first_result: no（改了就是新卡）
   change_record: 無
   ```
-- **CRITERIA_GATE_v2.md 草案（未核准前不進版控；核准後由 Fable 逐字寫入並獨立 commit）**：
+- **CRITERIA_GATE_v2.md 草案（已於 `81bc4cd` 逐字落地，以該檔為準；下列草案僅供對照）**：
   ```text
   # CRITERIA — gate criteria v2（role_aware 模式）
   version: gate v2

@@ -1,5 +1,14 @@
 # Dev Log
 
+## 2026-09-14 (128)
+
+- **使用者核准裁決 T-47-A 選項乙**（gate criteria v2：role_aware 收窄候選集的 clip 面不計入放行）。
+- Fable 提交獨立 `criteria: gate v2` commit `81bc4cd`（只含 `output/gate_calibration/CRITERIA_GATE_v2.md`；R1b 原文＝T-52 卡逐字；
+  核准者＝使用者 2026-09-14；早於 T-52 任何結果，符合 WORKFLOW §7.1／§7.2／§7.4）。
+- T-52 狀態改「⬜ 可開跑」，§8 `criteria_commit`／`criteria_locked_at` 已填；T-47 卡裁決第 7 節追加核准紀錄；Phase 1.9-R 標頭、TODO、ROADMAP、HANDOFF 同步。
+- 零改動：`src`／`scripts`／`data`／WORKFLOW／SPEC；`output/gate_calibration/{REPORT.md,tables.md,DATASET_MANIFEST.json}` 未動。
+- **下一步：開 Sonnet 視窗執行 T-52**（貼 WORKFLOW §2.1 Prompt）；T-48 可另一視窗平行；完成後 Opus 驗證 → T-17-R2。
+
 ## 2026-09-14 (127)
 
 - **🔮 裁決 T-47-A（Fable）已下**，寫入 TASKS.md T-47 卡末段。證據版本：結果 commit `5d1569c`、`dataset_manifest_sha256` `c15d0a14…2b01a7`、HEAD `882e1ee`。
