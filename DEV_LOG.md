@@ -1,5 +1,21 @@
 # Dev Log
 
+## 2026-09-14 (123)
+
+- **🔮 裁決 T-47-M（Fable）：T-47 §8 缺漏採 (i) 事後補建，WORKFLOW §8 一字不改。** 理由：§8 字面涵蓋量測卡，缺漏是
+  Fable 開卡（`96e7716`）漏附模板、不是規則錯；(ii) 是結果後為了合規放寬規則（§7 要防的型態），且受益者只有 T-47 一張卡
+  （T-48／T-44-R1／T-17-R2 都有門檻）；無門檻卡的 §8 仍釘住 T-47-A 依據的資料集與證據版本（13 張裡 8 張 `reference_irs`
+  照片不在版控，manifest 是 repo 內唯一紀錄）。四軸維持 Opus 第二輪判定（工程：退回）直到 Opus 第三輪複核。
+- T-47 卡追加 §8 區塊（11 欄皆標「事後補建（2026-09-14 後追加），事前未鎖定」），`dataset_manifest_sha256` 留占位符，
+  由新微型卡 **T-51** 以卡內 heredoc 指令程式計算（13 張 `GATE_ITEMS`＋ground truth → `output/gate_calibration/DATASET_MANIFEST.json`，
+  `git add -f`）後回填。Fable 已把卡內指令原文抽出在 scratchpad 試跑兩次，可執行、結果相同、ground truth sha256 ＝ T-44 所記
+  `965e51ac…`；值不由 Fable 手填。
+- 同批檢查：T-48 同樣缺 §8 → 開跑前補建（獨立 commit `ebf4117`，屬事前鎖定，criteria_commit＝`96e7716`＋`c8f6be9`）；
+  T-44-R1／T-17-R2 已有模板。Phase 1.9-R 新增鐵則 14（§8 區塊開卡即附；Opus 驗證重點第一條；T-47 缺漏不得援引為先例）。
+- 未做：未下裁決 T-47-A（工程未「已驗證」，附帶發現 ⓐ～ⓕ 留到 T-47-A）；未改 T-47 任何結果／表格／Opus 判定；
+  `src`／`scripts`／`data`／WORKFLOW 零改動。
+- **下一步**：Sonnet 執行 T-51 → Opus 複核（裁決 T-47-M 第 5 點；量測本體不重跑）→ T-47 工程：已驗證 → Fable 裁決 T-47-A。
+
 ## 2026-09-14 (122)
 
 - **T-47 Opus 第二輪複驗（對象 `5d1569c`）→ 🟠 工程退回，但 Sonnet 不需再修。** 四軸：工程：退回｜

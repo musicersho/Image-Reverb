@@ -138,13 +138,15 @@
       `git worktree` 比對，geometry/materials/overall/gate 與 IR md5 全數相符、
       臥室紅旗仍 BLOCK）。19 支測試 EXIT=0、六條交付 IR MD5 全中、`git diff`
       限縮在兩檔。詳見 TASKS.md T-42 卡「交接筆記」。
-- [ ] **T-47** 🟠 工程退回（Opus 第二輪複驗 2026-09-14，對象 `5d1569c`）——**Sonnet 不需再修**：
-      第 1 點（表 7／8 gate 欄程式化）Opus 全部獨立實測修妥（`--fresh` 重跑 tables.md 零差異、
-      52 列獨立重算一致、反向測試證明 gate 欄非寫死、20 支測試 exit 0、六條 IR MD5 全中）；
-      **唯一剩餘阻擋＝第 2 點 WORKFLOW §8 不可變欄位缺漏，須 Fable 裁定**（(i) 事後補建 §8 區塊，
-      或 (ii) 走 §7 修 WORKFLOW 使無門檻量測卡不適用 §8）。詳見 TASKS.md T-47 卡「🟠 Opus 第二輪複驗紀錄」
-      → 🔮 Fable 裁定 §8 → Opus 複核 §8 區塊 → 🔮 裁決 T-47-A
-- [ ] **T-48** T-11／T-12 判準 v2 針對性重驗（只量不改；裁決 T-48-S 2026-09-08：前置只有 T-46 ✅，可與 T-49／T-43 平行）
+- [ ] **T-47** 🟠 工程退回（Opus 第二輪複驗 2026-09-14，對象 `5d1569c`）——**Sonnet 不需再修量測**：
+      第 1 點（表 7／8 gate 欄程式化）Opus 全部獨立實測修妥；唯一剩餘阻擋＝第 2 點 WORKFLOW §8 不可變欄位缺漏
+      → **🔮 裁決 T-47-M 已下（Fable 2026-09-14）：採 (i) 事後補建、WORKFLOW 不動**；§8 區塊已追加於 T-47 卡
+      （11 欄全標「事後補建，事前未鎖定」），`dataset_manifest_sha256` 由微型卡 T-51 程式計算後回填。
+      → Sonnet 執行 T-51 → Opus 第三輪只複核 §8 區塊與範圍（裁決 T-47-M 第 5 點）→ 工程：已驗證 → 🔮 裁決 T-47-A
+- [ ] **T-51** T-47 §8 資料集 manifest 程式計算＋回填（微型卡；裁決 T-47-M 執行卡；`src`／`scripts`／`data` 零改動；
+      卡內 heredoc 指令逐字跑、`git add -f` manifest、commit 只准五檔）
+- [ ] **T-48** T-11／T-12 判準 v2 針對性重驗（只量不改；裁決 T-48-S 2026-09-08：前置只有 T-46 ✅，可與 T-49／T-43 平行；
+      **§8 區塊已於開跑前補建（`ebf4117`，事前鎖定）——開跑前執行者先填前四欄，鐵則 14**）
 - [ ] **T-44-R1**（等使用者：核准絕對下限選項 A／B、提供 ≥5 張 held-out 照片並逐面確認）
 - [ ] **T-17-R2** MVP 重新驗收（新盲測種子與編號、T-43 provenance、結果寫 `output/mvp_acceptance_r2/`）
 - [ ] 🔮 待裁決（本輪不開卡）：外部 bug 掃描 `IMAGE_REVERB_BUG_SCAN_AFTER_T39.md` 的 B-01

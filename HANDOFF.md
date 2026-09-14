@@ -1,5 +1,22 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔮 2026-09-14 Fable：裁決 T-47-M 已下（T-47 §8 缺漏＝事後補建，WORKFLOW 不動）——**現在該做的是開 Sonnet 視窗執行 T-51**（微型卡），再送 Opus 複核
+>
+> Opus 第二輪複驗（`55d0b3f`）唯一阻擋＝WORKFLOW §8 不可變欄位缺漏。Fable 選 **(i)**：在 T-47 卡末段追加 §8 區塊，11 欄全標
+> 「事後補建（2026-09-14 後追加），事前未鎖定」；**不走 (ii)**，理由見 TASKS.md T-47 卡「🔮 裁決 T-47-M」第 2 點——規則沒錯、
+> 是 Fable 開卡漏附模板；結果後放寬規則正是 §7 要防的型態；受益者只有一張卡；manifest 對 T-47-A 有實質價值（13 張裡 8 張
+> `reference_irs` 照片不在版控）。`dataset_manifest_sha256` 不由 Fable 手填，由 **T-51** 以卡內 heredoc 指令程式計算並回填
+> （`git add -f output/gate_calibration/DATASET_MANIFEST.json`；commit 只准含 TASKS／DEV_LOG／TODO／HANDOFF＋manifest 五檔）。
+>
+> 連動：T-48 同樣缺 §8，已於開跑前補建（`ebf4117`，事前鎖定，非事後）；T-44-R1／T-17-R2 本來就有。Phase 1.9-R 新增鐵則 14
+> （§8 區塊開卡即附、Opus 驗證重點第一條）。**未下裁決 T-47-A**（工程軸仍是 Opus 第二輪的「退回」）；未改任何結果；
+> `src`／`scripts`／`data`／WORKFLOW 零改動。
+>
+> **下一步**：(1) Sonnet 視窗貼 WORKFLOW §2.1 Prompt 執行 **T-51**（逐字跑卡內指令，不得新增腳本檔）；(2) Opus 視窗貼 §2.2 Prompt
+> 審 T-51，並依裁決 T-47-M 第 5 點同一視窗複核 T-47 §8 區塊（量測本體不重跑）→ T-47 工程：已驗證（追加第三輪四軸，不覆寫）；
+> (3) 回 Fable 下裁決 T-47-A（四樣證據＋⑦ 兩模擬＋附帶發現 ⓐ～ⓕ）。詳見 TASKS.md T-47 卡「🔮 裁決 T-47-M」、T-51 卡與
+> DEV_LOG `2026-09-14 (123)`。
+
 > ## 🟠 2026-09-14 Opus：T-47 第二輪複驗——工程退回，**現在該做的是開 Fable 視窗（不是 Sonnet）**
 >
 > 修正輪（`5d1569c`）針對的第 1 點（表 7／8 gate 欄改程式產出）**Opus 全部獨立實測修妥**：`--fresh`

@@ -8494,6 +8494,13 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
     「`src/` 的 diff 限縮在 X；`scripts/` 只得新增／修改 Y（測試＋鐵則 8 產表腳本）」，不得再寫
     「`git diff` 限縮在兩檔」這種與鐵則 8 字面互斥的句子。**共同自我檢查新增一條**：
     `grep -n 'worktree.*add.*"HEAD"' scripts/<本卡產表腳本>` 為空。
+14. **§8 區塊開卡即附（裁決 T-47-M，2026-09-14）**：Fable 開任何「結果不可事前保證」的卡（實驗／量測／驗收，
+    **含無 pass/fail 門檻的量測卡**）時，卡片必須附 WORKFLOW §8 不可變欄位模板；執行者在**首個結果 commit 之前**
+    填前四欄（無門檻卡 `criteria_version` 寫「無 pass/fail 門檻（量測卡）」、`criteria_commit` 寫開卡 commit——
+    「鎖定」的是量測內容與紅線，不是門檻；`dataset_manifest_sha256` 一律由程式產生，manifest 檔進版控），其餘由
+    驗證者追加；**Opus 驗證重點第一條**＝§8 前四欄是否在首個結果 commit 之前填妥，缺＝退回、不得附註豁免。
+    T-47 的缺漏是 Fable 開卡疏失（`96e7716` 給了 T-44-R1／T-17-R2 模板卻漏了 T-47／T-48），一次性以「事後補建」
+    標記處理（裁決 T-47-M），**不得援引為先例**：日後再缺＝執行者退回補齊後才能有結果 commit。
 
 ### T-45 審查制度修正（🔮 Fable 卡，已執行 2026-09-03）
 - **狀態**：✅ 工程：已執行（Fable，2026-09-03，本 commit）｜實驗：不適用｜產品：不適用｜MVP：不適用
@@ -9617,6 +9624,10 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
   詳見下方「🟠 Opus 第二輪複驗紀錄（2026-09-14）」。
 - **四軸狀態**：工程：退回（Opus 2026-09-14；第 1 點已驗證修妥，僅剩 §8 待 Fable 裁定）｜
   實驗：不適用｜產品：待裁決（T-47-A）｜MVP：不適用（沿用 T-17 FAIL）
+- **🔮 Fable 裁定（裁決 T-47-M，2026-09-14）**：§8 缺漏採 **(i) 事後補建**，WORKFLOW §8 一字不改；§8 區塊已追加於
+  本卡末段（11 欄全標「事後補建（2026-09-14 後追加），事前未鎖定」），`dataset_manifest_sha256` 不由 Fable 手填，由微型卡
+  **T-51** 以程式計算後回填 → Opus 第三輪只複核 §8 區塊與範圍（裁決 T-47-M 第 5 點；量測本體不重跑）→ 工程：已驗證
+  → 裁決 T-47-A。四軸維持 Opus 第二輪判定不變（工程：退回），直到 Opus 第三輪複核。全文見本卡末段「🔮 裁決 T-47-M」。
 - **狀態（修正輪 Sonnet 送審時原文，保留不覆寫）**：🔵 **待審（修正輪，結果 commit `5d1569c`）**——針對 Opus
   複驗（2026-09-13，對象 `6d95f5f`）退回理由第 1 點修正：表 7「模擬 gate」欄原填 `low`／`medium`
   （信心值，不是 gate），已改為程式產出的 `BLOCK`／`pass`，並新增「實際 gate」「模擬 overall」
@@ -9951,6 +9962,135 @@ T-47／T-48 量測期間與 T-17-R2 驗收期間禁止執行 `--yes`。
   不影響本卡任何提交證據；正式重跑一律在 scratchpad 新目錄。
 
   **E. 附帶發現 ⓐ～ⓕ**：上一輪原樣保留，本輪未重審、未擴大，仍交 Fable 裁決 T-47-A 時參考。
+
+- **🔮 裁決 T-47-M（Fable 2026-09-14；回應 Opus 第二輪複驗紀錄 B 節；只處置 §8 缺漏，不是 T-47-A）——選 (i) 事後補建，WORKFLOW §8 一字不改**
+  1. **裁決**：T-47 的 §8 不可變欄位以「**事後補建**」方式追加於本卡（見下方區塊），每一欄標明「事後補建（2026-09-14 後追加），
+     事前未鎖定」；`dataset_manifest_sha256` 由微型卡 **T-51** 以程式計算後回填，Fable 不手填。**不走 (ii)**，不修 WORKFLOW。
+  2. **理由**：
+     (a) §8 的適用範圍寫得很清楚——「凡是『結果不可事前保證』的卡：模型實驗、**量測**、驗收」——T-47 是量測卡，字面就在
+         範圍內。缺漏的原因不是規則不適用，而是 Fable 開卡（`96e7716`）時給了 T-44-R1／T-17-R2 模板卻漏給 T-47／T-48。
+         **規則沒錯，是執行規則的人漏了**；修法是補卡，不是改規則。
+     (b) (ii) 是「結果出來之後、為了讓已出來的結果合規而放寬規則」——正是 §7 整節要防的型態（T-38 `a0fe24e` 教訓）。
+         §7.4 允許使用者核准的情境是**規則本身被證明有錯**（先例 T-49-A 是卡片抄錯了鐵則 13，規則沒錯而卡片錯）；
+         這裡連卡片都不是抄錯，是漏抄，更不該動規則。
+     (c) (ii) 的受益者只有 T-47 一張卡：T-48 有 v2 門檻、T-44-R1／T-17-R2 有門檻且已附模板，「無門檻量測卡不適用 §8」
+         對它們全部不適用。為一張卡改一條規則、而且是往寬的方向改，不值得；對 T-48／T-44-R1／T-17-R2 零影響也就
+         意味著它解決不了任何通案問題。
+     (d) 無門檻量測卡的 §8 仍有實質價值：`dataset_manifest_sha256` 釘住裁決 T-47-A 依據的是哪 13 張照片＋哪一版
+         ground truth——**13 張裡有 8 張在 `assets/reference_irs/` 的媒體檔依 `.gitignore` 不進版控**，manifest 是
+         repo 內唯一能證明「量的是哪些 bytes」的紀錄；`implementation_commit`／`result_commit`／`reviewer` 釘住
+         T-47-A 引用的證據版本（`5d1569c`，不是被退回的 `6d95f5f`）；T-44-R1 硬門檻第 5 條「候選集改變後的信心校準
+         依裁決 T-47-A」要能一路追溯到這裡。
+     (e) 先例：§8 規則本身寫「舊卡由 Fable 回溯補建」（2026-09-03 已補 T-11／T-12／T-17／T-38／T-38B／T-39／T-44）；
+         T-47 是「v2 之後開的卡但 Fable 漏附」，最接近的處置就是同樣由 Fable 回溯補建、但**誠實標記時序**
+         （同 T-48 條件 (a)「歷史標記誠實、不得回頭補蓋章」的原則——這裡補的是紀錄，且每欄都寫明是事後）。
+  3. **「事前未鎖」對本卡不構成實質傷害，但仍要誠實標記**：本卡沒有 pass/fail 門檻，§8 前三欄要防的「看到結果再改門檻」
+     在本卡沒有可改的對象；量測內容①～⑦、兩模式、紅線與「不下結論」的範圍紅線全部寫在開卡 commit `96e7716`，且 Opus
+     兩輪複驗已證實產出與卡片內容一致、`src/` 零 diff、無舊快取。資料集由 T-51 事後釘住，並由 Opus 對照 CLI 指紋的
+     `photo_sha256` 交叉核對——這是事後補建唯一能「補」到的實質內容，其餘欄位是紀錄性的。
+  4. **T-51（微型卡，Sonnet）**：見下方 T-51 卡。要點：只跑卡內指令產生 `output/gate_calibration/DATASET_MANIFEST.json`
+     （13 張 `GATE_ITEMS` 照片＋`data/material_ground_truth.json` 的 sha256，清單由程式從 `t36_clip_accuracy.py` 抽出，
+     不手抄）、把程式印出的 `dataset_manifest_sha256` 取代本卡 §8 區塊的占位符、`git add -f` manifest 檔；
+     `src/`／`scripts/`／`data/` 零改動；不重跑量測。
+  5. **Opus 複核清單（T-51 收工後一併審；量測本體不必重跑）**：
+     (a) 本卡 §8 區塊 11 欄齊全、每欄含「事後補建」標記、commit 雜湊／日期／reviewer 與 git 歷史相符；
+     (b) 以 T-51 卡內同一指令在 scratchpad 重算（只改 `OUT` 路徑；路徑不進 manifest 內容），`dataset_manifest_sha256`
+         與本卡回填值、與 `git show HEAD:output/gate_calibration/DATASET_MANIFEST.json | shasum -a 256` 三者相同；
+     (c) manifest 內 `data/material_ground_truth.json` 的 sha256 ＝ T-44 §8 所記 `965e51ac…`（ground truth 自 `103674c`
+         後未變）；13 條照片 sha256 與 Opus 自己上一輪重跑的 CLI `.fingerprint.json` `photo_sha256` 抽查（至少
+         `bathroom_tiled`、`bedroom_ai_generated`、任一 `reference_irs` 照片）相同；
+     (d) `git diff --stat 55d0b3f HEAD -- src scripts data` 為空；`git status --porcelain -- src scripts data` 為空；
+     (e) T-51 結果 commit 只含 `TASKS.md`／`DEV_LOG.md`／`TODO.md`／`HANDOFF.md`／`output/gate_calibration/DATASET_MANIFEST.json`；
+         `git diff 〈本裁決 commit〉 HEAD -- TASKS.md` 逐 hunk 看，T-47 卡只准動 §8 的 `dataset_manifest_sha256` 一行
+         ＋追加「T-51 回填紀錄」一段，其餘 10 欄與既有紀錄一字不動。
+     全部成立 → 本卡 `工程：已驗證`（在本卡追加「四軸狀態（Opus 第三輪）」，不覆寫既有兩輪紀錄），並在 §8
+     追加 `verdict_under_current_criteria`；任一不成立 → 退回 T-51（不是退回 T-47 量測）。
+  6. **連動**：(a) 同批檢查——T-48 同樣缺 §8，已於開跑前補建（commit `ebf4117`，T-48 卡「🔮 §8 不可變欄位」；
+     本卡無結果故屬**事前鎖定**）；T-44-R1／T-17-R2 開卡時已附模板，不動。(b) Phase 1.9-R 共同鐵則新增第 14 條
+     （§8 區塊開卡即附；Opus 驗證重點第一條）。
+  7. **明確不做**：不下裁決 T-47-A（工程軸未「已驗證」；附帶發現 ⓐ～ⓕ 留到 T-47-A）；不改本卡任何結果、表格、
+     Opus 判定；不動 `src/`／`scripts/`／`data/`；不改 WORKFLOW 任何一字；不由 Fable 手填 `dataset_manifest_sha256`。
+  8. **下一步順序**：Sonnet 執行 T-51 → Opus 複核（第 5 點清單）→ T-47 工程：已驗證 → Fable 下裁決 T-47-A
+     （依四樣證據＋⑦ 兩模擬＋ⓐ～ⓕ）→ T-44-R1（等使用者核准絕對下限＋提供 held-out 照片）。
+- **§8 不可變欄位（裁決 T-47-M 事後補建，2026-09-14 追加；每一欄皆事前未鎖定；只能追加不得刪改；`〈〉` 占位符不算已填寫）**：
+  ```text
+  criteria_version: 無 pass/fail 門檻（量測卡；只產出四樣證據＋延伸量測⑤～⑦，判定由裁決 T-47-A 另下）——事後補建（2026-09-14 後追加），事前未鎖定
+  criteria_commit: 96e7716（2026-09-03 開卡 commit；鎖定的是量測內容①～⑦、兩模式、紅線與「不下結論」範圍，不含 §8 區塊）——事後補建（2026-09-14 後追加），事前未鎖定
+  criteria_locked_at: 2026-09-03（開卡日；§8 區塊本身未於此日鎖定）——事後補建（2026-09-14 後追加），事前未鎖定
+  dataset_manifest_sha256: 〈T-51 以程式計算後取代本占位符；Fable 不手填〉——事後補建（2026-09-14 後追加），事前未鎖定
+  implementation_commit: 6d95f5f（首輪：scripts/t47_gate_calibration.py 新增）／5c1cd29（修正輪：表 7／8 gate 欄改程式產出）——事後補建（2026-09-14 後追加），事前未鎖定
+  result_commit: 6d95f5f（首輪結果；雜湊回填 4203ba6）／5d1569c（修正輪結果；雜湊回填 54ce03b）——事後補建（2026-09-14 後追加），事前未鎖定
+  reviewer: Opus 2026-09-13（795e348，🟠 退回：表 8 無 gate 欄＋§8 缺漏）；Opus 2026-09-14（55d0b3f，🟠 退回：第 1 點已獨立實測修妥，僅剩 §8 缺漏）——事後補建（2026-09-14 後追加），事前未鎖定
+  verdict_under_original_criteria: 🟠 工程退回（Opus 2026-09-14，55d0b3f；唯一理由＝§8 缺漏）——事後補建（2026-09-14 後追加），事前未鎖定
+  verdict_under_current_criteria: 〈T-51 回填後由 Opus 第三輪複核追加；判準未變〉——事後補建（2026-09-14 後追加），事前未鎖定
+  criteria_changed_after_first_result: no——事後補建（2026-09-14 後追加），事前未鎖定
+  change_record: 無——事後補建（2026-09-14 後追加），事前未鎖定
+  ```
+
+### T-51 T-47 §8 事後補建：資料集 manifest 程式計算＋回填（微型卡；裁決 T-47-M 執行卡；`src/`／`scripts/`／`data/` 零改動）
+- **狀態**：⬜ 未開始
+- **四軸狀態**：工程：未開始｜實驗：不適用｜產品：不適用｜MVP：不適用（沿用 T-17 FAIL）
+- **前置**：裁決 T-47-M 已下（見 T-47 卡末段）；T-47 卡 §8 區塊已存在且 `dataset_manifest_sha256` 為占位符。
+- **為什麼**：WORKFLOW §8 要求 `dataset_manifest_sha256` 由程式產生、不得手打；T-47 的 §8 屬事後補建，資料集雜湊是唯一還能
+  「補」到實質內容的欄位（釘住裁決 T-47-A 依據的 13 張照片＋ground truth 版本；13 張裡 8 張 `reference_irs` 媒體檔不在版控，
+  manifest 是 repo 內唯一紀錄）。
+- **做法（逐字執行，不得改指令、不得新增腳本檔）**：
+  1. 開工前確認：`git status --porcelain -- src scripts data` 為空；`git log -1 --format=%h` 記下起點 commit。
+  2. 在 repo 根目錄的 shell 執行下方「T-51 指令」整段（從 `python3` 到 `EOF`；stdlib，不需 `.venv`；照片清單由程式從
+     `scripts/t36_clip_accuracy.py` 的 `GATE_ITEMS` 抽出並 assert 為 13 張，不手抄）。
+  3. 程式會印三行：`files: 14`、`dataset_manifest_sha256 = <64 hex>`、`ground_truth_sha256 = <64 hex>`。**終端輸出原文貼進交接筆記。**
+  4. 自檢（程式化）：(a) 再跑一次第 2 步，兩次 `dataset_manifest_sha256` 必須相同（可重現）；(b) `shasum -a 256
+     output/gate_calibration/DATASET_MANIFEST.json` 與程式印出的值相同；(c) `ground_truth_sha256` 必須等於
+     `965e51ac19e2d25a61b89bb8b94c01e4f34e3e41d6300002627d212abfc430c7`（T-44 §8 所記；ground truth 自 `103674c` 後未變）
+     ——不等＝🔴 卡關停下，不得繼續、不得「修正」任何檔案；(d) `grep -c '"photo": "' scripts/t36_clip_accuracy.py` 印 `13`。
+  5. 回填 TASKS.md T-47 卡 §8 區塊：只把 `dataset_manifest_sha256` 那一行的占位符 `〈T-51 以程式計算後取代本占位符；Fable 不手填〉`
+     換成 `<64 hex>（output/gate_calibration/DATASET_MANIFEST.json；T-51 程式產出，結果 commit 見 T-51 卡）`，該行結尾的
+     「——事後補建（2026-09-14 後追加），事前未鎖定」保留；**其他 10 欄一字不動**；T-47 卡既有文字（交接筆記／Opus 紀錄／
+     裁決 T-47-M）一字不動，只在 T-47 卡 §8 區塊之後追加一小段「**T-51 回填紀錄（Sonnet，日期）**：終端輸出三行原文＋commit」。
+  6. `git add -f output/gate_calibration/DATASET_MANIFEST.json`（`.gitignore` 預設排除 `output/` 下非 `.md` 檔，manifest 必須強制進版控）；
+     commit 訊息 `T-51: T-47 §8 資料集 manifest 程式計算＋回填(待驗證)`；本 commit **只准含**
+     `TASKS.md`／`DEV_LOG.md`／`TODO.md`／`HANDOFF.md`／`output/gate_calibration/DATASET_MANIFEST.json` 五個檔。
+- **紅線**：`src/`／`scripts/`／`data/` 零改動（不得為了「程式化」新增腳本檔，指令直接用 heredoc 跑）；不重跑
+  `t47_gate_calibration.py`；不動 `output/gate_calibration/REPORT.md`／`tables.md`；不動 T-47 卡任何既有文字；不動 WORKFLOW；
+  不填 §8 其他欄（`reviewer`／`verdict_under_current_criteria` 是 Opus 的）；不對 T-47-A（該不該調門檻）發表任何意見。
+- **自我檢查**：第 4 步 (a)～(d) 全部成立；`scripts/test_*.py` 20 支逐支 exit 0（不動碼仍跑，鐵則 1）；六條交付 IR MD5 全中
+  （T-14 兩條 `test_ir_synth.py`【6】內建；T-20／T-21 四條分開各一行重生）；`git diff --stat 55d0b3f HEAD -- src scripts data` 為空；
+  `git status --porcelain -- src scripts data` 為空；`git show --stat HEAD` 只列上述五檔。
+- **Opus 驗證重點（四軸輸出；同一視窗一併完成 T-47 第三輪複核，清單見裁決 T-47-M 第 5 點）**：紅旗：`dataset_manifest_sha256`
+  回填值與 Opus 自跑指令結果不同；紅旗：manifest 未進版控或內容被手改（`git show HEAD:output/gate_calibration/DATASET_MANIFEST.json |
+  shasum -a 256` 必須等於回填值）；紅旗：commit 含五檔以外任何檔；紅旗：§8 其他 10 欄或 T-47 既有紀錄被動過；紅旗：
+  ground truth sha256 ≠ `965e51ac…`。通過 → T-51 `工程：已驗證` **且** T-47 `工程：已驗證`（T-47 卡追加第三輪四軸，不覆寫）。
+- **交接筆記**：
+
+**T-51 指令（原文；從 `python3` 到 `EOF` 整段複製，貼在 repo 根目錄的 shell；本區塊刻意不縮排，避免 heredoc 結尾 `EOF` 前混入空白）**：
+
+```bash
+python3 - <<'EOF'
+import hashlib, json, pathlib, re
+ROOT = pathlib.Path(".")
+OUT = ROOT / "output/gate_calibration/DATASET_MANIFEST.json"
+src = (ROOT / "scripts/t36_clip_accuracy.py").read_text(encoding="utf-8")
+photos = re.findall(r'"photo": "([^"]+)"', src)
+assert len(photos) == 13, photos
+GT = "data/material_ground_truth.json"
+entries = []
+for rel in sorted(photos + [GT]):
+    b = (ROOT / rel).read_bytes()
+    entries.append({"path": rel, "sha256": hashlib.sha256(b).hexdigest(), "bytes": len(b)})
+manifest = {
+    "card": "T-47",
+    "list_source": "scripts/t36_clip_accuracy.py GATE_ITEMS (13 photos) + data/material_ground_truth.json",
+    "files": entries,
+}
+text = json.dumps(manifest, indent=2, ensure_ascii=False, sort_keys=True) + "\n"
+OUT.write_text(text, encoding="utf-8")
+print("files:", len(entries))
+print("dataset_manifest_sha256 =", hashlib.sha256(text.encode("utf-8")).hexdigest())
+print("ground_truth_sha256 =", next(e["sha256"] for e in entries if e["path"] == GT))
+EOF
+```
+
+（Opus 複核時只把 `OUT` 改成 scratchpad 路徑；`OUT` 路徑不進 manifest 內容，sha256 不受影響。）
 
 ### T-48 T-11／T-12 判準第二版針對性重驗（量測卡；裁決 T-45-A 執行卡 3/5；`src/` 零改動）
 - **狀態**：⬜ 未開始
