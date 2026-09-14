@@ -1,5 +1,15 @@
 # Dev Log
 
+## 2026-09-14 (134)
+
+- **Fable 視窗收工同步（等使用者核准 T-52 步驟 4(ii) 更正；尚未提交 `criteria:` commit）**。判定：更正＝「把卡片對齊事前已鎖定的判準」
+  而非結果後改門檻（`CRITERIA_GATE_v2.md` 零改動、更正版每格由早於開卡的表 8＋CRITERIA 決定、方向只嚴不寬）→ 不開 gate v3、
+  `criteria_changed_after_first_result` 維持 no，但仍走 §7 完整程序（使用者核准、獨立 commit、原 verdict 保留、§8 只追加）。
+  Fable 程式化自檢：role_aware (materials, overall, gate) 13/13＝表 8 模擬、geometry 13/13＝T-47 表 1、改變列恰為 bathroom_tiled 與 DivorceBeach。
+- 草案全文貼給使用者；核准後以 scratchpad `apply_4ii.py` 只追加（乾跑 `diff`：0 刪除／40 新增）寫入 T-52 卡、獨立 commit、狀態改「待 Opus 複核 4(ii)」。
+- T-48 F1～F4 裁決未做：使用者訊息引用的「③ 的要求」未附上，不猜測需求。HANDOFF（`d2379be`）／TODO 已同步。
+  零改動：`src`／`scripts`／`data`／`output/**`／WORKFLOW／SPEC。
+
 ## 2026-09-14 (133)
 
 - **📝 `output/.archive` 事件紀錄（Fable；純文件 commit，不改 `src/`／WORKFLOW／T-42 政策）**：(a) T-48 Opus 驗證視窗誤刪三個
