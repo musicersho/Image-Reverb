@@ -10602,6 +10602,183 @@ EOF
   ```
 - **交接筆記**：
 
+### T-54 幾何量程規則 v2：環景分支加三維檢查（Sonnet 執行卡；裁決 T-48-F 第 1 點執行卡；**前置＝使用者核准＋獨立 `criteria:` commit**）
+- **狀態**：⬜ 未開始（**等使用者核准 CRITERIA_GEOMETRY_SCOPE_v2.md 草案**；核准後 Fable 先提交 `criteria: geometry scope v2 …` 獨立 commit，再改「⬜ 可開跑」）
+- **四軸狀態**：工程：未開始｜實驗：待驗證（`expected_on_13` 事前鎖定）｜產品：預設啟用（候選；量程規則本就在預設路徑，收緊不放寬）｜MVP：不適用（沿用 T-17 FAIL）
+- **前置（硬性）**：T-48 修正輪 Opus 複驗「工程：已驗證」（本卡才能開跑，避免兩張卡同時動 T-11 §8）；T-52 Opus 複核 4(ii) 可平行（純文件）；
+  `output/geometry_scope/CRITERIA_GEOMETRY_SCOPE_v2.md` 已由使用者核准並以獨立 commit 提交（`git log --format=%h -- <該檔>` 恰一筆、訊息以 `criteria:` 開頭、早於本卡任何結果 commit）。
+- **為什麼**：裁決 T-48-F 第 1 點——T-48 A 部分實測 RacquetballCourt4（實際 12.19m）估 16.10×9.39×5.55m 卻 geometry=medium，因環景分支只比
+  單面牆距（兩側各 ≤10m）；Opus V5 實測照 gate 導引覆寫兩面材質後即以錯誤幾何 exit 0 輸出 IR。這是預設路徑的域外安全缺口，須在 T-17-R2 前修。
+- **規則原文 G2（＝CRITERIA 檔規則段，逐字；實作不得與此不同義）**：
+  > **G2（量程規則 v2，兩模式共用；`dims_source == "equirect_multiview"` 分支）**：保留現行「任一單面牆距 > `GEOMETRY_SCOPE_MAX_M`」檢查，
+  > **另加**「`length_m`／`width_m`／`height_m` 任一 > `GEOMETRY_SCOPE_MAX_M`」檢查（與 `metric_depth` 分支同式）；任一命中 → `confidence: low`，
+  > `notes` 追加一條含「超出已驗證量程」字樣並列出命中的維度／牆距與數值；兩者皆命中時只記一條、把兩組明細合併列出。
+  > `metric_depth`／`manual`／未知 `dims_source` 三個分支原文不動；`GEOMETRY_SCOPE_MAX_M=10.0` 不動、不新增常數；`--override-dims` 導引
+  > 沿用 `pipeline.py` 既有條件（`est.confidence == "low"` 即印），不另加訊息分支。
+- **範圍**：`src/` 的 diff 限縮在 `geometry.py`（只動 `apply_scope_confidence()` 的 equirect 分支與 docstring「判定對象」一段——docstring 須改寫成
+  「單面牆距**或**相加後三維任一超過」，並保留原本「不用相加值取代單面檢查」的理由）；`scripts/` 只得新增 `test_geometry_scope.py`。
+- **紅線**：`pipeline.py`／`acoustics.py`／`ir_synth.py`／`ir_metrics.py`／`config.py`／`materials.py`／`surfaces.py`／`data/` 零 diff；
+  `compute_materials_confidence()` 與 gate 判定式零改動（鐵則 6）；`t36_clip_accuracy.EXPECTED_GATE`／`GATE_ITEMS` 不動（凍結表；geometry 欄
+  對 CathedralRoom／RacquetballCourt4 自此過期，本卡交接筆記記一句，不改表）；`output/gate_calibration/`、`output/gate_calibration_v2/`、
+  `output/geometry_r2/`、`output/material_r2/` 唯讀；不得用舊快取（重跑寫新目錄）；六條交付 IR MD5 不變。
+- **執行步驟**：
+  1. 開跑前填 §8 前四欄（`dataset_manifest_sha256`＝`shasum -a 256 output/gate_calibration/DATASET_MANIFEST.json`，必須仍為
+     `c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7`，不等＝🔴 卡關），commit `T-54: §8 前四欄（開跑前）`；
+  2. 實作 G2；
+  3. 新增 `scripts/test_geometry_scope.py`（純函式測試，不載模型，直接組 `RoomEstimate`）：
+     (a) equirect、六個 `wall_distances_m` 皆 ≤10（例：9.8／6.3／4.5／4.9／5.6／2.3）、`length_m=16.1`、`width_m=9.4`、`height_m=5.6`、
+     confidence 預設 medium → **low** 且 notes 含「超出已驗證量程」與「length_m=16.1m」；
+     (b) equirect、牆距皆 ≤10 且三維皆 ≤10 → confidence 不變、notes 不增；
+     (c) equirect、單面牆距 12.2 >10（三維 ≤10）→ low（現行行為回歸）；
+     (d) metric_depth、任一維 >10 → low；三維皆 ≤10 → 不變（現行行為回歸）；
+     (e) manual → 不變、notes 不增。
+     **對舊碼實測**（`git worktree add <scratchpad>/t54-old <§8 前四欄 commit>`，複製新測試進去跑）：(a) 必須 fail、(b)(c)(d)(e) 必須 pass，輸出貼交接筆記；
+  4. 鐵則 8 基線變化表：`python scripts/t47_gate_calibration.py --out-dir output/gate_calibration_v3/ --fresh`（52 次真實推論；
+     `output/gate_calibration/`、`output/gate_calibration_v2/` 一個 bit 不動）→ 程式化比對（貼指令與輸出）：與 `output/gate_calibration_v2/tables.md`
+     表 1 相比，**兩模式 geometry 欄僅 `CathedralRoom`／`RacquetballCourt4` 由 medium→low（共 4 格），materials／overall／gate 三欄 26 格零變化**；
+     表 3 五張兩模式全 BLOCK；26 組 surfaces／sources 26/26 相符；
+  5. V5 情境（真實 CLI，兩邊都用相對路徑 `assets/reference_irs/racquetball_court_4/RacquetballCourt4.jpg` 呼叫）：
+     `python -m src.image_reverb <RacquetballCourt4> --override-material north=gypsum_board --override-material ceiling=wood_panel --no-viz`
+     → **EXIT=3**，stderr 含「幾何不可信 → 用 --override-dims」；對 §8 前四欄 commit 的 worktree 跑同指令 → EXIT=0（複現 Opus V5），兩份輸出貼交接筆記；
+     另：`SteinmanHall`／`DivorceBeach` 預設路徑 stderr 與 T-54 前 `diff` 為空（本已 low，G2 不該改變它們的輸出——若 notes 多了一條「合併明細」
+     屬 G2 原文允許的變化，須貼 diff 並說明）；
+  6. 20 支＋新 1 支 `scripts/test_*.py` 全 EXIT=0；六條交付 IR MD5 全中；
+  7. 填 §8 `implementation_commit`／`result_commit`；收工照 WORKFLOW §4（四軸、「待審」）。
+- **自我檢查**：上列 1～7 全部有實際輸出；`git diff --stat -- src` 只含 `geometry.py`；`git diff --stat -- data src/image_reverb/{pipeline,acoustics,ir_synth,ir_metrics,config,materials,surfaces}.py scripts/t47_gate_calibration.py scripts/t36_clip_accuracy.py` 為空；
+  `git status --porcelain -- output/gate_calibration output/gate_calibration_v2 output/geometry_r2 output/material_r2` 為空；
+  `grep -n 'worktree.*add.*"HEAD"' scripts/test_geometry_scope.py` 為空；鐵則 15：清理只刪本輪自建路徑並逐條列出。
+- **Opus 驗證重點（四軸輸出）**：第一條＝§8 前四欄 commit 早於任何結果 commit（鐵則 14）；紅旗：CRITERIA 檔 commit 晚於結果或與結果同 commit、
+  或內容與本卡「規則原文 G2」不同；紅旗：materials／overall／gate 任何一格變動；紅旗：geometry 變動不是恰好那 4 格；紅旗：V5 情境仍 exit 0；
+  紅旗：新測試 (a) 對舊碼不 fail；紅旗：`GEOMETRY_SCOPE_MAX_M` 被改或新增常數；紅旗：凍結目錄被動；紅旗：手打表格。
+- **§8 不可變欄位（開卡即附，鐵則 14）**：
+  ```text
+  criteria_version: geometry scope v2（裁決 T-48-F 第 1 點；規則原文＝output/geometry_scope/CRITERIA_GEOMETRY_SCOPE_v2.md）
+  criteria_commit: 〈使用者核准後 Fable 填：criteria: geometry scope v2 … 的 hash；只含該檔；早於本卡任何結果〉
+  criteria_locked_at: 〈使用者核准日〉
+  dataset_manifest_sha256: 〈執行者開跑前重算 output/gate_calibration/DATASET_MANIFEST.json，必須＝c15d0a14…2b01a7〉
+  implementation_commit:
+  result_commit:
+  reviewer:
+  verdict_under_original_criteria: 〈Opus 填：expected_on_13 與 V5 情境是否成立〉
+  verdict_under_current_criteria: 〈同上；判準未變〉
+  criteria_changed_after_first_result: no（改了就是新卡）
+  change_record: 無
+  ```
+- **CRITERIA_GEOMETRY_SCOPE_v2.md 草案（未核准前不進版控；核准後由 Fable 逐字落地、獨立 commit）**：
+  ```text
+  # CRITERIA — geometry scope v2（量程規則：環景分支加三維檢查）
+  version: geometry scope v2
+  scope: 兩模式共用（geometry 不吃 role_aware）；只動 apply_scope_confidence() 的 equirect_multiview 分支；metric_depth／manual 分支不變
+  approved_by: 使用者（〈核准日期〉）；提案者 Opus（T-48 驗證紀錄 F1／V5，2026-09-14）、起草 Fable（裁決 T-48-F，2026-09-14）
+  evidence: T-48 結果 commit 012a07f（output/geometry_r2/REPORT.md 表 1：RacquetballCourt4 16.10×9.39×5.55m／medium／無導引；
+            CathedralRoom 8.42×14.14×4.97m／medium）；Opus V5 實測（覆寫兩面材質後 exit 0）；output/gate_calibration_v2/tables.md 表 1
+  執行卡: T-54；本檔 commit 必須早於 T-54 任何結果 commit（WORKFLOW §7.2）
+  rule G2: 〈T-54 卡「規則原文 G2」逐字〉
+  expected_on_13: 與 output/gate_calibration_v2/tables.md 表 1 相比，兩模式 geometry 欄僅 CathedralRoom／RacquetballCourt4 medium→low（4 格）；
+                  materials／overall／gate 三欄 26 格不變（兩張本已 materials low／overall low／BLOCK）；gate 13/13 BLOCK 兩模式不變；
+                  surfaces／sources 26/26 不變
+  expected_V5: RacquetballCourt4 --override-material north=gypsum_board --override-material ceiling=wood_panel → EXIT=3、stderr 含
+               「幾何不可信 → 用 --override-dims」（舊碼 exit 0）
+  not_a_calibration: 本版不宣稱 10m 門檻已校準；只把環景分支補齊到與透視照分支同一語意（估計三維任一 >10m ＝ 域外）
+  supersedes: T-11 決策補丁步驟 7 的環景「只比單面牆距」設計（保留該檢查、加上三維檢查；GEOMETRY_SCOPE_MAX_M 不動）
+  change control: 結果出來後不得修改本檔；如需改動＝geometry scope v3 新檔＋新獨立 commit＋使用者核准（WORKFLOW §7）
+  ```
+- **交接筆記**：
+
+### T-55 T-11 域外出口 v3 重驗：14 張＋V5 情境（量測卡；裁決 T-48-F 第 1／3 點執行卡；`src/` 零改動；**前置＝T-54 ✅＋使用者核准 CRITERIA_T11_v3**）
+- **狀態**：⬜ 未開始（等 T-54 Opus 驗證通過＋使用者核准 `CRITERIA_T11_v3.md` 草案＋Fable 獨立 `criteria: T-11 v3 …` commit）
+- **四軸狀態**：工程：未開始｜實驗：待驗證｜產品：不適用（量測卡）｜MVP：不適用（結果併入 T-17-R2 域外安全檢查）
+- **為什麼**：T-48 硬性條件 (c)（`geometry.py` 有 diff → A 部分在 HEAD 重跑）＋裁決 T-48-F 第 3 點（車內歸類、走廊補量）。**判準 v3 只做三件事**：
+  車內改歸 `domain_out_non_room`（依 T-11 原卡步驟 5「車內允許數字不準」）、資料集加回 `corridor_hotel_carpet.png`（14 張）、加 V5 情境；
+  >10m 域外項與浴室 ±30% 條文與數字**一字不改**。
+- **範圍／禁止修改**（鐵則 13 句型）：`src/` 零 diff；`scripts/` 只得修改 `t48_geometry_material_r2.py` 的 Part A 子命令（加 `--criteria v3`：
+  14 張清單＝`t36_clip_accuracy.GATE_ITEMS`＋corridor、車內分類、V5 情境；`--criteria v2` 行為逐位元不變）——**不得碰 Part B 任何程式**；`data/` 零 diff。
+- **紅線**：`output/geometry_r2/` 唯讀，結果寫 `output/geometry_r3/`（REPORT.md、DATASET_MANIFEST.json〔14 張〕、runs/）；不得用舊快取；
+  `GATE_ITEMS` 不動；不得預跑（criteria commit 前不得有任何 `output/geometry_r3/` 產物）。
+- **執行步驟**：1. 開跑前填 §8 前四欄（manifest 由程式產生，14 張 sha256＋已知尺寸表，`git add -f`），commit；2. `partA --criteria v3`：14 張預設路徑
+  真實 CLI＋V5 情境；3. 程式產表：逐張 dims／dims_source／confidence／導引／v3 類別／判定；4. 20 支測試 EXIT=0、六條 IR MD5 全中；5. 回填 T-11 §8
+  （只追加）；收工。
+- **判準 v3（＝CRITERIA_T11_v3.md 草案；未核准前不進版控）**：
+  ```text
+  # CRITERIA — T-11 域外出口 v3
+  version: T-11 v3（T-48 A 部分 v2 的延續；域外項與浴室項條文與數字不變）
+  approved_by: 使用者（〈日期〉）；起草 Fable（裁決 T-48-F 第 3 點）
+  dataset: canonical 13 張（t36_clip_accuracy.GATE_ITEMS）＋assets/photos/corridor_hotel_carpet.png ＝ 14 張；manifest 程式產生
+  類別與判準（每張恰一類）：
+    domain_out（實際最大維 >10m）：arena_ntsu_linkou（~150m）、RacquetballCourt4（12.19m）、SteinmanHall（12.2m 牆距）、corridor_hotel_carpet（~30m）
+      → geometry_confidence 必須 low 且 gate 訊息含 --override-dims 導引；任一拿到 medium/high ＝ 域外出口誤放 FAIL
+    domain_out_non_room（非房間）：car_interior_suv（~2m 車廂）→ 同 domain_out 要求（low＋導引）；估計誤差只記錄不判
+    domain_in_with_ground_truth（≤10m 有 ground truth）：bathroom_tiled → 誤差 ≤±30%
+    unknown_no_ground_truth：其餘 8 張 → 只記錄
+  V5 情境：RacquetballCourt4 --override-material north=gypsum_board --override-material ceiling=wood_panel → 必須 EXIT=3 且含 --override-dims 導引；exit 0 ＝ FAIL
+  verdict：domain_out 4/4＋domain_out_non_room 1/1＋浴室＋V5 全部成立才 PASS；任一不成立 FAIL（逐張列）
+  change control: 結果出來後不得修改本檔；改動＝v4 新檔＋獨立 commit＋使用者核准
+  ```
+- **§8 不可變欄位（開卡即附，鐵則 14）**：
+  ```text
+  criteria_version: T-11 v3（裁決 T-48-F 第 3 點；規則原文＝output/geometry_r3/CRITERIA_T11_v3.md）
+  criteria_commit: 〈核准後 Fable 填〉
+  criteria_locked_at: 〈核准日〉
+  dataset_manifest_sha256: 〈執行者開跑前由程式產生 output/geometry_r3/DATASET_MANIFEST.json 後填〉
+  implementation_commit:
+  result_commit:
+  reviewer:
+  verdict_under_original_criteria: 〈v3 首跑結果，逐張〉
+  verdict_under_current_criteria: 〈同上；判準未變〉
+  criteria_changed_after_first_result: no（改了就是新卡）
+  change_record: 無
+  ```
+- **Opus 驗證重點（四軸輸出）**：鐵則 14；紅旗：`--criteria v2` 輸出與 T-48 交付版不同；紅旗：任何 `src/` diff；紅旗：14 張少任何一張；
+  紅旗：域外誤放被寫成「預期行為」；紅旗：V5 情境未跑；紅旗：手打數字。
+- **交接筆記**：
+
+### T-56 T-12 v2-b 量測方法 v3：seed 鎖定＋10 次中位數（量測卡；裁決 T-48-F 第 2／4 點執行卡；`src/` 零改動；停滯期填充卡；**前置＝使用者核准 CRITERIA_T12_v3**）
+- **狀態**：⬜ 未開始（等使用者核准 `CRITERIA_T12_v3.md` 草案＋Fable 獨立 `criteria: T-12 v3 …` commit；不進關鍵路徑）
+- **四軸狀態**：工程：未開始｜實驗：待驗證｜產品：不適用（量測卡）｜MVP：不適用
+- **為什麼**：T-48 B 部分證實 `gen_ir_manual.py` 的 ray tracing 未固定 seed，v2-b（±20%）在單次量測下 PASS/FAIL 跨門檻兩側（−21.1／−22.3／−19.9%），
+  依 §7.5 只能記 inconclusive；v2-b 首跑 FAIL 的紀錄永久保留。本卡改**量測方法**，不改門檻數字。
+- **範圍／禁止修改**（鐵則 13 句型）：`src/` 零 diff；`scripts/` 只得 (i) 修改 `gen_ir_manual.py` 新增 `--seed N`（呼叫 `pra.random.seed(N)`＋
+  `pra.libroom.set_rng_seed(N)`，在 `build_room()` 之前；**未給 `--seed` 時行為逐位元不變**）、(ii) 修改 `t48_geometry_material_r2.py` 的 Part B 子命令加
+  `--criteria v3`（`--criteria v2` 行為不變）；`data/` 零 diff。
+- **紅線**：`output/material_r2/` 唯讀，結果寫 `output/material_r3/`；30 條 WAV 全部保留於 `output/material_r3/runs/`（不進版控）；**首跑即定案，禁止重跑**
+  （重跑＝v4 新版號）；不得為了過門檻改 seed 清單、改 N、改 `n_rays`／`time_thres`；`ir_metrics.py` 零 diff。
+- **執行步驟**：0. **seed 有效性自檢**：同一 seed 生 per-wall 兩次 → WAV sha256 相同；seed 1001 vs 1002 → 不同；任一不成立＝🔴 卡關回 Fable
+  （表示 pyroomacoustics 的隨機性不只來自 libroom 引擎）；1. 開跑前填 §8 前四欄，commit；2. 三條件 × 10 seed ＝ 30 條 IR；3. 程式產表：30 個聯合帶
+  T30、每條件中位數／min／max／(max−min)/median、中位數差％、carpet／per-wall 倍數、v2-a（標「非鑑別性」）、v1 字面條件（只記錄）；
+  4. 20 支測試 EXIT=0、六條 IR MD5 全中；5. 回填 T-12 §8（只追加）；收工。
+- **判準 v3（＝CRITERIA_T12_v3.md 草案；未核准前不進版控）**：
+  ```text
+  # CRITERIA — T-12 v2-b 量測方法 v3
+  version: T-12 v3（門檻數字＝v2 不變：中位數差 ≤±20%、carpet ≥3×；只改量測方法）
+  approved_by: 使用者（〈日期〉）；起草 Fable（裁決 T-48-F 第 2 點）；提案 Opus（T-48 驗證紀錄 F2）
+  seeds（事前鎖定，不得增減）: 1001,1002,1003,1004,1005,1006,1007,1008,1009,1010
+  conditions: per-wall（4×3×2.5m，floor=carpet／其餘 gypsum_board）、六面 gypsum_board、六面 carpet（與 T-12／T-48 同設定、同 preset、同 n_rays／time_thres）
+  statistic: 每條件 10 次 t30_low_combined()（88.4–353.6Hz）的中位數
+  v2-b 判準: |median(per-wall) − median(gypsum)| / median(gypsum) ≤ 20% 且 median(carpet) ≥ 3 × median(per-wall)
+  方法有效性守門（★ 請使用者決定留或刪）: 任一條件 (max−min)/median > 20% → v2-b 記 inconclusive（方法無鑑別力），不記 PASS/FAIL；守門觸發時 30 個值照列
+  v2-a: 照量照列，標「非鑑別性（同義反覆，裁決 T-48-F 第 4 點）」，不計入 verdict
+  v1 字面條件（125Hz 八度 ≈0.35s ±20%）: 照量照列，只記錄不當門檻
+  first_run_is_final: yes（任何重跑＝v4）
+  change control: 結果出來後不得修改本檔；改動＝v4 新檔＋獨立 commit＋使用者核准
+  ```
+- **§8 不可變欄位（開卡即附，鐵則 14）**：
+  ```text
+  criteria_version: T-12 v3（裁決 T-48-F 第 2 點；規則原文＝output/material_r3/CRITERIA_T12_v3.md）
+  criteria_commit: 〈核准後 Fable 填〉
+  criteria_locked_at: 〈核准日〉
+  dataset_manifest_sha256: 不適用（合成房間；30 條 IR 的 sha256 由程式列於 REPORT 檔頭）
+  implementation_commit:
+  result_commit:
+  reviewer:
+  verdict_under_original_criteria: 〈v3 首跑結果〉
+  verdict_under_current_criteria: 〈同上；判準未變〉
+  criteria_changed_after_first_result: no（改了就是新卡）
+  change_record: 無
+  ```
+- **Opus 驗證重點（四軸輸出）**：鐵則 14；紅旗：seed 清單／N／preset 與 CRITERIA 不同；紅旗：`--seed` 未給時輸出與舊版不同（worktree 比對 sha256）；
+  紅旗：任何重跑痕跡（runs/ 內 WAV 數 ≠30 或 mtime 跨兩批）；紅旗：v2-b 以「交付版」而非中位數判；紅旗：手打數字；紅旗：任何 `src/` diff。
+- **交接筆記**：
+
 ### T-48 T-11／T-12 判準第二版針對性重驗（量測卡；裁決 T-45-A 執行卡 3/5；`src/` 零改動）
 - **狀態**：🟠 **工程退回（Opus 驗證 2026-09-14；對象結果 commit `012a07f`、驗證時 HEAD `153155b`；只審不改碼）**——
   量測跑得起來、`src/` 零 diff、兩個核心發現（RacquetballCourt4 域外誤放、ray tracing 無固定 seed）Opus 自己實測**屬實**；
@@ -10803,6 +10980,78 @@ EOF
     RacquetballCourt4 暫存時，誤刪了 `output/.archive/` 下 bathroom_tiled／bedroom_ai_generated／stairwell_tiled 三個由該視窗於
     15:52–15:54 建立的備份資料夾（內容只有 `preprocess/cropped.png`、`meta.json`）；該視窗運算不受影響，但若其報告引用這三個
     archive 路徑會找不到檔案。Opus 自己產生的 `output/RacquetballCourt4/`、其 archive 與暫存 IR 已清除。
+- **🔮 裁決 T-48-F（Fable 2026-09-14；回應 Opus 驗證紀錄「交 Fable」F1～F4；依 WORKFLOW §7 逐項；只追加不刪改）**
+  **讀了什麼才動手**：CLAUDE／WORKFLOW §3／§7／§8、HANDOFF、DEV_LOG (132)～(134)、本卡全文（Opus 驗證紀錄＋修正輪指示）、
+  `output/geometry_r2/REPORT.md`（13 張估計尺寸／dims_source／confidence 逐張表）、`output/material_r2/CRITERIA_T12_v2.md`、
+  `src/image_reverb/geometry.py` `apply_scope_confidence()`（環景分支 `:236-238` 只逐值比對 `wall_distances_m`，docstring 明寫
+  「不是相加後的總長」是刻意設計）、`pipeline.py:438-444`（`--override-dims` 導引只在 `est.confidence == "low"` 時印）、
+  `scripts/gen_ir_manual.py`（pra ShoeBox＋`set_ray_tracing()`，無任何 seed 設定）、pyroomacoustics 0.10.1 原始碼
+  （`pra.random.seed()` 與 `pra.libroom.set_rng_seed()` 存在，`room.py` docstring 明寫可全域固定）、T-11 原卡步驟 5 原文
+  （「車內與超大空間允許數字不準」）、`assets/photos/`（`corridor_hotel_carpet.png` 仍在）。
+  1. **F1 RacquetballCourt4 域外誤放 → 開 T-54（修 `apply_scope_confidence()` 環景分支；Sonnet 執行卡；前置＝使用者核准＋獨立 `criteria:` commit）。**
+     - **為什麼要修、而且要在 T-17-R2 之前修**：這不是量測誤差，是預設路徑的安全缺口——Opus V5 實測「照 gate 導引覆寫兩面材質即以
+       16.10×9.39×5.55m 錯誤幾何 exit 0 輸出 IR」。T-17-R2 判準 5「域外輸入全部 BLOCK 且出口訊息可操作」在此案例上開跑前已知不成立；
+       且 T-17-R2 前置「驗收期間不得有 gate 程式碼變動」，若驗收後才修＝再驗一次。**排程：T-48 修正輪 → T-54 → T-55（T-11 域外 v3 重驗）
+       → T-17-R2**；T-52 的 Opus 複核 4(ii) 與此平行（純文件）。
+     - **規則怎麼改（＝T-54 卡「規則原文 G2」，逐字）**：環景分支**保留**單面牆距檢查，**另加**與透視照相同的三維檢查
+       （`length_m`／`width_m`／`height_m` 任一 > `GEOMETRY_SCOPE_MAX_M` → low），兩者取最嚴。docstring 的顧慮（「對牆相加會把有效上限
+       拉高到約 40m」）針對的是「用相加值**取代**單面檢查」；本裁決是**加上**同一門檻（10m）的相加檢查，只會更嚴、不會放寬，
+       `GEOMETRY_SCOPE_MAX_M=10.0` 不動、不新增常數。metric_depth／manual 分支零改動。
+     - **事前可推得的 13 張影響（由 `output/geometry_r2/REPORT.md` 表 1＋`output/gate_calibration_v2/tables.md` 表 1 推得，寫進 CRITERIA
+       `expected_on_13`）**：環景 4 張中 `DivorceBeach`（16.79m）／`SteinmanHall`（21.48m）本已 low（單面牆距觸發），**`CathedralRoom`
+       （8.42×14.14×4.97，medium）與 `RacquetballCourt4`（16.10×9.39×5.55，medium）geometry 由 medium→low**，兩模式皆同（geometry 不吃
+       `role_aware`）；兩張的 materials 本已 low、overall 本已 low、gate 本已 BLOCK → **gate 13/13 兩模式不變、overall 13/13 不變、
+       materials 13/13 不變、只有 geometry 欄 4 格改變**；其餘 9 張零變化。V5 情境（`RacquetballCourt4 --override-material north=gypsum_board
+       --override-material ceiling=wood_panel`）由 exit 0 變 **EXIT=3 且 stderr 含「幾何不可信 → 用 --override-dims」**。
+     - **紅線與鐵則對照**：鐵則 6「gate 規則零改動」指 `compute_materials_confidence()` 規則 1～4 與 gate 判定式，本卡不碰；量程規則是
+       geometry confidence 規則，但因會改 gate 結果的上游，**比照 T-52 走 criteria 控制**（使用者核准→獨立 commit→開跑）。`t36_clip_accuracy.EXPECTED_GATE`
+       geometry 欄（T-28-A 凍結表）對這兩張自此過期——**不改凍結表**（鐵則 11），T-52 已明文該欄不作為任何斷言，T-54 卡再記一次。
+     - **與 T-48 的關係**：T-48 硬性條件 (c)「`geometry.py` 有 diff → A／B 須在 HEAD 重跑」——**A 部分重跑＝T-55（判準 v3）**；
+       **B 部分不因 T-54 重跑**：B 的量測路徑（`gen_ir_manual.py`→pyroomacoustics→`ir_metrics.py`）不經過 `geometry.py`，(c) 的字面
+       「A／B」是開卡時的保守寫法，此處裁定為「只重跑量測路徑被觸及的部分」並附 `git diff <T-48 result_commit>..HEAD -- scripts/gen_ir_manual.py
+       src/image_reverb/{acoustics,ir_synth,ir_metrics,materials}.py data/` 為空的證據；B 部分的下一次量測＝T-56（判準 v3，F2）。
+  2. **F2 v2-b 量測噪聲 → 開 criteria v3（T-12 v2-b 量測方法 v3），執行卡 T-56；草案先給使用者核准，核准後獨立 `criteria: T-12 v3 …` commit。**
+     - **事實**：v2-b 的隨機性來自 `gen_ir_manual.py` 的 ray tracing（pyroomacoustics libroom `std::mt19937_64`，預設真隨機播種）；
+       產品路徑 `ir_synth.py` 是 image-source＋`IR_NOISE_SEED` 決定性 shaped-noise，**不受影響**。pyroomacoustics 0.10.1 提供
+       `pra.random.seed(n)`（全域）與 `pra.libroom.set_rng_seed(n)`（C++ 引擎），可固定。
+     - **裁定的 v3 形狀（草案全文見 T-56 卡；要點）**：(i) `gen_ir_manual.py` 新增 `--seed N`（未給＝行為與現在逐位元相同）；
+       (ii) **事前鎖定 10 個 seed**（1001～1010），每個條件（per-wall／六面 gypsum／六面 carpet）各生 10 條 IR；(iii) 統計量＝每條件
+       10 次聯合帶 T30 的**中位數**，v2-b 判準數字**不動**（中位數差 ≤±20%、carpet 中位數 ≥ per-wall 中位數 3 倍）；(iv) **方法有效性
+       守門**：任一條件 10 次 T30 的 (max−min)/median > 20% → v2-b 記 **inconclusive（方法無鑑別力）**，不記 PASS 也不記 FAIL
+       （這一條是新增的、會把可能的 FAIL 變 inconclusive 的條款，**明列請使用者決定留或刪**）；(v) 30 個 T30 值＋30 個 WAV sha256
+       全部程式產表進 REPORT，WAV 留 `output/material_r3/runs/`；(vi) **首跑即定案**，任何重跑＝新版號；(vii) v2-a 照量照列但標
+       「非鑑別性（同義反覆）」（F4）。
+     - **不做的**：不用「單一固定 seed 跑一次」當方法（決定性但只是把噪聲藏起來，PASS/FAIL 仍取決於 seed 抽到哪一邊）；不改 ±20%／3× 數字；
+       不回頭改 T-48 v2 的紀錄（v2-b 首跑 FAIL、方法 inconclusive，永久保留）。
+     - **排程**：T-56 不進關鍵路徑（T-17-R2 §7-2 端到端 RT60 才是產品層驗證；v2-b 是 T-12 單元層），停滯期填充卡，可與 T-50 同期。
+  3. **F3 車內判準文字張力＋走廊未重量 → 兩段處置。**
+     - **v2 現有結果（T-48）**：卡片「已知實際尺寸」列了車內 ~2m，判準括號卻寫「目前只有浴室」——同版文字自相矛盾，依 §7.5 與 T-52 4(ii)
+       同型處理：`car_interior_suv` 在 v2 記 **inconclusive（判準文字自相矛盾）**，不是 PASS、不是 FAIL、也不是 Sonnet 寫的「不適用」；
+       修正輪只改標籤與說明文字（見下方修正輪指示第 6 條），不改任何數字。
+     - **v3（T-55）事前鎖定**：`car_interior_suv` 歸類 **`domain_out_non_room`**（實際 ~2m 車廂、非房間；判準＝`geometry_confidence` 必須
+       low 且 gate 訊息含 `--override-dims` 導引，與 >10m 域外同款；估計誤差只記錄不判）。依據＝T-11 原卡步驟 5 原文「車內與超大空間允許
+       數字不準」——v2 括號是把原意寫丟了，不是新放寬；且現行實測本就 low＋導引（`out_of_domain_material` 觸發）。
+     - **走廊**：`assets/photos/corridor_hotel_carpet.png`（T-11 原始 FAIL 案例，實際 ~30m，T-11 B' 補丁後 low）仍在版控但不在 T-36 起的
+       canonical 13 張內。**T-55 資料集＝canonical 13 張＋corridor 共 14 張**（manifest 重算＝新 sha256，v3 本來就是新版），corridor 歸類
+       `domain_out`（>10m：必須 low＋導引；估計值 vs 30m 只記錄）。`t36_clip_accuracy.GATE_ITEMS` **不動**（凍結清單），T-55 腳本自己組清單。
+  4. **F4 v2-a 同義反覆 → 只記錄，確認處置**：v2-a（`compute_acoustics()` Sabine 125Hz＝0.348s）的目標值就是同一公式的輸出，PASS 鑑別力為零。
+     處置＝在本卡與 T-12 §8 記「v2-a 屬同義反覆，只證明公式未被改壞（回歸性質），不構成材質模組正確性證據」；T-56 REPORT 照量照列並標
+     「非鑑別性」；**不刪、不改數字、不開新判準**（判準已鎖定；改了才是 §7 事件）。
+  5. **T-48 修正輪（Sonnet）範圍——確認並追加**：Opus 指示第 1～4 條＋鐵則 15 第 5 條**照舊**，另追加：
+     6. **F3**：REPORT §1／§3 與 T-11 §8 追加行中，`car_interior_suv` 的 v2 判定改記「inconclusive（v2 判準文字自相矛盾：已知尺寸列了
+        車內、括號卻限浴室；裁決 T-48-F 第 3 點）」，並註明 v3 歸類 `domain_out_non_room`（T-55）；腳本內對應的分類標籤與說明字串同步
+        （只改文字與標籤，不改任何量測、不改分類邏輯以外的程式）。
+     7. **F1／F2 連動追加（只能追加）**：T-11 §8 追加一行「RacquetballCourt4 域外誤放 → 修正卡 T-54（`apply_scope_confidence()` 環景分支
+        加三維檢查）；域外出口 v3 重驗＝T-55」；T-12 §8 追加一行「v2-b 首跑 −21.1% FAIL、量測方法非決定性 → inconclusive；方法 v3＝T-56
+        （seed 鎖定＋10 次中位數）；v2-a 同義反覆只記錄」。
+     8. **不得做的**：不碰 `gen_ir_manual.py`／`geometry.py`／任何 `src/`；不重生 IR；不改 v2 數字；不動 `output/geometry_r2/runs/`
+        與 `output/material_r2/*.wav`；不預先執行 T-54／T-55／T-56 任何步驟。修正輪結果 commit 後狀態改「🔵 待審（修正輪）」，
+        Opus 複驗通過→「工程：已驗證｜實驗：負向（A FAIL；B v2-a 正向〔同義反覆〕、v2-b inconclusive）」——**實驗軸不會因修正輪變好**。
+  6. **T-17-R2 前置連動**：追加「T-54 ✅（工程）＋T-55 結案（域外 14 張＋V5 情境全部 BLOCK＋導引）」；T-56 不是前置。全文追加於 T-17-R2 卡。
+  7. **需要使用者核准才能 commit 的三份 criteria（草案分別在 T-54／T-55／T-56 卡內；核准前不進版控、不開跑）**：
+     `output/geometry_scope/CRITERIA_GEOMETRY_SCOPE_v2.md`（T-54）、`output/geometry_r3/CRITERIA_T11_v3.md`（T-55）、
+     `output/material_r3/CRITERIA_T12_v3.md`（T-56）。核准後各以獨立 `criteria:` commit 提交（只含該檔），早於各卡任何結果。
+  8. 本裁決零改動：`src`／`scripts`／`data`／`output/**`／WORKFLOW／SPEC；未提交任何 `criteria:` commit；未寫 MVP PASS。
 
 ### T-44-R1 role-aware 安全門檻重新驗證（實驗卡；裁決 T-45-A 執行卡 4/5；需使用者）
 - **狀態**：⬜ 未開始（**等使用者兩件事**：核准絕對品質下限、提供 held-out 照片）
@@ -10867,6 +11116,10 @@ EOF
 - **🔮 裁決 T-47-A 補註（Fable 2026-09-14；判準一字不改）**：前置「裁決 T-47-A」**自此滿足**；前置追加「T-52 結案（使用者選乙）或使用者選甲」
   （驗收期間不得有 gate 程式碼變動）；T-44-R1 ⏸ 未跑 → 依本卡既有條文以預設 `role_aware=False` 重驗，REPORT 標明。報告項 5 追加
   （附帶發現 ⓐⓑ）：被放行照片的逐面正誤含無來源面（依 ground truth 判、獨立列出），錯誤放行率分母＝六面。
+- **🔮 裁決 T-48-F 補註（Fable 2026-09-14；判準一字不改）**：前置追加 **T-54 ✅（工程；量程規則 v2）＋T-55 結案（T-11 域外 v3：14 張＋V5
+  情境全部 low＋導引）**——理由：Opus V5 實測 RacquetballCourt4「照 gate 導引覆寫材質即以錯誤幾何放行」，本卡判準 5「域外輸入全部 BLOCK 且出口
+  訊息可操作」開跑前已知不成立，且驗收期間不得改 gate 程式碼。T-56（v2-b 方法 v3）**不是**前置。「T-48 ✅」指工程軸（修正輪後 Opus 已驗證），
+  其實驗軸負向不阻擋本卡。
 - **前置（全部硬性，缺一不跑）**：T-42 ✅、T-43 ✅、T-46 ✅、裁決 T-47-A、T-48 ✅、
   T-44-R1 結案（PASS→以 `--role-aware` 試用；FAIL／未跑→預設 `role_aware=False`，REPORT 標明
   用哪一種）、T-04 來源網址補齊**或**使用者明確決定「維持未結案」（REPORT 標明缺項）、

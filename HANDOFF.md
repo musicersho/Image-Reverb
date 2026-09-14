@@ -1,5 +1,21 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔮 2026-09-14 Fable：裁決 T-48-F 已下（F1～F4）、開 T-54／T-55／T-56——**現在該做的是：使用者核准四件事（4(ii) 更正＋三份 criteria 草案）**；在此之前 Sonnet 可先跑 **T-48 修正輪**（純文件／報表，指示 1～8 見 T-48 卡）
+>
+> - **F1 → T-54**（Sonnet 執行卡）：`apply_scope_confidence()` 環景分支**保留**單面牆距檢查、**另加**三維任一 >10m 檢查（`GEOMETRY_SCOPE_MAX_M` 不動）。
+>   事前推得 13 張只有 CathedralRoom／RacquetballCourt4 geometry medium→low（兩模式 4 格），materials／overall／gate 零變化；V5 情境（覆寫兩面材質）
+>   由 exit 0 變 EXIT=3。**排程：T-48 修正輪 → T-54 → T-55 → T-17-R2**（T-54／T-55 已追加為 T-17-R2 前置；T-52 Opus 複核 4(ii) 平行）。
+> - **F2 → T-56**（停滯期填充卡）：T-12 v2-b 量測方法 v3＝`gen_ir_manual.py --seed`（pyroomacoustics 0.10.1 `pra.random.seed`）、10 個事前鎖定 seed、
+>   每條件中位數，±20%／3× 不動；草案含「方法有效性守門」條款（★ 使用者決定留或刪）。
+> - **F3**：v2 結果 car_interior_suv 記 inconclusive（判準文字自相矛盾；修正輪只改標籤）；v3（T-55）車內歸 `domain_out_non_room`、資料集加回
+>   `corridor_hotel_carpet.png`（14 張）。**F4**：只記錄同義反覆，不改數字。
+> - **T-48 修正輪範圍**：Opus 第 1～4 條＋鐵則 15 第 5 條照舊，Fable 追加第 6（車內標籤）、7（T-11／T-12 §8 連動追加）、8（禁止事項：不碰 `src/`／
+>   `gen_ir_manual.py`、不重生 IR、不預跑 T-54～56）。
+> - **等使用者核准（Fable 不自批，§7.4）**：(1) T-52 4(ii) 更正（見下一則）；(2) `CRITERIA_GEOMETRY_SCOPE_v2.md`（T-54 卡）；(3) `CRITERIA_T11_v3.md`
+>   （T-55 卡）；(4) `CRITERIA_T12_v3.md`（T-56 卡）。核准後各以獨立 `criteria:` commit 提交，早於各卡任何結果。
+> - 本輪零改動：`src`／`scripts`／`data`／`output/**`／WORKFLOW／SPEC；未提交任何 `criteria:` commit；未寫 MVP PASS。全文見 TASKS.md T-48 卡「🔮 裁決 T-48-F」、
+>   T-54／T-55／T-56 卡、DEV_LOG `2026-09-14 (135)`。
+
 > ## 🔮 2026-09-14 Fable：T-52 步驟 4(ii) 更正草案已擬、**等使用者核准（尚未 commit）**；`.archive` 事件已記錄（`08f36b3`，新增鐵則 15）——**現在該做的是：使用者回「核准」→ 同一 Fable 視窗提交 `criteria: T-52 步驟 4(ii) 更正` 獨立 commit → 開 Opus 視窗只複核 4(ii)**
 >
 > - **4(ii) 更正的性質判定**：「把卡片對齊事前已鎖定的判準」，**不是**結果後改門檻——`CRITERIA_GATE_v2.md`（`81bc4cd`）一字不動、

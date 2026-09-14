@@ -1,5 +1,19 @@
 # Dev Log
 
+## 2026-09-14 (135)
+
+- **🔮 裁決 T-48-F（Fable）已下**，寫入 TASKS.md T-48 卡末段；純文件 commit，`src`／`scripts`／`data`／`output/**`／WORKFLOW 零改動，
+  未提交任何 `criteria:` commit。
+- **F1**：開 **T-54**（`apply_scope_confidence()` 環景分支保留單面牆距檢查、**另加**三維任一 >10m 檢查，取最嚴；`GEOMETRY_SCOPE_MAX_M` 不動）。
+  事前由 T-48 REPORT 推得 13 張影響＝只有 CathedralRoom／RacquetballCourt4 geometry medium→low（兩模式共 4 格），materials／overall／gate 零變化；
+  V5 情境由 exit 0 變 EXIT=3。排程 T-48 修正輪 → T-54 → T-55 → T-17-R2（T-54／T-55 追加為 T-17-R2 前置）。B 部分不因 T-54 重跑（量測路徑未觸及）。
+- **F2**：開 criteria v3＝**T-56**：`gen_ir_manual.py` 加 `--seed`（pyroomacoustics 0.10.1 有 `pra.random.seed`／`libroom.set_rng_seed`）、事前鎖定
+  10 個 seed、每條件 10 次取中位數，±20%／3× 數字不動；另擬「方法有效性守門」條款（★ 請使用者決定留或刪）；不進關鍵路徑。
+- **F3**：v2 現有結果 car_interior_suv 記 **inconclusive（判準文字自相矛盾）**，修正輪只改標籤；v3（T-55）車內歸 `domain_out_non_room`
+  （依 T-11 原卡「車內允許數字不準」）、資料集加回 `corridor_hotel_carpet.png`（14 張）＋V5 情境。**F4**：只記錄「同義反覆／回歸性質」，不改數字。
+- **T-48 修正輪範圍**：Opus 1～4＋鐵則 15 第 5 條照舊，追加第 6（車內標籤）、7（T-11／T-12 §8 連動追加）、8（禁止事項）；實驗軸不會因修正輪變好。
+- **等使用者**：(1) T-52 步驟 4(ii) 更正核准（DEV_LOG (134)）；(2) T-54／T-55／T-56 三份 criteria 草案核准（草案在各卡內）。核准後各以獨立 `criteria:` commit 提交。
+
 ## 2026-09-14 (134)
 
 - **Fable 視窗收工同步（等使用者核准 T-52 步驟 4(ii) 更正；尚未提交 `criteria:` commit）**。判定：更正＝「把卡片對齊事前已鎖定的判準」
