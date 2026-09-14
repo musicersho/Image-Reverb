@@ -1,5 +1,28 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔵 2026-09-14 Sonnet：T-48 修正輪完成——**現在該做的是開 Opus 新視窗複驗**，結果 commit 見本次收工 commit
+>
+> 回應 Opus 驗證紀錄（對象結果 commit `012a07f`）退回理由 R1～R8＋裁決 T-48-F 追加第 6～8 條，範圍限「只改報表文字
+> 與文件、Opus 列出的矛盾處」：R1／R2 直接更正卡片交接筆記文字（原文一字未刪）；R3／R4／R5／R7 是
+> `scripts/t48_geometry_material_r2.py` 的報表產生邏輯修正（commit `8bfe262`，未改任何量測數值、未改判準、未碰
+> `gen_ir_manual.py`／`geometry.py`）——新增 `partA-report-only`（讀既有 `output/geometry_r2/runs/` log 重產報表，
+> 不重跑 CLI）、沿用既有 `partB-report-only`（讀既有交付 WAV，不重生 IR）；R6 以「→ Opus 更正（2026-09-14）：…」
+> append 方式修正 T-11／T-12 §8 的錯誤 commit 引用（原文不刪）；R8 六條交付 IR MD5 本輪全部實跑驗證（`--text 浴室`／
+> `--text 大教堂`／`--scene neighbor_voices.json`／`--scene stadium_corridor.json` 四條 MD5 全中，T-14 兩條由
+> 20 支測試套件內建涵蓋），不再只驗 2 條。F3（裁決 T-48-F）：`car_interior_suv` 的 v2 判定改記 inconclusive（判準
+> 文字自相矛盾），REPORT／T-11 §8／腳本標籤三處同步，`v2_category` 分類鍵未動、只改顯示文字。
+>
+> **紅線全部遵守**：`src/`／`data/` 全程零 diff；Part A 未重跑 CLI、Part B 未重生任何 IR；`output/geometry_r2/runs/`／
+> `output/material_r2/*.wav` 全程未碰；未預先執行 T-54／T-55／T-56 任何步驟；20 支 `scripts/test_*.py` 全 `EXIT=0`。
+> 清理：本輪未新增任何暫存路徑（R8 驗證覆寫的 4 個 `output/` 子目錄本輪開始前即存在、覆寫後 MD5 與覆寫前相同，
+> 無需清理；`output/.archive/` 本輪未碰）；原始執行輪〔`012a07f` 那個視窗〕實際刪除的路徑清單本輪**無法回憶**，
+> 如實標 ⚠️（Fable 修正輪指示第 5 條）。
+>
+> **下一步**：開 Opus 新視窗，依 T-48 卡「Sonnet 修正輪指示」1～5 條＋裁決 T-48-F 追加 6～8 條逐項複驗（對象＝本次
+> 收工 commit）→ 通過後「工程：已驗證｜實驗：負向（A FAIL；B v2-a 正向〔同義反覆〕、v2-b inconclusive）」→
+> T-54 → T-55 → T-17-R2（T-54／T-55／T-56 三份 criteria 草案仍等使用者核准，本輪未動）。詳見 TASKS.md T-48 卡
+> 「交接筆記（修正輪，Sonnet 執行，2026-09-14）」與 DEV_LOG `2026-09-14 (136)`。
+
 > ## 🔮 2026-09-14 Fable：裁決 T-48-F 已下（F1～F4）、開 T-54／T-55／T-56——**現在該做的是：使用者核准四件事（4(ii) 更正＋三份 criteria 草案）**；在此之前 Sonnet 可先跑 **T-48 修正輪**（純文件／報表，指示 1～8 見 T-48 卡）
 >
 > - **F1 → T-54**（Sonnet 執行卡）：`apply_scope_confidence()` 環景分支**保留**單面牆距檢查、**另加**三維任一 >10m 檢查（`GEOMETRY_SCOPE_MAX_M` 不動）。

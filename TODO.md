@@ -174,14 +174,17 @@
       MVP：不適用（沿用 T-17 FAIL）。Opus scratchpad 重算 `dataset_manifest_sha256`＝`c15d0a14…2b01a7`，與 T-47 §8 回填值、
       HEAD manifest blob 三方相同；ground truth＝`965e51ac…`；26/26 CLI 指紋 `photo_sha256` 相符；commit 恰五檔；
       TASKS diff 只三個合法 hunk；20 支測試 EXIT=0、六條 IR MD5 全中。詳見 TASKS.md T-51 卡「✅ Opus 驗證紀錄」。
-- [ ] **T-48** T-11／T-12 判準 v2 針對性重驗——**🟠 工程退回（Opus 2026-09-14，對象 `012a07f`）**。四軸：工程：退回｜實驗：負向
-      （A：RacquetballCourt4 域外誤放 FAIL；B：v2-a 正向、v2-b 不確定）｜產品：不適用｜MVP：不適用。核心發現 Opus 實測屬實；退回理由
-      R1～R8＝報告／卡片數字矛盾、腳本寫死 −21.1%／−22.3%、v2-b 以交付版 PASS 回填（違反 §8 首跑結果）、§8 追加 commit 寫錯、
-      REPORT 漏寫「被材質擋、照導引覆寫材質即放行」、六條 IR MD5 只驗 2 條。**下一步：Sonnet 修正輪（Part B 禁止重新生成 IR）；
-      Fable 裁決 F1～F4**（詳見 TASKS.md T-48 卡「🟠 Opus 驗證紀錄」）。
+- [ ] **T-48** T-11／T-12 判準 v2 針對性重驗——**🔵 待審（修正輪，Sonnet 2026-09-14；結果 commit 待回填）**。原
+      🟠 工程退回（Opus 2026-09-14，對象 `012a07f`）理由 R1～R8 已於修正輪逐項處理：R1／R2 卡片文字直接更正、
+      R3／R4／R5／R7 為 `scripts/t48_geometry_material_r2.py` 報表產生邏輯修正（commit `8bfe262`，未改任何量測數值／判準）、
+      R6 以「→ Opus 更正」append 方式修 T-11／T-12 §8、R8 六條交付 IR MD5 本輪全部實跑驗證（不只 2 條）。Part A 未重跑
+      （新增 `partA-report-only` 模式）、Part B 未重生 IR（`partB-report-only`）。F3（裁決 T-48-F）car_interior_suv
+      改記 inconclusive 已同步。**下一步：開 Opus 新視窗複驗修正輪**（詳見 TASKS.md T-48 卡「交接筆記（修正輪，
+      Sonnet 執行，2026-09-14）」）；通過後四軸：工程：已驗證｜實驗：負向（A：RacquetballCourt4 域外出口誤放 FAIL；
+      B：v2-a 正向〔同義反覆〕、v2-b inconclusive）｜產品：不適用｜MVP：不適用（併入 T-17-R2）。
       → 🔮 **裁決 T-48-F 已下（Fable 2026-09-14）**：F1→開 **T-54**（量程規則 v2）＋**T-55**（T-11 域外 v3，14 張＋V5）；F2→**T-56**（v2-b 方法 v3，
       seed 鎖定＋10 次中位數）；F3→v2 車內記 inconclusive、v3 歸 domain_out_non_room、走廊加回；F4→只記錄。修正輪指示追加第 5～8 條。
-      **三份 criteria 草案等使用者核准後才 commit**（草案在 T-54／T-55／T-56 卡內）。關鍵路徑：T-48 修正輪 → T-54 → T-55 → T-17-R2。
+      **三份 criteria 草案等使用者核准後才 commit**（草案在 T-54／T-55／T-56 卡內）。關鍵路徑：T-48 修正輪（Opus 複驗中）→ T-54 → T-55 → T-17-R2。
 - [ ] ⏸ **T-44-R1**（裁決 T-47-A 移出關鍵路徑：前置追加 T-53 校準 PASS；使用者兩件待辦〔核准絕對下限 A／B、≥5 張 held-out〕仍有效但順位在後）
 - [ ] **T-17-R2** MVP 重新驗收（新盲測種子與編號、T-43 provenance、結果寫 `output/mvp_acceptance_r2/`；前置「裁決 T-47-A」已滿足，
       T-44-R1 未跑→預設模式重驗；追加前置 T-52 結案〔選乙〕或選甲）
