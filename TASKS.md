@@ -10730,6 +10730,12 @@ EOF
 - **交接筆記**：
 
 ### T-54 幾何量程規則 v2：環景分支加三維檢查（Sonnet 執行卡；裁決 T-48-F 第 1 點執行卡；**前置＝使用者核准＋獨立 `criteria:` commit**）
+- **狀態（Opus 驗證，2026-09-15）**：✅ **工程已驗證**——受審＝§8 前四欄 `c2a778e`＋結果 `5276f6a`＋§8 回填 `631dd7e`，審查時 HEAD `4e6478f`（工作樹乾淨）。
+  Opus 在乾淨 HEAD 自跑 `--fresh` 52 次推論，`tables.md` 與提交版逐字相同；`expected_on_13`／`expected_V5` 程式化成立；無阻擋項。非阻擋更正 3 點（`.archive` 敘述失實、
+  步驟 5 用了 `--force`、§8 已填欄位行內追加）已由 Opus 補測／追加更正。**⚠️ 獨立性限制**：本輪 Opus 與執行本卡的 Sonnet 是同一個對話（使用者中途切換模型），
+  所以每一項都重新實跑、沒有採信交接筆記；使用者可以視需要另開 Opus 新視窗再審一次。逐項證據見本卡末「✅ Opus 驗證紀錄（2026-09-15）」。
+- **四軸狀態（Opus 驗證，2026-09-15）**：工程：已驗證｜實驗：正向（**僅限**事前鎖定的 `expected_on_13`＋`expected_V5`；依 CRITERIA `not_a_calibration`，不宣稱 10m 門檻已校準）｜
+  產品：預設啟用（規則本來就在預設路徑、只收緊不放寬；產品軸由 Fable 裁決，Opus 建議維持）｜MVP：不適用（併入 T-17-R2；本卡 ✅ 滿足 T-17-R2 前置「T-54 ✅」）
 - **狀態（Sonnet 2026-09-15）**：🔵 **待審**——實作＋測試＋v3 基線量測＋V5 情境全部完成，自我檢查全過，等 Opus 開視窗驗證。詳見下方「交接筆記」。
 - **狀態（Fable 2026-09-15）**：⬜ **可開跑**——使用者 2026-09-15 核准，`criteria: geometry scope v2` 獨立 commit `02284d9`（只含
   `output/geometry_scope/CRITERIA_GEOMETRY_SCOPE_v2.md`）；前置 T-48 工程已驗證（`2ea4d41`）已滿足。**下一步＝開 Sonnet 視窗執行本卡**（貼 WORKFLOW §2.1 Prompt；
@@ -10789,9 +10795,9 @@ EOF
   dataset_manifest_sha256: c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7（開跑前 2026-09-15 重算，與鎖定值相符，未卡關；§8 前四欄 commit `c2a778e`，早於本卡任何結果 commit）
   implementation_commit: 5276f6a（T-54: 完成量程規則 v2 實作＋新測試＋v3 基線量測（待驗證），2026-09-15）
   result_commit: 5276f6a（同上；實作與量測同一 commit，晚於 §8 前四欄 commit `c2a778e`，符合鐵則 14）
-  reviewer:
-  verdict_under_original_criteria: 〈Opus 填：expected_on_13 與 V5 情境是否成立〉
-  verdict_under_current_criteria: 〈同上；判準未變〉
+  reviewer: Opus 5，2026-09-15，審查 HEAD 4e6478f（對象 c2a778e／5276f6a／631dd7e）；⚠️ 與執行者同一對話（中途切換模型），所以全部重新實跑、不採信交接筆記
+  verdict_under_original_criteria: PASS——expected_on_13 成立（Opus 乾淨 HEAD --fresh 重跑 tables.md 與 5276f6a 逐字相同；對 gate_calibration_v2 表 1 程式比對：僅 CathedralRoom／RacquetballCourt4 兩模式 geometry 共 4 格 medium→low，materials／overall／gate 26 格不變，gate 兩模式 13/13 BLOCK，表 3 五張全 BLOCK，surfaces／sources 26/26）；expected_V5 成立（HEAD EXIT=3 且 stderr 含「幾何不可信 → 用 --override-dims」；c2a778e worktree EXIT=0）
+  verdict_under_current_criteria: 同上（判準未變，criteria 檔自 02284d9 起零 diff）
   criteria_changed_after_first_result: no（改了就是新卡）
   change_record: 無
   ```
@@ -10946,6 +10952,57 @@ EOF
 
   **下一步**：開 Opus 新視窗依「Opus 驗證重點」逐項複驗（對象＝本次收工 commit）→ 通過後 T-55（criteria 已鎖定
   `b80a4fb`，等本卡 ✅）可開跑；T-17-R2 前置追加項「T-54 ✅」隨之滿足一半（另一半＝T-55 結案）。
+
+- **✅ Opus 驗證紀錄（2026-09-15；只審不改碼；審查 HEAD `4e6478f`，工作樹乾淨）**：
+  - **獨立性限制（先講）**：本輪 Opus 與執行本卡的 Sonnet 是同一個對話（使用者用 `/model` 切換）。為了補足獨立性，以下每一項都重新實跑，
+    沒有採信交接筆記、也沒有重用 Sonnet 的中間檔；使用者如果要更強的獨立性，可以另開 Opus 新視窗再審一次。
+  1. **鐵則 14／criteria**：`git merge-base --is-ancestor` 確認 `02284d9` → `c2a778e` → `5276f6a`；`c2a778e` 只含 TASKS.md（1+/1−，只動 §8
+     `dataset_manifest_sha256`）；CRITERIA 檔 `git log` 恰一筆 `02284d9`（只含該檔、37 行），HEAD 零 diff；本卡「規則原文 G2」與 CRITERIA 檔
+     rule G2 段去掉空白／markdown 後程式比對 **True**。**成立。**
+  2. **實作與 G2 同義**：`git diff c2a778e 5276f6a -- src` 只有 `geometry.py`（12+/3−）。equirect 分支保留原單面牆距 dict，另外
+     `over.update()` 三維 `v > max_m`（與 metric_depth 分支同式、同樣是嚴格 `>`），共用同一個 `if over:`，所以兩者皆命中時只記一條、明細合併列出；
+     metric_depth／manual／else 分支逐字未動；`GEOMETRY_SCOPE_MAX_M=10.0` 未動、全 repo 無新常數；docstring 已改寫成「單面牆距或相加後三維任一超過」，
+     並保留「對牆相加會把有效上限拉到約 40m」的理由。`git diff --stat 02284d9 HEAD -- src data scripts` 只有 `geometry.py`＋`test_geometry_scope.py`；
+     pipeline／config／t36／t47、`data/`、四個凍結 output 目錄全部零 diff。**成立。**
+  3. **新測試診斷力**：HEAD EXIT=0；Opus 自建 worktree `@c2a778e` 複製新測試跑 → **EXIT=1，失敗只有 (a) 三項**
+     （`confidence='medium'`、`notes=[]`），(b)(c)(d)(e) 全過；`grep -n 'worktree.*add.*"HEAD"'` 為空。**成立。**
+     （非阻擋：(a) 沒有涵蓋「兩者皆命中時只記一條」的合併行為，這一點由下面第 5 點實跑輸出補證。）
+  4. **基線變化表（紅旗：手打表格／geometry 不是恰好 4 格／其他三欄變動）**：Opus 在乾淨 HEAD 跑
+     `t47_gate_calibration.py --out-dir <scratchpad>/opus_gc_v3 --fresh`（52 次真實推論，EXIT=0，REPORT provenance 顯示工作區乾淨）→
+     `diff output/gate_calibration_v3/tables.md <scratchpad>/opus_gc_v3/tables.md` **為空（逐字相同）**，排除手打；Opus 自寫比對程式對
+     `gate_calibration_v2` 表 1：變動格恰為 `CathedralRoom`／`RacquetballCourt4` × `geo_d`／`geo_r` 共 4 格，全部 medium→low；materials／overall／gate
+     26 格不變 True；gate 兩模式 13/13 BLOCK True；表 3 五張兩模式全 BLOCK True；harness 內建「26 組 surfaces＋sources 逐位元相符」✅。
+     提交版 v3 REPORT 誠實揭露量測當下 HEAD `c2a778e` 且 `geometry.py` 未提交；Opus 乾淨重跑結果相同，可以證明量測用的碼就是 `5276f6a` 的碼。**成立。**
+  5. **V5 情境（紅旗：仍 exit 0）**：HEAD 跑 `RacquetballCourt4.jpg --override-material north=gypsum_board --override-material ceiling=wood_panel --no-viz`
+     → **EXIT=3**，stderr 第 12 行「1) 幾何不可信 → 用 --override-dims 手動指定房間尺寸（公尺），例如 4x3x2.5」；同指令在 `c2a778e` worktree →
+     **EXIT=0**、stderr 無此導引（複現 Opus V5）。**成立。**
+  6. **SteinmanHall／DivorceBeach 預設路徑（Opus 補測）**：卡片步驟 5 要求「預設路徑」，Sonnet 實跑時加了 `--force-low-confidence`，stderr 不會帶 gate 訊息，
+     這樣比對比卡片要求弱（非阻擋，已補測）。Opus 改用真正的預設路徑（`<photo> --no-viz`，不加 force、不加 role-aware），新碼與 `c2a778e` worktree 各跑一次：
+     兩張新舊皆 **EXIT=3**；stdout 正規化路徑後 diff 為空；stderr diff 只有新碼多出一行「本次執行前的舊輸出未遭刪除，已隔離備份至 output/.archive/…」——
+     這是 T-42 archive-first 機制（主 repo 的 `output/preprocess/<stem>` 已經存在，乾淨 worktree 沒有），和 G2 無關。G2 在預設路徑不改變 stderr，
+     合併明細只出現在 `--force` 路徑的 stdout／`analysis.json` `warnings`（Sonnet 已貼：SteinmanHall 追加 `length_m=17.5m、width_m=21.5m`，
+     DivorceBeach 追加 `length_m=16.8m、width_m=14.7m`，兩張 geometry 本來就是 low，屬 G2 允許的變化）。**成立。**
+  7. **測試與六條 IR MD5**：`scripts/test_*.py` 21 支逐支實跑，**failed=0**；T-14 兩條由 `test_ir_synth.py`【6】實跑輸出確認
+     （`f3a763be…`／`f24353b5…` 與交付版相同）；T-20／T-21 四條 Opus 重生：`2adbaa75…`／`2dd19b6e…`／`9a94ffdf…`／`a1c21bcc…`，**全中**。**成立。**
+  8. **清理與路徑（鐵則 15）**：Sonnet 刪掉的 `output/SteinmanHall`／`DivorceBeach`／`RacquetballCourt4` 經查確實是本輪自建——`t47_gate_calibration.py:239`
+     每跑完一次 CLI 就把 `output/<stem>` 整個 `shutil.move` 進 `cli_runs/`，所以 harness 結束後這三個目錄都不存在，之後才由直跑重建；
+     `cli_runs/` 26 個子目錄檔案組成一致，沒有混入舊內容。**這部分成立。**
+     **非阻擋更正（追加，原文不刪）**：Sonnet 交接筆記清理第 5 項寫「`output/.archive/` 全程未碰」，**與事實不符**——`pipeline._archive_existing_outputs()`
+     在每次照片 CLI 開跑前，會自動把既有 `output/preprocess/<stem>`／`output/<stem>` 搬進 `.archive`。Sonnet 那輪（13:23–13:54）因此自動建立了 **29 個**
+     `.archive` 條目：13 個 stem × harness 兩模式 26 個（`20260915T1325…`～`T1337…`），加上 V5 直跑 `RacquetballCourt4/20260915T133915915649`、
+     `SteinmanHall/20260915T134246063102`、`DivorceBeach/20260915T134313838777`。全部是「搬移、非刪除」，沒有人手動刪 `.archive`，沒有資料遺失，
+     不影響工程判定；只是敘述不實，以本條更正。
+  9. **非阻擋觀察**：(a) `5276f6a` 在 `c2a778e` 已填的 §8 `dataset_manifest_sha256` 行尾括號內追加文字（hash 值未動）。WORKFLOW §8「一經填寫不得刪改，只能追加」，
+     這種寫法貼近邊界，以後建議另起一行追加；(b) 實作 commit 和結果 commit 是同一個（`5276f6a`），有前例（T-52 `6ac3ef3`），可以接受；
+     (c) `t36_clip_accuracy.EXPECTED_GATE` 的 geometry 欄對 CathedralRoom／RacquetballCourt4 自此過期，Sonnet 已記、未改表，符合鐵則 11。
+  - **§7 變更控制**：沒有發現門檻本身錯誤，不開變更。
+  - **Opus 本輪自建路徑（鐵則 15，逐條列出）**：worktree `<scratchpad>/opus-old`（@`c2a778e`，內含複製的新測試＋三張 gitignored jpg）→ 已 `git worktree remove --force`；
+    `<scratchpad>/opus_gc_v3/`、`opus_gc_v3.log`、`v5_*／st_*／db_*.{out,err}`（都在 repo 外的 scratchpad）→ 收工時刪除；本輪 CLI 自動建立的 `.archive` 條目
+    **28 個**（`find output/.archive -name '20260915T1[4-9]*'` 計數；harness 25 個〔RacquetballCourt4 兩次 harness 只產生一個條目 `…T141340976814`〕＋直跑 3 個：
+    V5 `RacquetballCourt4/20260915T141712506875`、預設路徑 `SteinmanHall/20260915T141802317419`、`DivorceBeach/20260915T141851258687`）→
+    依鐵則 15 **不手動刪、保留**；`output/text_bathroom`／`text_church`／`neighbor_voices`／`stadium_corridor` 是既存目錄，覆寫後 MD5 不變。
+    主 repo `output/<stem>` 無殘留，`git status --porcelain` 為空。
+  - **下一步**：**T-55 可開跑**（criteria 已鎖定 `b80a4fb`；前置「T-54 ✅（工程）」已滿足）→ Opus → T-17-R2。T-56 照舊可以平行跑。
 
 ### T-55 T-11 域外出口 v3 重驗：14 張＋V5 情境（量測卡；裁決 T-48-F 第 1／3 點執行卡；`src/` 零改動；**前置＝T-54 ✅＋使用者核准 CRITERIA_T11_v3**）
 - **狀態（Fable 2026-09-15）**：⬜ **criteria 已鎖定，等 T-54 ✅（工程）後可開跑**——使用者 2026-09-15 核准，`criteria: T-11 v3` 獨立 commit `b80a4fb`

@@ -1,5 +1,16 @@
 # Dev Log
 
+## 2026-09-15 (145)
+
+- **T-54 Opus 驗證——✅ 工程已驗證**。受審 `c2a778e`（§8 前四欄）＋`5276f6a`（結果）＋`631dd7e`（§8 回填），審查 HEAD `4e6478f` 工作樹乾淨。
+  ⚠️ 本輪 Opus 與執行 T-54 的 Sonnet 同一對話（中途切換模型），所以全部重跑、不採信交接筆記。
+- 實測：criteria→§8→結果 commit 順序成立、G2 卡片與 CRITERIA 逐字相同、實作同義、常數不動；新測試舊碼 (a) fail 其餘 pass；乾淨 HEAD `--fresh` 52 次推論 tables.md
+  與提交版逐字相同，對 v2 表 1 恰 4 格 geometry medium→low、其餘 26 格不變、gate 13/13 BLOCK；V5 新碼 EXIT=3／舊碼 EXIT=0；21 支測試 failed=0；六條 IR MD5 全中。
+- 非阻擋更正（追加於卡內）：Sonnet 寫「`.archive` 全程未碰」不實（pipeline archive-first 自動建 29 個條目，搬移非刪除）；步驟 5 用了 `--force`，Opus 補測預設路徑
+  （stderr 只差 T-42 archive 訊息一行）；§8 已填欄位行內追加文字。Opus 本輪自動產生 28 個 `.archive` 條目，不刪、已列出。
+- 四軸：工程：已驗證｜實驗：正向（僅限 expected_on_13＋expected_V5；非校準）｜產品：預設啟用（Fable 裁決，Opus 建議維持）｜MVP：不適用。
+- **下一步：開 Sonnet 視窗執行 T-55**（criteria `b80a4fb` 已鎖定）→ Opus → T-17-R2；T-56 可平行。
+
 ## 2026-09-15 (144)
 
 - **T-54 幾何量程規則 v2——🔵 待審（Sonnet 執行）**。§8 前四欄先行 commit `c2a778e`（`dataset_manifest_sha256` 重算相符，
