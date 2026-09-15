@@ -20,6 +20,13 @@ T-12 新增：--materials 逐表面指定材質（約束 A，Phase 0 實證的�
 六個面：floor / ceiling / west / east / south / north，另可用 walls= 一次指定四面牆。
 沒指定的面預設 gypsum_board（石膏板類牆面），**不是**複製地板材質。
 舊的 --material（六面同材質）保留但會印警告——那是不現實的模型（地雷第 9 條）。
+
+T-56 新增：--seed N 固定 pyroomacoustics 的 ray tracing 隨機種子（量測方法 v3，裁決 T-48-F
+第 2 點）。pyroomacoustics 的 ray tracing 預設沒有固定 seed，同一指令重跑兩次輸出 WAV bytes
+不同（T-48 已實測）；帶 --seed 才會在 build_room() 之前呼叫 pra.random.seed(N)＋
+pra.libroom.set_rng_seed(N)，讓同一 seed 重跑輸出逐位元相同。**不帶 --seed 時行為與 T-56
+之前完全相同（不呼叫任何 seed 函式）**。
+    python scripts/gen_ir_manual.py small --materials floor=carpet,walls=gypsum_board --seed 1001
 """
 
 import argparse
@@ -232,6 +239,15 @@ def main():
         action="store_true",
         help="列出材質表裡可用的 id 後結束",
     )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        metavar="N",
+        help="固定 pyroomacoustics ray tracing 的隨機種子（T-56，量測方法 v3）："
+        "在 build_room() 之前呼叫 pra.random.seed(N)＋pra.libroom.set_rng_seed(N)。"
+        "不指定時完全不呼叫任何 seed 函式，行為與 T-56 之前逐位元相同。",
+    )
     args = parser.parse_args()
 
     if args.list_materials:
@@ -370,6 +386,12 @@ def main():
         material = build_pra_materials(surfaces, data, scattering=preset["scattering"])
     else:
         material = build_material(preset, material_entry, band_freqs)
+
+    if args.seed is not None:
+        print(f"固定隨機種子：--seed {args.seed}（pra.random.seed＋pra.libroom.set_rng_seed）")
+        pra.random.seed(args.seed)
+        pra.libroom.set_rng_seed(args.seed)
+
     room = build_room(preset, material, time_thres)
 
     ir = np.asarray(room.rir[0][0], dtype=np.float64)

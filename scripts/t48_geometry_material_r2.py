@@ -17,6 +17,9 @@
     T-55（判準 v3；裁決 T-48-F 第 1／3 點；只影響 manifest／partA，Part B 不受影響）：
     python scripts/t48_geometry_material_r2.py manifest --criteria v3   # 14 張（含 corridor）→ output/geometry_r3/
     python scripts/t48_geometry_material_r2.py partA --criteria v3      # 14 張預設路徑真實 CLI＋V5 情境 → output/geometry_r3/
+
+    T-56（判準 v3；裁決 T-48-F 第 2／4 點；只影響 partB，manifest／partA 不受影響）：
+    python scripts/t48_geometry_material_r2.py partB --criteria v3      # seed 鎖定＋10 次中位數 → output/material_r3/
 """
 
 from __future__ import annotations
@@ -24,6 +27,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import statistics
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -1290,6 +1294,240 @@ def cmd_part_b_report_only() -> None:
           f"v1（不當門檻，僅記錄）={'PASS' if verdicts['v1_pass'] else '未達'}")
 
 
+# ------------------------------------------------------------
+# T-56（判準 v3；裁決 T-48-F 第 2／4 點）——T-12 v2-b 量測方法 v3：seed 鎖定＋10 次中位數。
+# 判準原文＝ output/material_r3/CRITERIA_T12_v3.md（commit 4a0b23e，單一事實來源；
+# 草案內的「方法有效性守門」條款不生效，本節不實作任何守門邏輯）。
+# 只新增本節與下方函式，完全不動 IR_CASES／run_part_b／_write_part_b_report／
+# cmd_part_b／cmd_part_b_report_only 等既有 v2 函式，保證 --criteria v2（預設，
+# 不加旗標）逐位元不變；output/material_r2/ 全程唯讀不寫。
+# ------------------------------------------------------------
+
+MATERIAL_R3_OUT = PROJECT_ROOT / "output" / "material_r3"
+
+# 事前鎖定，不得增減（CRITERIA_T12_v3.md）
+T56_SEEDS = [1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010]
+
+
+def _seed_validity_self_check() -> bool:
+    """T-56 步驟 0：seed 有效性自檢——同一 seed 生 per-wall 兩次，WAV sha256 必須相同；
+    seed 1001 vs 1002 必須不同。任一不成立＝量測方法本身無效（pyroomacoustics 的隨機性
+    不只來自 libroom 引擎），依卡片指示 🔴 卡關回 Fable，不得硬跑。"""
+    spec = next(s for s in IR_CASES if s["case"] == "per_wall")
+    legacy_path = LEGACY_OUTPUT / spec["legacy_name"]
+
+    def _run_once(seed: int) -> str:
+        proc = subprocess.run(
+            ["python", str(GEN_IR_SCRIPT)] + spec["args"] + ["--seed", str(seed)],
+            cwd=PROJECT_ROOT, capture_output=True, text=True,
+        )
+        if proc.returncode != 0 or not legacy_path.exists():
+            print(f"❌ 錯誤：seed 自檢生成失敗（seed={seed}, exit={proc.returncode}）")
+            print(proc.stdout[-2000:])
+            print(proc.stderr[-2000:])
+            sys.exit(1)
+        digest = sha256_file(legacy_path)
+        legacy_path.unlink()
+        return digest
+
+    sha_1001_a = _run_once(1001)
+    sha_1001_b = _run_once(1001)
+    sha_1002 = _run_once(1002)
+
+    same_ok = sha_1001_a == sha_1001_b
+    diff_ok = sha_1001_a != sha_1002
+    print(f"seed 自檢 (i)：同 seed 1001 兩次 sha256 {'相同 ✅' if same_ok else '不同 ❌'}"
+          f"（{sha_1001_a[:12]}… / {sha_1001_b[:12]}…）")
+    print(f"seed 自檢 (ii)：seed 1001 vs 1002 sha256 {'不同 ✅' if diff_ok else '相同 ❌'}"
+          f"（{sha_1001_a[:12]}… / {sha_1002[:12]}…）")
+    return same_ok and diff_ok
+
+
+def run_part_b_v3() -> dict:
+    dirty = git_status_clean(["src", "data", "scripts"])
+    if dirty:
+        print("❌ 錯誤：git status --porcelain -- src data scripts 非空，依 T-48 條件 (a)（T-56 沿用）不得送審：")
+        print(dirty)
+        sys.exit(1)
+
+    MATERIAL_R3_OUT.mkdir(parents=True, exist_ok=True)
+    runs_dir = MATERIAL_R3_OUT / "runs"
+    runs_dir.mkdir(parents=True, exist_ok=True)
+
+    conditions = {}
+    sabine_125hz = None
+    for spec in IR_CASES:
+        legacy_path = LEGACY_OUTPUT / spec["legacy_name"]
+        t30_values = []
+        octave_values = []
+        seed_shas = []
+        for seed in T56_SEEDS:
+            proc = subprocess.run(
+                ["python", str(GEN_IR_SCRIPT)] + spec["args"] + ["--seed", str(seed)],
+                cwd=PROJECT_ROOT, capture_output=True, text=True,
+            )
+            log_path = runs_dir / f"{spec['case']}_seed{seed}.log"
+            log_path.write_text(proc.stdout + "\n--- stderr ---\n" + proc.stderr, encoding="utf-8")
+            if proc.returncode != 0 or not legacy_path.exists():
+                print(f"❌ 錯誤：{spec['case']} seed={seed} 生成失敗（exit={proc.returncode}），見 {log_path}")
+                sys.exit(1)
+
+            dest = runs_dir / f"{spec['case']}_seed{seed}.wav"
+            legacy_path.replace(dest)
+            sha = sha256_file(dest)
+            seed_shas.append(sha)
+
+            ir, fs = sf.read(str(dest))
+            t30_values.append(t30_low_combined(ir, fs))
+            octave_values.append(band_t30(ir, fs, [125])[0])
+            if spec["case"] == "per_wall" and sabine_125hz is None:
+                sabine_125hz = _sabine_125hz_from_stdout(proc.stdout)
+
+            print(f"{spec['case']} seed={seed}: t30_combined={t30_values[-1]:.4f}s sha256={sha[:12]}…")
+
+        conditions[spec["case"]] = {
+            **spec,
+            "seeds": list(T56_SEEDS),
+            "t30_values": t30_values,
+            "octave_values": octave_values,
+            "seed_shas": seed_shas,
+        }
+
+    return {"conditions": conditions, "sabine_125hz_s": sabine_125hz}
+
+
+def _stats(values: list[float]) -> dict:
+    med = statistics.median(values)
+    lo = min(values)
+    hi = max(values)
+    spread_pct = (hi - lo) / med * 100.0 if med else float("inf")
+    return {"median": med, "min": lo, "max": hi, "spread_pct": spread_pct}
+
+
+def _write_part_b_v3_report(data: dict) -> dict:
+    head = git_head()
+    dirty_check = git_status_clean(["src", "data", "scripts"])
+    conditions = data["conditions"]
+    pw, cg, cc = conditions["per_wall"], conditions["control_gypsum"], conditions["control_carpet"]
+    stats = {name: _stats(c["t30_values"]) for name, c in conditions.items()}
+
+    # v2-b（判準 v3，唯一計入 verdict 的子判準）：10 次中位數之間比較，無方法有效性守門
+    # （草案 ★ 條款使用者已決定刪除，CRITERIA_T12_v3.md 落地版不含守門邏輯）。
+    v2b_median_diff_pct = _pct_diff(stats["per_wall"]["median"], stats["control_gypsum"]["median"])
+    v2b_diff_pass = abs(v2b_median_diff_pct) <= 20.0
+    v2b_ratio = stats["control_carpet"]["median"] / stats["per_wall"]["median"]
+    v2b_ratio_pass = v2b_ratio >= 3.0
+    v2b_pass = v2b_diff_pass and v2b_ratio_pass
+    v2b_verdict = "PASS" if v2b_pass else "FAIL"
+
+    # v2-a（同義反覆，裁決 T-48-F F4，不計入 verdict）：Sabine 公式值與 seed 無關，量一次即可。
+    v2a_target = 0.348
+    v2a_error_pct = _pct_diff(data["sabine_125hz_s"], v2a_target) if data["sabine_125hz_s"] is not None else None
+    v2a_pass = (abs(v2a_error_pct) <= 20.0) if v2a_error_pct is not None else None
+
+    # v1 字面條件（只記錄不當門檻）：per-wall 125Hz 八度 T30 的 10 次中位數
+    v1_target = 0.35
+    v1_median_octave = statistics.median(pw["octave_values"])
+    v1_error_pct = _pct_diff(v1_median_octave, v1_target)
+    v1_pass = abs(v1_error_pct) <= 20.0
+
+    lines = []
+    lines.append("# T-56 T-12 v2-b 量測方法 v3 — seed 鎖定＋10 次中位數\n")
+    lines.append(f"> 產生日期：{datetime.now(timezone.utc).isoformat()}　"
+                 f"git_head：`{head}`　"
+                 f"git status --porcelain -- src data scripts：{'(空)' if not dirty_check else dirty_check}\n")
+    lines.append(
+        "判準 v3（事前鎖定，見 `output/material_r3/CRITERIA_T12_v3.md`，commit `4a0b23e`，"
+        "單一事實來源；使用者 2026-09-15 刪除草案內「方法有效性守門」條款，本報表不套用任何"
+        "守門邏輯，10 次的 min／max／(max−min)/median 只記錄不改判定）：門檻數字與 v2 不變——"
+        "|median(per-wall) − median(gypsum)| / median(gypsum) ≤ 20% 且 median(carpet) ≥ 3 × median(per-wall)。"
+        "10 個 seed（1001–1010）事前鎖定，首跑即定案，禁止重跑（本檔為首跑結果）。\n"
+    )
+
+    lines.append("## 0. 結論\n")
+    lines.append(
+        f"- **v2-b（判準 v3，唯一計入 verdict 的子判準）**：**{v2b_verdict}**——"
+        f"median(per-wall)={stats['per_wall']['median']:.4f}s，median(六面 gypsum)="
+        f"{stats['control_gypsum']['median']:.4f}s，差異 {v2b_median_diff_pct:+.1f}%"
+        f"（≤±20%：{'PASS' if v2b_diff_pass else 'FAIL'}）；median(六面 carpet)="
+        f"{stats['control_carpet']['median']:.4f}s，倍數 {v2b_ratio:.2f}×"
+        f"（≥3×：{'PASS' if v2b_ratio_pass else 'FAIL'}）\n"
+        f"- **v2-a（公式層，同義反覆，裁決 T-48-F F4，不計入 verdict）**："
+        + (f"{'PASS' if v2a_pass else 'FAIL'}——Sabine 125Hz {data['sabine_125hz_s']:.4f}s，"
+           f"目標 {v2a_target}s ±20%，誤差 {v2a_error_pct:+.1f}%（非鑑別性，只記錄，不構成材質模組正確性證據）\n"
+           if v2a_error_pct is not None else "無法從 stdout 解析 Sabine 125Hz，只記錄\n")
+    )
+    lines.append(
+        f"- **v1 字面條件（只記錄不當門檻）**：{'PASS' if v1_pass else '未達'}——per-wall 125Hz 八度 T30"
+        f"（10 次中位數）{v1_median_octave:.4f}s，字面目標 {v1_target}s ±20%，誤差 {v1_error_pct:+.1f}%"
+        f"（裁決 B 已證八度量測受鄰帶耦合污染，此數字不當作判準，僅照量照列）\n"
+    )
+
+    lines.append("\n## 1. 逐條件統計（10 次 t30_low_combined()，中位數判定，無守門）\n")
+    lines.append("| 條件 | 指令 | 10 次值 (s) | median | min | max | (max−min)/median |")
+    lines.append("|---|---|---|---|---|---|---|")
+    for name, c in conditions.items():
+        cmd = "python scripts/gen_ir_manual.py " + " ".join(c["args"]) + " --seed <seed>"
+        s = stats[name]
+        vals = ", ".join(f"{v:.4f}" for v in c["t30_values"])
+        lines.append(
+            f"| {c['desc']} | `{cmd}` | {vals} | {s['median']:.4f} | {s['min']:.4f} | "
+            f"{s['max']:.4f} | {s['spread_pct']:.1f}% |"
+        )
+
+    lines.append("\n## 2. 30 條 IR 的 sha256（程式列出，供追溯；WAV 存於 `output/material_r3/runs/`，不進版控）\n")
+    lines.append("| 條件 | seed | sha256 |")
+    lines.append("|---|---|---|")
+    for name, c in conditions.items():
+        for seed, sha in zip(c["seeds"], c["seed_shas"]):
+            lines.append(f"| {name} | {seed} | `{sha}` |")
+
+    lines.append(
+        "\n## 3. 方法\n\n"
+        "1. `scripts/gen_ir_manual.py`（新增 `--seed N`，未給時逐位元不變，見腳本 docstring）"
+        "依上表指令對三條件各跑 10 次（seed 分別為 1001–1010，事前鎖定），"
+        "每次呼叫 `pra.random.seed(N)`＋`pra.libroom.set_rng_seed(N)`，輸出立即搬到 "
+        "`output/material_r3/runs/<條件>_seed<seed>.wav`（紅線：不得重用 `output/` 舊 IR、"
+        "不得重用 `output/material_r2/`）。\n"
+        "2. v2-b／v1：讀 `src/image_reverb/ir_metrics.py` 既有函式——`t30_low_combined()`（T-18，"
+        "88.4–353.6Hz 聯合帶）與 `band_t30(ir, fs, [125])`（單一 125Hz 八度，v1 字面條件用）——"
+        "對每條 IR 直接量測，10 次取中位數；不重新實作任何頻段濾波／Schroeder 積分邏輯。\n"
+        "3. v2-a：Sabine 125Hz 數字讀自其中一次 per-wall 執行的 stdout"
+        "（公式值只取決於吸音係數，與 ray tracing 隨機種子無關，量一次即可）。\n"
+        "4. `ir_metrics.py`、`src/`、`data/`、`output/material_r2/` 全程零 diff／零改動。\n"
+        "5. **首跑即定案，禁止重跑**（CRITERIA_T12_v3.md `first_run_is_final: yes`）；"
+        "本報表是本卡唯一一次 30 條 IR 生成的結果。\n"
+    )
+
+    MATERIAL_R3_OUT.mkdir(parents=True, exist_ok=True)
+    (MATERIAL_R3_OUT / "REPORT.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"已寫入：{MATERIAL_R3_OUT / 'REPORT.md'}")
+
+    return {
+        "v2b_verdict": v2b_verdict,
+        "v2b_diff_pass": v2b_diff_pass,
+        "v2b_ratio_pass": v2b_ratio_pass,
+        "v2a_pass": v2a_pass,
+        "v1_pass": v1_pass,
+    }
+
+
+def cmd_part_b_v3() -> None:
+    print("T-56 步驟 0：seed 有效性自檢…")
+    if not _seed_validity_self_check():
+        print("\n🔴 卡關：seed 自檢不成立——pyroomacoustics 的隨機性不只來自 libroom 引擎，"
+              "T-56 量測方法本身無效。依卡片步驟 0 指示停止，不硬跑，請回報 Fable。")
+        sys.exit(1)
+    print("seed 自檢通過，開始 30 次量測（3 條件 × 10 seed，首跑即定案）…")
+    data = run_part_b_v3()
+    verdicts = _write_part_b_v3_report(data)
+    print(f"\nT-56 Part B（判準 v3）完成：v2-b={verdicts['v2b_verdict']} "
+          f"（diff={'PASS' if verdicts['v2b_diff_pass'] else 'FAIL'}／"
+          f"ratio={'PASS' if verdicts['v2b_ratio_pass'] else 'FAIL'}）"
+          f" v2-a（非鑑別性，僅記錄）={'PASS' if verdicts['v2a_pass'] else 'FAIL'} "
+          f"v1（不當門檻，僅記錄）={'PASS' if verdicts['v1_pass'] else '未達'}")
+
+
 if __name__ == "__main__":
     valid_modes = ("manifest", "partA", "partA-report-only", "partB", "partB-report-only", "all")
     if len(sys.argv) < 2 or sys.argv[1] not in valid_modes:
@@ -1298,9 +1536,12 @@ if __name__ == "__main__":
     mode = sys.argv[1]
 
     # T-55（判準 v3）新增：--criteria v2（預設，等同完全不加旗標，呼叫下面原封不動的
-    # v2 函式，逐位元不變）／v3（14 張＋car_interior_suv 改歸 domain_out_non_room＋
-    # corridor_hotel_carpet＋V5 情境）。只有 manifest／partA 支援 --criteria v3；
-    # partA-report-only／partB／partB-report-only／all 完全不變（本卡紅線：不得碰 Part B）。
+    # v2 函式，逐位元不變）／v3（manifest／partA：14 張＋car_interior_suv 改歸
+    # domain_out_non_room＋corridor_hotel_carpet＋V5 情境）。
+    # T-56（判準 v3）新增：partB 也支援 --criteria v3（seed 鎖定＋10 次中位數，見
+    # cmd_part_b_v3；--criteria v2 呼叫原封不動的 cmd_part_b，逐位元不變）。
+    # partA-report-only／partB-report-only／all 完全不支援 --criteria v3（本卡與 T-55
+    # 紅線：不得碰這些既有唯讀重產路徑）。
     criteria = "v2"
     rest = sys.argv[2:]
     if "--criteria" in rest:
@@ -1312,8 +1553,9 @@ if __name__ == "__main__":
         if criteria not in ("v2", "v3"):
             print(f"❌ 錯誤：--criteria 只接受 v2 或 v3，收到 {criteria!r}")
             sys.exit(2)
-        if criteria == "v3" and mode not in ("manifest", "partA"):
-            print("❌ 錯誤：--criteria v3 只支援 manifest／partA（T-55 範圍；partA-report-only／partB 不支援）")
+        if criteria == "v3" and mode not in ("manifest", "partA", "partB"):
+            print("❌ 錯誤：--criteria v3 只支援 manifest／partA／partB（partA-report-only／"
+                  "partB-report-only／all 不支援）")
             sys.exit(2)
 
     if mode == "manifest":
@@ -1323,7 +1565,7 @@ if __name__ == "__main__":
     elif mode == "partA-report-only":
         cmd_part_a_report_only()
     elif mode == "partB":
-        cmd_part_b()
+        cmd_part_b_v3() if criteria == "v3" else cmd_part_b()
     elif mode == "partB-report-only":
         cmd_part_b_report_only()
     elif mode == "all":
