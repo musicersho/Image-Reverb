@@ -1,5 +1,23 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔵 2026-09-15 Sonnet：T-54 完成——**現在該做的是開 Opus 新視窗複驗**，結果 commit `5276f6a`（§8 回填 `631dd7e`）
+>
+> §8 前四欄先行 commit `c2a778e`（`dataset_manifest_sha256` 重算相符，未卡關），早於結果 commit（鐵則 14）。實作＝
+> `geometry.py` `apply_scope_confidence()` equirect 分支保留單面牆距檢查、另加三維（`length_m`／`width_m`／`height_m`）
+> 任一超過 `GEOMETRY_SCOPE_MAX_M` 檢查，常數不動、不新增；新增 `scripts/test_geometry_scope.py`（對舊碼實測 (a) fail、
+> (b)(c)(d)(e) pass）。
+>
+> `output/gate_calibration_v3/`（52 次真實推論）程式化比對 `gate_calibration_v2` 表 1：恰好 `CathedralRoom`／
+> `RacquetballCourt4` 兩模式 geometry 欄 4 格 medium→low，其餘 26 格零變化，與 `expected_on_13` 相符；V5 情境
+> （RacquetballCourt4 覆寫兩面材質）新碼 EXIT=3、舊碼 EXIT=0，複現並修復 Opus V5 域外安全缺口；`SteinmanHall`／
+> `DivorceBeach` 預設路徑 stderr 逐位元不變，stdout 僅多出 G2 允許的「合併明細」。21 支測試全 `EXIT=0`；六條交付
+> IR MD5 全中；`git diff --stat -- src` 只含 `geometry.py`，其餘紅線檔案零 diff。三個本輪自建 `git worktree` 與三個
+> CLI 直跑輸出目錄已依鐵則 15 清理，逐條列在 TASKS.md T-54 卡「交接筆記」。
+>
+> **下一步**：開 Opus 新視窗，依 T-54 卡「Opus 驗證重點」逐項複驗（對象＝`5276f6a`／`631dd7e`）→ 通過後開 **T-55**
+> （criteria 已鎖定 `b80a4fb`，等本卡 ✅）。四軸：工程：待審｜實驗：待驗證（事前鎖定值與實測相符，最終判定留給
+> Opus）｜產品：預設啟用（候選）｜MVP：不適用。
+
 > ## ✅ 2026-09-15 Opus：T-52 第三輪複核 4(ii)——**工程已驗證**——**現在該做的是：照舊跑 T-54（另一視窗進行中）→ Opus → T-55 → Opus → T-17-R2**；T-52 不再阻擋 T-17-R2
 >
 > - 受審 `1b36c27`：更正版 4(ii) 程式比對成立（role_aware 三欄 13/13＝表 8 模擬、geometry 13/13＝表 1）；CRITERIA_GATE_v2.md 未動；commit 只追加、全在卡內。
