@@ -1,5 +1,24 @@
 # Dev Log
 
+## 2026-09-15 (144)
+
+- **T-54 幾何量程規則 v2——🔵 待審（Sonnet 執行）**。§8 前四欄先行 commit `c2a778e`（`dataset_manifest_sha256` 重算相符，
+  未卡關），早於本次結果 commit（鐵則 14）。實作＝`geometry.py` `apply_scope_confidence()` equirect 分支保留單面牆距
+  檢查、另加三維（`length_m`／`width_m`／`height_m`）任一超標檢查（`GEOMETRY_SCOPE_MAX_M` 不動、不新增常數），docstring
+  同步改寫；新增 `scripts/test_geometry_scope.py`（(a)(b)(c)(d)(e) 五案例，對舊碼實測 (a) fail、(b)(c)(d)(e) pass）。
+- 鐵則 8 基線變化表 `output/gate_calibration_v3/`（52 次真實推論）程式化比對 `gate_calibration_v2` 表 1：恰好
+  `CathedralRoom`／`RacquetballCourt4` 兩模式 geometry 欄 4 格 medium→low，其餘 26 格零變化，與 `expected_on_13` 相符；
+  V5 情境（RacquetballCourt4 覆寫兩面材質）新碼 EXIT=3、舊碼（worktree）EXIT=0，複現並修復 Opus V5 域外安全缺口；
+  `SteinmanHall`／`DivorceBeach` 預設路徑 stderr 逐位元不變，stdout 僅多出 G2 允許的「合併明細」。
+- 21 支 `scripts/test_*.py`（20 既有＋新 1 支）全 `EXIT=0`；六條交付 IR MD5 全中（T-14 兩條內建、T-20／T-21 四條實跑
+  重生逐位元相同）。範圍核對：`git diff --stat -- src` 只含 `geometry.py`；其餘 `src`／`data`／凍結腳本零 diff；三個
+  舊 `output/gate_calibration*`／`geometry_r2`／`material_r2` 目錄唯讀未動。
+- 四軸：工程：待審｜實驗：待驗證（`expected_on_13`／`expected_V5` 事前鎖定，本輪實測結果相符，最終判定留給 Opus）｜
+  產品：預設啟用（候選）｜MVP：不適用。
+- **下一步**：開 Opus 新視窗依 T-54 卡「Opus 驗證重點」逐項複驗（對象＝本次收工 commit）→ 通過後開 T-55（criteria
+  已鎖定 `b80a4fb`）。三個本輪自建 `git worktree` 與三個 CLI 直跑輸出目錄已依鐵則 15 清理，詳見 TASKS.md T-54 卡
+  「交接筆記」清理清單。
+
 ## 2026-09-15 (143)
 
 - **T-52 Opus 第三輪複核 4(ii)——✅ 工程已驗證**。受審＝§7 更正 commit `1b36c27`（使用者核准 2026-09-14），HEAD `c2a778e`。

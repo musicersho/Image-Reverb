@@ -223,9 +223,12 @@ def apply_scope_confidence(estimate: RoomEstimate) -> RoomEstimate:
 
     判定對象：
     - 透視照（`dims_source == "metric_depth"`）：**任一維**（長/寬/高）超過門檻；
-    - 環景（`dims_source == "equirect_multiview"`）：**單面牆距**超過門檻——
-      不是相加後的總長，因為對牆相加會讓有效上限拉高到約 40m，用相加值判斷
-      會漏掉真正超量程的單面牆。
+    - 環景（`dims_source == "equirect_multiview"`）：**單面牆距或相加後三維任一超過**
+      門檻——單面牆距檢查保留，不是相加後的總長，因為對牆相加會讓有效上限拉高到
+      約 40m，用相加值判斷會漏掉真正超量程的單面牆；量程規則 v2（裁決 T-48-F 第 1 點，
+      2026-09-15）另加相加後三維（`length_m`／`width_m`／`height_m`）任一超過門檻的檢查，
+      與 `metric_depth` 分支同式，堵住「單面都 ≤10m 但三維相加後已超出已驗證量程」的
+      域外安全缺口（見 output/geometry_scope/CRITERIA_GEOMETRY_SCOPE_v2.md）。
 
     與既有三條場景線索規則（`apply_scene_cue_confidence`）並存：兩者都只會把
     confidence 往下修（不會把 low 改回 medium/high），先跑哪個都一樣，取最嚴。
@@ -236,6 +239,12 @@ def apply_scope_confidence(estimate: RoomEstimate) -> RoomEstimate:
     if estimate.dims_source == "equirect_multiview":
         wall_distances = estimate.depth_stats.get("wall_distances_m", {})
         over = {k: v for k, v in wall_distances.items() if v is not None and v > max_m}
+        dims = {
+            "length_m": estimate.length_m,
+            "width_m": estimate.width_m,
+            "height_m": estimate.height_m,
+        }
+        over.update({k: v for k, v in dims.items() if v > max_m})
     elif estimate.dims_source == "metric_depth":
         dims = {
             "length_m": estimate.length_m,

@@ -10730,11 +10730,12 @@ EOF
 - **交接筆記**：
 
 ### T-54 幾何量程規則 v2：環景分支加三維檢查（Sonnet 執行卡；裁決 T-48-F 第 1 點執行卡；**前置＝使用者核准＋獨立 `criteria:` commit**）
+- **狀態（Sonnet 2026-09-15）**：🔵 **待審**——實作＋測試＋v3 基線量測＋V5 情境全部完成，自我檢查全過，等 Opus 開視窗驗證。詳見下方「交接筆記」。
 - **狀態（Fable 2026-09-15）**：⬜ **可開跑**——使用者 2026-09-15 核准，`criteria: geometry scope v2` 獨立 commit `02284d9`（只含
   `output/geometry_scope/CRITERIA_GEOMETRY_SCOPE_v2.md`）；前置 T-48 工程已驗證（`2ea4d41`）已滿足。**下一步＝開 Sonnet 視窗執行本卡**（貼 WORKFLOW §2.1 Prompt；
   開跑前先填 §8 `dataset_manifest_sha256` 並 commit，鐵則 14）。
 - **狀態（開卡原文）**：⬜ 未開始（**等使用者核准 CRITERIA_GEOMETRY_SCOPE_v2.md 草案**；核准後 Fable 先提交 `criteria: geometry scope v2 …` 獨立 commit，再改「⬜ 可開跑」）
-- **四軸狀態**：工程：未開始｜實驗：待驗證（`expected_on_13` 事前鎖定）｜產品：預設啟用（候選；量程規則本就在預設路徑，收緊不放寬）｜MVP：不適用（沿用 T-17 FAIL）
+- **四軸狀態**：工程：待審｜實驗：待驗證（`expected_on_13`／`expected_V5` 事前鎖定，本輪實測結果與鎖定值相符，最終判定留給 Opus）｜產品：預設啟用（候選；量程規則本就在預設路徑，收緊不放寬）｜MVP：不適用（沿用 T-17 FAIL）
 - **前置（硬性）**：T-48 修正輪 Opus 複驗「工程：已驗證」（本卡才能開跑，避免兩張卡同時動 T-11 §8）；T-52 Opus 複核 4(ii) 可平行（純文件）；
   `output/geometry_scope/CRITERIA_GEOMETRY_SCOPE_v2.md` 已由使用者核准並以獨立 commit 提交（`git log --format=%h -- <該檔>` 恰一筆、訊息以 `criteria:` 開頭、早於本卡任何結果 commit）。
 - **為什麼**：裁決 T-48-F 第 1 點——T-48 A 部分實測 RacquetballCourt4（實際 12.19m）估 16.10×9.39×5.55m 卻 geometry=medium，因環景分支只比
@@ -10785,9 +10786,9 @@ EOF
   criteria_version: geometry scope v2（裁決 T-48-F 第 1 點；規則原文＝output/geometry_scope/CRITERIA_GEOMETRY_SCOPE_v2.md）
   criteria_commit: 02284d9（criteria: geometry scope v2……，2026-09-15；只含 CRITERIA_GEOMETRY_SCOPE_v2.md 一檔；早於本卡任何結果 commit）
   criteria_locked_at: 2026-09-15（使用者核准日＝criteria commit 日）
-  dataset_manifest_sha256: c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7（開跑前 2026-09-15 重算，與鎖定值相符，未卡關）
-  implementation_commit:
-  result_commit:
+  dataset_manifest_sha256: c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7（開跑前 2026-09-15 重算，與鎖定值相符，未卡關；§8 前四欄 commit `c2a778e`，早於本卡任何結果 commit）
+  implementation_commit: 〈本次收工 commit，見下一個 docs 回填 commit〉
+  result_commit: 〈同上；實作與量測同一 commit〉
   reviewer:
   verdict_under_original_criteria: 〈Opus 填：expected_on_13 與 V5 情境是否成立〉
   verdict_under_current_criteria: 〈同上；判準未變〉
@@ -10813,7 +10814,138 @@ EOF
   supersedes: T-11 決策補丁步驟 7 的環景「只比單面牆距」設計（保留該檢查、加上三維檢查；GEOMETRY_SCOPE_MAX_M 不動）
   change control: 結果出來後不得修改本檔；如需改動＝geometry scope v3 新檔＋新獨立 commit＋使用者核准（WORKFLOW §7）
   ```
-- **交接筆記**：
+- **交接筆記（Sonnet 執行，2026-09-15）**：
+
+  **前置**：§8 前四欄先行 commit `c2a778e`（`dataset_manifest_sha256` 重算＝`c15d0a14…2b01a7`，與鎖定值相符，未卡關），
+  早於下方任何結果 commit（鐵則 14）。
+
+  **1. 實作 G2**（`src/image_reverb/geometry.py` `apply_scope_confidence()`）：equirect 分支保留單面牆距檢查，
+  另加 `length_m`／`width_m`／`height_m` 任一 > `GEOMETRY_SCOPE_MAX_M` 檢查（`over` dict 合併兩組來源，兩者皆命中時
+  只觸發一次 `if over:`、明細合併列出，與 G2 原文一致）；docstring「判定對象」改寫為「單面牆距或相加後三維任一超過」，
+  保留原「不用相加值取代單面檢查」理由段。`GEOMETRY_SCOPE_MAX_M` 未動、未新增常數；`metric_depth`／`manual`／未知
+  `dims_source` 三分支逐字未動。
+
+  **2. 新測試 `scripts/test_geometry_scope.py`**（純函式測試，不載模型）：(a)(b)(c)(d)(e) 五案例全跑，新碼全數通過：
+  ```
+  【(a)】equirect：六面牆距皆 ≤10m，但三維相加後超標（16.1/9.4/5.6）
+    ✅ confidence 降為 low：confidence='low'
+    ✅ notes 含「超出已驗證量程」
+    ✅ notes 含 length_m=16.1m
+  【(b)】equirect：牆距皆 ≤10 且三維皆 ≤10 → 不變
+    ✅ confidence 不變（medium）／notes 不增
+  【(c)】equirect：單面牆距 12.2 >10（三維皆 ≤10）→ low（現行行為回歸）
+    ✅ confidence 降為 low／notes 含「超出已驗證量程」
+  【(d)】metric_depth：任一維 >10 → low；三維皆 ≤10 → 不變（現行行為回歸）
+    ✅ 兩案例皆符合預期
+  【(e)】manual → 不變、notes 不增
+    ✅ 符合預期
+  ✅ T-54 量程規則 v2 測試全部通過（EXIT=0）
+  ```
+  **對舊碼實測**（`git worktree add <scratchpad>/t54-old c2a778e`，複製新測試進去、用專案 `.venv` 的 python 跑）：
+  ```
+  【(a)】❌ confidence 降為 low：confidence='medium'
+         ❌ notes 含「超出已驗證量程」：notes=[]
+         ❌ notes 含 length_m=16.1m：notes=[]
+  【(b)】✅  【(c)】✅  【(d)】✅  【(e)】✅
+  ❌ 3 項失敗：confidence 降為 low、notes 含「超出已驗證量程」、notes 含 length_m=16.1m
+  EXIT=1
+  ```
+  符合卡片要求：(a) 對舊碼必須 fail、(b)(c)(d)(e) 必須 pass。worktree 完成後已 `git worktree remove --force` 清理。
+
+  **3. 鐵則 8 基線變化表**：`python scripts/t47_gate_calibration.py --out-dir output/gate_calibration_v3/ --fresh`
+  （52 次真實推論，`output/gate_calibration/`／`output/gate_calibration_v2/` 全程唯讀未動）。程式化比對
+  `output/gate_calibration_v2/tables.md` 表 1 vs `output/gate_calibration_v3/tables.md` 表 1（逐格比對兩模式 8 欄
+  ×13 張＝104 格）：
+  ```
+  共 13 張，4 格變動：
+    ('CathedralRoom', 'geometry_d', 'medium', 'low')
+    ('CathedralRoom', 'geometry_r', 'medium', 'low')
+    ('RacquetballCourt4', 'geometry_d', 'medium', 'low')
+    ('RacquetballCourt4', 'geometry_r', 'medium', 'low')
+  只有 geometry 欄變動：True
+  只有 CathedralRoom/RacquetballCourt4 變動：True
+  恰好 4 格：True
+  全部 medium→low：True
+  ```
+  與 `expected_on_13` 逐字相符。表 3（五張已知錯誤案例）兩模式全 BLOCK（`bathroom_tiled`／`bedroom_ai_generated`／
+  `site_photo_gym`／`site_photo_restaurant`／`RacquetballCourt4`，鐵則 12）；腳本自帶輸出「✅ 兩條資料來源（真實
+  CLI／harness）26 組 surfaces＋sources 逐位元相符」。
+
+  **4. V5 情境**（真實 CLI，兩邊皆用相對路徑 `assets/reference_irs/racquetball_court_4/RacquetballCourt4.jpg`）：
+  ```
+  新碼：python -m src.image_reverb assets/reference_irs/racquetball_court_4/RacquetballCourt4.jpg \
+        --override-material north=gypsum_board --override-material ceiling=wood_panel --no-viz
+        → EXIT=3；stderr 含「1) 幾何不可信 → 用 --override-dims 手動指定房間尺寸（公尺），例如 4x3x2.5」
+
+  舊碼（worktree @ c2a778e，資產檔為 gitignore 未追蹤、手動複製進 worktree 供呼叫）：同指令
+        → EXIT=0（複現 Opus V5：覆寫兩面材質後仍放行輸出 IR）
+  ```
+  與 `expected_V5` 相符。worktree 完成後已 `git worktree remove --force` 清理。
+
+  另檢查 `SteinmanHall`／`DivorceBeach` 預設路徑（`python -m src.image_reverb <path> --force-low-confidence --no-viz`，
+  新舊碼皆用相對路徑、worktree 內手動補資產檔）：**stderr 逐位元相同（diff 為空）**；stdout 唯一差異是 G2 允許的
+  「合併明細」——G2 原文命中單面牆距時本已加註記，新碼再把超標的 `length_m`／`width_m` 併入同一條，例：
+  ```
+  SteinmanHall 舊：⚠️ 超出已驗證量程（適用範圍 ≤10m；az000_el00=12.2m、az090_el00=10.4m、az270_el00=11.1m）——…
+  SteinmanHall 新：⚠️ 超出已驗證量程（適用範圍 ≤10m；az000_el00=12.2m、az090_el00=10.4m、az270_el00=11.1m、
+                    length_m=17.5m、width_m=21.5m）——…
+  DivorceBeach 舊：⚠️ 超出已驗證量程（適用範圍 ≤10m；az180_el00=11.2m、el+45=10.0m）——…
+  DivorceBeach 新：⚠️ 超出已驗證量程（適用範圍 ≤10m；az180_el00=11.2m、el+45=10.0m、length_m=16.8m、width_m=14.7m）——…
+  ```
+  兩者 `geometry_confidence` 在 v2／v3 皆已是 `low`（本卡前就已由單面牆距觸發），G2 只補上明細、不改變 confidence
+  結果，符合卡片「若 notes 多了一條『合併明細』屬 G2 原文允許的變化」的預期。CLI 跑產生的 `output/SteinmanHall`／
+  `output/DivorceBeach`／`output/RacquetballCourt4` 三個本輪自建輸出目錄已刪除（見下方清理）。
+
+  **5. 完整測試套件與六條交付 IR MD5**：`scripts/test_*.py` 21 支（20 支既有＋新 1 支）逐支重跑全部 `EXIT=0`。
+  六條交付 IR MD5：T-14 兩條由 `test_ir_synth.py`【6】內建比對（隨套件 EXIT=0 一併涵蓋）；T-20／T-21 四條實跑重生：
+  ```
+  python -m src.image_reverb --text 浴室            → output/text_bathroom/ir_mono.wav    = 2adbaa75eb698772a8c9aa693179ec47（與歷史記錄相同）
+  python -m src.image_reverb --text 大教堂          → output/text_church/ir_mono.wav      = 2dd19b6e6d351d713887636fe45cd67e（與歷史記錄相同）
+  python -m src.image_reverb --scene neighbor_voices.json   → output/neighbor_voices/ir_mono.wav   = 9a94ffdf5d8295aee7889729c39c9cd8（與歷史記錄相同）
+  python -m src.image_reverb --scene stadium_corridor.json  → output/stadium_corridor/ir_mono.wav  = a1c21bcc3fd9aa3480df203a89c8cd05（與歷史記錄相同）
+  ```
+  四條全中、逐位元與歷史記錄相同；六條交付 IR MD5 本輪全部驗證。這四條覆寫的是本輪開始前就已存在（mtime
+  2026-09-14）的 gitignored 舊輸出目錄，覆寫後內容不變，不算新增路徑。
+
+  **自我檢查（卡片列出的四條指令，逐條實測）**：
+  ```
+  git diff --stat -- src
+    src/image_reverb/geometry.py | 15 ++++++++++++---
+    1 file changed, 12 insertions(+), 3 deletions(-)          ← 只含 geometry.py
+
+  git diff --stat -- data src/image_reverb/{pipeline,acoustics,ir_synth,ir_metrics,config,materials,surfaces}.py \
+      scripts/t47_gate_calibration.py scripts/t36_clip_accuracy.py
+    （空）
+
+  git status --porcelain -- output/gate_calibration output/gate_calibration_v2 output/geometry_r2 output/material_r2
+    （空）
+
+  grep -n 'worktree.*add.*"HEAD"' scripts/test_geometry_scope.py
+    （空）
+  ```
+  全部符合。
+
+  **範圍核對**：本輪 `git status --porcelain` 只有 `src/image_reverb/geometry.py`（改）、`scripts/test_geometry_scope.py`
+  （新增）、`output/gate_calibration_v3/`（新增，本卡要求的新基線目錄，保留不刪）。`pipeline.py`／`acoustics.py`／
+  `ir_synth.py`／`ir_metrics.py`／`config.py`／`materials.py`／`surfaces.py`／`data/` 零 diff（鐵則 6：`compute_materials_confidence()`
+  與 gate 判定式零改動）；`t36_clip_accuracy.EXPECTED_GATE`／`GATE_ITEMS` 凍結表未改（geometry 欄對 `CathedralRoom`／
+  `RacquetballCourt4` 自此過期，此處記一句，不改表本身）。
+
+  **鐵則 15 清理（本輪自建、逐條列出）**：
+  1. `git worktree add <scratchpad>/t54-old c2a778e`（步驟 2 對舊碼測試）→ 已 `git worktree remove --force` 移除；
+  2. `git worktree add <scratchpad>/t54-old-v5 c2a778e`（步驟 4 V5 情境對舊碼複測，worktree 內另手動複製
+     gitignored 資產檔 `RacquetballCourt4.jpg` 供呼叫）→ 已 `git worktree remove --force` 移除；
+  3. `git worktree add <scratchpad>/t54-old-diff c2a778e`（SteinmanHall／DivorceBeach 舊碼 stderr 對照，worktree 內
+     另手動複製 gitignored 資產檔 `SteinmanHall.jpg`／`DivorceBeach.jpg`）→ 已 `git worktree remove --force` 移除；
+  4. `output/SteinmanHall/`、`output/DivorceBeach/`、`output/RacquetballCourt4/`（新碼直接 CLI 呼叫產生的輸出目錄，
+     本輪開始前不存在）→ 已 `rm -rf` 刪除；
+  5. `output/text_bathroom/`、`output/text_church/`、`output/neighbor_voices/`、`output/stadium_corridor/` 為本輪
+     開始前既存的 gitignored 目錄（mtime 2026-09-14），本輪只覆寫其中 `ir_mono.wav` 等檔案且 MD5 覆寫前後相同，
+     不屬本輪自建路徑，不刪；`output/.archive/` 全程未碰。
+  6. 保留（非清理項）：`output/gate_calibration_v3/`——本卡步驟 4 要求產出的新基線目錄，是交付物，不刪。
+
+  **下一步**：開 Opus 新視窗依「Opus 驗證重點」逐項複驗（對象＝本次收工 commit）→ 通過後 T-55（criteria 已鎖定
+  `b80a4fb`，等本卡 ✅）可開跑；T-17-R2 前置追加項「T-54 ✅」隨之滿足一半（另一半＝T-55 結案）。
 
 ### T-55 T-11 域外出口 v3 重驗：14 張＋V5 情境（量測卡；裁決 T-48-F 第 1／3 點執行卡；`src/` 零改動；**前置＝T-54 ✅＋使用者核准 CRITERIA_T11_v3**）
 - **狀態（Fable 2026-09-15）**：⬜ **criteria 已鎖定，等 T-54 ✅（工程）後可開跑**——使用者 2026-09-15 核准，`criteria: T-11 v3` 獨立 commit `b80a4fb`

@@ -159,8 +159,8 @@
       不變，20 支測試 EXIT=0、六條 IR MD5 全中。附帶測得 `DivorceBeach` materials 格也 medium→low（gate 不受影響，與
       T-47 表 8 預測一致）。**下一步：開 Opus 視窗複核**。詳見 TASKS.md T-52 卡「交接筆記」。
 - [ ] **T-53** role_aware gate 校準量測（保留號；等使用者提供獨立校準集；不在關鍵路徑）
-- [ ] **T-54** 量程規則 v2——**⬜ 可開跑（2026-09-15：使用者核准，criteria `02284d9`；前置 T-48 工程已驗證）→ 下一步＝開 Sonnet 視窗執行**。原文：**T-54** 量程規則 v2：`apply_scope_confidence()` 環景分支加三維檢查（Sonnet；裁決 T-48-F；**等使用者核准 CRITERIA_GEOMETRY_SCOPE_v2 草案**；
-      前置 T-48 修正輪已驗證〔✅ 2026-09-14 Opus 第二修正輪複驗通過〕；預期 13 張只有 CathedralRoom／RacquetballCourt4 geometry medium→low、gate 零變化；V5 情境改 EXIT=3）
+- [ ] **T-54** 量程規則 v2——**🔵 待審（2026-09-15：Sonnet 實作＋測試＋v3 基線量測＋V5 情境全部完成，自我檢查全過）→ 下一步＝開 Opus 視窗驗證**。原文：**T-54** 量程規則 v2：`apply_scope_confidence()` 環景分支加三維檢查（Sonnet；裁決 T-48-F；**等使用者核准 CRITERIA_GEOMETRY_SCOPE_v2 草案**；
+      前置 T-48 修正輪已驗證〔✅ 2026-09-14 Opus 第二修正輪複驗通過〕；預期 13 張只有 CathedralRoom／RacquetballCourt4 geometry medium→low、gate 零變化；V5 情境改 EXIT=3——實測結果與預期相符，詳見 TASKS.md T-54 卡「交接筆記」）
 - [ ] **T-55** T-11 域外出口 v3 重驗——**criteria 已鎖定 `b80a4fb`（2026-09-15），等 T-54 ✅ 後開跑**。原文：**T-55** T-11 域外出口 v3 重驗（Sonnet；14 張＋V5；等 T-54 ✅＋使用者核准 CRITERIA_T11_v3；`src/` 零改動；T-17-R2 前置）
 - [ ] **T-56** T-12 v2-b 量測方法 v3——**⬜ 可開跑（2026-09-15：使用者核准、守門條款刪，criteria `4a0b23e`；停滯期填充）**。原文：**T-56** T-12 v2-b 量測方法 v3（Sonnet；seed 鎖定＋10 次中位數；等使用者核准 CRITERIA_T12_v3〔含★守門條款留刪〕；停滯期填充卡，不進關鍵路徑）
 - [x] **T-47 ✅ 工程已驗證（Opus 第三輪 2026-09-14；依裁決 T-47-M 第 5 點複核 §8 事後補建區塊＋T-51 manifest）**——
