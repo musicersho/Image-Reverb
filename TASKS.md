@@ -11245,7 +11245,7 @@ EOF
   criteria_locked_at: 2026-09-15（使用者核准日＝criteria commit 日）
   dataset_manifest_sha256: 不適用（合成房間；30 條 IR 的 sha256 由程式列於 REPORT 檔頭，見 `output/material_r3/REPORT.md` §2）
   implementation_commit: 3b3a723（scripts/gen_ir_manual.py 新增 --seed N；scripts/t48_geometry_material_r2.py 新增 partB 的 --criteria v3 分派；早於下方任何結果 commit）
-  result_commit: 〈本卡結果 commit；見下一筆 docs 回填〉
+  result_commit: 8cabd60（T-56: 完成 T-12 v2-b 量測方法 v3——seed 鎖定＋10 次中位數首跑（待驗證），2026-09-15）
   reviewer: 〈Opus 填：模型＋日期＋commit〉
   verdict_under_original_criteria: v2-b **FAIL**——diff 子判準 median(per-wall)=0.9255s vs median(六面 gypsum)=1.1824s，差異 −21.7%（>±20%，FAIL）；ratio 子判準 median(六面 carpet)=3.9010s / median(per-wall)=4.22 倍（≥3 倍，PASS）。v2-a PASS（同義反覆，不計入，裁決 T-48-F F4）；v1 字面條件未達（只記錄，不當門檻）。30 條 IR sha256 全列於 REPORT §2；首跑即定案，未重跑。
   verdict_under_current_criteria: 同上（CRITERIA_T12_v3.md 自 `4a0b23e` 起零 diff，判準未變）
