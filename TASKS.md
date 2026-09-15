@@ -11044,7 +11044,7 @@ EOF
   criteria_locked_at: 2026-09-15（使用者核准日＝criteria commit 日）
   dataset_manifest_sha256: 6537699444507407d239b332a7b77ec9f795a887a9a93ba08f7db1bd58259522（`output/geometry_r3/DATASET_MANIFEST.json`，14 張，git_head_at_manifest_time=`4a9206f`）
   implementation_commit: 2048a6c（T-55: §8 前四欄（開跑前）；scripts/t48_geometry_material_r2.py 新增 --criteria v3 支援，只加函式不改任何既有 v2 函式）
-  result_commit: 〈本次收工 commit，見下一個 docs 回填〉
+  result_commit: 67fa822（T-55: 完成 T-11 域外出口 v3 重驗——14 張＋V5 情境全部 PASS（待驗證），2026-09-15）
   reviewer:
   verdict_under_original_criteria: 〈v3 首跑結果，逐張〉
   verdict_under_current_criteria: 〈同上；判準未變〉
