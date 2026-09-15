@@ -10787,8 +10787,8 @@ EOF
   criteria_commit: 02284d9（criteria: geometry scope v2……，2026-09-15；只含 CRITERIA_GEOMETRY_SCOPE_v2.md 一檔；早於本卡任何結果 commit）
   criteria_locked_at: 2026-09-15（使用者核准日＝criteria commit 日）
   dataset_manifest_sha256: c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7（開跑前 2026-09-15 重算，與鎖定值相符，未卡關；§8 前四欄 commit `c2a778e`，早於本卡任何結果 commit）
-  implementation_commit: 〈本次收工 commit，見下一個 docs 回填 commit〉
-  result_commit: 〈同上；實作與量測同一 commit〉
+  implementation_commit: 5276f6a（T-54: 完成量程規則 v2 實作＋新測試＋v3 基線量測（待驗證），2026-09-15）
+  result_commit: 5276f6a（同上；實作與量測同一 commit，晚於 §8 前四欄 commit `c2a778e`，符合鐵則 14）
   reviewer:
   verdict_under_original_criteria: 〈Opus 填：expected_on_13 與 V5 情境是否成立〉
   verdict_under_current_criteria: 〈同上；判準未變〉
