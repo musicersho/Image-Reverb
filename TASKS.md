@@ -848,7 +848,7 @@
   dataset_manifest_sha256: 不適用（合成房間 4×3×2.5m，floor=carpet／其餘 gypsum_board；對照組六面 gypsum、六面 carpet）→ T-56（v3，30 條 IR）：不適用（合成房間），30 條 IR 的 sha256 列於 `output/material_r3/REPORT.md` §2
   implementation_commit: fc688cd → T-48：d372ad9（Part B 量測腳本）→ T-56：3b3a723（`gen_ir_manual.py` 新增 `--seed N`；`t48_geometry_material_r2.py` 新增 partB 的 `--criteria v3`）
   result_commit: fc688cd（Sabine 0.348s／實測 T30 0.748s）；f1c32ce（使用者試聽通過）→ T-48：e1183b9（`output/material_r2/REPORT.md`，最終交付 IR 由 cda6b9b 該次重跑生成）→ Opus 更正（2026-09-14，回應驗證紀錄 R6）：`output/material_r2/REPORT.md` 首次進版控其實是 012a07f（e1183b9 只改了 Part B 腳本，尚未含 REPORT.md 本身；最終交付 IR 仍是 cda6b9b 該次重跑生成，未變）→ T-56：見 T-56 卡 §8 `result_commit`（同一次結果 commit，本卡不重複記）
-  reviewer: Opus（2026-08-25，85d0493）→ T-48 v2 量測覆核：Opus 5（2026-09-14，T-48 第二修正輪工程已驗證，HEAD `92bfd63`；verdict 補充行內「待 Opus 覆核」即此，v2-b 以 inconclusive 為準）→ T-56 v3 量測：〈待 Opus 填，見 T-56 卡〉
+  reviewer: Opus（2026-08-25，85d0493）→ T-48 v2 量測覆核：Opus 5（2026-09-14，T-48 第二修正輪工程已驗證，HEAD `92bfd63`；verdict 補充行內「待 Opus 覆核」即此，v2-b 以 inconclusive 為準）→ T-56 v3 量測：〈待 Opus 填，見 T-56 卡〉 → Opus 5（2026-09-15，T-56 工程已驗證，HEAD `915c9e4`；上一行「T-56 v3 量測補充…待 Opus 覆核」即此，v2-b FAIL 經 Opus 從 30 條 WAV 獨立重算確認；非阻擋更正與觀察見 T-56 卡「✅ Opus 驗證紀錄」）
   verdict_under_original_criteria: 未達（字面條件：實測 0.748s，偏差 +115%）
   verdict_under_current_criteria: 待 T-48（v2 尚未量測；85d0493 附註 3 的豁免不得當 PASS 用）→ **T-48 v2 量測補充（2026-09-14，Sonnet 量測，待 Opus 覆核；見 `output/material_r2/REPORT.md`）**：v2-a（公式層）PASS（per-wall Sabine 125Hz 0.3480s，誤差 +0.0%）；v2-b（IR 實測層，聯合帶 T30）本次交付版本 PASS（per-wall 0.965s vs 六面 gypsum 對照 1.205s，差異 −19.9% ≤±20%；六面 carpet 對照/per-wall＝3.97 倍 ≥3 倍）——**但本卡執行期間三次獨立官方重生的差異百分比分別是 −21.1%／−22.3%／−19.9%（另有 8 次額外重跑落在 −28.4%～−10.4% 之間），PASS/FAIL 跨越 ±20% 門檻兩側，測到 pyroomacoustics ray tracing 沒有固定 random seed（同指令重跑兩次 WAV sha256 不同），這條子判準在目前量測方法下鑑別力薄弱，請 Opus／Fable 一併評估是否要依 WORKFLOW §7 修正量測方法（例如固定 seed 或多次取中位數），而非門檻數字本身；v1 字面條件（125Hz 八度 T30 ≈0.35s ±20%）本次交付版本 0.7074s、誤差 +102.1%，未達，如原卡預期只記錄不當門檻 → **Opus 更正（2026-09-14，修正輪 Sonnet 執行，回應驗證紀錄 R2／R5）**：(R2) 上一行「另有 8 次額外重跑落在 −28.4%～−10.4% 之間」與交付 REPORT §3（及 Opus 自跑 `stability_check/`）實際範圍 **−23.1%～−12.3%** 不符，前者疑似來自已被後續重跑覆蓋的 `dd03c0e` 那次穩定性重跑、原始產物已不存在、不可複核，正確範圍以現行 `output/material_r2/REPORT.md` §3 為準。(R5) 「v2-b 本次交付版本 PASS」的呈現方式違反本卡 §8「`verdict_under_original_criteria`＝v2 首跑結果」與 WORKFLOW §7.5——v2-b 首跑（`d372ad9`，2026-09-14）diff 子判準結果是 **−21.1% FAIL**，本卡執行期間三次官方重跑（−21.1%／−22.3%／−19.9%）跨越 ±20% 門檻兩側，證明量測方法非決定性。依裁決 T-48-F F2（Fable，2026-09-14）：v2-b 正確記法為「**diff 子判準：首跑 FAIL、方法 inconclusive**（永久保留，不因交付版本剛好落在門檻內就回頭改記 PASS）；**ratio 子判準：PASS**（3.97 倍 ≥3 倍，未受本卡實測到的隨機噪聲量級影響）」；v2-a 維持 PASS，但屬同義反覆（裁決 T-48-F F4：目標值即同一公式輸出，鑑別力為零，只作公式回歸性測試，不構成材質模組正確性證據）；v1 字面條件維持未達，數字不變 → **T-56 v3 量測補充（2026-09-15，Sonnet 量測，待 Opus 覆核；見 `output/material_r3/REPORT.md`）**：判準 v3（seed 鎖定 1001–1010＋10 次中位數，無方法有效性守門條款）首跑（唯一一次，禁止重跑）結果——**v2-b FAIL**：diff 子判準 median(per-wall)=0.9255s vs median(六面 gypsum)=1.1824s，差異 **−21.7%**（>±20%，FAIL）；ratio 子判準 median(六面 carpet)=3.9010s / median(per-wall)＝**4.22 倍**（≥3 倍，PASS）。與 T-48 v2-b 首跑（−21.1% FAIL）方向一致——換成可複核的鎖定 seed 方法後，diff 子判準的 FAIL 傾向被**確認**，不是量測噪聲造成的偶然結果。v2-a 仍 PASS（0.3480s，+0.0%，同義反覆，不計入）；v1 字面條件仍未達（10 次中位數 0.7465s，+113.3%，只記錄）。依 WORKFLOW §7.5：**v2-b 首跑 FAIL 永久保留，不得因未來重跑改記 PASS**（重跑需開 v4 新卡）。
   criteria_changed_after_first_result: yes（85d0493 附註 3 以「0.35s 是 Sabine 值」解釋豁免，未改卡、未另版——依 WORKFLOW §7 屬驗證者豁免字面條件）
@@ -11195,6 +11195,14 @@ EOF
     `output/text_bathroom` 等 4 個目錄的 `ir_mono.wav` 以相同 MD5 覆寫。未用 worktree。
 
 ### T-56 T-12 v2-b 量測方法 v3：seed 鎖定＋10 次中位數（量測卡；裁決 T-48-F 第 2／4 點執行卡；`src/` 零改動；停滯期填充卡；**前置＝使用者核准 CRITERIA_T12_v3**）
+- **狀態（Opus 驗證，2026-09-15）**：✅ **工程已驗證**——受審＝實作 `3b3a723`＋結果 `8cabd60`＋§8 回填 `915c9e4`，審查 HEAD `915c9e4`（工作樹乾淨）。
+  鐵則 14 順序成立；seed／條件與 CRITERIA 一字不差；`--seed` 未給時新舊碼 worktree 比對 5 組逐位元相同；30 條 IR 單一批次、sha256 全中、
+  抽 3 條以真實 `--seed` 重生相同；統計與判定由 Opus 從 WAV 獨立重算與 REPORT 相同；`src`／`data`／`ir_metrics.py`／`output/material_r2/` 零 diff；
+  無守門邏輯；T-12 §8 純追加；21 支測試 failed=0、六條 IR MD5 全中。無阻擋項；交接筆記 3 處敘述失實（非阻擋，已更正）見本卡末「✅ Opus 驗證紀錄（2026-09-15）」。
+  ⚠️ 本輪 Opus 與執行者為同一對話（中途換模型），所有判定項已重跑補足獨立性；需要的話可另開 Opus 新視窗再審。
+- **四軸狀態（Opus 驗證，2026-09-15）**：工程：已驗證｜實驗：**負向**（**僅限** T-12 單元層 v2-b 在事前鎖定的 v3 方法下：diff 子判準 −21.7% FAIL、ratio 子判準 4.22× PASS；
+  方法有鑑別力——per-wall 10 次最大值 0.9822s 仍小於 gypsum 10 次最小值 1.1454s；不代表端到端 RT60 或材質辨識正確性）｜產品：不適用（量測卡）｜
+  MVP：不適用（不是 T-17-R2 前置；本卡結案滿足「T-56 須在 R2 樣本產生前結案」的排程要求）
 - **狀態（Sonnet 2026-09-15）**：🔵 **待審**——步驟 0 seed 有效性自檢**通過**（同 seed 1001 兩次生成 per-wall，WAV sha256 相同
   `886e5a75e4f6…`；seed 1001 vs 1002 不同 `886e5a75e4f6…`/`43563e08a58c…`），未觸發 🔴 卡關。3 條件 × 10 seed（1001–1010，事前鎖定）＝
   30 條 IR **首跑完成，未重跑**（`first_run_is_final`）。結果：**v2-b FAIL**——diff 子判準 median(per-wall)=0.9255s vs
@@ -11246,7 +11254,7 @@ EOF
   dataset_manifest_sha256: 不適用（合成房間；30 條 IR 的 sha256 由程式列於 REPORT 檔頭，見 `output/material_r3/REPORT.md` §2）
   implementation_commit: 3b3a723（scripts/gen_ir_manual.py 新增 --seed N；scripts/t48_geometry_material_r2.py 新增 partB 的 --criteria v3 分派；早於下方任何結果 commit）
   result_commit: 8cabd60（T-56: 完成 T-12 v2-b 量測方法 v3——seed 鎖定＋10 次中位數首跑（待驗證），2026-09-15）
-  reviewer: 〈Opus 填：模型＋日期＋commit〉
+  reviewer: 〈Opus 填：模型＋日期＋commit〉 → Opus 5，2026-09-15，審查 HEAD 915c9e4（對象 3b3a723／8cabd60／915c9e4）；工程已驗證；與執行者同一對話，判定項全部重跑
   verdict_under_original_criteria: v2-b **FAIL**——diff 子判準 median(per-wall)=0.9255s vs median(六面 gypsum)=1.1824s，差異 −21.7%（>±20%，FAIL）；ratio 子判準 median(六面 carpet)=3.9010s / median(per-wall)=4.22 倍（≥3 倍，PASS）。v2-a PASS（同義反覆，不計入，裁決 T-48-F F4）；v1 字面條件未達（只記錄，不當門檻）。30 條 IR sha256 全列於 REPORT §2；首跑即定案，未重跑。
   verdict_under_current_criteria: 同上（CRITERIA_T12_v3.md 自 `4a0b23e` 起零 diff，判準未變）
   criteria_changed_after_first_result: no（改了就是新卡）
@@ -11328,6 +11336,41 @@ EOF
   **下一步**：開 Opus 新視窗依「Opus 驗證重點」逐項複驗（對象＝本卡實作 commit `3b3a723`＋結果 commit，見下方 §8
   `result_commit` 回填）→ 通過後回填 T-12 §8「已驗證」（工程軸）；v2-b 首跑 FAIL 為本卡最終結果，依 WORKFLOW §7.5
   永久保留、禁止重跑（重跑需開 v4 新卡）。
+
+- **✅ Opus 驗證紀錄（2026-09-15；只審不改碼；審查 HEAD `915c9e4`，工作樹乾淨；⚠️ 與執行者同一對話，未採信交接筆記，全部重跑）**：
+  1. **鐵則 14**：`4a0b23e`（13:1x，只含 CRITERIA 一檔）→ `2dabea5`（13:16:19，§8 前四欄填妥，`git blame 3d7463f` 確認四行最後修改於 `e253ac05`／`2dabea56`，無占位符）→
+     `3b3a723`（17:23:49）→ 30 條 WAV mtime 17:24:01～17:25:33 → `8cabd60`（17:31:35）→ `915c9e4`。`git diff 4a0b23e HEAD -- CRITERIA_T12_v3.md` 為空。**成立。**
+     執行者未另做「僅前四欄」commit——四欄在開跑前已完整提交、無需填值，實質滿足鐵則 14；卡片步驟 1「commit」字面未照做，記錄不退回。
+  2. **範圍**：`git diff 3d7463f HEAD -- src data` 為空（自 `4a0b23e` 起唯一 `src` diff 是 T-54 `5276f6a` 的 `geometry.py`，不屬本卡）；`scripts/` 只動兩檔。
+     AST 比對 `3d7463f`→HEAD：`t48_geometry_material_r2.py` 刪除 0、既有函式／常數變動 0、新增 7（`MATERIAL_R3_OUT`／`T56_SEEDS`／`_seed_validity_self_check`／`run_part_b_v3`／
+     `_stats`／`_write_part_b_v3_report`／`cmd_part_b_v3`），刪除行只有 `__main__` 註解與分派；`gen_ir_manual.py` 只有 `main` 變動、`PRESETS` 未動（n_rays／time_thres 未改）。**成立。**
+  3. **seed／N／條件與 CRITERIA 一字不差**：`T56_SEEDS`＝1001…1010（10 個）＝CRITERIA；三條件直接重用未改動的 `IR_CASES`，指令與 `output/material_r2/REPORT.md`（T-48）三條逐字相同。**成立。**
+  4. **`--seed` 未給時逐位元不變（本卡最大風險點）**：因預設路徑本身非決定性（Opus 新碼無 seed 連跑兩次 sha256 不同 `a2f3e09b…`／`7093acef…`），改用 wrapper 在呼叫 `main()` 前
+     從外部固定亂數狀態、新舊兩版皆**不帶** `--seed`：`git worktree add 3d7463f` 對 HEAD，per-wall／六面 gypsum／六面 carpet／T-01 單一 α（外部種子 777）＋per-wall（外部種子 31337）
+     共 5 組，**WAV sha256 與 stdout 雜湊全部相同**——新碼在未給 `--seed` 時沒有觸碰任何亂數狀態。**成立。**
+  5. **30 條 IR 全數保留、首跑即定案**：`output/material_r3/runs/` 恰 30 `.wav`＋30 `.log`、無其他檔名；WAV mtime 單一連續批次（約 92 秒）且晚於 `3b3a723`、早於 `8cabd60`；
+     30 條 sha256 兩兩相異、與 REPORT §2 全中；Opus 以真實 `--seed` 參數獨立重生 per_wall 1007／control_gypsum 1003／control_carpet 1010，sha256 與 REPORT 相同；
+     30 個 log 都含「固定隨機種子」行。**無重跑痕跡，成立。**（步驟 0 在實作 commit 前曾手動於 `output/` 根目錄試跑 seed 1001×2、1002，外加一次 seed 9999 計時；
+     產物已刪、不在 runs/，且 seed 決定性使其不可能被挑選——記錄，非阻擋。）
+  6. **seed 自檢**：Opus 獨立重跑——seed 1001 兩次皆 `886e5a75…`、seed 1002 為 `43563e08…`。**成立。**
+  7. **判定邏輯與無守門**：v2-b＝`abs(median diff) <= 20.0 and ratio >= 3.0`，與 CRITERIA 相同；`spread_pct` 只出現在 `_stats` 與表格輸出，不進判定；無 `inconclusive` 分支。
+     Opus 從 30 條 WAV 以 `t30_low_combined()`／`band_t30()` 獨立重算：中位數 0.9255／1.1824／3.9010s、離散度 14.9／11.4／8.8%、diff −21.73%、ratio 4.215 → **FAIL**；
+     v1 中位數 0.7465s（+113.3%），與 REPORT 逐位相同，**無手打數字**。10 個 per_wall log 的 Sabine 125Hz 全為 0.348s（v2-a 與 seed 無關屬實）。**成立。**
+  8. **T-12 §8 只追加**：程式比對 `3d7463f`→HEAD 的 T-12 卡，11 個 §8 欄位新值皆以舊值全文開頭（純追加），§8 以外 133 行完全相同；TASKS.md 只動 T-12、T-56 兩張卡。**成立。**
+  9. **測試與 IR**：HEAD 上 21 支 `scripts/test_*.py` 逐支自跑 failed=0（log 放 scratchpad）；T-14 兩條由 `test_ir_synth.py`【6】比對 `f3a763be…`／`f24353b5…`；
+     T-20／T-21 四條以 `OUTPUT_ROOT` 導向 scratchpad 經 CLI 重生 → `2adbaa75…`／`2dd19b6e…`／`9a94ffdf…`／`a1c21bcc…` 全中，repo 內 `output/` 未被覆寫。**成立。**
+  - **非阻擋（交接筆記敘述失實，不影響任何數字或判定；Opus 在此更正，Sonnet 原文不刪）**：
+    - N1（紅線理由失實）：交接筆記第 6 點「`time_thres` 自動延長邏輯本卡未觸發」**不實**——log 顯示六面 gypsum 10 條延長到 3.07s、六面 carpet 10 條延長到 6.14s，只有 per-wall 維持 2.0s。
+      這是 T-12 起就存在、未被本卡改動的程式行為（第 4 點已證明與舊碼逐位元相同），與 T-48 同設定，符合 CRITERIA「同 n_rays／time_thres（與 T-12／T-48 同設定）」，紅線本身沒破。
+    - N2：第 5 點「21 支測試跑在 `3b3a723` 之後」不精確——實際跑在 commit 之前的未提交工作樹（內容與 `3b3a723` 相同）；Opus 已在 HEAD 重跑補證。
+    - N3（鐵則 15）：「本輪未新增任何暫存路徑」不實——執行者在 `/tmp` 留下 `t56_run.log`＋21 個 `testlog_*.log`（共 22 檔，repo 外），未使用 scratchpad，
+      seed 9999 計時試跑亦未列出。Opus 依鐵則 15 不代刪他人建立的路徑，只記錄；`output/.archive/` 本輪零新增屬實。
+  - **給 Fable 的觀察（不是判定、不開 §7）**：目標頻段的 Sabine 值 per-wall **長於**六面 gypsum（125Hz 0.348 vs 0.282s；250Hz 0.891 vs 0.819s），
+    但 ray tracing 聯合帶 T30 per-wall 反而**短** 21.7%，方向相反；三條件的 `time_thres` 也不同（2.0／3.07／6.14s）。這不影響本卡 FAIL 的有效性（判準只比中位數），
+    但解讀「per-wall 材質在 IR 層是否正確」時不能把 FAIL 直接歸因於材質模組，可能涉及 88.4–353.6Hz 濾波邊帶（500Hz 起 per-wall 才短於 gypsum）或模擬時長差異。
+    另：同 seed 配對的 diff 範圍 −27.1%～−15.2% 仍跨 −20%，證實 v2 單次量測確實無法定案，v3 中位數才有鑑別力。
+  - **Opus 本輪副作用（鐵則 15）**：自建 `git worktree`（scratchpad `opus/wt_old`，3d7463f）已 `git worktree remove` 並 prune；wrapper 輸出目錄（`oo`／`o1`～`o3`／`seed`／`cli`）已刪；
+    scratchpad 保留 `wrap.py`／`cliwrap.py`／舊版腳本副本／測試與 CLI log（session 專用，不在 repo）。repo 內未寫任何產物，`output/text_bathroom` 等 4 個目錄未被覆寫。
 
 ### T-48 T-11／T-12 判準第二版針對性重驗（量測卡；裁決 T-45-A 執行卡 3/5；`src/` 零改動）
 - **狀態**：✅ **工程已驗證（Opus 第二修正輪複驗 2026-09-14；對象 `3c234c1`＋`778ac18`＋`0c1174d`＋`92bfd63`，驗證時 HEAD `92bfd63`；只審不改碼）**——

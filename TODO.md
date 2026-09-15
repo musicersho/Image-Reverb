@@ -162,7 +162,7 @@
 - [x] **T-54** 量程規則 v2——**✅ 工程已驗證（Opus 2026-09-15，HEAD `4e6478f`；結果 `5276f6a`）**。四軸：工程：已驗證｜實驗：正向（僅限 expected_on_13＋expected_V5，非校準）｜產品：預設啟用｜MVP：不適用。Opus 乾淨 HEAD `--fresh` 重跑 tables.md 逐字相同、V5 新碼 EXIT=3／舊碼 EXIT=0、21 支測試全過、六條 IR MD5 全中；非阻擋更正 3 點（`.archive` 敘述失實等）已追加。⚠️ 與執行者同一對話審查。→ **T-55 可開跑**。（前狀態：🔵 待審，Sonnet 2026-09-15）原文：**T-54** 量程規則 v2：`apply_scope_confidence()` 環景分支加三維檢查（Sonnet；裁決 T-48-F；**等使用者核准 CRITERIA_GEOMETRY_SCOPE_v2 草案**；
       前置 T-48 修正輪已驗證〔✅ 2026-09-14 Opus 第二修正輪複驗通過〕；預期 13 張只有 CathedralRoom／RacquetballCourt4 geometry medium→low、gate 零變化；V5 情境改 EXIT=3——實測結果與預期相符，詳見 TASKS.md T-54 卡「交接筆記」）
 - [x] **T-55** T-11 域外出口 v3 重驗——**✅ 工程已驗證（Opus 2026-09-15，HEAD `bf46578`；結果 `67fa822`）**。四軸：工程：已驗證｜實驗：正向（僅限 v3 判準）｜產品：不適用｜MVP：不適用。Opus 重跑 6 張＋V5 相同、RacquetballCourt4 轉 PASS 確認為 T-54 修復、21 支測試全過、六條 IR MD5 全中；非阻擋 4 點已記。→ T-17-R2 前置「T-54 ✅＋T-55 結案」已滿足。（前狀態：🔵 待審，Sonnet 2026-09-15）原文：**T-55** T-11 域外出口 v3 重驗（Sonnet；14 張＋V5；等 T-54 ✅＋使用者核准 CRITERIA_T11_v3；`src/` 零改動；T-17-R2 前置）
-- [x] **T-56** T-12 v2-b 量測方法 v3——**🔵 待審（Sonnet 2026-09-15；實作 `3b3a723`）**。步驟 0 seed 自檢通過；3 條件 × 10 seed
+- [x] **T-56** T-12 v2-b 量測方法 v3——**✅ 工程已驗證（Opus 2026-09-15，HEAD `915c9e4`；結果 `8cabd60`）**。四軸：工程：已驗證｜實驗：負向（僅限 T-12 單元層 v2-b：diff −21.7% FAIL、ratio 4.22× PASS）｜產品：不適用｜MVP：不適用。Opus 重跑：worktree 證明 `--seed` 未給逐位元不變、30 條 sha256 全中、統計獨立重算相同、21 支測試全過、六條 IR MD5 全中；非阻擋更正 3 點已記。⚠️ 與執行者同一對話審查。（前狀態：）**🔵 待審（Sonnet 2026-09-15；實作 `3b3a723`）**。步驟 0 seed 自檢通過；3 條件 × 10 seed
   ＝30 條 IR 首跑（唯一一次）：**v2-b FAIL**（diff 子判準 −21.7% 超出 ±20%；ratio 子判準 4.22 倍 PASS），與 T-48 v2-b 首跑
   （−21.1% FAIL）方向一致，屬確認非推翻。v2-a PASS（同義反覆，不計）；v1 未達（只記錄）。21 支測試 EXIT=0、六條交付 IR
   MD5 全中、`src`／`data`／`output/material_r2/` 全程零 diff。等 Opus 開視窗驗證。原文：**T-56** T-12 v2-b 量測方法

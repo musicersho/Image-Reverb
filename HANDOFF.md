@@ -1,5 +1,14 @@
 # 交接文件 — 給下一個視窗
 
+> ## ✅ 2026-09-15 Opus：T-56 驗證——**工程已驗證**——**下一步：T-56 結案；T-17-R2 仍等使用者三項決定**（見下方 Fable 複評那則），AI 端目前沒有可開跑的關鍵路徑卡
+>
+> - 受審 `3b3a723`／`8cabd60`／`915c9e4`，HEAD `915c9e4`。鐵則 14 成立；seed／條件＝CRITERIA；`--seed` 未給時 worktree 對照 5 組逐位元相同；30 條 IR 單批、sha256 全中；
+>   統計由 Opus 從 WAV 獨立重算與 REPORT 相同；`src`／`data`／`ir_metrics.py`／`output/material_r2/` 零 diff；T-12 §8 純追加；21 支測試全過；六條 IR MD5 全中。
+> - 四軸：工程：已驗證｜實驗：負向（僅限 T-12 單元層 v2-b：diff −21.7% FAIL、ratio 4.22× PASS）｜產品：不適用｜MVP：不適用。
+> - 非阻擋：交接筆記 3 處敘述失實（`time_thres` 其實有自動延長、測試實跑時點、`/tmp` 22 個 log 未列清理），已在 T-56 卡更正。⚠️ 本輪與執行者同一對話，需要可另開 Opus 新視窗再審。
+> - 給 Fable：目標頻段 Sabine per-wall 長於 gypsum，但 IR 聯合帶 T30 反而短 21.7%（三條件 time_thres 也不同）——FAIL 不宜直接歸因材質模組，是否另開調查卡由 Fable 決定。
+> - 提醒：T-17-R2 樣本產生～打包之間不得有 commit；本則收工 commit 之後 T-56 已無待辦。
+
 > ## 🔵 2026-09-15 Sonnet：T-56 完成——**現在該做的是開 Opus 新視窗複驗**，結果 commit 見本次收工 commit（實作 commit `3b3a723`）
 >
 > §8 前四欄由 Fable 於 `2dabea56` 早於本卡任何 commit 填妥（鐵則 14 已滿足，執行者未另建空 commit）。步驟 0 seed 有效性
