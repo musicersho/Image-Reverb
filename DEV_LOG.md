@@ -1,5 +1,24 @@
 # Dev Log
 
+## 2026-09-15 (146)
+
+- **T-55 T-11 域外出口 v3 重驗——🔵 待審（Sonnet 執行）**。§8 前四欄先行 commit `2048a6c`（新增 `t48_geometry_material_r2.py`
+  `--criteria v3` 支援＋`output/geometry_r3/DATASET_MANIFEST.json`，14 張，dataset_manifest_sha256＝`653769944450…`），
+  早於結果 commit（鐵則 14）。實作方式＝只新增函式＋一個 `--criteria` 分派參數，`_build_result`／`run_part_a`／
+  `_write_part_a_report`／`cmd_part_a`／`cmd_part_a_report_only`／`cmd_manifest`／Part B 全部一行未改；不加旗標時
+  行為由程式結構保證與 v2 逐位元相同。`src/`／`data/` 全程零 diff；`output/geometry_r2/` 唯讀。
+- 14 張真實 CLI＋V5 情境全部跑完：`domain_out` 4/4（arena_ntsu_linkou／RacquetballCourt4／SteinmanHall／
+  corridor_hotel_carpet）＋`domain_out_non_room` 1/1（car_interior_suv）＋浴室（+24.0%）＋V5（RacquetballCourt4
+  覆寫兩面材質後 exit=3 含 override-dims 導引）全部 **PASS**，FAIL 筆數＝0。`RacquetballCourt4` 由 T-48 的域外
+  誤放 FAIL 轉 PASS 是 T-54 修復的直接結果，>10m 域外項與浴室 ±30% 判準條文與數字一字未改。
+- 21 支 `scripts/test_*.py` 全 `EXIT=0`；六條交付 IR MD5 全中（T-14 兩條內建、T-20／T-21 四條實跑重生逐位元相同）。
+  T-11 §8 只追加一行 T-55 結果摘要，原文未動。
+- 四軸：工程：待審｜實驗：正向（domain_out 4/4＋domain_out_non_room 1/1＋浴室＋V5 全部成立）｜產品：不適用（量測卡）｜
+  MVP：不適用（併入 T-17-R2）。
+- **下一步：開 Opus 視窗驗證 T-55**（對象＝本次收工 commit）→ 通過後 T-17-R2 前置「T-54 ✅＋T-55 結案」全部滿足。
+  本輪自我檢查誤跑一次 `manifest --criteria v2` 覆寫了唯讀的 `output/geometry_r2/DATASET_MANIFEST.json`，已立即
+  `git checkout` 復原並記入交接筆記；照片 CLI 本輪自動在 `.archive/` 建 25 個備份條目，不刪、已列出。
+
 ## 2026-09-15 (145)
 
 - **T-54 Opus 驗證——✅ 工程已驗證**。受審 `c2a778e`（§8 前四欄）＋`5276f6a`（結果）＋`631dd7e`（§8 回填），審查 HEAD `4e6478f` 工作樹乾淨。

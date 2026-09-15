@@ -1,5 +1,21 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔵 2026-09-15 Sonnet：T-55 完成——**現在該做的是開 Opus 新視窗複驗**，結果 commit 見本次收工 commit（§8 前四欄 `2048a6c`）
+>
+> 只新增 `scripts/t48_geometry_material_r2.py` 的函式與一個 `--criteria` 分派參數（`--criteria v3`：14 張＝
+> GATE_ITEMS 13 張＋`corridor_hotel_carpet.png`、`car_interior_suv` 改歸 `domain_out_non_room`、加 V5 情境），
+> 不加旗標時原封不動呼叫既有 v2 函式，Part B 全部未碰、`src`／`data` 全程零 diff、`output/geometry_r2/` 唯讀。
+>
+> 14 張真實 CLI＋V5 情境結果 **PASS**（domain_out 4/4、domain_out_non_room 1/1、浴室、V5 全部成立，FAIL 筆數=0）；
+> `RacquetballCourt4` 由 T-48 的域外誤放 FAIL 轉為 PASS，是 T-54 修復的直接結果，>10m 域外項與浴室 ±30% 判準
+> 條文與數字一字未改。21 支測試全 EXIT=0；六條交付 IR MD5 全中。T-11 §8 只追加一行結果摘要。
+>
+> **下一步**：開 Opus 新視窗依 T-55 卡「Opus 驗證重點」逐項複驗（對象＝本次收工 commit）→ 通過後 T-17-R2 前置
+> 「T-54 ✅＋T-55 結案」全部滿足，可以進 T-17-R2。四軸：工程：待審｜實驗：正向｜產品：不適用（量測卡）｜
+> MVP：不適用。給下一個視窗的提醒：本輪自我檢查誤跑一次 `manifest --criteria v2` 覆寫了唯讀的
+> `output/geometry_r2/DATASET_MANIFEST.json`，已立即 `git checkout` 復原，見 T-55 卡「交接筆記」清理第 1 項；
+> 照片 CLI 每跑一次都會自動在 `output/.archive/<stem>/` 建備份條目（本輪 25 個，不刪，已列出）。
+
 > ## ✅ 2026-09-15 Opus：T-54 驗證——**工程已驗證**——**現在該做的是：開 Sonnet 視窗執行 T-55**（T-11 域外出口 v3 重驗；criteria `b80a4fb`）→ Opus → T-17-R2；T-56 可平行
 >
 > - 受審 `c2a778e`／`5276f6a`／`631dd7e`，HEAD `4e6478f`。乾淨 HEAD `--fresh` 重跑 tables.md 與提交版逐字相同；恰 4 格 geometry medium→low、其餘 26 格不變；V5 新碼 EXIT=3／舊碼 EXIT=0；

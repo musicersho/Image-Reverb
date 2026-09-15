@@ -586,9 +586,9 @@
   result_commit: fc688cd（首次評測：走廊 −57%）→ 40bfb2f（補丁後 A'/B'）→ T-48：714703d（`output/geometry_r2/REPORT.md`）→ Opus 更正（2026-09-14，回應驗證紀錄 R6）：`output/geometry_r2/REPORT.md` 首次進版控其實是 012a07f（714703d 只改了 Part A 腳本的 `__main__` 分派，尚未含 REPORT.md 本身）（第二修正輪澄清，Sonnet 2026-09-14，回應 N2：同上，本行「Opus 更正」文字由 Sonnet 依驗證紀錄 R6 指示代筆，非 Opus 本人書寫）
   reviewer: Opus（2026-08-27，8531356）→ T-48 域外項補充覆核：Opus 5（2026-09-14，T-48 第二修正輪工程已驗證，HEAD `92bfd63`；verdict 補充行內「待 Opus 覆核」即此）
   verdict_under_original_criteria: FAIL（判準 A：走廊 −57% 未達 ±30%）
-  verdict_under_current_criteria: PASS（v2.1：A' 浴室 +24%；B' 走廊／車內／體育館／Steinman 全部 low）→ **T-48 域外出口實測補充（2026-09-14，13 張，Sonnet 量測，待 Opus 覆核；見 `output/geometry_r2/REPORT.md`）**：bathroom_tiled ±30% 誤差複測 PASS（估 3.72m vs 實際 3.0m，+24.0%，與原始一致）；域外項 3 張中 2 張 PASS（arena_ntsu_linkou、SteinmanHall 皆 geometry_confidence=low 且 gate 訊息含 `--override-dims` 導引）、**RacquetballCourt4 一筆 FAIL**（實際最大維 12.19m >10m，但實測 geometry_confidence=medium 非 low、gate 未印 override-dims 導引——域外出口誤放）；根因（唯讀讀 `geometry.py` `apply_scope_confidence()`）：環景量程規則比對的是單一視角原始牆距，不是相加後的房間全長，本例兩側視角個別皆 ≤10m、加總後房間全長 >10m 卻不觸發，詳見 REPORT §4；car_interior_suv 不落入 v2 兩類別判準內（見 T-48 卡），僅記錄供參考 → Opus 更正（2026-09-14，回應裁決 T-48-F 第 3 點 F3）：car_interior_suv 原記「不適用」，v2 判準文字本身自相矛盾（「已知實際尺寸」列了車內 ~2m，誤差判準括號卻寫「目前只有浴室」）——改記 **inconclusive（判準文字自相矛盾）**，不是 PASS、不是 FAIL、也不是「不適用」；v3（T-55）將車內歸類 `domain_out_non_room`（與 >10m 域外同款判準）
+  verdict_under_current_criteria: PASS（v2.1：A' 浴室 +24%；B' 走廊／車內／體育館／Steinman 全部 low）→ **T-48 域外出口實測補充（2026-09-14，13 張，Sonnet 量測，待 Opus 覆核；見 `output/geometry_r2/REPORT.md`）**：bathroom_tiled ±30% 誤差複測 PASS（估 3.72m vs 實際 3.0m，+24.0%，與原始一致）；域外項 3 張中 2 張 PASS（arena_ntsu_linkou、SteinmanHall 皆 geometry_confidence=low 且 gate 訊息含 `--override-dims` 導引）、**RacquetballCourt4 一筆 FAIL**（實際最大維 12.19m >10m，但實測 geometry_confidence=medium 非 low、gate 未印 override-dims 導引——域外出口誤放）；根因（唯讀讀 `geometry.py` `apply_scope_confidence()`）：環景量程規則比對的是單一視角原始牆距，不是相加後的房間全長，本例兩側視角個別皆 ≤10m、加總後房間全長 >10m 卻不觸發，詳見 REPORT §4；car_interior_suv 不落入 v2 兩類別判準內（見 T-48 卡），僅記錄供參考 → Opus 更正（2026-09-14，回應裁決 T-48-F 第 3 點 F3）：car_interior_suv 原記「不適用」，v2 判準文字本身自相矛盾（「已知實際尺寸」列了車內 ~2m，誤差判準括號卻寫「目前只有浴室」）——改記 **inconclusive（判準文字自相矛盾）**，不是 PASS、不是 FAIL、也不是「不適用」；v3（T-55）將車內歸類 `domain_out_non_room`（與 >10m 域外同款判準）→ **T-55 v3 重驗（2026-09-15，Sonnet 量測，待 Opus 覆核；見 `output/geometry_r3/REPORT.md`）**：14 張（13 張 canonical＋補回 `corridor_hotel_carpet.png`），前置 T-54 幾何量程規則 v2 已由 Opus 驗證工程通過（`4a9206f`）。結果 **PASS——domain_out 4/4（arena_ntsu_linkou、RacquetballCourt4、SteinmanHall、corridor_hotel_carpet 全部 geometry_confidence=low 且含 --override-dims 導引）＋domain_out_non_room 1/1（car_interior_suv 同款判準 PASS）＋浴室（+24.0%，與原始一致）＋V5 情境全部成立**（RacquetballCourt4 覆寫兩面材質後 exit=3、含 override-dims 導引，複現並確認 T-54 修復 T-48 發現的域外出口誤放）。RacquetballCourt4 由 T-48 的域外誤放 FAIL 轉為 PASS，是 T-54 修復的直接結果，不是判準放寬（>10m 域外項與浴室 ±30% 條文與數字一字未改）
   criteria_changed_after_first_result: yes
-  change_record: e14873c（Fable 路線決策：改適用域不改數字，理由＝模型量程 ~20m 實證；核准＝Fable 自行裁決）；bca6b61（Steinman 實測牆距超標→預期改 low；核准＝Fable）；裁決 T-45-A（2026-09-03）：原域 FAIL 永久並列，域外出口是否誤放由 T-48 實測；裁決 T-48-F 追加（2026-09-14）：RacquetballCourt4 域外誤放 → 修正卡 T-54（`apply_scope_confidence()` 環景分支加三維檢查）；域外出口 v3 重驗＝T-55；car_interior_suv 的 v2 判定更正見上（Opus 更正，回應 F3）
+  change_record: e14873c（Fable 路線決策：改適用域不改數字，理由＝模型量程 ~20m 實證；核准＝Fable 自行裁決）；bca6b61（Steinman 實測牆距超標→預期改 low；核准＝Fable）；裁決 T-45-A（2026-09-03）：原域 FAIL 永久並列，域外出口是否誤放由 T-48 實測；裁決 T-48-F 追加（2026-09-14）：RacquetballCourt4 域外誤放 → 修正卡 T-54（`apply_scope_confidence()` 環景分支加三維檢查）；域外出口 v3 重驗＝T-55；car_interior_suv 的 v2 判定更正見上（Opus 更正，回應 F3）→ T-55（2026-09-15）：criteria T-11 v3 獨立 commit `b80a4fb`（使用者核准），只做三件事（見上）；`dataset_manifest_sha256` 追加：`6537699444507407d239b332a7b77ec9f795a887a9a93ba08f7db1bd58259522`（`output/geometry_r3/DATASET_MANIFEST.json`，14 張，§8 前四欄 commit `2048a6c`）；`reviewer` 追加：待 Opus 覆核 T-55 結果 commit
   ```
 - **前置**：T-10
 - **對應 SPEC**：F-02、F-09（尺寸覆寫）
@@ -11005,10 +11005,12 @@ EOF
   - **下一步**：**T-55 可開跑**（criteria 已鎖定 `b80a4fb`；前置「T-54 ✅（工程）」已滿足）→ Opus → T-17-R2。T-56 照舊可以平行跑。
 
 ### T-55 T-11 域外出口 v3 重驗：14 張＋V5 情境（量測卡；裁決 T-48-F 第 1／3 點執行卡；`src/` 零改動；**前置＝T-54 ✅＋使用者核准 CRITERIA_T11_v3**）
+- **狀態（Sonnet 2026-09-15）**：🔵 **待審**——14 張真實 CLI＋V5 情境全部跑完，結果 **PASS**（domain_out 4/4＋domain_out_non_room 1/1＋浴室＋V5 全部成立），
+  21 支測試全 EXIT=0、六條交付 IR MD5 全中、自我檢查全過，等 Opus 開視窗驗證。詳見下方「交接筆記」。
 - **狀態（Fable 2026-09-15）**：⬜ **criteria 已鎖定，等 T-54 ✅（工程）後可開跑**——使用者 2026-09-15 核准，`criteria: T-11 v3` 獨立 commit `b80a4fb`
   （只含 `output/geometry_r3/CRITERIA_T11_v3.md`）。
 - **狀態（開卡原文）**：⬜ 未開始（等 T-54 Opus 驗證通過＋使用者核准 `CRITERIA_T11_v3.md` 草案＋Fable 獨立 `criteria: T-11 v3 …` commit）
-- **四軸狀態**：工程：未開始｜實驗：待驗證｜產品：不適用（量測卡）｜MVP：不適用（結果併入 T-17-R2 域外安全檢查）
+- **四軸狀態**：工程：待審｜實驗：正向（domain_out 4/4＋domain_out_non_room 1/1＋浴室＋V5 全部成立；`RacquetballCourt4` 由 T-48 的 FAIL 轉 PASS 是 T-54 修復的直接結果，非判準放寬）｜產品：不適用（量測卡）｜MVP：不適用（結果併入 T-17-R2 域外安全檢查）
 - **為什麼**：T-48 硬性條件 (c)（`geometry.py` 有 diff → A 部分在 HEAD 重跑）＋裁決 T-48-F 第 3 點（車內歸類、走廊補量）。**判準 v3 只做三件事**：
   車內改歸 `domain_out_non_room`（依 T-11 原卡步驟 5「車內允許數字不準」）、資料集加回 `corridor_hotel_carpet.png`（14 張）、加 V5 情境；
   >10m 域外項與浴室 ±30% 條文與數字**一字不改**。
@@ -11041,8 +11043,8 @@ EOF
   criteria_commit: b80a4fb（criteria: T-11 v3……，2026-09-15；只含 CRITERIA_T11_v3.md 一檔；早於本卡任何結果 commit）
   criteria_locked_at: 2026-09-15（使用者核准日＝criteria commit 日）
   dataset_manifest_sha256: 6537699444507407d239b332a7b77ec9f795a887a9a93ba08f7db1bd58259522（`output/geometry_r3/DATASET_MANIFEST.json`，14 張，git_head_at_manifest_time=`4a9206f`）
-  implementation_commit:
-  result_commit:
+  implementation_commit: 2048a6c（T-55: §8 前四欄（開跑前）；scripts/t48_geometry_material_r2.py 新增 --criteria v3 支援，只加函式不改任何既有 v2 函式）
+  result_commit: 〈本次收工 commit，見下一個 docs 回填〉
   reviewer:
   verdict_under_original_criteria: 〈v3 首跑結果，逐張〉
   verdict_under_current_criteria: 〈同上；判準未變〉
@@ -11051,7 +11053,103 @@ EOF
   ```
 - **Opus 驗證重點（四軸輸出）**：鐵則 14；紅旗：`--criteria v2` 輸出與 T-48 交付版不同；紅旗：任何 `src/` diff；紅旗：14 張少任何一張；
   紅旗：域外誤放被寫成「預期行為」；紅旗：V5 情境未跑；紅旗：手打數字。
-- **交接筆記**：
+- **交接筆記（Sonnet 執行，2026-09-15）**：
+
+  **前置**：§8 前四欄先行 commit `2048a6c`（新增 `--criteria v3` 支援＋`output/geometry_r3/DATASET_MANIFEST.json`，
+  `dataset_manifest_sha256`＝`653769944450…`，14 張），早於下方任何結果 commit（鐵則 14）；`output/geometry_r3/` 在此
+  commit 前只有 `CRITERIA_T11_v3.md`（Fable 提交），無任何預跑產物。
+
+  **1. 範圍與紅線**：`src/`／`data/` 全程零 diff（`git diff --stat -- src data` 為空）；`scripts/` 只改
+  `t48_geometry_material_r2.py`，且只用「新增函式＋一個 `--criteria` 分派參數」的方式擴充——`_build_result`／
+  `run_part_a`／`_write_part_a_report`／`cmd_part_a`／`cmd_part_a_report_only`／`cmd_manifest`／Part B（`run_part_b`
+  以下所有函式）**一行都沒有改**，`git diff 4a9206f HEAD -- scripts/t48_geometry_material_r2.py` 的 6 個 hunk 全部落在
+  Part B 分隔註解（`# Part B —`，行 512）之前或檔案最尾端的 `if __name__` 分派區塊；`--criteria` 不加旗標時呼叫的仍是
+  原封不動的 `cmd_manifest()`／`cmd_part_a()`，等於「`--criteria v2` 行為逐位元不變」由程式結構保證，不需另外重跑
+  v2 比對（重跑 `manifest --criteria v2` 會覆寫唯讀的 `output/geometry_r2/DATASET_MANIFEST.json`，本卡自我檢查時
+  誤跑過一次、已 `git checkout` 復原，過程記在下方「清理」）。`output/geometry_r2/` 全程唯讀：
+  `git status --porcelain -- output/geometry_r2` 為空。
+
+  **2. 14 張清單與分類**：`V3_ITEMS` = `t36_clip_accuracy.GATE_ITEMS`（13 張，唯讀引用）＋
+  `assets/photos/corridor_hotel_carpet.png`；程式產生 `output/geometry_r3/DATASET_MANIFEST.json`：
+  ```
+  photo_count 14
+  car_interior_suv     → domain_out_non_room（actual_max_dim_m=2.0）
+  arena_ntsu_linkou    → domain_out（150.0）
+  RacquetballCourt4    → domain_out（12.19）
+  SteinmanHall         → domain_out（12.2）
+  corridor_hotel_carpet→ domain_out（30.0，新增）
+  bathroom_tiled       → domain_in_with_ground_truth（不變）
+  其餘 8 張             → unknown_no_ground_truth（不變）
+  ```
+  與判準 v3「只做三件事」逐字相符：>10m 域外項（arena/RacquetballCourt4/SteinmanHall）與浴室 ±30% 判準的
+  類別、公式、文字**一字未改**，只有 `car_interior_suv` 改類別、`corridor_hotel_carpet` 是新加項。
+
+  **3. `partA --criteria v3` 實跑（14 張×2 次真實 CLI＋V5 情境，共 29 次 CLI 呼叫）**：
+  ```
+  bathroom_tiled            geometry_confidence=medium  materials_confidence=low     v3_category=domain_in_with_ground_truth  verdict=PASS（進深 3.72m vs 實際 3.0m，+24.0%）
+  bedroom_ai_generated      geometry_confidence=medium  materials_confidence=low     v3_category=unknown_no_ground_truth      verdict=不適用
+  stairwell_tiled           geometry_confidence=medium  materials_confidence=low     v3_category=unknown_no_ground_truth      verdict=不適用
+  arena_ntsu_linkou         geometry_confidence=low     materials_confidence=low     v3_category=domain_out                   verdict=PASS
+  car_interior_suv          geometry_confidence=low     materials_confidence=low     v3_category=domain_out_non_room          verdict=PASS
+  CathedralRoom             geometry_confidence=low     materials_confidence=low     v3_category=unknown_no_ground_truth      verdict=不適用
+  DivorceBeach              geometry_confidence=low     materials_confidence=medium  v3_category=unknown_no_ground_truth      verdict=不適用
+  site_photo_department_store geometry_confidence=medium materials_confidence=low   v3_category=unknown_no_ground_truth      verdict=不適用
+  site_photo_gym            geometry_confidence=low     materials_confidence=low     v3_category=unknown_no_ground_truth      verdict=不適用
+  site_photo_restaurant     geometry_confidence=low     materials_confidence=low     v3_category=unknown_no_ground_truth      verdict=不適用
+  RacquetballCourt4         geometry_confidence=low     materials_confidence=low     v3_category=domain_out                   verdict=PASS（T-54 修復後 geometry_confidence 由 medium→low）
+  SteinmanHall              geometry_confidence=low     materials_confidence=low     v3_category=domain_out                   verdict=PASS
+  TunnelToHell              geometry_confidence=low     materials_confidence=low     v3_category=unknown_no_ground_truth      verdict=不適用
+  corridor_hotel_carpet     geometry_confidence=low     materials_confidence=low     v3_category=domain_out                   verdict=PASS（估 12.79m，與 T-11 原卡首次量測一致）
+  V5 情境（RacquetballCourt4 override-material north=gypsum_board/ceiling=wood_panel）：exit=3，override-dims 導引=有，verdict=PASS
+  ```
+  §0 結論：**PASS——domain_out 4/4＋domain_out_non_room 1/1＋浴室＋V5 全部成立**（FAIL 筆數 = 0）。完整表格與逐張
+  細節見 `output/geometry_r3/REPORT.md`（程式產生，沒有手打數字）。
+
+  **4. 與 T-48（v2）結果對照**：`RacquetballCourt4` 由 T-48 的域外誤放 **FAIL**（geometry_confidence=medium，gate 未印
+  override-dims 導引）轉為本卡 **PASS**（geometry_confidence=low，導引=有），是 T-54 修復 `apply_scope_confidence()`
+  環景分支的直接結果——>10m 域外項的判準公式、門檻數字本身在 T-55 全程一字未改，變的只是程式輸出。`arena_ntsu_linkou`／
+  `SteinmanHall`／浴室三張的判定與 T-48 一致（原本就 PASS）。`car_interior_suv` 從 T-48 記錄的 inconclusive 改採 v3
+  的 `domain_out_non_room` 分類，同款判準下也是 PASS。V5 情境（覆寫兩面材質後仍放行）由 T-48 Opus 實測 exit=0，
+  本卡在真實 CLI 端到端流程中複測 exit=3，是對 T-54 修復的獨立二次確認（不是重複 T-54 卡的驗證，這裡走的是完整
+  `image_reverb` CLI，T-54 只驗證 `apply_scope_confidence()` 這一層與一次 CLI 直呼）。
+
+  **5. 完整測試套件與六條交付 IR MD5**：`scripts/test_*.py` 21 支逐支重跑，**failed=0**。T-14 兩條由
+  `test_ir_synth.py`【6】內建比對確認（`f3a763be…`／`f24353b5…`，與交付版相同）；T-20／T-21 四條實跑重生：
+  `2adbaa75…`（浴室）／`2dd19b6e…`（大教堂）／`9a94ffdf…`（neighbor_voices）／`a1c21bcc…`（stadium_corridor），
+  **全中，逐位元與歷史記錄相同**。
+
+  **自我檢查（卡片列出的指令，逐條實測）**：
+  ```
+  git diff --stat -- src            （空）
+  git diff --stat -- data           （空）
+  git status --porcelain -- output/geometry_r2   （空，唯讀確認）
+  git diff 4a9206f HEAD -- scripts/t48_geometry_material_r2.py 的 6 個 hunk 全部在 Part B 分隔線（行 512）之前或
+      檔尾 __main__ 分派區塊，Part B 本體（run_part_b 以下）零 diff
+  ```
+  全部符合。`output/geometry_r3/` 只新增 `DATASET_MANIFEST.json`（`git add -f`，`.gitignore` 排除 `output/**` 但
+  允許 `*.md`／目錄）與 `REPORT.md`（`*.md` 白名單內，不需 `-f`）；`output/geometry_r3/runs/`（14 張＋V5 的原始
+  CLI log）依既有慣例 gitignored，不進版控。
+
+  **鐵則 15 清理（本輪自建、逐條列出）**：
+  1. 自我檢查階段誤跑了一次 `python scripts/t48_geometry_material_r2.py manifest --criteria v2`，覆寫了唯讀的
+     `output/geometry_r2/DATASET_MANIFEST.json`（只有 `generated_at`／`git_head_at_manifest_time` 兩個時間戳欄位
+     與 `car_interior_suv` 的 note 文字因先前 KNOWN_DIMENSIONS 已被 T-48 修正輪更新而不同，非本卡改動）→
+     已立即 `git checkout -- output/geometry_r2/DATASET_MANIFEST.json` 復原，`git status --porcelain -- output/geometry_r2`
+     現為空；
+  2. 照片 CLI 本輪共呼叫 29 次（14 張×2＋V5 1 次）＋4 條交付 IR 重生（各 1 次），依 T-42 archive-first 機制自動在
+     `output/.archive/<stem>/` 建備份條目（搬移既有 `output/preprocess/<stem>`／`output/<stem>`，非刪除）：本輪
+     共新增 **25 個**條目（`find output/.archive -mindepth 2 -maxdepth 2 -type d -newer scripts/t48_geometry_material_r2.py`
+     計數；`bathroom_tiled`／`bedroom_ai_generated`／`arena_ntsu_linkou`／`car_interior_suv`／`corridor_hotel_carpet`／
+     `site_photo_department_store`／`site_photo_gym`／`site_photo_restaurant`／`stairwell_tiled`／`TunnelToHell` 各 2 個，
+     `CathedralRoom` 2 個，`DivorceBeach`／`RacquetballCourt4`／`SteinmanHall` 各 1 個）——一律**不刪、保留**（鐵則 15：
+     `.archive` 一律不手動刪）；
+  3. `output/text_bathroom`／`text_church`／`neighbor_voices`／`stadium_corridor` 為本輪開始前既存的 gitignored
+     目錄，本輪只覆寫其中 `ir_mono.wav` 等檔案且 MD5 覆寫前後相同，不算新增路徑，不刪；
+  4. 保留（非清理項）：`output/geometry_r3/`（本卡要求的新目錄，交付物，不刪）；本輪未使用 `git worktree`
+     （本卡 `src/` 零改動，不需要對照舊碼）。
+
+  **下一步**：開 Opus 新視窗依「Opus 驗證重點」逐項複驗（對象＝本次收工 commit）→ 通過後 T-11 §8 結案，
+  T-17-R2 前置「T-54 ✅＋T-55 結案」全部滿足。
 
 ### T-56 T-12 v2-b 量測方法 v3：seed 鎖定＋10 次中位數（量測卡；裁決 T-48-F 第 2／4 點執行卡；`src/` 零改動；停滯期填充卡；**前置＝使用者核准 CRITERIA_T12_v3**）
 - **狀態（Fable 2026-09-15）**：⬜ **可開跑（停滯期填充卡，不進關鍵路徑）**——使用者 2026-09-15 核准並**刪除「方法有效性守門」條款**，
