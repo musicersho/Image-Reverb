@@ -10744,7 +10744,7 @@ EOF
   criteria_version: geometry scope v2（裁決 T-48-F 第 1 點；規則原文＝output/geometry_scope/CRITERIA_GEOMETRY_SCOPE_v2.md）
   criteria_commit: 02284d9（criteria: geometry scope v2……，2026-09-15；只含 CRITERIA_GEOMETRY_SCOPE_v2.md 一檔；早於本卡任何結果 commit）
   criteria_locked_at: 2026-09-15（使用者核准日＝criteria commit 日）
-  dataset_manifest_sha256: 〈執行者開跑前重算 output/gate_calibration/DATASET_MANIFEST.json，必須＝c15d0a14…2b01a7〉
+  dataset_manifest_sha256: c15d0a145f46ea0c6b4969fd995b5f2d543a13fb678f15671e792ae3df2b01a7（開跑前 2026-09-15 重算，與鎖定值相符，未卡關）
   implementation_commit:
   result_commit:
   reviewer:
