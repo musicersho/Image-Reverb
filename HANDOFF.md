@@ -1,5 +1,33 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔵 2026-09-15 Sonnet：T-56 完成——**現在該做的是開 Opus 新視窗複驗**，結果 commit 見本次收工 commit（實作 commit `3b3a723`）
+>
+> §8 前四欄由 Fable 於 `2dabea56` 早於本卡任何 commit 填妥（鐵則 14 已滿足，執行者未另建空 commit）。步驟 0 seed 有效性
+> 自檢先於實作完成後手動驗證通過（同 seed 1001 兩次生成 per-wall，WAV sha256 相同 `886e5a75e4f6…`；seed 1001 vs 1002
+> 不同 `886e5a75e4f6…`/`43563e08a58c…`），未觸發 🔴 卡關，才繼續。
+>
+> 只改兩個檔案：`scripts/gen_ir_manual.py` 新增 `--seed N`（`build_room()` 前呼叫 `pra.random.seed(N)`＋
+> `pra.libroom.set_rng_seed(N)`，不帶時完全不呼叫任何 seed 函式）；`scripts/t48_geometry_material_r2.py` 只新增函式
+> （`cmd_part_b_v3` 等），partB 的 `--criteria v3` 分派，`--criteria v2`（預設）呼叫原封不動的 `cmd_part_b()`，v2 逐位元
+> 不變、Part B 既有函式一行未改。
+>
+> 3 條件（per-wall／六面 gypsum／六面 carpet）× 10 個事前鎖定 seed（1001–1010）＝30 條 IR **首跑完成，未重跑**
+> （CRITERIA_T12_v3.md `first_run_is_final: yes`）。結果：**v2-b FAIL**——diff 子判準 median(per-wall)=0.9255s vs
+> median(六面 gypsum)=1.1824s，差異 **−21.7%**，超出 ±20%；ratio 子判準 median(六面 carpet)=3.9010s /
+> median(per-wall)＝**4.22 倍**，達 ≥3 倍 PASS。CRITERIA_T12_v3.md 落地版無守門條款，本次未套用任何守門邏輯。與 T-48
+> v2-b 首跑（−21.1% FAIL）方向一致——換成可複核的鎖定 seed 方法後，diff 子判準的 FAIL 傾向被**確認**，不是量測噪聲造成
+> 的偶然結果。v2-a PASS（同義反覆，裁決 T-48-F F4，不計入）；v1 字面條件未達（只記錄不當門檻，裁決 B 已證受鄰帶耦合
+> 污染）。
+>
+> 21 支測試全 `EXIT=0`；六條交付 IR MD5 全中（T-14 兩條由 `test_ir_synth.py`【6】內建，T-20／T-21 四條實跑重生
+> `2adbaa75…`／`2dd19b6e…`／`9a94ffdf…`／`a1c21bcc…` 逐位元相同）；`src`／`data`／`ir_metrics.py`／`output/material_r2/`
+> 全程零 diff；30 條 WAV／log 存 `output/material_r3/runs/`（gitignored）。T-12 §8 已同步追加（只追加，未刪原文）。
+>
+> **下一步**：開 Opus 新視窗，依 T-56 卡「Opus 驗證重點」逐項複驗（對象＝`3b3a723`＋本次收工結果 commit）→ 通過後
+> T-56 結案（本卡不是 T-17-R2 前置，不影響其排程；T-17-R2 仍在等使用者三項決定）。四軸：工程：待審｜實驗：負向
+> （v2-b FAIL，確認 T-48 v2-b 首跑方向；ratio 子判準 PASS）｜產品：不適用（量測卡）｜MVP：不適用。詳見 TASKS.md T-56
+> 卡「交接筆記」與 DEV_LOG `2026-09-15 (149)`。
+
 > ## 🔮 2026-09-15 Fable：T-17-R2 前置總檢核——**還不能開跑，卡在使用者三項決定**；**現在該做的是：開 Sonnet 視窗執行 T-56**（填充卡），同時使用者回覆三件事
 >
 > - AI 端前置全部滿足（T-42／T-43／T-46／T-47-A／T-48／T-52／T-54／T-55 ✅；T-44-R1 未跑→預設 role_aware=False 合法路徑）。

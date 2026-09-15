@@ -1,5 +1,17 @@
 # Dev Log
 
+## 2026-09-15 (149)
+
+- **T-56 T-12 v2-b 量測方法 v3：seed 鎖定＋10 次中位數——Sonnet 完成，待 Opus 驗證**。criteria `4a0b23e`（Fable 已於
+  `2dabea56` 填妥 §8 前四欄，早於本卡任何 commit，鐵則 14 已滿足）→ 實作 `3b3a723`（`gen_ir_manual.py` 新增
+  `--seed N`；`t48_geometry_material_r2.py` 新增 partB 的 `--criteria v3`，只新增函式，v2 逐位元不變）。
+- 步驟 0 seed 有效性自檢通過（同 seed 1001 兩次 sha256 相同、seed 1001 vs 1002 不同），未觸發 🔴 卡關，才繼續。
+- 3 條件 × 10 seed（1001–1010）＝30 條 IR 首跑（唯一一次，禁止重跑）：v2-b **FAIL**（diff 子判準
+  median(per-wall)=0.9255s vs median(gypsum)=1.1824s，−21.7% 超出 ±20%；ratio 子判準 4.22 倍達 ≥3 倍 PASS）；
+  與 T-48 v2-b 首跑（−21.1% FAIL）方向一致，確認而非推翻。v2-a PASS（同義反覆，不計）；v1 未達（只記錄）。
+- 21 支測試 EXIT=0；六條交付 IR MD5 全中；`src`／`data`／`ir_metrics.py`／`output/material_r2/` 全程零 diff。
+  下一步：開 Opus 新視窗驗證（對象＝`3b3a723`＋本次結果 commit）。T-12 §8 已同步追加（只追加，未刪原文）。
+
 ## 2026-09-15 (148)
 
 - **🔮 Fable 複評 T-17-R2-pre**：T-55 ✅ 後逐項核對 T-17-R2 前置——AI 端全部滿足；**卡在三件使用者決定**：T-04 來源網址／維持未結案、
