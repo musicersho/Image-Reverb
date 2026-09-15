@@ -10314,6 +10314,16 @@ EOF
 （Opus 複核時只把 `OUT` 改成 scratchpad 路徑；`OUT` 路徑不進 manifest 內容，sha256 不受影響。）
 
 ### T-52 gate criteria v2：role_aware 收窄候選集的 clip 面不計入放行（Sonnet 執行卡；裁決 T-47-A 選項乙執行卡；**前置＝使用者核准**）
+- **狀態（Opus 第三輪複核 4(ii)，2026-09-15）**：✅ **工程已驗證**——受審對象＝§7 更正 commit `1b36c27`（使用者核准 2026-09-14），審查時 HEAD `c2a778e`。
+  範圍依「🔮 步驟 4(ii) 更正」末段三項，全部程式化實測成立：① 更正版 4(ii) 對已提交 `output/gate_calibration_v2/tables.md`（＝`6ac3ef3` 版逐位元）
+  成立——role_aware (materials, overall, gate) 13/13＝T-47 表 8 role_aware 段模擬值、role_aware geometry 13/13＝T-47 表 1（`5d1569c` 版逐位元），
+  「推論」段三句亦逐一成立；② `CRITERIA_GATE_v2.md` 與 `81bc4cd` 逐位元相同、`81bc4cd` 後零 commit；③ `1b36c27` 只含 `TASKS.md`、numstat `42 0`（零刪除），
+  三個 hunk 全在 T-52 卡內、卡外零變動，且 `1b36c27` 後 T-52 卡零變動。性質獨立重判（落地文字比首輪第 9 點建議多 geometry 欄與推論段，兩者皆較嚴）：
+  屬「對齊事前鎖定判準」，不開 gate v3、`criteria_changed_after_first_result: no` 成立；核准者＝使用者（§7.4），非 Fable 自批。
+  原 4(ii) 字面仍不成立（對照組 False），依 §7.5 維持 inconclusive、不改判 PASS。實作本體沿用首輪第 1～8 點，本輪未重跑。**下一步＝T-17-R2 前置「T-52 結案」滿足**（其餘前置見 T-17-R2 卡）。
+- **四軸狀態（Opus 第三輪複核，2026-09-15）**：工程：已驗證｜實驗：正向（**僅限**事前鎖定的 `expected_on_13`＋更正版 4(ii)；R1b 由同一批 13 張表 8 推得、無 held-out，
+  **不構成校準、不得解讀為 role_aware 已安全**——`not_a_calibration`／T-53）｜產品：feature flag（R1b 只存在於 `--role-aware` 🧪 內、`ROLE_AWARE_MATERIALS_DEFAULT=False`
+  未動；依裁決 T-47-A）｜MVP：不適用（沿用 T-17 FAIL；MVP 由 T-17-R2 判）
 - **狀態（Fable §7 更正落地，2026-09-14）**：🟠 **待 Opus 複核 4(ii)（第三輪）**——步驟 4(ii) 已依 WORKFLOW §7 以獨立 commit（訊息以
   `criteria: T-52 步驟 4(ii) 更正` 開頭，只含本項）更正，**核准者＝使用者，2026-09-14（Fable 視窗對話中對草案全文回「核准」）**，全文見下方
   「🔮 步驟 4(ii) 更正」。本 commit 即 Opus 第二輪（`99c17e7`）指出缺少的兩件事：獨立 `criteria:` commit＋核准紀錄；第二輪已對同一寫法
@@ -10461,6 +10471,7 @@ EOF
   criteria_changed_after_first_result: no（改了就是新卡）
   change_record: 無
   change_record（追加 2026-09-14，Fable §7）: 步驟 4(ii) 更正——非門檻變更（CRITERIA_GATE_v2.md／criteria_version gate v2 未動，criteria_changed_after_first_result 維持 no）；commit＝訊息「criteria: T-52 步驟 4(ii) 更正」者（hash 由 Opus 複核時回填）；理由＝原 4(ii) 與鎖定判準（R1b＋「13 張結果與表 8 相同」）矛盾、字面不可達（開卡撰寫錯誤：漏看表 8 DivorceBeach 列）；核准者＝使用者（2026-09-14）
+  verdict_under_current_criteria: Opus 5 第三輪複核 2026-09-15（HEAD c2a778e）——判準本體未變（CRITERIA_GATE_v2.md＝81bc4cd 逐位元）；步驟 4(ii) 更正 commit＝1b36c27（回填上行 change_record 的 hash；只含 TASKS.md、numstat 42/0、全在本卡內；核准者＝使用者 2026-09-14）；更正版 4(ii) 對 v2 tables.md 程式比對成立（role_aware 三欄 13/13＝T-47 表 8 模擬、geometry 13/13＝T-47 表 1、gate 僅 bathroom_tiled pass→BLOCK、materials 變化恰 bathroom_tiled／DivorceBeach）→ 工程：已驗證；原 4(ii) 維持 inconclusive；前兩行 verdict 保留不覆寫
   ```
 - **CRITERIA_GATE_v2.md 草案（已於 `81bc4cd` 逐字落地，以該檔為準；下列草案僅供對照）**：
   ```text
@@ -10662,6 +10673,36 @@ EOF
      `python scripts/test_confidence_axes.py` **EXIT=0**，輸出 0 個 ❌，【C】(a) 兩條、(b)(c)(d) 全 ✅，末行「✅ T-25 confidence 三軸測試全部通過」。
   4. **判定**：程序前提（§7.1／§7.4：獨立 commit＋核准者）未滿足，受審對象不存在 → **不得轉「已驗證」**，維持工程退回；本輪不產生新的阻擋項，
      實作與結果不需任何改動。清理：本輪只在本視窗 scratchpad 建 `check4ii.py`／`c_old`／`c_new`／`tca.log`／`apply.py`（另誤建一個 `/tmp/a52` 暫存檔、同指令內已刪），未碰 `output/`、未建 worktree、未刪任何路徑（鐵則 15）。
+
+- **✅ Opus 第三輪複核紀錄（2026-09-15；只審不改碼；範圍＝「🔮 步驟 4(ii) 更正」末段三項；HEAD `c2a778e`）**：
+
+  0. **工作樹狀態**：`git status --porcelain` 有 `M src/image_reverb/geometry.py`、`?? scripts/test_geometry_scope.py`——屬另一視窗進行中的 T-54，與本項無關，
+     本輪未讀取其結果、未碰、未納入 commit。已提交樹 `git diff 6ac3ef3 HEAD -- src data` 為空。
+  1. **程序（§7.1／§7.3／§7.4）✅**：`81bc4cd`→`1b36c27`→HEAD 祖先鏈成立；`git show --numstat 1b36c27` 只有 `42 0 TASKS.md`；三個 hunk（`@@ -10316,0`、`@@ -10401,0`、`@@ -10421,0`）
+     皆為純插入；以程式抽 `### T-52`～`### T-53` 以外全文，`1b36c27^` 與 `1b36c27` `diff` 為空；卡內舊行刪除數 0；`1b36c27` 版卡片與 HEAD 版 `diff` 為空（落地後未再被動過）。
+     commit 訊息寫明核准者＝使用者 2026-09-14，本輪指示亦由使用者重申；起草 Fable、核准使用者，非自改自批。原 4(ii)、首輪／第二輪 🟠 verdict、§8 原兩行 verdict 皆在。
+  2. **CRITERIA 未動 ✅**：`git log -- output/gate_calibration/CRITERIA_GATE_v2.md` 恰一筆 `81bc4cd`；`git show 81bc4cd:… | cmp - 現檔` 相同；`git status --porcelain -- output/gate_calibration output/gate_calibration_v2` 0 行。
+  3. **更正版 4(ii) 程式比對 ✅**（scratchpad `check4ii_r3.py`，解析 Markdown 表格欄位、以欄名取值、先斷言 13 列且照片順序三表一致，非肉眼）：
+     ```
+     v1 == 5d1569c: True
+     v2 == 6ac3ef3: True
+     headers v1==v2 表1: True ; 表8 hdr: ['照片', '實際 materials_confidence', '模擬 materials_confidence', '實際 gate', '模擬 overall', '模擬 gate']
+     photo order same: True
+     (ii-1) role_aware (mat,overall,gate) 13/13 == 表8 role_aware 模擬: True []
+     (ii-2) role_aware geometry 13/13 == T-47 表1: True []
+     推論 gate 變化: [('bathroom_tiled', 'pass', 'BLOCK')] 僅 bathroom_tiled pass→BLOCK: True
+     推論 materials 變化: [('bathroom_tiled', 'medium', 'low'), ('DivorceBeach', 'medium', 'low')] 恰為兩列 medium→low: True
+     DivorceBeach overall/gate 前後: ('low', 'BLOCK', 'low', 'BLOCK') unchanged low/BLOCK: True
+     其餘三欄與表1相同的列數: 11 (期望 11) {'bathroom_tiled', 'DivorceBeach'}
+     (i 參考) default 四欄 13/13 相同: True
+     原 4(ii) 字面成立（對照，應為 False）: False
+     ```
+     表 8 解析限定在「## 表 8」之後的「### `role_aware` 模式」段（避開表 7 同名小節）；模擬 materials 取全形「（」前。對照組（原 4(ii)）為 False，證明比對非空成立。
+  4. **性質重判（落地文字 vs 首輪第 9 點）**：落地版多了「geometry 欄 13 列＝T-47 表 1」與「推論」段，均為追加約束且實測成立，無任何一格比原文寬；
+     每一格的期望值都來自 `5d1569c`（10:27）表 8／表 1 與 `81bc4cd`（14:07）CRITERIA「13 張結果與表 8 相同」，皆早於實作／結果 `6ac3ef3`（15:00）。
+     判定＝對齊事前鎖定判準，§7.1「開新版號＋重跑」不適用；且首輪 `--fresh` 重跑已證結果逐字重現，重跑亦不會改變任何格。
+  5. **本輪未做（沿用首輪第 1～8 點，依卡片範圍不重跑）**：推論重跑、20 支測試、六條 MD5、default stderr diff。首輪第 10 點非阻擋觀察 (a)～(d) 仍待 Fable 排期，不影響本判定。
+  6. **清理（鐵則 15）**：本輪只在本視窗 scratchpad 建 `card_*.txt`／`out_*.txt`／`check4ii_r3.py`／`apply_r3.py`；未碰 `output/`、未建 worktree、未刪任何路徑。
 
 ### T-53 role_aware gate 校準量測（保留號；裁決 T-47-A 第 5 節；**未開卡——開卡條件＝使用者提供獨立校準集**）
 - **狀態**：⏸ 保留號（Fable 2026-09-14）——沒有校準集就不開跑；不在關鍵路徑。

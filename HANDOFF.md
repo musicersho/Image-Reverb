@@ -1,5 +1,10 @@
 # 交接文件 — 給下一個視窗
 
+> ## ✅ 2026-09-15 Opus：T-52 第三輪複核 4(ii)——**工程已驗證**——**現在該做的是：照舊跑 T-54（另一視窗進行中）→ Opus → T-55 → Opus → T-17-R2**；T-52 不再阻擋 T-17-R2
+>
+> - 受審 `1b36c27`：更正版 4(ii) 程式比對成立（role_aware 三欄 13/13＝表 8 模擬、geometry 13/13＝表 1）；CRITERIA_GATE_v2.md 未動；commit 只追加、全在卡內。
+> - 四軸：工程：已驗證｜實驗：正向（僅限 expected_on_13，非校準）｜產品：feature flag｜MVP：不適用。全文見 T-52 卡「Opus 第三輪複核紀錄」、DEV_LOG (143)。
+
 > ## 🔮 2026-09-15 Fable：三份 criteria 已由使用者核准並落地——**現在該做的是：開 Sonnet 視窗執行 T-54**（量程規則 v2；貼 WORKFLOW §2.1 Prompt）
 >
 > - 使用者回「T-54 核准／T-55 核准／T-56 守門條款 刪」→ 三個獨立 `criteria:` commit：`02284d9`（`output/geometry_scope/CRITERIA_GEOMETRY_SCOPE_v2.md`，

@@ -1,5 +1,13 @@
 # Dev Log
 
+## 2026-09-15 (143)
+
+- **T-52 Opus 第三輪複核 4(ii)——✅ 工程已驗證**。受審＝§7 更正 commit `1b36c27`（使用者核准 2026-09-14），HEAD `c2a778e`。
+- 三項實測：更正版 4(ii) 對 `output/gate_calibration_v2/tables.md` 程式比對成立（role_aware 三欄 13/13＝T-47 表 8 模擬、geometry 13/13＝表 1、推論段三句成立；原 4(ii) 對照仍 False）；
+  `CRITERIA_GATE_v2.md` 與 `81bc4cd` 逐位元相同；`1b36c27` 只含 TASKS.md、numstat 42/0、全在 T-52 卡內且落地後未再動。性質＝對齊事前鎖定判準，不開 gate v3。
+- 四軸：工程：已驗證｜實驗：正向（僅限 expected_on_13；非校準）｜產品：feature flag｜MVP：不適用。§8 追加 verdict_under_current_criteria（回填 `1b36c27`），前兩行保留。
+- **下一步**：T-17-R2 前置「T-52 結案」滿足；關鍵路徑照舊 T-54（進行中）→ Opus → T-55 → Opus → T-17-R2。工作樹中 T-54 未提交檔（geometry.py、test_geometry_scope.py）本輪未碰、未納入 commit。
+
 ## 2026-09-15 (142)
 
 - **使用者核准三份 criteria（T-54 核准／T-55 核准／T-56 守門條款刪）→ Fable 提交三個獨立 `criteria:` commit**：`02284d9`
