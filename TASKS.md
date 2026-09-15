@@ -581,12 +581,12 @@
   criteria_version: v1（原卡步驟 5：一般室內〔浴室、走廊近端〕±30%）→ v2（SPEC v0.3：適用域 ≤10m，±30% 數字不動）→ v2.1（Steinman 對照組預期由 medium 改 low，規則不動）
   criteria_commit: v1＝T-08 細化（2026-08-16）；v2＝e14873c（2026-08-25）；v2.1＝bca6b61（2026-08-27）
   criteria_locked_at: v1 早於首次結果（fc688cd，2026-08-24）；v2／v2.1 皆晚於首次結果
-  dataset_manifest_sha256: 未建立（9 張照片＋已知尺寸 4 場地；T-48 補建並回填）→ T-48（2026-09-14）：b2f994ccf21534ec49c0e915b92191b8976e1e374d7dee50d6841895bbe1b66e（`output/geometry_r2/DATASET_MANIFEST.json`，13 張照片＝現行 canonical 清單 t36_clip_accuracy.GATE_ITEMS，非原始 9 張——corridor_hotel_carpet 等 4 張已於 T-36 起不在 canonical 清單內，13 張已知實際尺寸的 5 張見 DATASET_MANIFEST.json）
-  implementation_commit: fc688cd（與 T-12 混提，WORKFLOW §4 違規已由 Opus 記錄）→ 40bfb2f（決策補丁）→ T-48：469abef（Part A 量測腳本）→ Opus 更正（2026-09-14，回應驗證紀錄 R6）：T-48 Part A 最終程式其實是 714703d（469abef 只是初版；__main__ 分派修正在 e1183b9，皆不影響 REPORT 內容本身）（第二修正輪澄清，Sonnet 2026-09-14，回應 N2：本行標題「Opus 更正」是沿用 Opus 修正輪指示的既定寫法，實際文字由 Sonnet 依 Opus 驗證紀錄 R6 指示代筆填入，非 Opus 本人書寫——見 T-12 §8 對應行已註明「修正輪 Sonnet 執行」，本行補註同義）
-  result_commit: fc688cd（首次評測：走廊 −57%）→ 40bfb2f（補丁後 A'/B'）→ T-48：714703d（`output/geometry_r2/REPORT.md`）→ Opus 更正（2026-09-14，回應驗證紀錄 R6）：`output/geometry_r2/REPORT.md` 首次進版控其實是 012a07f（714703d 只改了 Part A 腳本的 `__main__` 分派，尚未含 REPORT.md 本身）（第二修正輪澄清，Sonnet 2026-09-14，回應 N2：同上，本行「Opus 更正」文字由 Sonnet 依驗證紀錄 R6 指示代筆，非 Opus 本人書寫）
-  reviewer: Opus（2026-08-27，8531356）→ T-48 域外項補充覆核：Opus 5（2026-09-14，T-48 第二修正輪工程已驗證，HEAD `92bfd63`；verdict 補充行內「待 Opus 覆核」即此）
+  dataset_manifest_sha256: 未建立（9 張照片＋已知尺寸 4 場地；T-48 補建並回填）→ T-48（2026-09-14）：b2f994ccf21534ec49c0e915b92191b8976e1e374d7dee50d6841895bbe1b66e（`output/geometry_r2/DATASET_MANIFEST.json`，13 張照片＝現行 canonical 清單 t36_clip_accuracy.GATE_ITEMS，非原始 9 張——corridor_hotel_carpet 等 4 張已於 T-36 起不在 canonical 清單內，13 張已知實際尺寸的 5 張見 DATASET_MANIFEST.json） → T-55 v3（2026-09-15；Opus 覆核時行內追加，原 T-55 回填誤放在 change_record 行）：`6537699444507407d239b332a7b77ec9f795a887a9a93ba08f7db1bd58259522`（`output/geometry_r3/DATASET_MANIFEST.json`，14 張；Opus 以 build_manifest_v3() 重算去時間戳後與提交版相同）
+  implementation_commit: fc688cd（與 T-12 混提，WORKFLOW §4 違規已由 Opus 記錄）→ 40bfb2f（決策補丁）→ T-48：469abef（Part A 量測腳本）→ Opus 更正（2026-09-14，回應驗證紀錄 R6）：T-48 Part A 最終程式其實是 714703d（469abef 只是初版；__main__ 分派修正在 e1183b9，皆不影響 REPORT 內容本身）（第二修正輪澄清，Sonnet 2026-09-14，回應 N2：本行標題「Opus 更正」是沿用 Opus 修正輪指示的既定寫法，實際文字由 Sonnet 依 Opus 驗證紀錄 R6 指示代筆填入，非 Opus 本人書寫——見 T-12 §8 對應行已註明「修正輪 Sonnet 執行」，本行補註同義） → T-55 v3：`2048a6c`（`t48_geometry_material_r2.py` 新增 `--criteria v3`；與 §8 前四欄同 commit，早於結果）
+  result_commit: fc688cd（首次評測：走廊 −57%）→ 40bfb2f（補丁後 A'/B'）→ T-48：714703d（`output/geometry_r2/REPORT.md`）→ Opus 更正（2026-09-14，回應驗證紀錄 R6）：`output/geometry_r2/REPORT.md` 首次進版控其實是 012a07f（714703d 只改了 Part A 腳本的 `__main__` 分派，尚未含 REPORT.md 本身）（第二修正輪澄清，Sonnet 2026-09-14，回應 N2：同上，本行「Opus 更正」文字由 Sonnet 依驗證紀錄 R6 指示代筆，非 Opus 本人書寫） → T-55 v3：`67fa822`（`output/geometry_r3/REPORT.md`）
+  reviewer: Opus（2026-08-27，8531356）→ T-48 域外項補充覆核：Opus 5（2026-09-14，T-48 第二修正輪工程已驗證，HEAD `92bfd63`；verdict 補充行內「待 Opus 覆核」即此） → T-55 v3 覆核：Opus 5（2026-09-15，HEAD `bf46578`，對象 `2048a6c`／`67fa822`／`bf46578`；工程已驗證，逐項見 T-55 卡「✅ Opus 驗證紀錄」）
   verdict_under_original_criteria: FAIL（判準 A：走廊 −57% 未達 ±30%）
-  verdict_under_current_criteria: PASS（v2.1：A' 浴室 +24%；B' 走廊／車內／體育館／Steinman 全部 low）→ **T-48 域外出口實測補充（2026-09-14，13 張，Sonnet 量測，待 Opus 覆核；見 `output/geometry_r2/REPORT.md`）**：bathroom_tiled ±30% 誤差複測 PASS（估 3.72m vs 實際 3.0m，+24.0%，與原始一致）；域外項 3 張中 2 張 PASS（arena_ntsu_linkou、SteinmanHall 皆 geometry_confidence=low 且 gate 訊息含 `--override-dims` 導引）、**RacquetballCourt4 一筆 FAIL**（實際最大維 12.19m >10m，但實測 geometry_confidence=medium 非 low、gate 未印 override-dims 導引——域外出口誤放）；根因（唯讀讀 `geometry.py` `apply_scope_confidence()`）：環景量程規則比對的是單一視角原始牆距，不是相加後的房間全長，本例兩側視角個別皆 ≤10m、加總後房間全長 >10m 卻不觸發，詳見 REPORT §4；car_interior_suv 不落入 v2 兩類別判準內（見 T-48 卡），僅記錄供參考 → Opus 更正（2026-09-14，回應裁決 T-48-F 第 3 點 F3）：car_interior_suv 原記「不適用」，v2 判準文字本身自相矛盾（「已知實際尺寸」列了車內 ~2m，誤差判準括號卻寫「目前只有浴室」）——改記 **inconclusive（判準文字自相矛盾）**，不是 PASS、不是 FAIL、也不是「不適用」；v3（T-55）將車內歸類 `domain_out_non_room`（與 >10m 域外同款判準）→ **T-55 v3 重驗（2026-09-15，Sonnet 量測，待 Opus 覆核；見 `output/geometry_r3/REPORT.md`）**：14 張（13 張 canonical＋補回 `corridor_hotel_carpet.png`），前置 T-54 幾何量程規則 v2 已由 Opus 驗證工程通過（`4a9206f`）。結果 **PASS——domain_out 4/4（arena_ntsu_linkou、RacquetballCourt4、SteinmanHall、corridor_hotel_carpet 全部 geometry_confidence=low 且含 --override-dims 導引）＋domain_out_non_room 1/1（car_interior_suv 同款判準 PASS）＋浴室（+24.0%，與原始一致）＋V5 情境全部成立**（RacquetballCourt4 覆寫兩面材質後 exit=3、含 override-dims 導引，複現並確認 T-54 修復 T-48 發現的域外出口誤放）。RacquetballCourt4 由 T-48 的域外誤放 FAIL 轉為 PASS，是 T-54 修復的直接結果，不是判準放寬（>10m 域外項與浴室 ±30% 條文與數字一字未改）
+  verdict_under_current_criteria: PASS（v2.1：A' 浴室 +24%；B' 走廊／車內／體育館／Steinman 全部 low）→ **T-48 域外出口實測補充（2026-09-14，13 張，Sonnet 量測，待 Opus 覆核；見 `output/geometry_r2/REPORT.md`）**：bathroom_tiled ±30% 誤差複測 PASS（估 3.72m vs 實際 3.0m，+24.0%，與原始一致）；域外項 3 張中 2 張 PASS（arena_ntsu_linkou、SteinmanHall 皆 geometry_confidence=low 且 gate 訊息含 `--override-dims` 導引）、**RacquetballCourt4 一筆 FAIL**（實際最大維 12.19m >10m，但實測 geometry_confidence=medium 非 low、gate 未印 override-dims 導引——域外出口誤放）；根因（唯讀讀 `geometry.py` `apply_scope_confidence()`）：環景量程規則比對的是單一視角原始牆距，不是相加後的房間全長，本例兩側視角個別皆 ≤10m、加總後房間全長 >10m 卻不觸發，詳見 REPORT §4；car_interior_suv 不落入 v2 兩類別判準內（見 T-48 卡），僅記錄供參考 → Opus 更正（2026-09-14，回應裁決 T-48-F 第 3 點 F3）：car_interior_suv 原記「不適用」，v2 判準文字本身自相矛盾（「已知實際尺寸」列了車內 ~2m，誤差判準括號卻寫「目前只有浴室」）——改記 **inconclusive（判準文字自相矛盾）**，不是 PASS、不是 FAIL、也不是「不適用」；v3（T-55）將車內歸類 `domain_out_non_room`（與 >10m 域外同款判準）→ **T-55 v3 重驗（2026-09-15，Sonnet 量測，待 Opus 覆核；見 `output/geometry_r3/REPORT.md`）**：14 張（13 張 canonical＋補回 `corridor_hotel_carpet.png`），前置 T-54 幾何量程規則 v2 已由 Opus 驗證工程通過（`4a9206f`）。結果 **PASS——domain_out 4/4（arena_ntsu_linkou、RacquetballCourt4、SteinmanHall、corridor_hotel_carpet 全部 geometry_confidence=low 且含 --override-dims 導引）＋domain_out_non_room 1/1（car_interior_suv 同款判準 PASS）＋浴室（+24.0%，與原始一致）＋V5 情境全部成立**（RacquetballCourt4 覆寫兩面材質後 exit=3、含 override-dims 導引，複現並確認 T-54 修復 T-48 發現的域外出口誤放）。RacquetballCourt4 由 T-48 的域外誤放 FAIL 轉為 PASS，是 T-54 修復的直接結果，不是判準放寬（>10m 域外項與浴室 ±30% 條文與數字一字未改） → **Opus 覆核 T-55（2026-09-15）：v3 PASS 成立**（Opus 在 HEAD 獨立重跑 6 張判定照＋V5，逐項與 REPORT 相同；RacquetballCourt4 的 T-48 v2 log 與 T-55 log 估計尺寸同為 16.10×9.39×5.55m，只有 geometry_confidence medium→low，觸發訊息為 T-54 新增的「length_m=16.1m」三維檢查，判準公式與 v2 程式逐字同式——確認是 T-54 修復結果，非判準放寬）。原域 FAIL（判準 A 走廊 −57%）與 T-48 v2 RacquetballCourt4 FAIL 永久保留
   criteria_changed_after_first_result: yes
   change_record: e14873c（Fable 路線決策：改適用域不改數字，理由＝模型量程 ~20m 實證；核准＝Fable 自行裁決）；bca6b61（Steinman 實測牆距超標→預期改 low；核准＝Fable）；裁決 T-45-A（2026-09-03）：原域 FAIL 永久並列，域外出口是否誤放由 T-48 實測；裁決 T-48-F 追加（2026-09-14）：RacquetballCourt4 域外誤放 → 修正卡 T-54（`apply_scope_confidence()` 環景分支加三維檢查）；域外出口 v3 重驗＝T-55；car_interior_suv 的 v2 判定更正見上（Opus 更正，回應 F3）→ T-55（2026-09-15）：criteria T-11 v3 獨立 commit `b80a4fb`（使用者核准），只做三件事（見上）；`dataset_manifest_sha256` 追加：`6537699444507407d239b332a7b77ec9f795a887a9a93ba08f7db1bd58259522`（`output/geometry_r3/DATASET_MANIFEST.json`，14 張，§8 前四欄 commit `2048a6c`）；`reviewer` 追加：待 Opus 覆核 T-55 結果 commit
   ```
@@ -11005,6 +11005,10 @@ EOF
   - **下一步**：**T-55 可開跑**（criteria 已鎖定 `b80a4fb`；前置「T-54 ✅（工程）」已滿足）→ Opus → T-17-R2。T-56 照舊可以平行跑。
 
 ### T-55 T-11 域外出口 v3 重驗：14 張＋V5 情境（量測卡；裁決 T-48-F 第 1／3 點執行卡；`src/` 零改動；**前置＝T-54 ✅＋使用者核准 CRITERIA_T11_v3**）
+- **狀態（Opus 驗證，2026-09-15）**：✅ **工程已驗證**——受審＝§8 前四欄 `2048a6c`＋結果 `67fa822`＋§8 回填 `bf46578`，審查時 HEAD `bf46578`（工作樹乾淨）。
+  鐵則 14 順序成立、CRITERIA 零 diff、腳本只新增、Part B 零 diff、`src`／`data` 零 diff、`output/geometry_r2/` 乾淨；Opus 在 HEAD 獨立重跑 6 張判定照＋V5 與 REPORT 相同；
+  21 支測試 EXIT=0、六條 IR MD5 全中。無阻擋項；非阻擋 4 點見本卡末「✅ Opus 驗證紀錄（2026-09-15）」。
+- **四軸狀態（Opus 驗證，2026-09-15）**：工程：已驗證｜實驗：正向（**僅限**事前鎖定的 v3 判準：domain_out 4/4＋domain_out_non_room 1/1＋浴室＋V5；不代表 in-domain 尺寸準確度或 10m 門檻校準）｜產品：不適用（量測卡）｜MVP：不適用（結果併入 T-17-R2 域外安全檢查；本卡 ✅ 滿足 T-17-R2 前置「T-55 結案」）
 - **狀態（Sonnet 2026-09-15）**：🔵 **待審**——14 張真實 CLI＋V5 情境全部跑完，結果 **PASS**（domain_out 4/4＋domain_out_non_room 1/1＋浴室＋V5 全部成立），
   21 支測試全 EXIT=0、六條交付 IR MD5 全中、自我檢查全過，等 Opus 開視窗驗證。詳見下方「交接筆記」。
 - **狀態（Fable 2026-09-15）**：⬜ **criteria 已鎖定，等 T-54 ✅（工程）後可開跑**——使用者 2026-09-15 核准，`criteria: T-11 v3` 獨立 commit `b80a4fb`
@@ -11045,9 +11049,9 @@ EOF
   dataset_manifest_sha256: 6537699444507407d239b332a7b77ec9f795a887a9a93ba08f7db1bd58259522（`output/geometry_r3/DATASET_MANIFEST.json`，14 張，git_head_at_manifest_time=`4a9206f`）
   implementation_commit: 2048a6c（T-55: §8 前四欄（開跑前）；scripts/t48_geometry_material_r2.py 新增 --criteria v3 支援，只加函式不改任何既有 v2 函式）
   result_commit: 67fa822（T-55: 完成 T-11 域外出口 v3 重驗——14 張＋V5 情境全部 PASS（待驗證），2026-09-15）
-  reviewer:
-  verdict_under_original_criteria: 〈v3 首跑結果，逐張〉
-  verdict_under_current_criteria: 〈同上；判準未變〉
+  reviewer: Opus 5，2026-09-15，審查 HEAD bf46578（對象 2048a6c／67fa822／bf46578）；全新視窗，所有判定項重新實跑，未採信交接筆記
+  verdict_under_original_criteria: PASS——domain_out 4/4（arena_ntsu_linkou／RacquetballCourt4／SteinmanHall／corridor_hotel_carpet 皆 geometry_confidence=low＋override-dims 導引）；domain_out_non_room 1/1（car_interior_suv low＋導引）；bathroom_tiled 估進深 3.72m vs 3.0m ＝ +24.0% ≤±30%；V5 EXIT=3＋導引；其餘 8 張 unknown 只記錄（Opus HEAD 重跑 6 張＋V5 逐項相同）
+  verdict_under_current_criteria: 同上（判準未變；CRITERIA_T11_v3.md 自 b80a4fb 起零 diff）
   criteria_changed_after_first_result: no（改了就是新卡）
   change_record: 無
   ```
@@ -11150,6 +11154,45 @@ EOF
 
   **下一步**：開 Opus 新視窗依「Opus 驗證重點」逐項複驗（對象＝本次收工 commit）→ 通過後 T-11 §8 結案，
   T-17-R2 前置「T-54 ✅＋T-55 結案」全部滿足。
+
+- **✅ Opus 驗證紀錄（2026-09-15；只審不改碼；審查 HEAD `bf46578`，工作樹乾淨）**：
+  1. **鐵則 14**：`b80a4fb`（13:13:52，只含 CRITERIA 一檔）→ `2048a6c`（15:55:53）→ `67fa822`（16:12:25）→ `bf46578`，順序成立；`output/geometry_r3/runs/`
+     29 個 log 最早 mtime 15:56:18，晚於 `2048a6c`；`output/.archive/` 在 14:19～15:56 之間無任何條目、`corridor_hotel_carpet` 的 archive 只有本輪 16:04 兩筆
+     （13:25／14:04 兩批屬 T-54 量測與 T-54 Opus 驗證，都沒有 corridor），無預跑跡象。`git diff b80a4fb HEAD -- CRITERIA_T11_v3.md` 為空；
+     本卡「判準 v3」區塊與 CRITERIA 檔條文逐條核對一致（卡片是草案版，`approved_by` 日期占位、change control 句與落地檔略有措辭差，數字與類別全同，以落地檔為準）。**成立。**
+  2. **範圍**：`git diff 4a9206f HEAD -- src data` 為空；`scripts/` 只動 `t48_geometry_material_r2.py`。Opus 用 AST 比對 4a9206f 與 HEAD：刪除函式 0、
+     既有函式內容變動 0、新增 6 個（`build_manifest_v3`／`cmd_manifest_v3`／`_build_result_v3`／`run_part_a_v3`／`_write_part_a_v3_report`／`cmd_part_a_v3`）；
+     「# Part B —」到 `if __name__` 整段字串比對 **True（零 diff）**；刪除行只有 `__main__` 裡 `cmd_manifest()`／`cmd_part_a()` 兩行，改成
+     `cmd_*_v3() if criteria == "v3" else cmd_*()`，不加旗標時 criteria="v2" → 呼叫原函式。另以 importlib 載入新舊兩版 `build_manifest()`，去時間戳後輸出相同。**成立。**
+  3. **`output/geometry_r2/` 唯讀**：`git status --porcelain -- output/geometry_r2` 為空；`DATASET_MANIFEST.json` sha256＝`b2f994cc…`，與 T-11 §8 的 T-48 記錄值相同（誤跑覆寫已確實復原）；
+     gitignored 的 `runs/` log mtime 仍為 2026-09-14，未被覆寫。**成立。**
+  4. **14 張與分類**：`DATASET_MANIFEST.json` sha256＝`65376994…`，與 §8 相同；Opus 呼叫 `build_manifest_v3()` 重算去時間戳後與提交版相同；14 張＝GATE_ITEMS 13＋corridor；
+     `v3_category`：car→domain_out_non_room、arena／RacquetballCourt4／SteinmanHall／corridor→domain_out、bathroom→domain_in_with_ground_truth、其餘 8 張 unknown。
+     `KNOWN_DIMENSIONS_V3` 用 `dict()` 複製，未改到 v2 的 `KNOWN_DIMENSIONS`。**成立。**
+  5. **判定邏輯**：`_build_result_v3` 與 v2 `_build_result` 逐行比對——解析 regex、導引字串「幾何不可信 → 用 --override-dims」、domain_out 公式
+     `geometry_confidence == "low" and override_dims_guidance`、浴室 `abs(error_pct) <= 30.0` 完全相同；domain_out_non_room 與 domain_out 共用同一式，只差敘述文字；
+     V5 判定＝`exit == 3 and 導引`，與 CRITERIA 相同。**沒有放寬。**
+  6. **結果重現（不看報表數字）**：Opus 在 HEAD 直接跑 `python -m src.image_reverb <photo> --no-viz`（預設路徑，log 存 scratchpad，不覆寫 runs/）
+     6 張＋V5：bathroom 3.72×4.30×4.27 medium ＋24.0% PASS；arena／car／corridor（12.79×14.76×14.69）／RacquetballCourt4（16.10×9.39×5.55）／SteinmanHall 皆 low＋導引 PASS；
+     全部 EXIT=3；V5 EXIT=3＋導引。再用 `_build_result_v3` 解析提交的 29 個 runs log，14 張逐欄與 REPORT §1 相同，無手打。**成立。**
+  7. **RacquetballCourt4 FAIL→PASS 歸因（本卡最大風險點）**：T-48 `output/geometry_r2/runs/RacquetballCourt4/default.log` 與本卡 log 估計尺寸**同為 16.10×9.39×5.55m**，
+     唯一差別是 geometry_confidence medium→low；本卡 force log 第 18 行觸發訊息為「超出已驗證量程（…length_m=16.1m）」＝T-54 在環景分支新增的三維檢查，
+     T-48 log 無此行。判準公式（第 5 點）與門檻 10m 未變 → **轉 PASS 是 T-54 程式修復造成，不是判準放寬。成立。**
+  8. **T-11 §8 只追加**：以 4a9206f 版為前綴比對，`verdict_under_current_criteria`／`change_record` 兩行新版皆以舊版全文開頭（True），其餘行未動。**成立**（放錯欄見非阻擋 N1）。
+  9. **測試與 IR**：21 支 `scripts/test_*.py` Opus 逐支自跑全部 EXIT=0（`test_t17_provenance` log 內 ❌ 是被測訊息文字，結論「✅ 全部通過」）；T-14 兩條由
+     `test_ir_synth.py`【6】比對 `f3a763be…`／`f24353b5…` ✅；T-20／T-21 四條以 CLI `--text 浴室`／`--text 大教堂`／`--scene` 兩場景重生（檔案 mtime 16:23 已更新）→
+     `2adbaa75…`／`2dd19b6e…`／`9a94ffdf…`／`a1c21bcc…` **逐位元相同**。**成立。**
+  - **非阻擋（不影響工程判定，已由 Opus 行內追加或留紀錄）**：
+    - N1：T-55 回填 T-11 §8 時，把 `dataset_manifest_sha256`／`reviewer` 的新值寫進 `change_record` 行，自身欄位行沒追加；`implementation_commit`／`result_commit` 也沒追加。
+      Opus 已在 T-11 §8 各自欄位行尾追加（不刪原文）。
+    - N2：腳本除「新增函式＋分派參數」外，另有模組 docstring 追加 3 行用法、新增 `GEOMETRY_R3_OUT`／`V3_ITEMS`／`KNOWN_DIMENSIONS_V3` 等常數——皆為純新增，
+      唯一可見影響是無參數時印出的 usage 多 3 行，v2 manifest／partA 行為不變。
+    - N3：`2048a6c` 標題寫「§8 前四欄」但同時含實作程式；仍早於任何結果，不違反鐵則 14，只是 commit 名稱不完整。
+    - N4：REPORT 沒有逐張列出 v2→v3 差異；除 RacquetballCourt4 外 **CathedralRoom 也由 medium→low**（unknown 類，不計判定；T-54 驗證紀錄已記這 4 格變動），
+      REPORT／交接筆記第 4 點未提。T-17-R2 盤點 in-domain coverage 時要注意 T-54 讓 CathedralRoom 也被擋。另：交接筆記說 25 個 archive 條目「含 4 條 IR 重生」不精確——
+      Opus 核對 15:56～16:04 恰 25 筆，全是照片 CLI，IR 重生沒有建 archive。
+  - **Opus 本輪副作用（鐵則 15）**：6 張照片 CLI＋V5＋4 條 IR 重生，照片 CLI 由 archive-first 自動在 `output/.archive/` 建條目（不刪）；log 全放 scratchpad，未寫 repo；
+    `output/text_bathroom` 等 4 個目錄的 `ir_mono.wav` 以相同 MD5 覆寫。未用 worktree。
 
 ### T-56 T-12 v2-b 量測方法 v3：seed 鎖定＋10 次中位數（量測卡；裁決 T-48-F 第 2／4 點執行卡；`src/` 零改動；停滯期填充卡；**前置＝使用者核准 CRITERIA_T12_v3**）
 - **狀態（Fable 2026-09-15）**：⬜ **可開跑（停滯期填充卡，不進關鍵路徑）**——使用者 2026-09-15 核准並**刪除「方法有效性守門」條款**，

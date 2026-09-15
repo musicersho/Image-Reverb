@@ -1,5 +1,12 @@
 # 交接文件 — 給下一個視窗
 
+> ## ✅ 2026-09-15 Opus：T-55 驗證——**工程已驗證**——**下一步：T-17-R2 的「T-54 ✅＋T-55 結案」前置已滿足**（其他前置與排程請找 Fable 確認）；T-56 可平行
+>
+> 受審 `2048a6c`／`67fa822`／`bf46578`，HEAD `bf46578`。鐵則 14 成立；腳本只新增、Part B 零 diff；`src`／`data` 零 diff；`output/geometry_r2/` 乾淨。
+> Opus 重跑 6 張判定照＋V5 與 REPORT 相同；RacquetballCourt4 轉 PASS 經 log 比對確認是 T-54 修復造成（尺寸不變、只多了三維量程觸發），判準未放寬。
+> 21 支測試全過、六條 IR MD5 全中。四軸：工程：已驗證｜實驗：正向（僅限 v3 判準）｜產品：不適用｜MVP：不適用。
+> 給 T-17-R2 的提醒：T-54 之後 CathedralRoom 也變 geometry=low（被擋），盤 in-domain coverage 時要算進去。
+
 > ## 🔵 2026-09-15 Sonnet：T-55 完成——**現在該做的是開 Opus 新視窗複驗**，結果 commit 見本次收工 commit（§8 前四欄 `2048a6c`）
 >
 > 只新增 `scripts/t48_geometry_material_r2.py` 的函式與一個 `--criteria` 分派參數（`--criteria v3`：14 張＝

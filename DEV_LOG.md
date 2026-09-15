@@ -1,5 +1,15 @@
 # Dev Log
 
+## 2026-09-15 (147)
+
+- **T-55 Opus 驗證——✅ 工程已驗證**。受審 `2048a6c`（§8 前四欄＋實作）＋`67fa822`（結果）＋`bf46578`（§8 回填），審查 HEAD `bf46578` 工作樹乾淨；全新視窗，判定項全部重跑。
+- 實測：criteria `b80a4fb` → `2048a6c` → `67fa822` 順序成立、runs log 最早 15:56:18 晚於前四欄 commit、無預跑；CRITERIA 零 diff；AST 比對腳本只新增 6 個函式、既有函式 0 變動、
+  Part B 整段零 diff；`src`／`data` 零 diff；`output/geometry_r2/` 乾淨（manifest sha256 仍為 T-48 的 `b2f994cc…`）；manifest v3 程式重算相同。
+- Opus HEAD 重跑 6 張判定照＋V5 與 REPORT 逐項相同（全部 EXIT=3）；RacquetballCourt4 v2／v3 log 尺寸同為 16.10×9.39×5.55m，只差 T-54 新增的「length_m=16.1m」量程觸發 → 轉 PASS 是修復結果、非判準放寬。
+  21 支測試 EXIT=0；六條 IR MD5 全中（四條 CLI 重生）。
+- 非阻擋 4 點（卡內記錄）：T-11 §8 新值誤放 change_record 行（Opus 已在正確欄位行尾追加）；docstring／常數也有新增；`2048a6c` 標題未提含實作；REPORT 未提 CathedralRoom 也 medium→low。
+- 四軸：工程：已驗證｜實驗：正向（僅限 v3 事前判準）｜產品：不適用｜MVP：不適用（併入 T-17-R2）。→ T-17-R2 前置「T-54 ✅＋T-55 結案」這一項已滿足。
+
 ## 2026-09-15 (146)
 
 - **T-55 T-11 域外出口 v3 重驗——🔵 待審（Sonnet 執行）**。§8 前四欄先行 commit `2048a6c`（新增 `t48_geometry_material_r2.py`
