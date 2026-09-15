@@ -1,5 +1,15 @@
 # Dev Log
 
+## 2026-09-15 (142)
+
+- **使用者核准三份 criteria（T-54 核准／T-55 核准／T-56 守門條款刪）→ Fable 提交三個獨立 `criteria:` commit**：`02284d9`
+  `output/geometry_scope/CRITERIA_GEOMETRY_SCOPE_v2.md`（rule G2 逐字）、`b80a4fb` `output/geometry_r3/CRITERIA_T11_v3.md`、`4a0b23e`
+  `output/material_r3/CRITERIA_T12_v3.md`（守門條款刪除；min／max／離散度仍列出只記錄）。各 commit 只含一檔，早於各卡任何結果（§7.2）。
+- 回填 T-54／T-55／T-56 §8 `criteria_commit`／`criteria_locked_at`（2026-09-15），狀態：**T-54 ⬜ 可開跑**（前置 T-48 工程已驗證 `2ea4d41`）、
+  T-55 ⬜ criteria 已鎖定等 T-54 ✅、T-56 ⬜ 可開跑（停滯期填充）。裁決 T-48-F 追加第 9 點核准紀錄。
+- **下一步：開 Sonnet 視窗執行 T-54**（貼 WORKFLOW §2.1 Prompt；開跑前填 §8 前四欄並 commit）。T-52 仍等 Opus 第三輪複核 4(ii)（`1b36c27` 已落地）。
+  零改動：`src`／`scripts`／`data`／WORKFLOW／SPEC；`output/` 只新增三個 CRITERIA 檔。
+
 ## 2026-09-14 (141)
 
 - **T-48 第二修正輪 Opus 複驗——✅ 工程已驗證**。對象 `3c234c1`＋`778ac18`＋`0c1174d`＋`92bfd63`，驗證時 HEAD `92bfd63`。

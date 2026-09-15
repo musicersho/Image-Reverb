@@ -1,5 +1,18 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔮 2026-09-15 Fable：三份 criteria 已由使用者核准並落地——**現在該做的是：開 Sonnet 視窗執行 T-54**（量程規則 v2；貼 WORKFLOW §2.1 Prompt）
+>
+> - 使用者回「T-54 核准／T-55 核准／T-56 守門條款 刪」→ 三個獨立 `criteria:` commit：`02284d9`（`output/geometry_scope/CRITERIA_GEOMETRY_SCOPE_v2.md`，
+>   rule G2 逐字）、`b80a4fb`（`output/geometry_r3/CRITERIA_T11_v3.md`）、`4a0b23e`（`output/material_r3/CRITERIA_T12_v3.md`，**守門條款已刪**；
+>   min／max／離散度仍程式列出、只記錄）。各只含一檔，早於各卡任何結果。§8 `criteria_commit`／`criteria_locked_at` 已回填三卡。
+> - **T-54 ⬜ 可開跑**（前置 T-48 工程已驗證 `2ea4d41`）。給 Sonnet 的重點：`src/` 只動 `geometry.py` 的 `apply_scope_confidence()` equirect 分支＋docstring；
+>   新增 `scripts/test_geometry_scope.py`（(a) 對舊碼必須 fail）；基線變化表 `t47_gate_calibration.py --out-dir output/gate_calibration_v3/ --fresh`，
+>   預期只有 CathedralRoom／RacquetballCourt4 geometry medium→low（兩模式 4 格）、其餘 26 格零變化；V5 情境必須 EXIT=3；開跑前先填 §8
+>   `dataset_manifest_sha256`（必須仍＝`c15d0a14…2b01a7`）並 commit（鐵則 14）；鐵則 15 清理只刪本輪自建路徑並列出。
+> - 關鍵路徑：**T-54 → Opus → T-55（criteria 已鎖定，等 T-54 ✅）→ Opus → T-17-R2**。T-56 停滯期填充、可另一視窗跑（與 T-54 檔案不相交：只碰 `gen_ir_manual.py`
+>   `--seed`＋`t48_geometry_material_r2.py` Part B）。T-52 仍等 Opus 第三輪只複核 4(ii)（`1b36c27` 已落地）。
+> - 本輪零改動：`src`／`scripts`／`data`／WORKFLOW／SPEC；`output/` 只新增三個 CRITERIA 檔。詳見 TASKS.md T-54／T-55／T-56 卡、裁決 T-48-F 第 9 點、DEV_LOG `2026-09-15 (142)`。
+
 > ## ✅ 2026-09-14 Opus：T-48 第二修正輪複驗——**工程已驗證**——**現在該做的是：使用者核准 T-54／T-55／T-56 三份 criteria 草案**（草案在各卡內），核准後依序開 T-54 → T-55 → T-17-R2（T-56 平行）；T-52 第三輪 Opus 複核照舊
 >
 > - Opus 自跑成立：六條 IR MD5 全中、20 支測試 EXIT=0、`src`／`data` 零 diff、report-only 可重現、交付 WAV 未重生；Q1～Q3／N1～N3 全部修妥（證據見 T-48 卡「✅ Opus 第二修正輪複驗紀錄」）。

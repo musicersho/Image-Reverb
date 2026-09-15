@@ -10689,7 +10689,10 @@ EOF
 - **交接筆記**：
 
 ### T-54 幾何量程規則 v2：環景分支加三維檢查（Sonnet 執行卡；裁決 T-48-F 第 1 點執行卡；**前置＝使用者核准＋獨立 `criteria:` commit**）
-- **狀態**：⬜ 未開始（**等使用者核准 CRITERIA_GEOMETRY_SCOPE_v2.md 草案**；核准後 Fable 先提交 `criteria: geometry scope v2 …` 獨立 commit，再改「⬜ 可開跑」）
+- **狀態（Fable 2026-09-15）**：⬜ **可開跑**——使用者 2026-09-15 核准，`criteria: geometry scope v2` 獨立 commit `02284d9`（只含
+  `output/geometry_scope/CRITERIA_GEOMETRY_SCOPE_v2.md`）；前置 T-48 工程已驗證（`2ea4d41`）已滿足。**下一步＝開 Sonnet 視窗執行本卡**（貼 WORKFLOW §2.1 Prompt；
+  開跑前先填 §8 `dataset_manifest_sha256` 並 commit，鐵則 14）。
+- **狀態（開卡原文）**：⬜ 未開始（**等使用者核准 CRITERIA_GEOMETRY_SCOPE_v2.md 草案**；核准後 Fable 先提交 `criteria: geometry scope v2 …` 獨立 commit，再改「⬜ 可開跑」）
 - **四軸狀態**：工程：未開始｜實驗：待驗證（`expected_on_13` 事前鎖定）｜產品：預設啟用（候選；量程規則本就在預設路徑，收緊不放寬）｜MVP：不適用（沿用 T-17 FAIL）
 - **前置（硬性）**：T-48 修正輪 Opus 複驗「工程：已驗證」（本卡才能開跑，避免兩張卡同時動 T-11 §8）；T-52 Opus 複核 4(ii) 可平行（純文件）；
   `output/geometry_scope/CRITERIA_GEOMETRY_SCOPE_v2.md` 已由使用者核准並以獨立 commit 提交（`git log --format=%h -- <該檔>` 恰一筆、訊息以 `criteria:` 開頭、早於本卡任何結果 commit）。
@@ -10739,8 +10742,8 @@ EOF
 - **§8 不可變欄位（開卡即附，鐵則 14）**：
   ```text
   criteria_version: geometry scope v2（裁決 T-48-F 第 1 點；規則原文＝output/geometry_scope/CRITERIA_GEOMETRY_SCOPE_v2.md）
-  criteria_commit: 〈使用者核准後 Fable 填：criteria: geometry scope v2 … 的 hash；只含該檔；早於本卡任何結果〉
-  criteria_locked_at: 〈使用者核准日〉
+  criteria_commit: 02284d9（criteria: geometry scope v2……，2026-09-15；只含 CRITERIA_GEOMETRY_SCOPE_v2.md 一檔；早於本卡任何結果 commit）
+  criteria_locked_at: 2026-09-15（使用者核准日＝criteria commit 日）
   dataset_manifest_sha256: 〈執行者開跑前重算 output/gate_calibration/DATASET_MANIFEST.json，必須＝c15d0a14…2b01a7〉
   implementation_commit:
   result_commit:
@@ -10750,7 +10753,7 @@ EOF
   criteria_changed_after_first_result: no（改了就是新卡）
   change_record: 無
   ```
-- **CRITERIA_GEOMETRY_SCOPE_v2.md 草案（未核准前不進版控；核准後由 Fable 逐字落地、獨立 commit）**：
+- **CRITERIA_GEOMETRY_SCOPE_v2.md 草案（已於 `02284d9` 逐字落地，rule G2 填入本卡「規則原文 G2」；以該檔為準，下列草案僅供對照）**：
   ```text
   # CRITERIA — geometry scope v2（量程規則：環景分支加三維檢查）
   version: geometry scope v2
@@ -10772,7 +10775,9 @@ EOF
 - **交接筆記**：
 
 ### T-55 T-11 域外出口 v3 重驗：14 張＋V5 情境（量測卡；裁決 T-48-F 第 1／3 點執行卡；`src/` 零改動；**前置＝T-54 ✅＋使用者核准 CRITERIA_T11_v3**）
-- **狀態**：⬜ 未開始（等 T-54 Opus 驗證通過＋使用者核准 `CRITERIA_T11_v3.md` 草案＋Fable 獨立 `criteria: T-11 v3 …` commit）
+- **狀態（Fable 2026-09-15）**：⬜ **criteria 已鎖定，等 T-54 ✅（工程）後可開跑**——使用者 2026-09-15 核准，`criteria: T-11 v3` 獨立 commit `b80a4fb`
+  （只含 `output/geometry_r3/CRITERIA_T11_v3.md`）。
+- **狀態（開卡原文）**：⬜ 未開始（等 T-54 Opus 驗證通過＋使用者核准 `CRITERIA_T11_v3.md` 草案＋Fable 獨立 `criteria: T-11 v3 …` commit）
 - **四軸狀態**：工程：未開始｜實驗：待驗證｜產品：不適用（量測卡）｜MVP：不適用（結果併入 T-17-R2 域外安全檢查）
 - **為什麼**：T-48 硬性條件 (c)（`geometry.py` 有 diff → A 部分在 HEAD 重跑）＋裁決 T-48-F 第 3 點（車內歸類、走廊補量）。**判準 v3 只做三件事**：
   車內改歸 `domain_out_non_room`（依 T-11 原卡步驟 5「車內允許數字不準」）、資料集加回 `corridor_hotel_carpet.png`（14 張）、加 V5 情境；
@@ -10784,7 +10789,7 @@ EOF
 - **執行步驟**：1. 開跑前填 §8 前四欄（manifest 由程式產生，14 張 sha256＋已知尺寸表，`git add -f`），commit；2. `partA --criteria v3`：14 張預設路徑
   真實 CLI＋V5 情境；3. 程式產表：逐張 dims／dims_source／confidence／導引／v3 類別／判定；4. 20 支測試 EXIT=0、六條 IR MD5 全中；5. 回填 T-11 §8
   （只追加）；收工。
-- **判準 v3（＝CRITERIA_T11_v3.md 草案；未核准前不進版控）**：
+- **判準 v3（＝CRITERIA_T11_v3.md 草案；已於 `b80a4fb` 逐字落地，以該檔為準）**：
   ```text
   # CRITERIA — T-11 域外出口 v3
   version: T-11 v3（T-48 A 部分 v2 的延續；域外項與浴室項條文與數字不變）
@@ -10803,8 +10808,8 @@ EOF
 - **§8 不可變欄位（開卡即附，鐵則 14）**：
   ```text
   criteria_version: T-11 v3（裁決 T-48-F 第 3 點；規則原文＝output/geometry_r3/CRITERIA_T11_v3.md）
-  criteria_commit: 〈核准後 Fable 填〉
-  criteria_locked_at: 〈核准日〉
+  criteria_commit: b80a4fb（criteria: T-11 v3……，2026-09-15；只含 CRITERIA_T11_v3.md 一檔；早於本卡任何結果 commit）
+  criteria_locked_at: 2026-09-15（使用者核准日＝criteria commit 日）
   dataset_manifest_sha256: 〈執行者開跑前由程式產生 output/geometry_r3/DATASET_MANIFEST.json 後填〉
   implementation_commit:
   result_commit:
@@ -10819,7 +10824,10 @@ EOF
 - **交接筆記**：
 
 ### T-56 T-12 v2-b 量測方法 v3：seed 鎖定＋10 次中位數（量測卡；裁決 T-48-F 第 2／4 點執行卡；`src/` 零改動；停滯期填充卡；**前置＝使用者核准 CRITERIA_T12_v3**）
-- **狀態**：⬜ 未開始（等使用者核准 `CRITERIA_T12_v3.md` 草案＋Fable 獨立 `criteria: T-12 v3 …` commit；不進關鍵路徑）
+- **狀態（Fable 2026-09-15）**：⬜ **可開跑（停滯期填充卡，不進關鍵路徑）**——使用者 2026-09-15 核准並**刪除「方法有效性守門」條款**，
+  `criteria: T-12 v3` 獨立 commit `4a0b23e`（只含 `output/material_r3/CRITERIA_T12_v3.md`；每條件 min／max／離散度仍程式產表列出，只記錄不改判定）。
+  草案內的 ★ 守門行**不生效**，落地檔為單一事實來源。
+- **狀態（開卡原文）**：⬜ 未開始（等使用者核准 `CRITERIA_T12_v3.md` 草案＋Fable 獨立 `criteria: T-12 v3 …` commit；不進關鍵路徑）
 - **四軸狀態**：工程：未開始｜實驗：待驗證｜產品：不適用（量測卡）｜MVP：不適用
 - **為什麼**：T-48 B 部分證實 `gen_ir_manual.py` 的 ray tracing 未固定 seed，v2-b（±20%）在單次量測下 PASS/FAIL 跨門檻兩側（−21.1／−22.3／−19.9%），
   依 §7.5 只能記 inconclusive；v2-b 首跑 FAIL 的紀錄永久保留。本卡改**量測方法**，不改門檻數字。
@@ -10832,7 +10840,7 @@ EOF
   （表示 pyroomacoustics 的隨機性不只來自 libroom 引擎）；1. 開跑前填 §8 前四欄，commit；2. 三條件 × 10 seed ＝ 30 條 IR；3. 程式產表：30 個聯合帶
   T30、每條件中位數／min／max／(max−min)/median、中位數差％、carpet／per-wall 倍數、v2-a（標「非鑑別性」）、v1 字面條件（只記錄）；
   4. 20 支測試 EXIT=0、六條 IR MD5 全中；5. 回填 T-12 §8（只追加）；收工。
-- **判準 v3（＝CRITERIA_T12_v3.md 草案；未核准前不進版控）**：
+- **判準 v3（＝CRITERIA_T12_v3.md 草案；已於 `4a0b23e` 落地，**★ 守門條款依使用者決定刪除**，以該檔為準）**：
   ```text
   # CRITERIA — T-12 v2-b 量測方法 v3
   version: T-12 v3（門檻數字＝v2 不變：中位數差 ≤±20%、carpet ≥3×；只改量測方法）
@@ -10850,8 +10858,8 @@ EOF
 - **§8 不可變欄位（開卡即附，鐵則 14）**：
   ```text
   criteria_version: T-12 v3（裁決 T-48-F 第 2 點；規則原文＝output/material_r3/CRITERIA_T12_v3.md）
-  criteria_commit: 〈核准後 Fable 填〉
-  criteria_locked_at: 〈核准日〉
+  criteria_commit: 4a0b23e（criteria: T-12 v3……，2026-09-15；只含 CRITERIA_T12_v3.md 一檔；守門條款已刪；早於本卡任何結果 commit）
+  criteria_locked_at: 2026-09-15（使用者核准日＝criteria commit 日）
   dataset_manifest_sha256: 不適用（合成房間；30 條 IR 的 sha256 由程式列於 REPORT 檔頭）
   implementation_commit:
   result_commit:
@@ -11205,6 +11213,9 @@ EOF
      `output/geometry_scope/CRITERIA_GEOMETRY_SCOPE_v2.md`（T-54）、`output/geometry_r3/CRITERIA_T11_v3.md`（T-55）、
      `output/material_r3/CRITERIA_T12_v3.md`（T-56）。核准後各以獨立 `criteria:` commit 提交（只含該檔），早於各卡任何結果。
   8. 本裁決零改動：`src`／`scripts`／`data`／`output/**`／WORKFLOW／SPEC；未提交任何 `criteria:` commit；未寫 MVP PASS。
+  9. **核准紀錄（追加，2026-09-15）**：使用者回「T-54 核准／T-55 核准／T-56 守門條款 刪」。Fable 依序提交三個獨立 `criteria:` commit：
+     `02284d9`（geometry scope v2）、`b80a4fb`（T-11 v3）、`4a0b23e`（T-12 v3，守門條款刪除），各只含一檔、皆早於各卡任何結果。
+     T-48 修正輪已由 Opus 驗證工程通過（`2ea4d41`）→ **T-54 可開跑**（關鍵路徑：T-54 → T-55 → T-17-R2）；T-56 可在停滯期開跑。
 
 - **交接筆記（修正輪，Sonnet 執行，2026-09-14）**：
   - **開跑前**：`git status --porcelain` 一開始為空（`e253ac0` 收工乾淨），確認無其他視窗未提交改動後才開始。
