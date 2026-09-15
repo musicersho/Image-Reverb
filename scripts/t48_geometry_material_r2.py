@@ -13,6 +13,10 @@
     python scripts/t48_geometry_material_r2.py partB                # T-12 判準 v2 量測（真跑 gen_ir_manual.py）
     python scripts/t48_geometry_material_r2.py partB-report-only    # 只讀既有交付 WAV／log 重產 REPORT.md，不重生 IR
     python scripts/t48_geometry_material_r2.py all                  # A+B（皆真跑）
+
+    T-55（判準 v3；裁決 T-48-F 第 1／3 點；只影響 manifest／partA，Part B 不受影響）：
+    python scripts/t48_geometry_material_r2.py manifest --criteria v3   # 14 張（含 corridor）→ output/geometry_r3/
+    python scripts/t48_geometry_material_r2.py partA --criteria v3      # 14 張預設路徑真實 CLI＋V5 情境 → output/geometry_r3/
 """
 
 from __future__ import annotations
@@ -36,6 +40,7 @@ from src.image_reverb.ir_metrics import band_t30, t30_low_combined  # noqa: E402
 
 GEOMETRY_OUT = PROJECT_ROOT / "output" / "geometry_r2"
 MATERIAL_OUT = PROJECT_ROOT / "output" / "material_r2"
+GEOMETRY_R3_OUT = PROJECT_ROOT / "output" / "geometry_r3"  # T-55（判準 v3）專用，output/geometry_r2/ 唯讀不動
 GEOMETRY_SCOPE_MAX_M = 10.0  # 與 src/image_reverb/config.py 的 GEOMETRY_SCOPE_MAX_M 對照用（唯讀常數，不 import 以免誤會成 src 依賴；本卡自我檢查另有 grep 核對兩邊一致）
 
 # 已知實際尺寸（裁決 T-45-A 於 T-48 卡事前鎖定「有的才填」清單；只涵蓋現行 13 張
@@ -81,6 +86,45 @@ KNOWN_DIMENSIONS = {
         "note": "環景音樂廳，實測牆距 12.2/10.4/5.25/11.1m，最大單面牆距 12.2m >10m，"
         "落入 v2 域外項（環景走單面牆距判定，見 geometry.py apply_scope_confidence）。",
     },
+}
+
+
+# ------------------------------------------------------------
+# T-55（判準 v3；裁決 T-48-F 第 1／3 點）——14 張清單＋car_interior_suv 改歸
+# domain_out_non_room＋V5 情境。只新增本節與下方 run_part_a_v3 等函式，
+# 完全不動 KNOWN_DIMENSIONS／GATE_ITEMS／上面任何 v2 函式，保證
+# `--criteria v2`（預設，不加旗標）逐位元不變。
+# ------------------------------------------------------------
+
+CORRIDOR_ITEM = {"name": "corridor_hotel_carpet", "photo": "assets/photos/corridor_hotel_carpet.png"}
+V3_ITEMS = list(GATE_ITEMS) + [CORRIDOR_ITEM]
+
+V5_PHOTO = "assets/reference_irs/racquetball_court_4/RacquetballCourt4.jpg"
+V5_OVERRIDE_ARGS = ["--override-material", "north=gypsum_board", "--override-material", "ceiling=wood_panel"]
+
+KNOWN_DIMENSIONS_V3: dict = {}
+for _name, _info in KNOWN_DIMENSIONS.items():
+    _entry = dict(_info)
+    _entry["v3_category"] = _info["v2_category"]
+    KNOWN_DIMENSIONS_V3[_name] = _entry
+del _name, _info, _entry
+
+# 裁決 T-48-F 第 3 點：v2 判準文字自相矛盾記 inconclusive（見上 KNOWN_DIMENSIONS 的 note），
+# v3 依 T-11 原卡步驟 5「車內與超大空間允許數字不準」改歸 domain_out_non_room——與 >10m
+# 域外同款判準（geometry_confidence 必須 low 且 override-dims 導引），估計誤差只記錄不判。
+KNOWN_DIMENSIONS_V3["car_interior_suv"]["v3_category"] = "domain_out_non_room"
+KNOWN_DIMENSIONS_V3["car_interior_suv"]["note"] = (
+    "SUV 車廂，實際最大維 ~2m（非房間空間）。v2 判準文字自相矛盾記 inconclusive（見上，Opus 更正 2026-09-14）；"
+    "依裁決 T-48-F 第 3 點與 T-11 原卡步驟 5「車內與超大空間允許數字不準」，v3 改歸類 domain_out_non_room："
+    "與 >10m 域外同款判準（geometry_confidence 必須 low 且 gate 訊息含 --override-dims 導引），估計誤差只記錄不判。"
+)
+
+KNOWN_DIMENSIONS_V3["corridor_hotel_carpet"] = {
+    "actual_max_dim_m": 30.0,
+    "v3_category": "domain_out",
+    "note": "旅館走廊，實際長度約 30m（T-11 原卡九張清單原有的域外案例，首次量測估 12.79m、誤差 −57%；"
+    "T-36 起沿用至今的 13 張 canonical 清單已不含此照片）。依裁決 T-48-F 第 3 點補回，落入 v3 域外項"
+    "（>10m 必須 low＋override-dims 導引）。",
 }
 
 
@@ -154,6 +198,48 @@ def cmd_manifest() -> None:
     manifest = build_manifest()
     GEOMETRY_OUT.mkdir(parents=True, exist_ok=True)
     out_path = GEOMETRY_OUT / "DATASET_MANIFEST.json"
+    text = json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=False) + "\n"
+    out_path.write_text(text, encoding="utf-8")
+    digest = sha256_bytes(text.encode("utf-8"))
+    print(f"已寫入：{out_path}")
+    print(f"dataset_manifest_sha256: {digest}")
+    print(f"git_head_at_manifest_time: {manifest['git_head_at_manifest_time']}")
+
+
+def build_manifest_v3() -> dict:
+    """T-55：14 張（GATE_ITEMS 13 張＋corridor_hotel_carpet.png）。不動 build_manifest()。"""
+    photos = []
+    for item in V3_ITEMS:
+        p = PROJECT_ROOT / item["photo"]
+        if not p.exists():
+            raise FileNotFoundError(f"照片不存在：{p}")
+        photos.append({
+            "name": item["name"],
+            "path": item["photo"],
+            "sha256": sha256_file(p),
+        })
+    manifest = {
+        "task": "T-55",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "git_head_at_manifest_time": git_head(),
+        "photo_list_source": "scripts/t36_clip_accuracy.GATE_ITEMS（13 張，唯讀引用，不重打）＋"
+        "assets/photos/corridor_hotel_carpet.png（v3 依裁決 T-48-F 第 3 點補回）＝14 張",
+        "photo_count": len(photos),
+        "photos": photos,
+        "known_dimensions_v3": KNOWN_DIMENSIONS_V3,
+    }
+    return manifest
+
+
+def cmd_manifest_v3() -> None:
+    dirty = git_status_clean(["src", "data"])
+    if dirty:
+        print("❌ 錯誤：git status --porcelain -- src data 非空，依 T-48 條件 (a)（T-55 沿用）不得送審：")
+        print(dirty)
+        sys.exit(1)
+    manifest = build_manifest_v3()
+    GEOMETRY_R3_OUT.mkdir(parents=True, exist_ok=True)
+    out_path = GEOMETRY_R3_OUT / "DATASET_MANIFEST.json"
     text = json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=False) + "\n"
     out_path.write_text(text, encoding="utf-8")
     digest = sha256_bytes(text.encode("utf-8"))
@@ -507,6 +593,258 @@ def cmd_part_a_report_only() -> None:
     _write_part_a_report(results, report_only=True)
     fail_count = sum(1 for r in results if r["verdict"] == "FAIL")
     print(f"\nPart A（只重產報表，未重新呼叫 CLI）完成：FAIL 筆數 = {fail_count}")
+
+
+# ------------------------------------------------------------
+# T-55（判準 v3）——只新增本節函式，完全不動上面任何 v2 函式／_build_result／
+# run_part_a／_write_part_a_report／cmd_part_a／cmd_part_a_report_only，
+# 保證 --criteria v2（預設）逐位元不變。
+# ------------------------------------------------------------
+
+def _build_result_v3(name: str, photo: str, known: dict | None, default_log: str, force_log: str,
+                      default_exit: int | None, force_exit: int | None) -> dict:
+    """複製 _build_result() 的解析邏輯（不共用、不改原函式），只把判定類別換成 v3_category，
+    並新增 domain_out_non_room 分支——與 domain_out 判定公式完全相同（geometry_confidence
+    必須 low 且 override-dims 導引），只有 verdict_detail 的敘述文字不同，數字判準沒有分岔。
+    domain_in_with_ground_truth（浴室 ±30%）與 unknown 分支的公式和文字與 v2 一字不改。"""
+    conf_match = _CONF_LINE_RE.search(default_log)
+    dims_match = _DIMS_LINE_RE.search(default_log)
+    geometry_confidence = conf_match.group(1) if conf_match else None
+    materials_confidence = conf_match.group(2) if conf_match else None
+    overall_confidence = conf_match.group(3) if conf_match else None
+    blocked = "已擋下輸出" in default_log
+    override_dims_guidance = "幾何不可信 → 用 --override-dims" in default_log
+    override_material_guidance = "--override-material" in default_log
+    low_confidence_faces = sorted(set(re.findall(r"\n\s+(\w+)：目前推測", default_log)))
+
+    blocking_axes = []
+    if blocked:
+        if geometry_confidence == "low":
+            blocking_axes.append("geometry")
+        if materials_confidence == "low":
+            blocking_axes.append("materials")
+
+    if dims_match:
+        length_m, width_m, height_m = (float(dims_match.group(i)) for i in (1, 2, 3))
+        dims_source = dims_match.group(4)
+    else:
+        length_m = width_m = height_m = None
+        dims_source = None
+
+    max_dim = max((v for v in (length_m, width_m, height_m) if v is not None), default=None)
+    matched_rules = _matched_rules(force_log)
+
+    v3_category = known["v3_category"] if known else "unknown_no_ground_truth"
+
+    verdict = None
+    verdict_detail = ""
+    if v3_category in ("domain_out", "domain_out_non_room"):
+        ok = (geometry_confidence == "low") and override_dims_guidance
+        verdict = "PASS" if ok else "FAIL"
+        if v3_category == "domain_out_non_room":
+            scope_note = "非房間空間，依 v3 判準與 >10m 域外同款：估計誤差只記錄不判"
+        else:
+            scope_note = "實際最大維 >10m"
+        verdict_detail = (
+            f"{scope_note}（實際最大維 {known['actual_max_dim_m']}m），要求 geometry_confidence=low 且"
+            f" gate 訊息含 --override-dims 導引；實測 geometry_confidence={geometry_confidence}，"
+            f"override-dims 導引={'有' if override_dims_guidance else '無'}"
+        )
+    elif v3_category == "domain_in_with_ground_truth":
+        actual = known["actual_depth_point_m"]
+        error_pct = (length_m - actual) / actual * 100.0 if length_m is not None else None
+        ok = error_pct is not None and abs(error_pct) <= 30.0
+        verdict = "PASS" if ok else "FAIL"
+        verdict_detail = (
+            f"實際進深 {actual}m（範圍 {known['actual_depth_range_m']}），估計進深 {length_m:.2f}m，"
+            f"誤差 {error_pct:+.1f}%（判準 ≤±30%）"
+        )
+    else:
+        verdict = "不適用（未知，不列入 v3 判定）"
+        verdict_detail = "無已知實際尺寸，僅記錄估計值供參考，不列入 FAIL/PASS 判定。"
+
+    return {
+        "name": name,
+        "photo": photo,
+        "dims_source": dims_source,
+        "length_m": length_m,
+        "width_m": width_m,
+        "height_m": height_m,
+        "max_dim_m": max_dim,
+        "volume_m3": (length_m or 0) * (width_m or 0) * (height_m or 0),
+        "geometry_confidence": geometry_confidence,
+        "materials_confidence": materials_confidence,
+        "overall_confidence": overall_confidence,
+        "blocked": blocked,
+        "blocking_axes": blocking_axes,
+        "override_dims_guidance": override_dims_guidance,
+        "override_material_guidance": override_material_guidance,
+        "low_confidence_faces": low_confidence_faces,
+        "matched_scope_rules": matched_rules,
+        "v3_category": v3_category,
+        "known": known,
+        "verdict": verdict,
+        "verdict_detail": verdict_detail,
+        "default_exit": default_exit,
+        "force_exit": force_exit,
+    }
+
+
+def run_part_a_v3() -> tuple[list[dict], dict]:
+    dirty = git_status_clean(["src", "data", "scripts"])
+    if dirty:
+        print("❌ 錯誤：git status --porcelain -- src data scripts 非空，依 T-48 條件 (a)（T-55 沿用）不得送審：")
+        print(dirty)
+        sys.exit(1)
+
+    runs_dir = GEOMETRY_R3_OUT / "runs"
+    results = []
+    for item in V3_ITEMS:
+        name = item["name"]
+        photo = item["photo"]
+        print(f"=== {name} ===", flush=True)
+
+        force_exit, force_log = _run_cli(
+            photo, ["--force-low-confidence"], runs_dir / name / "force_low_confidence.log"
+        )
+        default_exit, default_log = _run_cli(
+            photo, [], runs_dir / name / "default.log"
+        )
+
+        known = KNOWN_DIMENSIONS_V3.get(name)
+        r = _build_result_v3(name, photo, known, default_log, force_log, default_exit, force_exit)
+        results.append(r)
+        print(f"    dims={r['length_m']:.2f}x{r['width_m']:.2f}x{r['height_m']:.2f} "
+              f"geometry_confidence={r['geometry_confidence']} materials_confidence={r['materials_confidence']}"
+              f" v3_category={r['v3_category']} verdict={r['verdict']}")
+
+    print("=== V5 情境：RacquetballCourt4 覆寫兩面材質後是否仍放行 ===", flush=True)
+    v5_exit, v5_log = _run_cli(
+        V5_PHOTO, V5_OVERRIDE_ARGS, runs_dir / "V5_RacquetballCourt4_override_material" / "v5.log"
+    )
+    v5_override_dims_guidance = "幾何不可信 → 用 --override-dims" in v5_log
+    v5_pass = (v5_exit == 3) and v5_override_dims_guidance
+    v5_result = {
+        "photo": V5_PHOTO,
+        "exit_code": v5_exit,
+        "override_dims_guidance": v5_override_dims_guidance,
+        "verdict": "PASS" if v5_pass else "FAIL",
+    }
+    print(f"    V5 exit={v5_exit} override-dims 導引={'有' if v5_override_dims_guidance else '無'}"
+          f" verdict={v5_result['verdict']}")
+    return results, v5_result
+
+
+def _write_part_a_v3_report(results: list[dict], v5_result: dict) -> None:
+    head = git_head()
+    dirty_check = git_status_clean(["src", "data", "scripts"])
+    lines = []
+    lines.append("# T-55 A 部分 — T-11 域外出口 v3 重驗（判準 v3；裁決 T-48-F 第 1／3 點）\n")
+    lines.append(f"> 產生日期：{datetime.now(timezone.utc).isoformat()}　"
+                 f"git_head：`{head}`　"
+                 f"git status --porcelain -- src data scripts：{'(空)' if not dirty_check else dirty_check}\n")
+    lines.append(
+        "判準 v3（事前鎖定，見 `output/geometry_r3/CRITERIA_T11_v3.md`，commit `b80a4fb`）：只做三件事——"
+        "`car_interior_suv` 改歸 `domain_out_non_room`、資料集加回 `corridor_hotel_carpet.png`（14 張）、"
+        "加 V5 情境；>10m 域外項與浴室 ±30% 條文與數字一字不改。`domain_out`／`domain_out_non_room` "
+        "判定公式相同（`geometry_confidence` 必須為 low 且 gate 訊息含 `--override-dims` 導引），"
+        "只有敘述文字不同，前置 T-54（幾何量程規則 v2）已由 Opus 驗證工程通過（`4a9206f`）。\n"
+    )
+
+    domain_out_items = [r for r in results if r["v3_category"] == "domain_out"]
+    domain_out_non_room_items = [r for r in results if r["v3_category"] == "domain_out_non_room"]
+    bathroom = next((r for r in results if r["name"] == "bathroom_tiled"), None)
+    domain_out_pass = len(domain_out_items) == 4 and all(r["verdict"] == "PASS" for r in domain_out_items)
+    domain_out_non_room_pass = (
+        len(domain_out_non_room_items) == 1 and all(r["verdict"] == "PASS" for r in domain_out_non_room_items)
+    )
+    bathroom_pass = bathroom is not None and bathroom["verdict"] == "PASS"
+    v5_pass = v5_result["verdict"] == "PASS"
+    overall_pass = domain_out_pass and domain_out_non_room_pass and bathroom_pass and v5_pass
+    fail_names = [r["name"] for r in results if r["verdict"] == "FAIL"]
+
+    lines.append("## 0. 結論\n")
+    lines.append(
+        f"**{'PASS——domain_out 4/4＋domain_out_non_room 1/1＋浴室＋V5 全部成立' if overall_pass else 'FAIL——見下方逐張'}**"
+        f"（domain_out：{sum(1 for r in domain_out_items if r['verdict'] == 'PASS')}/{len(domain_out_items)}；"
+        f"domain_out_non_room：{sum(1 for r in domain_out_non_room_items if r['verdict'] == 'PASS')}/"
+        f"{len(domain_out_non_room_items)}；浴室：{'PASS' if bathroom_pass else 'FAIL'}；V5：{v5_result['verdict']}"
+        f"{('；其餘 FAIL：' + '、'.join(fail_names)) if fail_names and not overall_pass else ''}）\n"
+    )
+
+    lines.append("## 1. 逐張結果（全部 14 張，沒有只挑好看的）\n")
+    lines.append("| 照片 | 估計 L×W×H (m) | 最大維 | dims_source | geometry_confidence | materials_confidence "
+                 "| 已擋下 | 擋在哪軸 | override-dims 導引 | v3 類別 | 判定 | 細節 |")
+    lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
+    for r in results:
+        lines.append(
+            f"| {r['name']} | {r['length_m']:.2f}×{r['width_m']:.2f}×{r['height_m']:.2f} "
+            f"| {r['max_dim_m']:.2f} | {r['dims_source']} | {r['geometry_confidence']} "
+            f"| {r['materials_confidence']} | {'是' if r['blocked'] else '否'} "
+            f"| {'、'.join(r['blocking_axes']) if r['blocking_axes'] else '—'} "
+            f"| {'有' if r['override_dims_guidance'] else '無'} | {r['v3_category']} "
+            f"| {r['verdict']} | {r['verdict_detail']} |"
+        )
+
+    lines.append("\n## 2. V5 情境（RacquetballCourt4 覆寫兩面材質，判準 v3）\n")
+    lines.append("| 指令 | exit code | override-dims 導引 | 判定 |")
+    lines.append("|---|---|---|---|")
+    v5_cmd = (
+        f"python -m src.image_reverb {v5_result['photo']} --override-material north=gypsum_board "
+        f"--override-material ceiling=wood_panel --no-viz"
+    )
+    lines.append(
+        f"| `{v5_cmd}` | {v5_result['exit_code']} "
+        f"| {'有' if v5_result['override_dims_guidance'] else '無'} | {v5_result['verdict']} |"
+    )
+    lines.append(
+        "\n（v3 判準要求 exit=3 且含 `--override-dims` 導引；exit=0＝FAIL，複現 T-54 修復前的域外安全缺口。"
+        "完整 stdout/stderr 見 `output/geometry_r3/runs/V5_RacquetballCourt4_override_material/v5.log`。）\n"
+    )
+
+    lines.append("\n## 3. 已知實際尺寸對照表（v3）\n")
+    lines.append("| 照片 | 已知實際尺寸 | v3 類別 | 說明 |")
+    lines.append("|---|---|---|---|")
+    for r in results:
+        known = r["known"]
+        if known is None:
+            lines.append(f"| {r['name']} | 未知 | {r['v3_category']} | 無已知實際尺寸，僅記錄估計值供參考 |")
+        else:
+            known_desc = known.get("actual_depth_range_m") or known.get("actual_dims_m") \
+                or known.get("actual_wall_distances_m") or known.get("actual_max_dim_m")
+            lines.append(f"| {r['name']} | {known_desc} | {r['v3_category']} | {known['note']} |")
+
+    lines.append(
+        "\n## 4. 與 v2 的差異（僅這三處，其餘條文與數字一字不改）\n\n"
+        "1. `car_interior_suv`：v2 記 inconclusive（判準文字自相矛盾，見 T-48 卡裁決 F3）→ v3 改歸 "
+        "`domain_out_non_room`，與 >10m 域外同款判準（`geometry_confidence` 必須 low 且 override-dims 導引）；\n"
+        "2. 資料集加回 `corridor_hotel_carpet.png`（T-11 原卡九張清單案例，T-36 起 13 張 canonical 清單已不含）"
+        "→ 14 張，歸 `domain_out`；\n"
+        "3. 新增 V5 情境（RacquetballCourt4 覆寫兩面材質）——T-54（`4a9206f`，已驗證）已修復此域外安全缺口，"
+        "本卡驗證修復後的行為。\n"
+    )
+
+    lines.append(
+        "\n## 5. 方法\n\n"
+        "每張照片跑兩次真實 CLI（`python -m src.image_reverb <photo> --no-viz`）：先加 "
+        "`--force-low-confidence` 讀一次完整 stdout `warnings`（不影響判定），再跑一次不帶任何旗標的"
+        "真正預設路徑，v3 判定完全依此次輸出。14 張清單＝`scripts/t36_clip_accuracy.GATE_ITEMS`"
+        "（13 張，唯讀引用，不重打）＋`assets/photos/corridor_hotel_carpet.png`。V5 情境額外跑一次"
+        "`--override-material` 組合。逐張與 V5 的原始 CLI 輸出存於 "
+        "`output/geometry_r3/runs/<name>/{default,force_low_confidence}.log` 與 "
+        "`output/geometry_r3/runs/V5_RacquetballCourt4_override_material/v5.log`（gitignored，不進版控）。\n"
+    )
+
+    GEOMETRY_R3_OUT.mkdir(parents=True, exist_ok=True)
+    (GEOMETRY_R3_OUT / "REPORT.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"已寫入：{GEOMETRY_R3_OUT / 'REPORT.md'}")
+
+
+def cmd_part_a_v3() -> None:
+    results, v5_result = run_part_a_v3()
+    _write_part_a_v3_report(results, v5_result)
+    fail_count = sum(1 for r in results if r["verdict"] == "FAIL") + (0 if v5_result["verdict"] == "PASS" else 1)
+    print(f"\nPart A（判準 v3；14 張＋V5）完成：FAIL 筆數 = {fail_count}")
 
 
 # ------------------------------------------------------------
@@ -958,10 +1296,30 @@ if __name__ == "__main__":
         print(__doc__)
         sys.exit(2)
     mode = sys.argv[1]
+
+    # T-55（判準 v3）新增：--criteria v2（預設，等同完全不加旗標，呼叫下面原封不動的
+    # v2 函式，逐位元不變）／v3（14 張＋car_interior_suv 改歸 domain_out_non_room＋
+    # corridor_hotel_carpet＋V5 情境）。只有 manifest／partA 支援 --criteria v3；
+    # partA-report-only／partB／partB-report-only／all 完全不變（本卡紅線：不得碰 Part B）。
+    criteria = "v2"
+    rest = sys.argv[2:]
+    if "--criteria" in rest:
+        i = rest.index("--criteria")
+        if i + 1 >= len(rest):
+            print("❌ 錯誤：--criteria 後面要接 v2 或 v3")
+            sys.exit(2)
+        criteria = rest[i + 1]
+        if criteria not in ("v2", "v3"):
+            print(f"❌ 錯誤：--criteria 只接受 v2 或 v3，收到 {criteria!r}")
+            sys.exit(2)
+        if criteria == "v3" and mode not in ("manifest", "partA"):
+            print("❌ 錯誤：--criteria v3 只支援 manifest／partA（T-55 範圍；partA-report-only／partB 不支援）")
+            sys.exit(2)
+
     if mode == "manifest":
-        cmd_manifest()
+        cmd_manifest_v3() if criteria == "v3" else cmd_manifest()
     elif mode == "partA":
-        cmd_part_a()
+        cmd_part_a_v3() if criteria == "v3" else cmd_part_a()
     elif mode == "partA-report-only":
         cmd_part_a_report_only()
     elif mode == "partB":

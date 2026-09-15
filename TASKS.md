@@ -11040,7 +11040,7 @@ EOF
   criteria_version: T-11 v3（裁決 T-48-F 第 3 點；規則原文＝output/geometry_r3/CRITERIA_T11_v3.md）
   criteria_commit: b80a4fb（criteria: T-11 v3……，2026-09-15；只含 CRITERIA_T11_v3.md 一檔；早於本卡任何結果 commit）
   criteria_locked_at: 2026-09-15（使用者核准日＝criteria commit 日）
-  dataset_manifest_sha256: 〈執行者開跑前由程式產生 output/geometry_r3/DATASET_MANIFEST.json 後填〉
+  dataset_manifest_sha256: 6537699444507407d239b332a7b77ec9f795a887a9a93ba08f7db1bd58259522（`output/geometry_r3/DATASET_MANIFEST.json`，14 張，git_head_at_manifest_time=`4a9206f`）
   implementation_commit:
   result_commit:
   reviewer:
