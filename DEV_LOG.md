@@ -1,5 +1,13 @@
 # Dev Log
 
+## 2026-09-16 (151)
+
+- **🔮 Fable 落地 T-17-R2**（使用者三項回覆後）：① T-04 使用者明確「不需網址、內部使用」→ 裁決 E 第二路徑，R2 REPORT 標缺項；② held-out 建議 H1 自拍（規格表＋一句話 GT），退路 H2 圖庫／H3 沿用舊五張降級；
+  ③ P1／P2 回覆未勾選 → 依建議落地 P1，貼 Opus Prompt 即核准（Prompt 含「程序 P1 核准」）。
+- 卡片追加：程序 P1 三組分列、in-domain 事前定義（8 場地僅 `mit_gym`；held-out 依使用者尺寸判）、執行步驟 0～11、紅旗 8 條；§8 前三欄填妥（criteria_commit＝3586bb0＋96e7716＋a5f9e57＋e253ac0＋本 commit），
+  `dataset_manifest_sha256` 留給 Opus 步驟 1 回填。判準 1～6 一字未改。T-04 卡與 SOURCES.md 記錄使用者決定；SOURCES §4 held-out 表格骨架。
+- 下一步：使用者拍 5 張放 `assets/photos_heldout/` → 開 Opus 視窗貼 Prompt A（或 Prompt B 降級）。期望結果 `MVP：FAIL（R2）`（自動組分母最多 1、HEAD 全 BLOCK）。
+
 ## 2026-09-15 (150)
 
 - **T-56 Opus 驗證——✅ 工程已驗證**。受審 `3b3a723`（實作）＋`8cabd60`（結果）＋`915c9e4`（§8 回填），HEAD `915c9e4` 工作樹乾淨。⚠️ 與執行者同一對話，判定項全部重跑。

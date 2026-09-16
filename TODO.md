@@ -9,6 +9,7 @@
 > 專案目前：**MVP：FAIL**（T-17 首驗，永久保留；重驗＝T-17-R2）。
 
 - **T-17 MVP 驗收**：工程已驗證｜MVP **FAIL**（盲聽 2/5、自動組 0/8、手動組 0/5）→ 重驗 T-17-R2
+  → **T-17-R2 ⬜ 可開跑（Fable 2026-09-16 落地執行步驟＋程序 P1＋§8 前三欄）**：等使用者 5 張 held-out 照片放 `assets/photos_heldout/` → Opus 貼 Prompt A（或 Prompt B 降級）。期望 `MVP：FAIL（R2）`（in-domain 自動組分母最多 1）。
 - **T-44 role-aware**：工程 ✅ **已驗證**（Opus 第四輪複驗 2026-09-10：三處無限定
   「逐位元相同」已改為限定敘述、§5 wall 側 7→11 面正確、`src/`／`scripts/`／`data/`／
   `rounds/` 零 diff、19 支測試 EXIT=0；✅ 只代表工程交付，不代表產品採用。
@@ -22,7 +23,7 @@
 - **雙 verdict 並列**：T-11（原域 FAIL／v0.3 域內 PASS）、T-12（字面 125Hz 未達／Sabine 達成）
   → **T-48 已量第二個 verdict（🟠 Opus 2026-09-14 工程退回，待修正輪）**：T-11 域外項 3/4 PASS、RacquetballCourt4 1 筆
   FAIL（域外出口誤放，照 gate 導引覆寫材質即放行）；T-12 v2-a PASS、v2-b **不確定**（首跑 FAIL、交付版 PASS，無固定 seed）（詳見 TASKS.md T-48 卡）。
-- **T-04 未結案**（9 張照片來源網址等使用者）。
+- **T-04 未結案**（9 張照片來源網址等使用者）→ **2026-09-16 使用者明確決定不補（內部使用）**：裁決 E 第二路徑，T-17-R2 前置滿足，R2 REPORT 標缺項；卡片維持未結案。
 - **gate 校準前提已變**（T-26／T-28／T-36-A）→ T-47 重量四樣證據後裁決 T-47-A。
   → **🔮 裁決 T-47-A 已下（2026-09-14）**：default 維持不動；role_aware 0.4 未校準，**使用者已核准乙**（criteria `81bc4cd`）→ T-52。
 - [x] **T-45 審查制度修正 ✅（Fable 2026-09-03）**：WORKFLOW v2、CLAUDE/AGENTS 同步、

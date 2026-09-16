@@ -1,5 +1,15 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔮 2026-09-16 Fable：T-17-R2 已落地執行步驟＋程序 P1＋§8 前三欄——**現在該做的是：使用者拍 5 張 held-out 照片放 `assets/photos_heldout/`，再開 Opus 新視窗貼 Prompt A**（拍不了→貼 Prompt B 走降級）
+>
+> - 使用者三項回覆：① T-04 明確「不需網址、內部使用」→ 走裁決 E 第二路徑（維持未結案＋R2 REPORT 標缺項；MVP 軸只能 `FAIL（R2）` 或 `PASS（R2；T-04 缺項）`）；
+>   ② held-out 請 Fable 建議 → **H1 自拍**（規格表在 T-17-R2 卡「🔮 Fable 落地」§1：五類各一、橫幅透視、非 2:1、無 UI／黑邊、原檔不裁切、附大約尺寸＋六面材質一句話）；
+>   ③ P1／P2 欄位原樣回傳未勾選 → Fable 依建議落地 **P1**，**貼 Opus Prompt（內含「程序 P1 核准」）即核准**；要 P2 先回 Fable 一句。
+> - 落地內容（T-17-R2 卡）：程序 P1（§7-1 五張全進盲測、forced 逐筆標記；§7-2 自動／forced／手動三組不合併）、**in-domain 事前定義：8 場地只有 `mit_gym`**（表 4 估 9×6×2.9m）、
+>   執行步驟 0～11（步驟 1 鎖定 DATASET_MANIFEST＋薄包裝腳本 `scripts/t17r2_*.py` 獨立 commit、步驟 2～3 之間禁 commit、步驟 6 中途 commit 後不得重生樣本）、Opus 驗證重點追加 8 條紅旗。
+>   §8：前三欄已填（criteria_commit 五個 hash；程序不是門檻、判準數字未變），`dataset_manifest_sha256` 由 Opus 步驟 1 回填（held-out 照片尚未存在）。
+> - 誠實預告不變：default 13/13 BLOCK、自動組分母最多 1 → 期望 `MVP：FAIL（R2）`。本輪零改動 `src`／`scripts`／`data`／SPEC／WORKFLOW；只改 TASKS／HANDOFF／DEV_LOG／TODO／ROADMAP／SOURCES.md（§2 決定紀錄＋§4 held-out 表格骨架）／HANDOFF_PHASE_1.9R。
+
 > ## ✅ 2026-09-15 Opus：T-56 驗證——**工程已驗證**——**下一步：T-56 結案；T-17-R2 仍等使用者三項決定**（見下方 Fable 複評那則），AI 端目前沒有可開跑的關鍵路徑卡
 >
 > - 受審 `3b3a723`／`8cabd60`／`915c9e4`，HEAD `915c9e4`。鐵則 14 成立；seed／條件＝CRITERIA；`--seed` 未給時 worktree 對照 5 組逐位元相同；30 條 IR 單批、sha256 全中；

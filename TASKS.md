@@ -201,6 +201,7 @@
   工程：**未結案**（自我檢查第 2 項「SOURCES.md 每一項都有來源連結」未達成——9 張照片來源網址等使用者補；素材與 8 組對照 IR 部分已驗證）｜實驗：不適用｜產品：不適用｜MVP：不適用
   - `verdict_under_original_criteria: 未達（自檢 2 項只完成 1 項）`。原「✅ 通過（素材部分）」的綠色總狀態依裁決 T-45-A **不再代表本卡結案**。
     結案條件維持裁決 E：補齊來源網址，或由使用者明確決定「維持未結案」並在 T-17-R2 REPORT 標明缺項——兩者擇一，不得以附註豁免。
+  - **2026-09-16 使用者決定（Fable 記錄）**：「不需網址，本專案非商業發行作品，僅供內部使用」→ 走裁決 E 第二路徑（明確維持未結案＋R2 REPORT 標明缺項）；T-17-R2 前置「T-04」自此滿足；本卡工程軸維持「未結案」不變（不是結案）。使用者另述「軟體內部有相關空間或材質的參數即可，不需要真的將圖片變成選項」記為產品方向備註，見 T-17-R2 卡「🔮 Fable 落地」§0。
 - **前置**：T-00
 - **對應 SPEC**：§7 驗收標準
 - **產出**：`assets/photos/` 內 5 類空間照片、`assets/reference_irs/` 內 ≥ 3 個 OpenAIR 真實 IR、`assets/SOURCES.md`
@@ -12046,7 +12047,7 @@ EOF
 - **交接筆記**：
 
 ### T-17-R2 MVP 重新驗收（SPEC §7 四項；Opus 主導；裁決 T-45-A 執行卡 5/5）
-- **狀態**：⬜ 未開始
+- **狀態**：⬜ **可開跑（Fable 2026-09-16 落地執行步驟＋程序 P1＋§8 前三欄；等使用者 held-out 照片就位後貼 Prompt A，或貼 Prompt B 走降級）**（原：⬜ 未開始）
 - **四軸狀態**：工程：未開始｜實驗：不適用｜產品：不適用｜MVP：**待重驗**（T-17 首驗 FAIL 永久保留）
 - **🔮 裁決 T-47-A 補註（Fable 2026-09-14；判準一字不改）**：前置「裁決 T-47-A」**自此滿足**；前置追加「T-52 結案（使用者選乙）或使用者選甲」
   （驗收期間不得有 gate 程式碼變動）；T-44-R1 ⏸ 未跑 → 依本卡既有條文以預設 `role_aware=False` 重驗，REPORT 標明。報告項 5 追加
@@ -12093,6 +12094,121 @@ EOF
   → 🔮 Fable 收尾複評（R2 結果 → MINC/DMS／下一 Phase）
   T-53／T-44-R1：不在關鍵路徑，等校準集
   ```
+- **🔮 Fable 落地 T-17-R2（2026-09-16；使用者三項回覆後；判準 1～6 一字不改；本段＝「執行步驟」＋程序 P1＋in-domain 事前定義＋§8 前三欄）**：
+  **0. 使用者回覆紀錄（2026-09-16 原文）與 Fable 處置**：
+  1. **T-04**：使用者回「不需網址，本專案非商業發行作品，僅供內部使用。需要軟體內部有相關空間或材質的參數即可，不需要真的將圖片變成選項。」
+     → 依裁決 E 屬**「使用者明確決定維持未結案」**路徑：T-04 卡工程軸維持「未結案」並註記本決定（T-17-R2 前置「T-04」自此滿足）；
+     R2 REPORT 第 6 項必須標明「9 張照片來源網址缺、使用者 2026-09-16 決定內部使用不補」；MVP 軸只能寫 `FAIL（R2）` 或
+     `PASS（R2；T-04 缺項）`，**不得寫無附註 PASS**。後半句（軟體內部有空間／材質參數即可、不需把圖片變成選項）記為**產品方向備註**，
+     不改 SPEC，留待 R2 後 Fable 收尾複評處理。
+  2. **held-out**：使用者請 Fable 建議方向 → 建議 **H1 自拍**（§1），退路 H2／H3；開跑規則見 §1.4。
+  3. **被擋照片處理程序**：使用者回覆欄位原樣為「〔核准 P1／核准 P2〕」，**未勾選**。Fable 依 T-17-R2-pre §2 第 3 件的建議落地 **P1**（§2）。
+     核准方式＝使用者貼出的 Opus Prompt 內含「程序 P1 核准」字樣（**貼 Prompt 即核准**；Opus 步驟 0 必須把該句抄進 REPORT §0 作核准紀錄，
+     缺此句不得開跑）。若使用者要 P2，在貼 Prompt 前回 Fable 一句「P2」，改動只限 §2 一段（§7-1 樣本數會 <5 → 判準 1 直接 FAIL）。
+  **1. held-out 五類照片——Fable 建議方向**：
+  - **H1（建議）：使用者自拍**（手機即可）。理由：(i) 2026-09-16 之後才拍＝機制上保證未曾用於任何調參／標註／校準（WORKFLOW §5.4.2
+    的 held-out 定義）；(ii) 自有著作，`SOURCES.md` 直接記「使用者自攝」，與 ① 的「內部使用」決定一致，不會再有 T-04 式的網址缺口；
+    (iii) 真實空間，可附「大約尺寸」與逐面材質，報告項 5 才有 ground truth。
+  - **拍攝規格（違反者 Opus 步驟 0 退回，不得自行裁切修圖）**：
+    | 項目 | 要求 | 為什麼 |
+    |---|---|---|
+    | 類別 | 浴室／居住空間（客廳或臥室）／教堂或大空間（教堂、廟宇大殿、學校禮堂、空場體育館、車站大廳皆可）／樓梯間或走廊／車內（後座視角）各 1 張，共 5 張 | SPEC §7-1 五類 |
+    | 構圖 | 橫幅、一般透視（手機主鏡頭，**不要全景模式**）；畫面同時看得到地板、天花板、至少兩面牆 | 六面材質要看得到 |
+    | 長寬比 | **不得是 2:1（±5%）**；4:3 或 16:9 都可 | 地雷 #16：2:1 會被當環景 |
+    | 畫面 | 無字幕、無播放器 UI、無黑邊；盡量無人（大空間要空場）；光線均勻不逆光 | SOURCES §2.1 已實測 UI／黑邊干擾；人是強吸音體 |
+    | 檔案 | JPG／PNG／HEIC，長邊 ≥1920px，**原檔不裁切** | 裁切會改變透視與長寬比 |
+    | 命名與位置 | `assets/photos_heldout/heldout_bathroom.*`、`heldout_living.*`、`heldout_hall.*`、`heldout_corridor.*`、`heldout_car.*` | 檔名不得與 `output/` 既有子目錄同名（CLI 以檔名 stem 當輸出目錄） |
+  - **每張照片附一句話（貼在對話中即可，Opus 抄進 `assets/photos_heldout/ground_truth_heldout.json`，`confirmed_by: user`；放 `assets/` 而非
+    `data/`，因 provenance 的 dirty 範圍是 `src`＋`data`）**：(a) 空間大約尺寸「長×寬×高 公尺」（估計即可；只用來判 ≤10m 域內／>10m 域外／
+    車內非房間）；(b) 六面材質（地板／天花板／正面牆／左牆／右牆／背後牆，白話即可，如「磁磚」「油漆牆」「木地板」），Opus 對映到
+    `data/materials.json` 候選 id，對不上的標 `proxy`（沿用 T-36 GT 格式）。沒附 (b) 也可開跑，但該張若通過 gate，報告項 5 的逐面正誤
+    只能標「GT 缺」。
+  - **H2（退路）：免授權圖庫**（Unsplash／Pexels 等），每張記網址與授權；仍須符合上表規格；**不得**用 YouTube 截圖。
+  - **H3（最後退路）：沿用舊五張（降級）**——依本卡「前置」既有條文：REPORT 標「非 held-out、聽者可能記得答案」並降級證據力；
+    §7-1 即使 ≥4/5 也只能記 `PASS（降級證據）`，MVP 軸仍依判準 1～4 判，但 REPORT §0 必須明示 §7-1 證據力降級。
+  - **1.4 開跑規則（Opus 步驟 0 程式化檢查）**：`assets/photos_heldout/` 有 ≥5 張且五類各 ≥1、`assets/SOURCES.md` §4 有對應列 →
+    走 held-out 路徑（Prompt A）；否則 Opus **停在步驟 0 回報缺項**，不得自行降級——降級只能由使用者貼 Prompt B（內含「沿用舊五張（降級）」字樣）。
+  **2. 程序 P1（被 gate 擋下的照片怎麼處理；程序不是門檻，4/5、<20% 一字不動）**：
+  - **§7-1（held-out 五張）**：每張先以**預設路徑**跑一次（不加任何旗標，記錄 exit code 與 gate 訊息原文）；exit 3 者再以
+    `--force-low-confidence` 產樣本。五張樣本**不論 forced 與否全部進盲測**；MANIFEST 逐筆帶 `source_provenance.cli_params.force_low_confidence`；
+    REPORT §1 另列「五張中幾張被擋（forced）」。盲聽分數照算（判準 1）。
+  - **§7-2（8 對照場地）**：三組**不得合併**（裁決 C）：
+    | 組 | 定義 | 計入判準 2？ |
+    |---|---|---|
+    | **自動組** | 不加旗標、預設路徑即通過 gate 的 in-domain 場地（§3 事前定義） | **是**（分母＝通過 gate 的 in-domain 場地數；coverage＝通過數／in-domain 場地數，可能 0/1） |
+    | **forced 組** | in-domain 或域外場地，被擋後以 `--force-low-confidence` 量得的結果 | **否**，只記錄（供 R2 後調參對照） |
+    | **手動組** | 5 個 `--override-dims` run，尺寸**逐字沿用** T-17 `output/mvp_acceptance/tables.md` 表 4（不得重新估計）；被擋者加 `--force-low-confidence` 並在表中標 forced | 照 T-17 另列成績（F-09 出口），不混入自動組 |
+    域外場地（§3）若**不加旗標即通過 gate** → 不進自動組，記入報告項 5「域外誤放」（判準 5 不成立）。
+  - **§7-3／§7-4**：§7-3 用 `blind_test/sample_N_IR.wav` 任一條（Opus 先以 `soundfile.info` 驗格式，使用者載入外部 convolution reverb 回報）；
+    §7-4 試聽檔＝8 場地 wet（自動或 forced 各取實際產出者）＋5 張 held-out wet，播放頁另標每檔 forced 與否。
+  - 選 P1 的理由（沿用 T-17-R2-pre §2）：使用者盲聽聽到的是管線估計本身；gate 的效果由報告項 5（coverage／錯誤放行率）另外誠實揭露，不會被 P1 掩蓋。
+  **3. in-domain 場地事前定義（判準 2「≤10m 自動路徑」；現在鎖定，結果出來後不得改）**：
+  | 場地 | 依據 | 類別 |
+  |---|---|---|
+  | `mit_gym` | T-17 表 4 Opus 估 9×6×2.9m（非公開真值） | **in-domain（唯一）** |
+  | `racquetball_court_4` | 公開標準 12.19m | 域外（T-55 v3 同） |
+  | `steinman_hall` | 實測牆距 12.2m | 域外（T-55 v3 同） |
+  | `mit_department_store`／`mit_restaurant` | T-17 表 4 估 35×25／14×9m | 域外（估計） |
+  | `cathedral_room`／`tunnel_to_hell` | 無真值；T-55 估 14.1／18.2m，天然洞窟與隧道 | 域外（估計） |
+  | `divorce_beach` | 戶外 | 域外（非房間） |
+  held-out 五張：依使用者所附尺寸判——最大邊 ≤10m 為 in-domain；>10m 域外；車內＝`domain_out_non_room`（T-55 v3 口徑）。
+  **結論先講**：判準 2 的自動組分母最多 1（`mit_gym`），且 `output/gate_calibration_v3/tables.md` 表 1 顯示 `site_photo_gym` 在 HEAD 為 BLOCK
+  → 自動組 coverage 極可能 0/1 → 判準 2 不成立 → 期望 `MVP：FAIL（R2）`（T-17-R2-pre §4 已預告）。仍要跑，理由同該節。
+  **4. 執行步驟（Opus 主導；本卡是驗收卡：`src/`／`data/` 零 diff、`ir_metrics.py` 零 diff、既有 `scripts/t17_*.py` 零 diff、
+  `output/mvp_acceptance/` 一個 bit 不改）**：
+  0. **前置檢查（全部程式化，任一不成立→停、回報，不開跑）**：
+     (a) HEAD 乾淨：`git status --porcelain` 為空；`git log` 含 `c1b3f63`（T-56 結案）；
+     (b) 核准句：使用者 Prompt 含「程序 P1 核准」（若含「P2」→ 停，回 Fable）；且含「held-out 已就位」（Prompt A）或「沿用舊五張（降級）」（Prompt B）；
+     (c) held-out（Prompt A）：§1.4 規則；另對每張檢查長寬比非 2:1±5%（PIL 讀尺寸）、每張 sha256 **不出現在** `output/.archive/`、
+         `data/material_ground_truth.json`、任何 `output/**/*.md`／`MANIFEST.json`（`grep -r <sha256>` 為空）→ 證明未曾用過；
+     (d) T-48-S (c) 重跑規則：執行
+        `git diff 012a07f..HEAD --stat -- src/image_reverb/geometry.py src/image_reverb/acoustics.py src/image_reverb/ir_synth.py src/image_reverb/ir_metrics.py src/image_reverb/config.py data/`
+        預期**非空**（T-54 改 `geometry.py`）；再執行 `git diff 80dd527..HEAD --stat -- <同一組路徑>` 預期**為空**——兩段輸出原文貼進 REPORT §0，
+        記「A 由 T-55 於 T-54 之後重量（`80dd527`）、B 由 T-56 重量（`c1b3f63`），其後量測路徑零 diff」；若第二段非空 → 停、回 Fable；
+     (e) 21 支 `scripts/test_*.py` 全 EXIT=0；六條交付 IR MD5 全中（鐵則 2）；
+     (f) `output/mvp_acceptance/` 全目錄 sha256 快照存 scratchpad（收工時再比一次，必須逐位元相同）。
+  1. **鎖定資料集＋工具（獨立 commit，早於任何樣本；鐵則 14）**：
+     - 新增 `scripts/t17r2_dataset_manifest.py`：產 `output/mvp_acceptance_r2/DATASET_MANIFEST.json`＝HEAD＋held-out 5 張（或舊五張）sha256
+       ＋8 場地照片 sha256＋13 條真實 IR sha256＋`assets/dry/clap_synth.wav` sha256＋§3 in-domain 分類表＋手動組 5 組尺寸（逐字抄表 4）；
+     - 新增薄包裝腳本（**只 import、不改**既有 t17 模組）：`t17r2_blind_test.py`（重用 `t17_blind_test.verify_source_provenance()`；
+       `SHUFFLE_SEED = 20260916`；`SPACES` 指向 held-out stem；輸出 `output/mvp_acceptance_r2/blind_test/`；MANIFEST 逐筆帶
+       `source_provenance`＋`forced_low_confidence`；檔名只有 `sample_N`、固定種子打亂、mtime 對齊三項盲性保證照舊）、
+       `t17r2_rt60_table.py`（重用 `t17_rt60_table` 的 `VENUES`／`measure_file`／`real_reference`／`error_vs_reference`；run 清單改為 R2 的
+       auto／forced／manual run 名；輸出 `rt60_table.json`）、`t17r2_report_tables.py`（表 1～4 同 T-17 口徑＋**表 2 三組分列**
+       （自動／forced／手動）＋表 5 報告項 5：in-domain coverage、逐張 gate 結果與導引、被放行照片逐面正誤含無來源面（分母六面）、
+       域外誤放清單）、`t17r2_make_player.py`（輸出 `播放頁.html`＋`_play/`）；
+     - 若走 Prompt A：`assets/photos_heldout/*`、`ground_truth_heldout.json`、`SOURCES.md` §4 補齊一起進這個 commit；
+     - 回填本卡 §8 `dataset_manifest_sha256`＝`shasum -a 256 output/mvp_acceptance_r2/DATASET_MANIFEST.json`；`git add -f` 該 JSON；
+       commit：`T-17-R2: §8 前四欄＋資料集鎖定＋R2 工具（開跑前）`。
+  2. **產樣本（首跑即最終；產生後到步驟 3 打包之間禁止任何 commit）**：
+     (a) held-out 5 張：預設路徑各跑一次（記 exit／stderr 原文）→ exit 3 者加 `--force-low-confidence --no-viz` 重跑；
+     (b) 8 場地自動路徑：`python -m src.image_reverb assets/reference_irs/<場地>/<照片> --no-viz`（記 exit／gate 訊息／是否含
+         `--override-dims` 導引）→ exit 3 者加 `--force-low-confidence` 重跑（forced 組）；
+     (c) 手動組 5 run：照 T-17 手法把照片複製到 scratchpad 改名為 `t17r2_manual_<場地>.<ext>` 後跑 `--override-dims <表 4 尺寸> --no-viz`；
+         被擋者加 `--force-low-confidence`；
+     (d) 全部 `role_aware=False`（不加 `--role-aware`）、陳設預設 observe（不加 `--furnishings`）；每個 run 的 stdout／stderr 存
+         `output/mvp_acceptance_r2/runs/<run>.log`。
+  3. **打包盲測**：`python scripts/t17r2_blind_test.py` → provenance 驗證必須全過（任一 `git_revision` 不符＝紅旗，不得改 HEAD 湊合）；
+     產 `blind_test/sample_1..5.wav`、`sample_N_IR.wav`、`作答表.md`、`MANIFEST.json`、`blind_test_ANSWERS.json`（作答前使用者不得開）。
+  4. **§7-2 量測**：`t17r2_rt60_table.py` → `t17r2_report_tables.py`；`git diff -- src/image_reverb/ir_metrics.py` 為空貼進 REPORT。
+  5. **播放頁**：`t17r2_make_player.py`。
+  6. **中途 commit**：`T-17-R2: 樣本、盲測打包、§7-2 量測（首跑；待使用者 §7-1／§7-3／§7-4）`（`blind_test/MANIFEST.json`、
+     `rt60_table.json`、`tables.md`、`runs/*.log` 以 `git add -f` 進版控；WAV 不進）。**此後不得重生任何樣本**；若發現產生錯誤只能記錄、不得覆寫。
+  7. **使用者環節**（可跨日；期間允許 docs commit，禁止碰 `src`／`data`／`scripts`／`output/mvp_acceptance_r2/`）：§7-1 填 `作答表.md`；
+     §7-3 載入外部 convolution reverb 回報；§7-4 開播放頁試聽回報 artifact。
+  8. **對答與 REPORT**：Opus 對 `blind_test_ANSWERS.json` 計分（逐題列出）；寫 `output/mvp_acceptance_r2/REPORT.md`：§0 結論＋核准紀錄＋
+     T-04 缺項＋held-out 路徑（或降級）＋(d) 兩段 diff 原文；§1～§4 對應判準 1～4；§5 報告項 5（表由程式產出，地雷 #15）；§6 素材來源
+     （判準 6：標明 T-04 缺項）；§7 可重跑指令。**四項 1～4 全部達成才寫 `MVP：PASS`（有 T-04 缺項時只能寫 `PASS（R2；T-04 缺項）`）；
+     否則 `MVP：FAIL（R2）`**。
+  9. **回填本卡**：§8 `result_commit`／`reviewer`／兩個 verdict（判準未變→相同）；四軸；交接筆記（含鐵則 15 清理清單：本輪新建的
+     `output/<held-out stem>/`、`output/t17r2_manual_*/`、`output/.archive/` 新增條目數——**不刪**、逐條列出）。
+  10. **收工**：commit `T-17-R2: MVP 重新驗收結果（MVP：<PASS|FAIL（R2）>）`；步驟 0(f) 快照比對 `output/mvp_acceptance/` 逐位元相同；
+      HANDOFF／DEV_LOG／TODO 同步；push。
+  11. **後續（非本卡）**：建議另開 Opus 新視窗依「Opus 驗證重點」獨立複驗（T-54／T-56 先例）→ 🔮 Fable 收尾複評（R2 結果→MINC/DMS／下一 Phase）。
+  **5. Opus 驗證重點追加（原六項紅旗不變）**：紅旗：forced 組任何一筆被算進自動組達標率；紅旗：held-out 照片 sha256 出現在 R2 之前的任何
+  產物或 GT；紅旗：步驟 2～3 之間有 commit（`git log` 時間戳 vs `provenance.generated_at`）；紅旗：樣本在步驟 6 之後被重生
+  （`generated_at` 晚於中途 commit）；紅旗：報告項 5 逐面表漏列無來源面或分母不是六面；紅旗：REPORT 的 in-domain 名單與 §3 不同；
+  紅旗：任何一張 2:1 長寬比照片進入 held-out；紅旗：既有 `scripts/t17_*.py` 有 diff。
 - **前置（全部硬性，缺一不跑）**：T-42 ✅、T-43 ✅、T-46 ✅、裁決 T-47-A、T-48 ✅、
   T-44-R1 結案（PASS→以 `--role-aware` 試用；FAIL／未跑→預設 `role_aware=False`，REPORT 標明
   用哪一種）、T-04 來源網址補齊**或**使用者明確決定「維持未結案」（REPORT 標明缺項）、
@@ -12119,6 +12235,11 @@ EOF
   criteria_commit: 3586bb0（判準）＋本裁決 commit（報告項）
   criteria_locked_at: 2026-08-30／2026-09-03（皆早於 R2 任何量測）
   dataset_manifest_sha256: 〈盲測 MANIFEST＋8 場地對照 IR 清單＋held-out 照片清單〉
+    → 落地（Fable 2026-09-16；只追加）：
+  criteria_version: v1（T-17 原判準＋裁決 B／C／E）＋R2 報告項（裁決 T-45-A）＋報告項 5 追加（裁決 T-47-A ⓐⓑ：無來源面、分母六面；裁決 T-48-F：V5 列入域外檢查）＋程序 P1 與 in-domain 事前定義（Fable 2026-09-16；程序不是門檻，判準數字未變）
+  criteria_commit: 3586bb0（判準 v1，2026-08-30）＋96e7716（裁決 T-45-A：R2 報告項＋本卡開卡，2026-09-03）＋a5f9e57（裁決 T-47-A 補註，2026-09-14）＋e253ac0（裁決 T-48-F 補註，2026-09-14）＋本次落地 docs commit（執行步驟／P1／in-domain 定義，2026-09-16；hash 見 DEV_LOG (151)）
+  criteria_locked_at: 2026-08-30／2026-09-03／2026-09-14／2026-09-14／2026-09-16（皆早於 R2 任何量測；截至 2026-09-16 R2 尚無任何結果）
+  dataset_manifest_sha256: 〈由 Opus 於執行步驟 1 產生 output/mvp_acceptance_r2/DATASET_MANIFEST.json 後回填其 sha256，並以獨立 commit 早於任何樣本（鐵則 14）；Fable 2026-09-16 無法先填——held-out 照片尚未存在〉
   implementation_commit: 不適用（驗收卡）
   result_commit:
   reviewer:
