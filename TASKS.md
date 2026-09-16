@@ -12237,7 +12237,7 @@ EOF
   dataset_manifest_sha256: 〈盲測 MANIFEST＋8 場地對照 IR 清單＋held-out 照片清單〉
     → 落地（Fable 2026-09-16；只追加）：
   criteria_version: v1（T-17 原判準＋裁決 B／C／E）＋R2 報告項（裁決 T-45-A）＋報告項 5 追加（裁決 T-47-A ⓐⓑ：無來源面、分母六面；裁決 T-48-F：V5 列入域外檢查）＋程序 P1 與 in-domain 事前定義（Fable 2026-09-16；程序不是門檻，判準數字未變）
-  criteria_commit: 3586bb0（判準 v1，2026-08-30）＋96e7716（裁決 T-45-A：R2 報告項＋本卡開卡，2026-09-03）＋a5f9e57（裁決 T-47-A 補註，2026-09-14）＋e253ac0（裁決 T-48-F 補註，2026-09-14）＋本次落地 docs commit（執行步驟／P1／in-domain 定義，2026-09-16；hash 見 DEV_LOG (151)）
+  criteria_commit: 3586bb0（判準 v1，2026-08-30）＋96e7716（裁決 T-45-A：R2 報告項＋本卡開卡，2026-09-03）＋a5f9e57（裁決 T-47-A 補註，2026-09-14）＋e253ac0（裁決 T-48-F 補註，2026-09-14）＋3499656（本次落地 docs commit：執行步驟／P1／in-domain 定義，2026-09-16）
   criteria_locked_at: 2026-08-30／2026-09-03／2026-09-14／2026-09-14／2026-09-16（皆早於 R2 任何量測；截至 2026-09-16 R2 尚無任何結果）
   dataset_manifest_sha256: 〈由 Opus 於執行步驟 1 產生 output/mvp_acceptance_r2/DATASET_MANIFEST.json 後回填其 sha256，並以獨立 commit 早於任何樣本（鐵則 14）；Fable 2026-09-16 無法先填——held-out 照片尚未存在〉
   implementation_commit: 不適用（驗收卡）
