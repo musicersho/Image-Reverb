@@ -12158,6 +12158,9 @@ EOF
   `output/mvp_acceptance/` 一個 bit 不改）**：
   0. **前置檢查（全部程式化，任一不成立→停、回報，不開跑）**：
      (a) HEAD 乾淨：`git status --porcelain` 為空；`git log` 含 `c1b3f63`（T-56 結案）與 T-57「驗證通過（工程）」commit；T-58 若在跑必須已收工或暫停（R2 步驟 2～3 之間不得有它的 commit）；
+         〔Fable 2026-09-18 補：T-57 首驗 🟠 退回（`2f6ee3f`），「T-57 ✅（工程）」要等修正輪 **T-57-F1** 經 Opus 驗證通過才成立；屆時的 commit 訊息仍是
+         `T-57: 驗證通過（工程）`（註明含 T-57-F1），本項 `git log --grep` 照查。另查 `assets/photos_heldout/ground_truth_heldout.json` 存在且符合
+         T-57 交接筆記第 1 點 schema（Opus `2f6ee3f` 建議）〕
      (b) 核准句：使用者 Prompt 含「程序 P1 核准」（若含「P2」→ 停，回 Fable）；且含「held-out 已就位」（Prompt A）或「沿用舊五張（降級）」（Prompt B）；
      (c) held-out（Prompt A）：§1.4 規則；另對每張檢查長寬比非 2:1±5%（PIL 讀尺寸）、每張 sha256 **不出現在** `output/.archive/`、
          `data/material_ground_truth.json`、任何 `output/**/*.md`／`MANIFEST.json`（`grep -r <sha256>` 為空）→ 證明未曾用過；
@@ -12176,6 +12179,8 @@ EOF
        `t17r2_report_tables.py`（表 2 三組分列＋表 5 報告項 5）／`t17r2_make_player.py`——規格全文見 T-57 卡。
      - 可選：使用者若提供真實說話乾聲（`assets/dry/`，SOURCES.md 記「使用者自錄」），步驟 3 以 `--dry` 指定；未提供則沿用合成拍手
        （T-17 REPORT 已註明拍手讓 §7-1 偏保守）。用哪一種寫進 REPORT §1。
+       〔Fable 2026-09-18 補（T-57-F1 第 6 條）：有自錄乾聲時，本步驟的 manifest 指令**也要**帶同一個 `--dry <wav>`，讓 DATASET_MANIFEST 的 `dry` 鎖定的就是步驟 3 實際用的檔；
+       乾聲檔必須放在 repo 內（`assets/dry/`）〕
      - 若走 Prompt A：`assets/photos_heldout/*`、`ground_truth_heldout.json`、`SOURCES.md` §4 補齊一起進這個 commit；
      - 回填本卡 §8 `dataset_manifest_sha256`＝`shasum -a 256 output/mvp_acceptance_r2/DATASET_MANIFEST.json`；`git add -f` 該 JSON；
        commit：`T-17-R2: §8 前四欄＋資料集鎖定＋R2 工具（開跑前）`。
@@ -12187,8 +12192,24 @@ EOF
          被擋者加 `--force-low-confidence`；
      (d) 全部 `role_aware=False`（不加 `--role-aware`）、陳設預設 observe（不加 `--furnishings`）；每個 run 的 stdout／stderr 存
          `output/mvp_acceptance_r2/runs/<run>.log`。
+     (e) **log 格式（🔮 Fable 2026-09-18；T-57 退回理由 R5 裁定＝選項 (i)「log 帶真實結束碼、由程式解析」；程序不是門檻，判準未變）**：
+         - 每個 run 的**預設路徑那一次**（不帶 `--force-low-confidence`；手動組＝只帶 `--override-dims` 那一次）存 `runs/<run>.log`
+           （`<run>`＝照片 stem 或 `t17r2_manual_<key>`）；被擋後的 forced 重跑**另存** `runs/<run>.forced.log`（同格式；工具不解析，留稽核；
+           不得覆寫 `<run>.log`）。
+         - **log 的最後一個非空行必須是 `exit=<整數>`**＝CLI 真實結束碼。指令樣板**逐字照抄**（zsh／bash 通用；`$?` 必須緊接在 CLI 指令之後）：
+           ```bash
+           mkdir -p output/mvp_acceptance_r2/runs
+           LOG="output/mvp_acceptance_r2/runs/<run>.log"
+           python -m src.image_reverb <參數…> --no-viz > "$LOG" 2>&1; printf '\nexit=%d\n' $? >> "$LOG"
+           ```
+         - 為什麼寫在**末行**而不是首行：結束碼要等 CLI 跑完才知道，寫首行得先存暫存檔再重組，多一步就多一個手誤點；末行一條指令就完成。
+         - 解析端（T-57-F1 第 5 條）：`parse_gate_log()` 只認末行 `^exit=(-?\d+)$`；缺→`default_exit: None`，表 5 印「未記錄」（看得見的缺口，不是靜默的 0）；
+           `default_exit==3` 與「已擋下輸出」字串不一致→表 5 標 ⚠️。是否重跑 forced 以**真實結束碼 3** 為準（與 (a)(b)(c) 一致）。
+         - 步驟 6 的 `git add -f runs/*.log` 自然涵蓋 `.forced.log`。
   3. **打包盲測**：`python scripts/t17r2_blind_test.py` → provenance 驗證必須全過（任一 `git_revision` 不符＝紅旗，不得改 HEAD 湊合）；
      產 `blind_test/sample_1..5.wav`、`sample_N_IR.wav`、`作答表.md`、`MANIFEST.json`、`blind_test_ANSWERS.json`（作答前使用者不得開）。
+     〔Fable 2026-09-18 補：打包後以 python 一行式核對 `blind_test/MANIFEST.json` 的 `dry.sha256` 與五筆 `photo_sha256` **等於** `DATASET_MANIFEST.json` 的
+     `dry.sha256`／`heldout_photos[].sha256`，輸出貼 REPORT §0；任一不符＝紅旗（樣本不是來自步驟 1 鎖定的資料集），只記錄、不得重生〕
   4. **§7-2 量測**：`t17r2_rt60_table.py` → `t17r2_report_tables.py`；`git diff -- src/image_reverb/ir_metrics.py` 為空貼進 REPORT。
   5. **播放頁**：`t17r2_make_player.py`。
   6. **中途 commit**：`T-17-R2: 樣本、盲測打包、§7-2 量測（首跑；待使用者 §7-1／§7-3／§7-4）`（`blind_test/MANIFEST.json`、
@@ -12269,7 +12290,7 @@ EOF
   dataset_manifest_sha256: 〈由 Opus 於執行步驟 1 產生 output/mvp_acceptance_r2/DATASET_MANIFEST.json 後回填其 sha256，並以獨立 commit 早於任何樣本（鐵則 14）；Fable 2026-09-16 無法先填——held-out 照片尚未存在〉
     → 追加（Fable 2026-09-18；裁定 T-57-D；只追加）：
   criteria_version: 同上＋報告項 5「錯誤放行率」分母口徑釐清（裁定 T-57-D：六面全列；主率＝❌÷可判面數；6N 上下界同列；判準 1～6 未變；結果前變更）
-  criteria_commit: 同上＋〈裁定 T-57-D 的獨立 `criteria:` commit；hash 由緊接的 docs commit 回填〉
+  criteria_commit: 同上＋〈裁定 T-57-D 的獨立 `criteria:` commit；hash 由緊接的 docs commit 回填〉→ 回填：**`3007646`**（2026-09-18）
   criteria_locked_at: 同上／2026-09-18（早於 R2 任何量測；截至 2026-09-18 `output/mvp_acceptance_r2/` 不存在）
   implementation_commit: 不適用（驗收卡）
   result_commit:
@@ -12316,6 +12337,10 @@ EOF
     `config.GEOMETRY_SCOPE_MAX_M`＝10.0。`ground_truth_heldout.json` schema 決定合理（與 T-36 GT 同構），R2 步驟 0 須檢查該檔存在且符合。
   - **小問題（修正輪順手，不單獨阻擋）**：`t17r2_dataset_manifest.py --legacy` 的 help 說忽略 `--photos-dir` 但實際會用；
     `--photos-dir` 指到 repo 外會在 `relative_to()` 丟 ValueError 而非清楚錯誤訊息。
+- **🔮 Fable 處置（2026-09-18；Opus 退回後）**：(1) 分母口徑→**裁定 T-57-D**（全文在 T-17-R2 卡；獨立 `criteria:` commit `3007646`）；
+  (2) R5→**選項 (i)**（log 末行 `exit=<整數>`，T-17-R2 步驟 2(e) 已同步）；(3) 修正輪＝下一張卡 **T-57-F1**（Sonnet；R1～R5＋Fable 補列 R6＋兩個小問題＋
+  分母文字）；(4) 背景調查 `task_14c97967` 前提為誤報→**可撤銷**（HANDOFF 已註明）。本卡四軸維持「工程：退回」，直到 T-57-F1 經 Opus 驗證通過才改
+  「已驗證」；**T-17-R2 前置「T-57 ✅（工程）」在那之前不成立**。
 - **四軸狀態**：工程：退回｜實驗：不適用（工具卡）｜產品：不適用｜MVP：不適用（T-17-R2 前置；R2 前置「T-57 ✅」尚未成立）
 - **為什麼**：T-17-R2 執行步驟 1 原本要 Opus 自己寫 5 支 R2 腳本，與 CLAUDE.md「Opus 只審不寫」衝突，而且驗收工具沒經過獨立驗證
   就直接拿去驗收。拆出來給 Sonnet 做、Opus 驗，R2 的 Opus 視窗只做 manifest＋跑流程。工具可在沒有 held-out 照片時先完成——
@@ -12437,6 +12462,99 @@ EOF
     還不存在——五支腳本在沒有 held-out 照片／GT 檔的情況下設計上會優雅地回報「找不到照片」或標
     `unknown`，不會 crash，但沒有辦法在本卡對著真實 held-out 照片再跑一次驗證（那正是「不得跑任何
     真實照片產樣本」的範圍限制）。
+
+### T-57-F1 T-57 修正輪：退回理由 R1～R5＋Fable 補列 R6＋兩個小問題＋分母文字（Sonnet；只動 T-57 既有檔案；**關鍵路徑**；前置＝裁定 T-57-D `3007646`）
+- **狀態**：⬜ **可開跑**（Fable 2026-09-18 開卡；可與 T-58 平行——程式檔不相交，但 TASKS／DEV_LOG／HANDOFF／TODO 會同時被兩個視窗改：
+  commit 前先 `git status`，**只 `git add` 本卡列名的檔案**，不得把 `output/rt60_basis_probe/` 等 T-58 產物帶進本卡 commit）
+- **四軸狀態**：工程：未開始｜實驗：不適用（工具卡修正輪）｜產品：不適用｜MVP：不適用（T-17-R2 前置「T-57 ✅（工程）」要等本卡經 Opus 驗證通過才成立）
+- **為什麼**：Opus 2026-09-18 驗證 T-57（對象 `4d4f63b`，紀錄 `2f6ee3f`）：主體成立，但 R1～R5 未達→工程退回。本卡逐條修、逐條附證據。
+  兩個需要 Fable 先定的事已定：**分母口徑＝裁定 T-57-D**（T-17-R2 卡）、**R5＝選項 (i)**（T-17-R2 步驟 2(e)）。Sonnet **不得**重新解讀這兩項。
+- **範圍／禁止修改**（鐵則 13 句型）：`src/`／`data/` 零 diff；既有 `scripts/t17_*.py`（四支）與 `scripts/test_t17_provenance.py` 零 diff；`ir_metrics.py` 零 diff；
+  `output/mvp_acceptance/` 一個 bit 不改；**不得跑任何真實照片產樣本**、不得建立 `output/mvp_acceptance_r2/`；**不得新增任何腳本或測試檔**。
+  **只得修改**：`scripts/t17r2_dataset_manifest.py`、`scripts/t17r2_blind_test.py`、`scripts/t17r2_rt60_table.py`、`scripts/t17r2_report_tables.py`、
+  `scripts/test_t17r2_tools.py`。`scripts/t17r2_common.py`、`scripts/t17r2_make_player.py` **預期零 diff**（若非動不可，交接筆記逐行說明理由）。
+  文件只得動：TASKS.md（本卡＋T-57 卡交接筆記**追加**更正）、DEV_LOG.md、HANDOFF.md、TODO.md。**不得動** T-17-R2 卡任何文字、SPEC／ROADMAP／WORKFLOW。
+- **修正項目（逐條；每條都有「驗收方式」，缺證據＝未完成）**：
+  1. **R1 突變證明（假斷言→真突變）**
+     - 做法：刪除 `test_t17r2_tools.py` 的 (a-4) 斷言與其註解，檔頭 docstring／(a) 段註解裡「含突變證明」字樣一併刪（測試檔內不再自稱有突變證明）。
+       **不得**用另一條只比對測試樁常數的斷言取代。
+     - 真突變流程（**放在所有修正都做完之後**才做；全程不 commit 突變碼）：
+       ① `cp scripts/t17r2_blind_test.py <scratchpad>/t17r2_blind_test.py.bak`；
+       ② 把 MANIFEST 逐筆抄 `forced_low_confidence` 的那一行（Opus 指的原第 116 行）改成寫死 `"forced_low_confidence": False`；
+       ③ `python scripts/test_t17r2_tools.py; echo EXIT=$?` → 預期 (a-3) ❌ 且 `EXIT=1` → **輸出原文**（至少含全部 ❌ 行＋`EXIT=` 行）貼進交接筆記；
+       ④ `cp <scratchpad>/t17r2_blind_test.py.bak scripts/t17r2_blind_test.py`，再 `cmp` 兩檔確認逐位元相同、`grep -n '"forced_low_confidence": False' scripts/t17r2_blind_test.py` 為空；
+       ⑤ 重跑同一指令 → 預期全 ✅、`EXIT=0` → 輸出原文貼進交接筆記。
+       ⚠️ **不得用 `git checkout -- <檔>` 還原**——那會把本卡對該檔的 R3 修正一起洗掉。
+     - 驗收方式：交接筆記有 ③⑤ 兩段輸出原文；`grep -n "a-4" scripts/test_t17r2_tools.py` 為空；Opus 會自己重做一次同樣的突變對照。
+  2. **R2 誤報更正（只追加，不刪原文）**
+     - 三處各追加一段，緊貼在原誤報文字**正下方**：TASKS.md T-57 卡交接筆記「⚠️ 六條交付 IR MD5…」那一點之下、DEV_LOG `2026-09-18 (153)`「附帶發現」那一點之下、
+       HANDOFF「🔵 2026-09-18 Sonnet：T-57 完成」段「附帶發現」那一點之下。追加文字（日期填實際日期，其餘逐字）：
+       「〔更正（T-57-F1，〈日期〉；只追加，原文保留）〕上述『T-20／T-21 四條 MD5 與歷史不同、疑似套件漂移』為**誤報**：當時是拿 SHA-256 的前 14 碼去比歷史 **MD5**。
+       Opus 2026-09-18（`2f6ee3f`）重生四條 `ir_mono.wav`，MD5＝`2adbaa75…`／`2dd19b6e…`／`9a94ffdf…`／`a1c21bcc…` 全中；『同碼同 seed＝逐位元相同』前提仍成立；
+       背景調查 `task_14c97967` 前提不成立，可撤銷。」
+     - 本卡自己再跑一次鐵則 2：四條用 macOS **`md5 -q <檔>`**（**不是** `shasum`）；重生手法沿用鐵則 2 既有做法（`chk_*` 目錄用完即刪，或把 OUTPUT_ROOT 導到 scratchpad）。
+     - 驗收方式：`git diff` 在三處只有新增行、零刪除行；交接筆記貼出四條**完整 32 碼** MD5 與所用指令，前 8 碼分別為 `2adbaa75`／`2dd19b6e`／`9a94ffdf`／`a1c21bcc`。
+  3. **R3 `t17r2_blind_test.py` CLI 補 `--photos-dir`**
+     - 做法：`main()` 加 `--photos-dir DIR` 並傳進 `run(photos_dir=…)`；說明文字與 `t17r2_dataset_manifest.py` 一致。
+     - 驗收方式（新斷言）：以 `unittest.mock.patch` 攔 `t17r2_blind_test.run`，設 `sys.argv=[…, "--photos-dir", "some/dir"]` 呼叫 `main()`，
+       斷言 `run` 收到 `photos_dir == Path("some/dir")`；未給時收到 `None`。
+  4. **R4 `t17r2_rt60_table.py` 缺 manifest → exit 1**
+     - 做法：`DATASET_MANIFEST.json` 不存在 → stderr 印「❌ 找不到 …，請先跑 scripts/t17r2_dataset_manifest.py」→ `return 1`，**不寫** `rt60_table.json`
+       （比照 `t17r2_report_tables.py` 既有手法）。manifest 存在但某場地 key 不在其中 → 同樣 exit 1 並列出缺的 key（不得靜默當 False）。
+     - 驗收方式（新斷言）：隔離 repo 無 manifest → `run()` 回傳 1、`rt60_table.json` 不存在、stderr 含 `DATASET_MANIFEST`；有 manifest 時既有 (e) 斷言照過。
+  5. **R5 `parse_gate_log()` 回報真實結束碼——Fable 裁定＝選項 (i)，寫死**
+     - log 格式（T-17-R2 步驟 2(e) 已規定）：最後一個非空行＝`exit=<整數>`。
+     - 做法：`default_exit`＝以 `^exit=(-?\d+)$` 解析**最後一個非空行**得到的整數；該行不存在或不符→`None`（**不得**再用字串推測填 0 或 3）。
+       保留 `blocked`（＝log 含「已擋下輸出」標記，語義就是「標記有無」）與 `override_dims_guidance`；新增 `exit_marker_consistent`＝
+       `None`（`default_exit is None`）否則 `(default_exit == 3) == blocked`。只解析 `<run>.log`，**不讀** `<run>.forced.log`。
+       `t17r2_report_tables.py` 表 5 加一欄「預設路徑 exit」：整數或「未記錄」；`exit_marker_consistent is False` → 該格加 ⚠️。
+       `gate_result`／「域外誤放」判定**維持**只依 `analysis.json.forced_low_confidence`（Opus 已驗、不得回歸）。
+     - 驗收方式（新斷言，四份樁 log）：(i) 含擋下標記＋末行 `exit=3` → `default_exit==3`、consistent True；(ii) 含 `Traceback`＋末行 `exit=1` →
+       `default_exit==1`（**不是 0**）、`blocked False`；(iii) 無 exit 行 → `default_exit is None`、表 5 印「未記錄」；(iv) 含擋下標記＋末行 `exit=0` →
+       consistent False、表 5 該列有 ⚠️。log 檔不存在 → 回傳 `None`（原行為不變）。
+  6. **R6（Fable 補列；Opus 未列；與 R3 同型）`t17r2_dataset_manifest.py` 的 `--dry` 沒接線**
+     - 事由：`build_manifest()` 有 `dry_path` 參數，但 `run()`／`main()` 沒接 → 使用者若提供自錄乾聲（T-17-R2 步驟 1「可選」），DATASET_MANIFEST 仍會記 `clap_synth.wav`，
+       與盲測實際用的乾聲不符，資料集鎖定（鐵則 14）有洞。
+     - 做法：`run()` 加 `dry_path`、`main()` 加 `--dry WAV`（預設不給＝`assets/dry/clap_synth.wav`，原行為不變）。
+     - 驗收方式（新斷言）：隔離 repo 放第二個乾聲檔，`run(dry_path=…)` → manifest `dry.path`／`dry.sha256` 等於該檔；未給時等於 `clap_synth.wav`（原斷言不變）；
+       `main()` 接線比照第 3 條用 mock 驗。**不做** blind_test 與 manifest 的程式化交叉比對（該核對已寫進 T-17-R2 步驟 3，由 R2 現場執行；不在本卡範圍）。
+  7. **分母文字與計算一致（依裁定 T-57-D §3，逐項照做，不得另立口徑）**
+     - 做法：`t17r2_report_tables.py` 檔頭 docstring 第 5 點與 `render_item5_table()`：刪除「分母固定 6」字樣；彙總行改印——
+       被放行照片數 N、總面數 6N、可判面數、無法判面數、**主率＝❌÷可判面數**、**下界＝❌÷6N**、**上界＝（❌＋無法判）÷6N**；每張照片六面表下加一行
+       「❌ x／可判 y／無法判 z（共 6）」；可判面數＝0 → 主率印「—（無可判面）」；N＝0 → 印「錯誤放行率不適用（0 張放行）」。兩者皆**不得印 0%**。
+       「無法判」判定式維持現況（GT 缺或 `material_id=="unknown"`）；GT `proxy: true` 照判；無來源面照列、照判。
+     - 驗收方式（新斷言）：合成 2 張未 forced 通過的照片共 12 面＝7 ✅＋3 ❌＋2 無法判（其中至少 1 面是「無來源」且被判 ❌，證明無來源面在分母內）→
+       斷言 `tables.md` 彙總行的數字＝由測試端從 `items` **獨立重算**的值（N=2、6N=12、可判 10、無法判 2、主率 3/10＝30%、下界 3/12＝25%、上界 5/12＝42%）；
+       斷言 `tables.md` 全文**不含**「分母固定 6」；另兩個情境各一條斷言：可判＝0 → 含「—（無可判面）」且該彙總行不含「0%」；N＝0 → 含「錯誤放行率不適用」。
+  8. **兩個小問題**
+     - (a) `--legacy` 與 `--photos-dir`：**CLI 層互斥**（`t17r2_dataset_manifest.py` 與 `t17r2_blind_test.py` 兩支都做；同時給 → argparse 錯誤、exit 2、訊息講明
+       「--legacy 固定使用 assets/photos/，不可與 --photos-dir 併用」）；`--photos-dir` 的 help 改成與行為一致。`run()` 層**保留**兩者並存（隔離 repo 測試需要），不改。
+     - (b) 路徑在 repo 外：`--photos-dir`（兩支）與 `--dry`（manifest）指到 repo 外 → stderr 清楚訊息（含「必須位於 repo 內：manifest 只記 repo 相對路徑」）＋exit 1，
+       **不得**出現 Traceback。
+     - 驗收方式（新斷言）：(a) 以 `subprocess` 跑兩支腳本 `--legacy --photos-dir x` → returncode 2、stderr 含「不可」；(b) 隔離 repo 外的暫存目錄傳給 `run()` →
+       回傳 1、stderr 含「repo」、無例外拋出。
+- **自我檢查（沿用 T-57 原卡全部項目＋本卡追加；每項貼實際輸出）**：
+  1. （原卡）22 支 `scripts/test_*.py` 全 `EXIT=0`（本卡不新增測試檔，仍是 22 支）；六條交付 IR MD5 全中（見第 2 條，用 `md5 -q`）；
+     `git diff --stat -- src data scripts/t17_blind_test.py scripts/t17_rt60_table.py scripts/t17_report_tables.py scripts/t17_make_player.py scripts/test_t17_provenance.py` 為空；
+     `ls output/` 與開跑前相同（T-58 視窗新增的 `output/rt60_basis_probe/` 不算本卡，交接筆記註明）；`output/mvp_acceptance/` 全目錄 sha256 快照前後相同；鐵則 15 清理清單。
+  2. （追加）**修正後以真實突變重跑並附輸出**：第 1 條 ③⑤ 兩段輸出原文。
+  3. （追加）**「tables.md 的分母文字與計算一致」測試斷言**存在且通過（第 7 條）。
+  4. （追加；鐵則 5 第一類——修 bug 的新測試必須在舊碼 fail）：`git worktree add <scratchpad>/t57_old 4d4f63b` → 把**新版** `test_t17r2_tools.py` 複製進該 worktree 的
+     `scripts/` → 在該 worktree 跑 → 預期第 3／4／5／6／7／8 條的新斷言 ❌、`EXIT=1` → 輸出原文貼交接筆記 → `git worktree remove` 清掉（列入鐵則 15 清單）。
+  5. （追加）`git diff --stat 4d4f63b..HEAD -- scripts/` 只出現本卡「只得修改」的五個檔；`t17r2_common.py`／`t17r2_make_player.py` 零 diff（或已說明）。
+- **不得回歸**（T-57 卡「已實測成立」清單，逐項維持；有對應測試者以測試為證，無者交接筆記寫怎麼確認的）：既有 t17 四支＋`test_t17_provenance.py`／`src`／`data` 零 diff；
+  `SHUFFLE_SEED=20260916`；未給 `--dry` 時 5 個 `sample_N.wav` 與來源 `wet_preview.wav` 逐位元相同；`--dry`（44.1k）可跑並重採樣至 48k；拒絕覆寫既有樣本；
+  manifest 同 HEAD 寫兩次逐位元相同、無時間戳；測試全在系統暫存目錄、不碰真實 `output/`；`VENUE_KEY_TO_GT_NAME`／`VENUE_KEY_TO_MANUAL_KEY`／`MANUAL_DIMS` 數字與對照不變；
+  `in_domain` 寫死僅 `mit_gym`；domain 門檻用 `config.GEOMETRY_SCOPE_MAX_M`；表 2 三組分列、forced 不進自動組、coverage 行；`ground_truth_heldout.json` schema 不變。
+- **卡關規則**：同一條嘗試超過 3 次仍不過 → 停，狀態寫「🔴 卡關」＋原因，請使用者問 Fable。**不得**為了過關改寫本卡任何「驗收方式」或裁定 T-57-D 的口徑（WORKFLOW §5 紅旗 3）。
+- **Opus 驗證重點（四軸輸出；對象＝T-57 全部交付物在修正輪後的 HEAD，不是只看 diff）**：紅旗：(a-4) 仍在，或被另一條恆真斷言取代；紅旗：突變輸出不存在／Opus 自己重做突變得不到
+  相同結果；紅旗：新斷言在 `4d4f63b` worktree 上不 fail；紅旗：`tables.md` 仍有「分母固定 6」、主率分母不是可判面數、缺 6N 上下界、或可判＝0／N＝0 印出 0%；
+  紅旗：無來源面被排除出表或分母；紅旗：缺 manifest 時 `rt60_table.json` 仍被寫出；紅旗：任何地方仍用字串推測 `default_exit`，或把 `.forced.log` 當預設路徑解析；
+  紅旗：R2 更正刪了原文，或四條 MD5 沒貼完整值／用的不是 `md5`；紅旗：「不得回歸」清單任何一項退步；紅旗：動了「只得修改」清單以外的檔案或 T-17-R2 卡文字。
+- **§8**：不適用（工具卡修正輪，無實驗結果；口徑變更的 §7 紀錄在 T-17-R2 卡 §8，不在本卡）。
+- **收工**：commit `T-57-F1: 完成修正輪（待驗證）` → 開 Opus 新視窗驗證 → 通過時 Opus 把 **T-57 卡與本卡**四軸同時改「工程：已驗證」，commit 訊息用
+  `T-57: 驗證通過（工程）（含修正輪 T-57-F1）`（T-17-R2 步驟 0(a) 以此字樣查 `git log`）。再退回→由 Fable 開 T-57-F2，不在本卡內續修。
+- **交接筆記**：
 
 ### T-58 調查卡：T-12 v2-b 方向反轉——Sabine 目標 vs 幾何聲學參考 vs 產品合成路徑（Sonnet；只量不改；停滯期填充卡；不進關鍵路徑；前置＝T-56 ✅）
 - **狀態**：🔵 **待審**（Sonnet 2026-09-18 完成，等 Opus 驗證）
