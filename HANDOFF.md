@@ -1,5 +1,13 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔵 2026-09-18 Sonnet：T-58-F2 完成（待驗證）——**現在該做的是：開 Opus 新視窗依 T-58 卡「Opus 驗證重點」複驗**（任務寫「T-58（含修正輪 T-58-F1／T-58-F2）」），結果 commit 見本次收工 commit
+>
+> - **純文件修正輪**：`scripts`／`src`／`data`／`output` 對 `31233ed` 零 diff；未執行 `scripts/t58_rt60_basis_probe.py` 任何子指令（`report` 也未跑）、未跑任何測試。
+> - **Q1**：T-58 卡 §8 `change_record` 依樣板拆成三行——首行還原為 `81158cd` 原字，T-58-F1 接在行尾的那句逐字搬到下一行，第三行新增說明；T-58-F1 卡交接筆記另起新行追加三處（更正「整份 diff 零刪除行」不實陳述＋兩處補件指標）。
+>   修正前後機械檢查（C1～C5）與 Fable 開卡時的模擬逐項相符：修正前 C1 印 1 行、C2 印 2 行；修正後 C1～C3 為空、C4 恰 1 行、C5 `exit=0`。T-58／T-58-F1 卡既有行一字未動。
+> - **Q2**：R1 的 grep 全部輸出改對固定 commit `31233ed` 取快照（31 行，逐行標註 A×6／B×12／C×6／D×1／E×6）；自我檢查 5 要求的三份原文（`git show --stat`／`git diff --stat`／`@@` 行，7／2／7 行）補貼＋七個 hunk 逐一歸屬到「只得動」清單的哪一項。全部區塊 BEGIN／END＋機械 `diff`（C6／C7）核對皆 `exit=0`。
+> - 與 T-57-F1 平行，兩者皆非 T-17-R2 前置；收工前核對 T-17-R2 仍為「⬜ 可開跑（等使用者 held-out 照片）」，未進入步驟 2，可正常 commit／push。詳見 TASKS.md T-58-F2 卡「交接筆記」與 DEV_LOG `2026-09-18 (162)`。
+
 > ## 🔮 2026-09-18 Fable：T-58 第二修正輪已開卡——**現在該做的是：開 Sonnet 視窗貼「執行 TASKS.md 的任務 T-58-F2。…」（WORKFLOW §2.1 Prompt）**；T-57-F1 照常平行，兩者都做完各自找 Opus 驗
 >
 > - **T-58-F2（Sonnet）＝純文件**：只動 TASKS／DEV_LOG／HANDOFF／TODO；**t58 腳本任何子指令都不准跑（`report` 也不准）**、不要求重跑測試；`scripts`／`src`／`data`／`output` 對 `31233ed` 零 diff。

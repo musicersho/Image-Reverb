@@ -12692,7 +12692,9 @@ EOF
   （T-58-F1 2026-09-18 追加確認，原字保留：重跑 report 後程式輸出 H4＝不支持〔per_wall 4/6、control_gypsum 4/6、control_carpet 1/6；合併 9/18〕，與上一行 Opus 更正一致；「部分支持」作廢但不刪）
   verdict_under_current_criteria: 同上（本卡無門檻、criteria 未變更）
   criteria_changed_after_first_result: no
-  change_record: 無（T-58-F1：判定程式對齊卡片條文『多數』＝＞半數；非門檻變更——Fable 2026-09-18 判定，Opus 於 T-58-F1 驗證時獨立核對）
+  change_record: 無
+  （T-58-F1：判定程式對齊卡片條文『多數』＝＞半數；非門檻變更——Fable 2026-09-18 判定，Opus 於 T-58-F1 驗證時獨立核對）
+  （T-58-F2 2026-09-18 追加，原字保留：上一行原於 T-58-F1〔31233ed〕被接在「change_record: 無」同一行行尾，使該行在 git diff 81158cd 呈 1 行刪除；T-58-F2 依 Fable 2026-09-18 處置把首行還原為 81158cd 原字、該句另起新行——字元零增刪，只插入一個換行與 2 格縮排；31233ed 的寫法留在 git 歷史。非門檻變更）
   ```
 - **交接筆記（Sonnet，2026-09-18）**：
   - 新增檔案：`scripts/t58_rt60_basis_probe.py`（唯一新檔，`scripts/` 以外零改動），四個子指令
@@ -12904,12 +12906,16 @@ EOF
     `git diff --stat -- scripts` 只含本檔；`git diff 81158cd -- scripts/t58_rt60_basis_probe.py` 的每個 `@@` hunk 都落在上述①～④範圍內
     （`build_manifest`／`run_part_a`／`run_part_b`／`build_table_a/b/c`／`_criteria_abs_errors`／`measure_bands_and_combined`／
     `median_over_runs`／`combined_approx_from_bands`／`normalize_peak`／`main()`／全部模組層常數／`tol = 0.20` 一字未動）。
+    〔補件（T-58-F2，2026-09-18；另起新行追加，上文原字保留）〕自我檢查 5 要求貼的 `git show --stat`／`git diff --stat`／各 hunk `@@` 行原文當時未貼；已補在 T-58-F2 卡交接筆記「Q2-B」。
   - **R1（H4 判定紀錄同步）**：程式端不必改判定（REPORT §1 本來就印「不支持」）；重跑 `report` 後把程式輸出的實際值
     （per_wall 4/6、control_gypsum 4/6、control_carpet 1/6、合併 9/18）分別追加進：①T-58 卡 §8 `verdict_under_original_criteria`
     區塊 Opus 更正行之下；②T-58 卡交接筆記「H4 部分支持」那一點正下方；③DEV_LOG `2026-09-18 (156)` 該點正下方；④HANDOFF
     「🔵 2026-09-18 Sonnet：T-58 完成」段內兩處「H4 部分支持」各自正下方。四處都用「只追加、原文保留」寫法，未刪一字。
     `grep -n "部分支持" TASKS.md DEV_LOG.md HANDOFF.md TODO.md` 逐筆標註（見下方獨立小節）；`git diff 81158cd -- TASKS.md`
     整份 diff 零刪除行（只有 `git diff` 標準檔頭 `---`/`+++`，無任何 `-` 開頭的內容行）。
+    〔更正（T-58-F2，2026-09-18；另起新行追加，上文原字保留）〕上文「整份 diff 零刪除行（…無任何 `-` 開頭的內容行）」**與實際輸出不符，作廢**：`31233ed` 當時 `git diff 81158cd -- TASKS.md` 在 T-58 卡範圍內有 **1 行刪除**
+    （§8 的 `change_record: 無` 被接字在同一行行尾），R1 驗收「零刪除行」當時**未達**，且該結論句未附指令輸出原文。T-58-F2 已把該行還原為 `81158cd` 原字、追加句另起新行；
+    修正前（1 行）與修正後（空）的指令輸出原文見 T-58-F2 卡交接筆記「Q1」。
   - **R2（H3 MIT 字樣）**：改成 `h3_dir_consistent = (h3_all_support == h3_mit_support)`，MIT 括號印「（未下降／下降；與 5 場地方向
     一致／不一致）」；H3 判定本身仍只由 `h3_all_support`（5 場地）決定，MIT 子集只是旁註，判定邏輯未變。本輪實際輸出：
     `…pra_median=1.1272 vs sabine=0.4738（未下降；與 5 場地方向一致）。`——與卡片預期完全相符。scratchpad 四組合驗證見下方獨立小節，
@@ -12959,6 +12965,7 @@ EOF
     ⚠️ **自我引用說明**：本「交接筆記」段落自己在分析『部分支持』一詞時，也會被同一個 `grep -n "部分支持"` 命中（例如上面幾句
     分析文字與下方「R1」小節的敘述）；這些是本卡討論該詞彙處置方式的說明文字，不是未更正的原始判定主張，故不逐行複述座標
     （座標會隨本段文字增修而變動，以文字內容而非行號為準）。
+    〔補件（T-58-F2，2026-09-18；另起新行追加，上文原字保留）〕R1 驗收要求貼的 grep **全部輸出**原文當時未貼（只有摘要標註，自我引用行未列座標）；已改對固定 commit `31233ed` 取快照，補在 T-58-F2 卡交接筆記「Q2-A」（共 31 行，逐行標註）。
   - **R2 scratchpad 驗證輸出**（四組合，`part_a`／`part_b` 用真實快取）：
     ```
     all支持 x MIT支持 → h3_all_support=True  h3_mit_support=True  dir_consistent=True
@@ -12998,8 +13005,9 @@ EOF
     `T-58: 驗證通過（工程）（含修正輪 T-58-F1）`。與 T-57-F1 平行，兩者皆非 T-17-R2 前置。
 
 ### T-58-F2 T-58 第二修正輪：Opus 二度退回 Q1～Q2（**純文件**：`change_record` 行還原＋追加句另起新行、更正「零刪除行」不實陳述、補貼兩份原始輸出；**不改腳本、不重跑 `report`**；partA／partB／manifest 照舊禁止）（Sonnet；只動 TASKS／DEV_LOG／HANDOFF／TODO；不進關鍵路徑；前置＝T-58-F1 🟠 `2e42eb6`）
-- **狀態**：⬜ **可開跑**（Fable 2026-09-18 開卡；可與 T-57-F1 平行——程式檔不相交（本卡根本不碰程式），但 TASKS／DEV_LOG／HANDOFF／TODO 會同時被兩個視窗改：commit 前先 `git status`，共用文件一律 `git add -p` 只挑本卡的 hunk）
-- **四軸狀態**：工程：未開始｜實驗：負向（沿用 Opus 2026-09-18 兩次判定：H1 不支持｜H2 支持｜H3 不支持｜H4 不支持；**本卡不重判、不得改寫**）｜產品：不適用｜MVP：不適用
+- **狀態**：🔵 **完成（待驗證）**（Sonnet 2026-09-18；純文件修正輪，`scripts`／`src`／`data`／`output` 對 `31233ed` 零 diff；未執行任何子指令或測試；結果 commit 見交接筆記）
+  （原 Fable 開卡狀態，原字保留：⬜ 可開跑（Fable 2026-09-18 開卡；可與 T-57-F1 平行——程式檔不相交（本卡根本不碰程式），但 TASKS／DEV_LOG／HANDOFF／TODO 會同時被兩個視窗改：commit 前先 `git status`，共用文件一律 `git add -p` 只挑本卡的 hunk））
+- **四軸狀態**：工程：待審｜實驗：負向（沿用 Opus 2026-09-18 兩次判定：H1 不支持｜H2 支持｜H3 不支持｜H4 不支持；**本卡不重判、不得改寫**）｜產品：不適用｜MVP：不適用
 - **為什麼**：Opus 2026-09-18 複驗 T-58（含修正輪 T-58-F1）（審查 HEAD `31233ed`，紀錄 `2e42eb6`）：**程式與 REPORT 逐位元確認正確**（無手打、R2／R3 新舊碼對照成立、唯讀檔 sha256 全中、22 支測試 EXIT=0），
   Fable「R3 不屬 §7 變更」Opus 同意；退回只因紀錄——**Q1** R1 驗收「T-58 卡零刪除行」未達（§8 `change_record: 無` 被接字在同一行行尾＝1 行刪除），交接筆記卻寫「整份 diff 零刪除行」＝不實；
   **Q2** 自我檢查 5 的 `git diff --stat`＋`@@` 行、R1 的 grep 全部輸出沒有貼原文。本卡只補這兩件事。三項 Fable 決定見 T-58-F1 卡「🔮 Fable 處置」第 1～4 點，Sonnet **不得**重新解讀。
@@ -13091,6 +13099,217 @@ EOF
 - **收工**：commit `T-58-F2: 完成第二修正輪（待驗證）` → 開 Opus 新視窗驗證（WORKFLOW §2.2 Prompt，任務寫「T-58（含修正輪 T-58-F1／T-58-F2）」）→ 通過時 Opus 把 **T-58 卡、T-58-F1 卡與本卡**四軸同時改「工程：已驗證」
   （實驗：負向不變），commit 訊息用 `T-58: 驗證通過（工程）（含修正輪 T-58-F1／T-58-F2）`，訊息內附四軸判定。再退回→由 Fable 開 T-58-F3，不在本卡內續修。
 - **交接筆記**：
+  - **Q1 修正前取證（步驟 1，任何編輯之前執行；與 Fable 開卡時實跑值逐項相同，未觸發卡關）**：
+    ```
+    $ git diff -U0 81158cd 2e42eb6 -- TASKS.md | awk -v s=12559 -v e=12704 '/^@@/{split($2,a,","); o=substr(a[1],2)+0; c=(a[2]==""?1:a[2]+0); inr=(c>0 && o+c-1>=s && o<=e); next} inr && /^-/{print}'
+    -  change_record: 無
+
+    $ diff <(git show 81158cd:TASKS.md | awk '/^### /{f=($2=="T-58")} f') <(git show 2e42eb6:TASKS.md | awk '/^### /{f=($2=="T-58")} f') | grep -E '^(<|[0-9,]+[cd][0-9,]+$)'
+    87c114
+    <   change_record: 無
+    ```
+    C1＝1 行、C2＝2 行，與 Fable 開卡時的模擬完全相同，**未卡關**，繼續步驟 2。
+  - **Q1 修正（步驟 2～3）**：T-58 卡 §8 `change_record` 依樣板拆成三行——第 1 行還原為 `81158cd` 原字 `  change_record: 無`；
+    第 2 行＝`31233ed` 原本接在行尾的那句逐字搬到下一行（一字未改，由 C5 機械核對）；第 3 行為本卡新增的說明句。T-58 卡其他任何一行未動。
+    T-58-F1 卡交接筆記另起新行追加三處（① R1 小節「整份 diff 零刪除行」結論更正、② 改動範圍小節補件指標指向 Q2-B、③ 自我引用說明段補件指標指向 Q2-A，含 31 行的行數 N＝31）；T-58-F1 卡既有行一字未動（C3 為空證實）。
+  - **Q2-A：R1 驗收要求的 grep 全部輸出（固定 commit `31233ed` 快照，鐵則 17）**：
+    ```
+    # BEGIN T58F2-Q2A
+    31233ed:DEV_LOG.md:42:- 退回理由：**R1** H4 在程式 REPORT 是「不支持」、在 TASKS／§8／交接文件是卡片不允許的「部分支持」（地雷 #15、紅旗 6）；**R2** H3 MIT 子集 REPORT 寫「方向不一致」與實際相反；
+    31233ed:DEV_LOG.md:55:  中位數皆大於 sabine，方向與假設相反）；**H4 部分支持**（Part A：per_wall／control_gypsum 4/6 頻段在 ±20% 內，
+    31233ed:DEV_LOG.md:58:  合併 9/18 非多數），上文「部分支持」作廢，理由見 T-58 卡狀態欄 R1 與 Fable 處置第 2 點。
+    31233ed:HANDOFF.md:34:> - 量測已獨立重跑逐位元重現（不必重跑模擬）；問題全在判定文字：R1 H4 程式說「不支持」、交接文件說「部分支持」（且不在允許集合）；
+    31233ed:HANDOFF.md:36:> - 四軸：工程：退回｜實驗：負向｜產品：不適用｜MVP：不適用。**下方 Sonnet 區塊的「H4 部分支持」已被本次審查更正為「不支持」。**
+    31233ed:HANDOFF.md:46:>   與假設相反）；H4 部分支持（Part A：per_wall／control_gypsum 4/6 頻段在 ±20% 內，**control_carpet 僅 1/6**——已用獨立重算證實不是
+    31233ed:HANDOFF.md:49:>   control_carpet 1/6；合併 9/18 非多數），上文「部分支持」作廢，理由見 T-58 卡狀態欄 R1 與 Fable 處置第 2 點。
+    31233ed:HANDOFF.md:63:>   H3 不支持｜H4 部分支持）｜產品：不適用｜MVP：不適用。詳見 TASKS.md T-58 卡「交接筆記」與 DEV_LOG `2026-09-18 (156)`。
+    31233ed:HANDOFF.md:64:>   〔更正（T-58-F1，2026-09-18；只追加，原文保留）〕H4 應記**不支持**（合併 9/18 非多數），上文「部分支持」作廢，理由同上。
+    31233ed:TASKS.md:12570:    `verdict_under_original_criteria`／交接筆記／DEV_LOG／TODO／HANDOFF／commit 訊息寫「**部分支持**」；卡片明文「每條只記支持／不支持／不確定」，
+    31233ed:TASKS.md:12571:    「部分支持」不在允許集合。以程式結果為準：三條件分開看 per_wall 4/6、control_gypsum 4/6、control_carpet 1/6；合併看 9/18＝半數，**非多數**
+    31233ed:TASKS.md:12611:  （原 Sonnet 版四軸：工程：待審｜實驗：不確定（H1 不支持、H2 支持、H3 不支持、H4 部分支持——per_wall／control_gypsum 多數頻段內、control_carpet 未達，逐條數字見交接筆記）｜產品：不適用｜MVP：不適用）
+    31233ed:TASKS.md:12665:  verdict_under_original_criteria: H1 不支持｜H2 支持｜H3 不支持（5 場地與 MIT 3 場地子集方向一致）｜H4 部分支持（Part A：per_wall 4/6、control_gypsum 4/6、control_carpet 1/6 頻段在 ±20% 內，整體「多數頻段」判定不支持；Part B 佐證＝既有 closed_loop 5～6/6，未重量）。逐項數字與判定理由見交接筆記。
+    31233ed:TASKS.md:12666:  （Opus 2026-09-18 追加更正，原字保留：H4「部分支持」不在卡片允許集合，且與程式產出 REPORT §1「不支持」矛盾；依程式結果 H4＝**不支持**〔三條件 4/6、4/6、1/6；合併 9/18 非多數〕。修正輪須以程式輸出為準再追加一行確認）
+    31233ed:TASKS.md:12667:  （T-58-F1 2026-09-18 追加確認，原字保留：重跑 report 後程式輸出 H4＝不支持〔per_wall 4/6、control_gypsum 4/6、control_carpet 1/6；合併 9/18〕，與上一行 Opus 更正一致；「部分支持」作廢但不刪）
+    31233ed:TASKS.md:12696:    - **H4 部分支持**：Part A 產品路徑 vs 自身 Sabine 目標（±20% 多數頻段）：per_wall 4/6、
+    31233ed:TASKS.md:12702:      不在本卡範圍內修。整體判定用「三條件都要過半」的嚴格標準，故 H4 記「部分支持」而非「支持」。
+    31233ed:TASKS.md:12704:      上文『故 H4 記「部分支持」而非「支持」』作廢。
+    31233ed:TASKS.md:12758:    **不得動** T-57／T-57-F1／T-17-R2／T-59 卡任何文字、SPEC／ROADMAP／WORKFLOW。**不得** `git commit --amend`／rebase／force-push 去改 `94b8287`／`317dc55` 等已 push 的 commit 訊息（訊息裡的「部分支持」留著，由本卡交接筆記註明已被更正取代）。
+    31233ed:TASKS.md:12764:       `（T-58-F1 〈日期〉 追加確認，原字保留：重跑 report 後程式輸出 H4＝不支持〔per_wall 〈a〉/6、control_gypsum 〈b〉/6、control_carpet 〈c〉/6；合併 〈n〉/18〕，與上一行 Opus 更正一致；「部分支持」作廢但不刪）`；
+    31233ed:TASKS.md:12765:       ② T-58 卡交接筆記「**H4 部分支持**…」那一點**正下方**追加「〔更正（T-58-F1，〈日期〉；只追加，原文保留）〕H4 依卡片允許集合與程式輸出應記**不支持**（理由見本卡狀態欄 R1 與 Fable 處置第 2 點）；
+    31233ed:TASKS.md:12766:       上文『故 H4 記「部分支持」而非「支持」』作廢。」；③ DEV_LOG `2026-09-18 (156)` 該點正下方追加同型更正；④ HANDOFF「🔵 2026-09-18 Sonnet：T-58 完成」段內兩處「H4 部分支持」各自正下方追加同型更正。
+    31233ed:TASKS.md:12767:       TODO.md 若有「部分支持」字樣且不在 Opus／Fable 的更正敘述內→同法追加。
+    31233ed:TASKS.md:12768:     - 驗收方式：交接筆記貼 `grep -n "部分支持" TASKS.md DEV_LOG.md HANDOFF.md TODO.md` 全部輸出，逐筆標註「原文（下一行已有更正）」或「更正／退回理由敘述內」；
+    31233ed:TASKS.md:12850:    區塊 Opus 更正行之下；②T-58 卡交接筆記「H4 部分支持」那一點正下方；③DEV_LOG `2026-09-18 (156)` 該點正下方；④HANDOFF
+    31233ed:TASKS.md:12851:    「🔵 2026-09-18 Sonnet：T-58 完成」段內兩處「H4 部分支持」各自正下方。四處都用「只追加、原文保留」寫法，未刪一字。
+    31233ed:TASKS.md:12852:    `grep -n "部分支持" TASKS.md DEV_LOG.md HANDOFF.md TODO.md` 逐筆標註（見下方獨立小節）；`git diff 81158cd -- TASKS.md`
+    31233ed:TASKS.md:12886:  - **`部分支持` 全文逐筆標註**（`grep -n "部分支持" TASKS.md DEV_LOG.md HANDOFF.md TODO.md`，本卡收工前執行；HANDOFF.md 因本卡在檔案
+    31233ed:TASKS.md:12889:    交接文件說部分支持」這個問題本身，非未更正的原始主張）；HANDOFF.md:36＝**更正敘述內**（Opus 自己的更正句）；
+    31233ed:TASKS.md:12900:    ⚠️ **自我引用說明**：本「交接筆記」段落自己在分析『部分支持』一詞時，也會被同一個 `grep -n "部分支持"` 命中（例如上面幾句
+    31233ed:TODO.md:15:  → **2026-09-18 前置追加 T-57 🟠 工程退回（Opus 2026-09-18；R1～R5 待修正輪，分母口徑交 Fable）**；**T-58 🟠 工程退回（Opus 2026-09-18：量測可重現，但 H4 判定 REPORT「不支持」vs 交接文件「部分支持」矛盾等 R1～R5，只需改判定文字重跑 report；實驗：負向；待 Fable 決定續修或開 T-58-F1；不影響 R2 排程）**。
+    # END T58F2-Q2A
+    ```
+    逐行標註（LABELS，與 Q2A 順序、行數一一對應；五類定義見卡片步驟 4）：
+    ```
+    # BEGIN T58F2-Q2A-LABELS
+    DEV_LOG.md:42 B 退回理由敘述內
+    DEV_LOG.md:55 A 更正在 DEV_LOG.md:57-58
+    DEV_LOG.md:58 B 更正敘述內
+    HANDOFF.md:34 B 退回理由敘述內
+    HANDOFF.md:36 B 更正敘述內
+    HANDOFF.md:46 A 更正在 HANDOFF.md:48-49
+    HANDOFF.md:49 B 更正敘述內
+    HANDOFF.md:63 A 更正在 HANDOFF.md:64
+    HANDOFF.md:64 B 更正敘述內
+    TASKS.md:12570 B 退回理由敘述內
+    TASKS.md:12571 B 退回理由敘述內
+    TASKS.md:12611 D 歷史四軸（原Sonnet版四軸，WORKFLOW§3.4保留）
+    TASKS.md:12665 A 更正在 TASKS.md:12666-12667
+    TASKS.md:12666 B 更正敘述內
+    TASKS.md:12667 B 更正敘述內
+    TASKS.md:12696 A 更正在 TASKS.md:12703-12704
+    TASKS.md:12702 A 更正在 TASKS.md:12703-12704
+    TASKS.md:12704 B 更正敘述內
+    TASKS.md:12758 C 卡片範圍規則文字
+    TASKS.md:12764 C 卡片指示文字（R1逐字樣板）
+    TASKS.md:12765 C 卡片指示文字（R1逐字樣板）
+    TASKS.md:12766 C 卡片指示文字（R1逐字樣板）
+    TASKS.md:12767 C 卡片指示文字（R1逐字樣板）
+    TASKS.md:12768 C 卡片指示文字（R1驗收方式說明）
+    TASKS.md:12850 E T-58-F1交接筆記自身說明文字（R1小節，F1當時未列座標）
+    TASKS.md:12851 E T-58-F1交接筆記自身說明文字（R1小節，F1當時未列座標）
+    TASKS.md:12852 E T-58-F1交接筆記自身說明文字（R1小節，F1當時未列座標）
+    TASKS.md:12886 E T-58-F1交接筆記自身說明文字（部分支持全文逐筆標註小節開頭，F1當時未列座標）
+    TASKS.md:12889 E T-58-F1交接筆記自身說明文字（逐筆標註內容，F1當時未列座標）
+    TASKS.md:12900 E T-58-F1交接筆記自身說明文字（自我引用說明，F1當時未列座標）
+    TODO.md:15 B 退回理由敘述內
+    # END T58F2-Q2A-LABELS
+    ```
+    統計：A×6（DEV_LOG.md:55、HANDOFF.md:46、HANDOFF.md:63、TASKS.md:12665、TASKS.md:12696、TASKS.md:12702）、
+    B×12（DEV_LOG.md:42／:58、HANDOFF.md:34／:36／:49／:64、TASKS.md:12570／:12571／:12666／:12667／:12704、TODO.md:15）、
+    C×6（TASKS.md:12758、:12764～:12768）、D×1（TASKS.md:12611）、E×6（TASKS.md:12850／:12851／:12852／:12886／:12889／:12900）；合計 31，與 Fable 開卡時的預期逐項相同。
+    C6（Q2A）／C6（Q2A-LABELS 版，用 LABELS 區塊自身重新比對第一欄與 Q2A 檔名:行號 一致，見下方 C7）／C7 結果：
+    ```
+    $ awk -v b="    # BEGIN T58F2-Q2A" -v e="    # END T58F2-Q2A" '$0==b{f=1;next} $0==e{f=0} f' TASKS.md | sed 's/^    //' | diff - <(git grep -n "部分支持" 31233ed -- TASKS.md DEV_LOG.md HANDOFF.md TODO.md); echo "exit=$?"
+    exit=0
+
+    $ diff <(awk -v b="    # BEGIN T58F2-Q2A" -v e="    # END T58F2-Q2A" '$0==b{f=1;next} $0==e{f=0} f' TASKS.md | sed 's/^    //' | cut -d: -f2,3) <(awk -v b="    # BEGIN T58F2-Q2A-LABELS" -v e="    # END T58F2-Q2A-LABELS" '$0==b{f=1;next} $0==e{f=0} f' TASKS.md | sed 's/^    //' | cut -d' ' -f1); echo "exit=$?"
+    exit=0
+    ```
+  - **Q2-B：自我檢查 5 要求的三份原文（兩端固定 commit）**：
+    ```
+    # BEGIN T58F2-Q2B1
+     DEV_LOG.md                        |  17 ++++
+     HANDOFF.md                        |  18 +++++
+     TASKS.md                          | 111 ++++++++++++++++++++++++-
+     TODO.md                           |   4 +
+     output/rt60_basis_probe/REPORT.md |  20 +++--
+     scripts/t58_rt60_basis_probe.py   | 256 +++++++++++++++++++++++++++++++++++++++++++++++++++-------
+     6 files changed, 388 insertions(+), 38 deletions(-)
+    # END T58F2-Q2B1
+    ```
+    （7 行，`scripts/` 下只含 `t58_rt60_basis_probe.py`，與卡片預期一致）
+    ```
+    # BEGIN T58F2-Q2B2
+     scripts/t58_rt60_basis_probe.py | 256 +++++++++++++++++++++++++++++++++++++++++++++++++++++-------
+     1 file changed, 226 insertions(+), 30 deletions(-)
+    # END T58F2-Q2B2
+    ```
+    （2 行，226 增／30 刪，與卡片預期一致）
+    ```
+    # BEGIN T58F2-Q2B3
+    @@ -49,7 +49,7 @@ from src.image_reverb.materials import (  # noqa: E402
+    @@ -504,8 +504,11 @@ def build_table_c(part_b: dict[str, Any]) -> tuple[str, dict[str, float], dict[s
+    @@ -522,6 +525,11 @@ def evaluate_hypotheses(part_a: dict[str, Any], part_b: dict[str, Any], table_c_
+    @@ -533,34 +541,55 @@ def evaluate_hypotheses(part_a: dict[str, Any], part_b: dict[str, Any], table_c_
+    @@ -569,17 +598,187 @@ def evaluate_hypotheses(part_a: dict[str, Any], part_b: dict[str, Any], table_c_
+    @@ -592,6 +791,8 @@ def build_report(part_a: dict[str, Any], part_b: dict[str, Any]) -> str:
+    @@ -609,19 +810,14 @@ def build_report(part_a: dict[str, Any], part_b: dict[str, Any]) -> str:
+    # END T58F2-Q2B3
+    ```
+    （7 行，起點 `-49`／`-504`／`-522`／`-533`／`-569`／`-592`／`-609`，與 Opus 狀態欄 Q2 所列相同）
+    逐 hunk 歸屬（讀 `+`／`-` 行本身判斷，不採信 `@@` 行尾的函式標籤——標籤只是「起點之前最近的函式標頭」，卡片已提醒第 1、2 個 hunk 標籤會誤導）：
+    - hunk 1（`-49,+49`）：增刪行是 import 那一句 `from gen_ir_manual import build_room` → `PRESETS, build_room` → 只得動清單第 4 項（import 白名單新增 `PRESETS`）。
+    - hunk 2（`-504,+504`，標籤 `def build_table_c(...)`）：增刪行是 `evaluate_hypotheses()` 的函式簽章（回傳型別改 `tuple[str, dict[str, Any]]`）與 `verdicts: dict[str, Any] = {}` 初值；`build_table_c` 本身零改動，只以未變動的上下文行出現在標籤 → 只得動清單第 1 項（`evaluate_hypotheses()`）。
+    - hunk 3（`-522,+525`）：增刪行是 H1 判定後新增 `verdicts["h1"] = {...}` → 第 1 項。
+    - hunk 4（`-533,+541`）：增刪行是 H2 的 `verdicts["h2"]`、H3 的 `h3_dir_consistent` 邏輯與括號文字、H4 的 `majority = sum(within) > len(within) / 2` 門檻改寫與 `per_cond_counts`／`merged_n`／`merged_total`／`merged_label` 計數 → 全部在 `evaluate_hypotheses()` 內 → 第 1 項。
+    - hunk 5（`-569,+598`，187 行，標籤同樣是 `def evaluate_hypotheses(...)` 但橫跨函式邊界，卡片已提醒）：前段（H4 組字串、`verdicts["h4"]`、`return` 改回傳 tuple）屬 `evaluate_hypotheses()` 尾段 → 第 1 項；中段新增 `_part_a_position_diff()`／`_pra_credibility_lines()`／`_build_section_3()` 三個函式 → 第 3 項（為 `evaluate_hypotheses()`／`build_report()` 服務的新增純計算小函式）；尾段 `h_section, verdicts = evaluate_hypotheses(...)`／`pos_diff = _part_a_position_diff()`／`sorted_bases`／`result_sentence`／`section_3 = _build_section_3(...)` 是 `build_report()` 開頭的接線 → 第 2 項（`build_report()`，僅限配合前兩者回傳值的接線）。
+    - hunk 6（`-592,+791`，標籤 `def build_report(...)`，標籤正確）：增刪行是 `build_report()` 內 `lines = [...]` 列表新增 `result_sentence`／空行 → 第 2 項。
+    - hunk 7（`-609,+810`，標籤 `def build_report(...)`，標籤正確）：增刪行是 `build_report()` 內新增 R4 那條 §2 文字＋把舊寫死的 §3 三段文字換成 `section_3` 變數引用 → 第 2 項。
+    七個 hunk 全落在只得動清單第 1／2／3／4 項，與 T-58-F1 卡「範圍」段所列不得動清單（`build_manifest`／`run_part_a`／`run_part_b`／`build_table_a/b/c`／`_criteria_abs_errors`／`measure_bands_and_combined`／`median_over_runs`／`combined_approx_from_bands`／`normalize_peak`／模組層常數／`tol = 0.20`／`main()`）零交集。
+    C6（Q2B1／Q2B2／Q2B3）結果：
+    ```
+    $ awk -v b="    # BEGIN T58F2-Q2B1" -v e="    # END T58F2-Q2B1" '$0==b{f=1;next} $0==e{f=0} f' TASKS.md | sed 's/^    //' | diff - <(git show --stat=100 --format= 31233ed); echo "exit=$?"
+    exit=0
+
+    $ awk -v b="    # BEGIN T58F2-Q2B2" -v e="    # END T58F2-Q2B2" '$0==b{f=1;next} $0==e{f=0} f' TASKS.md | sed 's/^    //' | diff - <(git diff --stat=100 81158cd 31233ed -- scripts/t58_rt60_basis_probe.py); echo "exit=$?"
+    exit=0
+
+    $ awk -v b="    # BEGIN T58F2-Q2B3" -v e="    # END T58F2-Q2B3" '$0==b{f=1;next} $0==e{f=0} f' TASKS.md | sed 's/^    //' | diff - <(git diff 81158cd 31233ed -- scripts/t58_rt60_basis_probe.py | grep '^@@'); echo "exit=$?"
+    exit=0
+    ```
+  - **Q1 修正後取證（步驟 6，步驟 2～3 全部編輯完成後執行）**：
+    ```
+    $ git diff -U0 81158cd -- TASKS.md | awk -v s=12559 -v e=12704 '/^@@/{split($2,a,","); o=substr(a[1],2)+0; c=(a[2]==""?1:a[2]+0); inr=(c>0 && o+c-1>=s && o<=e); next} inr && /^-/{print}'
+    （輸出為空）
+
+    $ diff <(git show 81158cd:TASKS.md | awk '/^### /{f=($2=="T-58")} f') <(awk '/^### /{f=($2=="T-58")} f' TASKS.md) | grep -E '^(<|[0-9,]+[cd][0-9,]+$)'
+    （輸出為空）
+
+    $ diff <(git show 2e42eb6:TASKS.md | awk '/^### /{f=($2=="T-58-F1")} f') <(awk '/^### /{f=($2=="T-58-F1")} f' TASKS.md) | grep -E '^(<|[0-9,]+[cd][0-9,]+$)'
+    （輸出為空）
+
+    $ diff <(git show 2e42eb6:TASKS.md | awk '/^### /{f=($2=="T-58")} f') <(awk '/^### /{f=($2=="T-58")} f' TASKS.md) | grep '^<'
+    <   change_record: 無（T-58-F1：判定程式對齊卡片條文『多數』＝＞半數；非門檻變更——Fable 2026-09-18 判定，Opus 於 T-58-F1 驗證時獨立核對）
+
+    $ diff <(git show 31233ed:TASKS.md | awk '/^### /{f=($2=="T-58")} f' | grep '^  change_record: 無（' | sed 's/^  change_record: 無//') <(awk '/^### /{f=($2=="T-58")} f' TASKS.md | grep -A1 '^  change_record: 無$' | tail -1 | sed 's/^  //'); echo "exit=$?"
+    exit=0
+    ```
+    C1／C2／C3 皆空、C4 恰 1 行且內容＝`2e42eb6` 版被接字的那一整行、C5 `exit=0`——與卡片步驟 6 的預期逐項相符，Q1 修正確認完成。
+  - **自我檢查**：
+    1. 步驟 1（修正前，見上方「Q1 修正前取證」）與步驟 6（修正後，見上方「Q1 修正後取證」）的輸出已並列——修正前 C1／C2 抓得到問題、修正後 C1～C5 全部為空／恰 1 行／`exit=0`，證明檢查式有效（鐵則 5 精神）。
+    2. Q2A／Q2A-LABELS／Q2B1／Q2B2／Q2B3 五個區塊已在上方交接筆記內；C6×4＋C7 的輸出全部只有 `exit=0`（見上方「C6（Q2A）」與「C6（Q2B1／Q2B2／Q2B3）」小節）。
+    3. `src`／`scripts`／`data`／`output` 零 diff、`git status --short` 只出現本卡列名檔案：
+       ```
+       $ git diff --stat 31233ed -- scripts src data output
+       （輸出為空）
+
+       $ git status --short
+        M DEV_LOG.md
+        M HANDOFF.md
+        M TASKS.md
+        M TODO.md
+       ```
+       四個檔案都是本卡允許動的文件，沒有其他視窗的未 commit 改動。
+    4. 〔staging 之後、commit 之前的檢查——見下方「Staging 前檢查（自我檢查第 4 項）」小節，本卡最後一步執行〕
+    5. ```
+       $ git merge-base --is-ancestor 2e42eb6 HEAD; echo "exit=$?"
+       exit=0
+       ```
+       已 push 的歷史（`2e42eb6`）未被改寫。
+    6. 聲明：本卡未執行 `scripts/t58_rt60_basis_probe.py` 任何子指令、未跑任何 Python 測試（本卡不要求；`scripts`／`src`／`data`／`output` 零 diff）。六條交付 IR MD5／22 支測試：本卡不要求重驗（Opus 視需要自行重跑）。
+    7. 鐵則 15 清理清單：本輪只在本視窗 scratchpad（`$SP`）建立一次性檔案，皆不在 repo 內、未影響 `git status`：
+       `q2a.txt`／`q2a_block.txt`／`labels_raw.txt`／`labels_block.txt`／`q2b1.txt`／`q2b2.txt`／`q2b3.txt`／
+       `Q2B1_block.txt`／`Q2B2_block.txt`／`Q2B3_block.txt`／`handoff_note_part1.txt`／`handoff_note_part2.txt`（組裝用中間檔）；
+       另有 `/tmp/q2a_raw.txt`（第一次跑 grep 的暫存輸出，後續改用 scratchpad 版本重跑，未採用其結果）。未建立任何 `git worktree`、未執行任何 Python 測試或照片 CLI、未動 `output/.archive/`。
+  - **Staging 前檢查（自我檢查第 4 項）**：`git status --short` 未見其他視窗未 commit 的改動，直接 `git add TASKS.md DEV_LOG.md HANDOFF.md TODO.md`。
+    ```
+    $ git diff --cached --numstat
+    9	0	DEV_LOG.md
+    8	0	HANDOFF.md
+    207	3	TASKS.md
+    3	0	TODO.md
+
+    $ git diff --cached -U0 -- TASKS.md | grep '^-' | grep -v '^--- '
+    -  change_record: 無（T-58-F1：判定程式對齊卡片條文『多數』＝＞半數；非門檻變更——Fable 2026-09-18 判定，Opus 於 T-58-F1 驗證時獨立核對）
+    -- **狀態**：⬜ **可開跑**（Fable 2026-09-18 開卡；可與 T-57-F1 平行——程式檔不相交（本卡根本不碰程式），但 TASKS／DEV_LOG／HANDOFF／TODO 會同時被兩個視窗改：commit 前先 `git status`，共用文件一律 `git add -p` 只挑本卡的 hunk）
+    -- **四軸狀態**：工程：未開始｜實驗：負向（沿用 Opus 2026-09-18 兩次判定：H1 不支持｜H2 支持｜H3 不支持｜H4 不支持；**本卡不重判、不得改寫**）｜產品：不適用｜MVP：不適用
+    ```
+    DEV_LOG.md／HANDOFF.md／TODO.md 刪除數皆 **0**；TASKS.md 三條刪除行分別屬於 (i) T-58 卡 `change_record` 那一行（恰 1 行）與 (ii) **本卡自己**的「狀態」「四軸狀態」欄位行（各 1 行，鐵則 16(c) 的例外）——沒有其他刪除行，符合要求。
+    （本節文字本身在此次 `git add` 之後才新增，之後會再 `git add` 一次重新暫存；本節只新增行，不影響上面已核對過的刪除行清單。）
+  - **T-17-R2 互鎖檢查**：收工前查看 HANDOFF.md 頂部，T-17-R2 卡狀態仍是「⬜ 可開跑（等使用者 held-out 照片）」，未進入步驟 2（產樣本），本卡可正常 commit／push。
+  - **下一步**：開 Opus 新視窗，依 T-58 卡「Opus 驗證重點」逐項複驗（對象＝本卡收工 commit，任務寫「T-58（含修正輪 T-58-F1／T-58-F2）」）→
+    通過後 Opus 把 T-58 卡、T-58-F1 卡與本卡四軸同時改「工程：已驗證」（實驗：負向不變），commit 訊息用
+    `T-58: 驗證通過（工程）（含修正輪 T-58-F1／T-58-F2）`。與 T-57-F1 平行，兩者皆非 T-17-R2 前置。
 
 ### T-59 ir_synth 鄰帶洩漏診斷：合成側 vs 量測側分離＋判準頻段發生率（保留號；T-58 Fable 處置第 5 點；**未開卡——開卡條件＝T-17-R2 收工後的 Fable 重新規劃輪**）
 - **狀態**：⏸ 保留號（Fable 2026-09-18）——現在不開跑；不在關鍵路徑；Sonnet 不要做。
