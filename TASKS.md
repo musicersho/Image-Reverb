@@ -12577,6 +12577,10 @@ EOF
 - **交接筆記**：
 
 ### T-58 調查卡：T-12 v2-b 方向反轉——Sabine 目標 vs 幾何聲學參考 vs 產品合成路徑（Sonnet；只量不改；停滯期填充卡；不進關鍵路徑；前置＝T-56 ✅）
+- **狀態（Opus 驗證，2026-09-18；T-58＋修正輪 T-58-F1／T-58-F2 合併複驗；另起新行追加，下方 🟠 狀態欄為歷史 verdict、原字保留）**：✅ **工程已驗證**——Opus 5，審查 HEAD `1d5ca73`（工作樹乾淨、＝origin/main）。
+  程式／REPORT：`scripts`／`src`／`data`／`output` 對 `31233ed` 零 diff、五項唯讀 sha256＝鎖定值、`git archive 1d5ca73` 複本重跑 `report` 與 repo 逐位元相同、22 支測試 EXIT=0；
+  紀錄：上一輪退回 Q1（§8 `change_record` 行被接字＝1 行刪除）已由 T-58-F2 修正——對 `81158cd` 的 C1／C2 為空、C4 恰 1 行、C5 `exit=0`；Q2 原文補貼、C6×4＋C7 `exit=0`。逐項證據見 T-58-F2 卡末「✅ Opus 驗證紀錄（2026-09-18）」。
+- **四軸狀態（Opus 驗證，2026-09-18）**：工程：已驗證｜實驗：負向（H1 不支持｜H2 支持｜H3 不支持｜H4 不支持；HEAD 上 REPORT 逐位元重現，與前兩次判定無出入）｜產品：不適用（調查卡；`IR_RT60_BASIS` 決定歸 Fable，T-17-R2 之後）｜MVP：不適用
 - **狀態**：🟠 **工程退回**（Opus 5，2026-09-18，審查 HEAD `81bad70`；對象 `ee55cad`／`94b8287`）。
   **量測本身沒問題**：22 支測試 EXIT=0；`src`／`data` 自 `78d2220` 起零 diff；30 條 `material_r3` WAV sha256 與 T-56 REPORT §2 逐條相同；
   5 份 `analysis.json`／5 條 `ir_mono.wav`／`rt60_table.json` sha256 與 manifest 相同；manifest sha256＝`cf44e3ba…` 相符；
@@ -12687,6 +12691,7 @@ EOF
   reviewer: 〈Opus 填：模型＋日期＋commit〉 → Opus 5，2026-09-18，審查 HEAD `81bad70`（對象 `ee55cad`／`94b8287`）；**工程退回**（R1～R5 見狀態欄）；量測獨立重跑逐位元重現
   （Opus 5 2026-09-18 複驗 T-58-F1 追加，原字保留：審查 HEAD `31233ed`；**工程仍退回**〔Q1 R1「零刪除行」未達且交接結論不實；Q2 自我檢查未貼原文——見 T-58-F1 狀態欄〕；
   `report` 於 scratchpad 逐位元重現；Fable 處置第 3 點「R3 非 §7 變更」Opus 獨立核對後同意）
+  （Opus 5 2026-09-18 複驗 T-58-F2 追加，另起新行、原字保留：審查 HEAD `1d5ca73`；**工程已驗證**〔T-58＋T-58-F1＋T-58-F2 合併〕；C1～C7 以固定 commit 重跑全符；五項唯讀 sha256 全中；Fable 處置第 2 點〔change_record 行還原＋另起新行不屬 §7〕Opus 獨立核對後同意）
   verdict_under_original_criteria: H1 不支持｜H2 支持｜H3 不支持（5 場地與 MIT 3 場地子集方向一致）｜H4 部分支持（Part A：per_wall 4/6、control_gypsum 4/6、control_carpet 1/6 頻段在 ±20% 內，整體「多數頻段」判定不支持；Part B 佐證＝既有 closed_loop 5～6/6，未重量）。逐項數字與判定理由見交接筆記。
   （Opus 2026-09-18 追加更正，原字保留：H4「部分支持」不在卡片允許集合，且與程式產出 REPORT §1「不支持」矛盾；依程式結果 H4＝**不支持**〔三條件 4/6、4/6、1/6；合併 9/18 非多數〕。修正輪須以程式輸出為準再追加一行確認）
   （T-58-F1 2026-09-18 追加確認，原字保留：重跑 report 後程式輸出 H4＝不支持〔per_wall 4/6、control_gypsum 4/6、control_carpet 1/6；合併 9/18〕，與上一行 Opus 更正一致；「部分支持」作廢但不刪）
@@ -12758,6 +12763,9 @@ EOF
     未動、未還原、未覆蓋那些變更。
 
 ### T-58-F1 T-58 修正輪：退回理由 R1～R5（只改判定程式與 REPORT 敘述、只重跑 `report`；**禁止重跑 partA／partB／manifest**）（Sonnet；只動 `scripts/t58_rt60_basis_probe.py`；不進關鍵路徑；前置＝T-58 🟠 `81158cd`）
+- **狀態（Opus 驗證，2026-09-18；隨 T-58-F2 合併複驗；另起新行追加，下方 🟠 狀態欄為歷史 verdict、原字保留）**：✅ **工程已驗證**——Opus 5，審查 HEAD `1d5ca73`。本卡 R1～R5 的程式／REPORT 於 2026-09-18 對 `31233ed` 已逐位元確認，
+  本輪零 diff＋唯讀 sha256 全中＋HEAD 複本重跑 `report` 逐位元相同；本卡退回理由 Q1／Q2 由 T-58-F2 補正並經機械核對（本卡既有行零刪除：C3 為空）。證據見 T-58-F2 卡末「✅ Opus 驗證紀錄（2026-09-18）」。
+- **四軸狀態（Opus 驗證，2026-09-18）**：工程：已驗證｜實驗：負向（同 T-58）｜產品：不適用｜MVP：不適用
 - **狀態**：🟠 **工程退回**（Opus 5，2026-09-18，審查 HEAD `31233ed`；對象＝T-58 全部交付物在修正輪後的狀態）。
   **程式與 REPORT 本身沒問題（逐項獨立核對，全部通過）**：兩份量測快取／`DATASET_MANIFEST.json`／`tables.md` 的 sha256＝卡上鎖定值、28 條 WAV 合併雜湊＝`28e99a69…`；
   manifest 記錄的 41 個輸入逐筆重算 0 筆不符；`src`／`data` 自 `78d2220` 起零 diff；22 支測試 EXIT=0（Opus 重跑）；`git archive HEAD` 到 scratchpad＋複製兩份快取重跑 `report`，
@@ -13005,6 +13013,8 @@ EOF
     `T-58: 驗證通過（工程）（含修正輪 T-58-F1）`。與 T-57-F1 平行，兩者皆非 T-17-R2 前置。
 
 ### T-58-F2 T-58 第二修正輪：Opus 二度退回 Q1～Q2（**純文件**：`change_record` 行還原＋追加句另起新行、更正「零刪除行」不實陳述、補貼兩份原始輸出；**不改腳本、不重跑 `report`**；partA／partB／manifest 照舊禁止）（Sonnet；只動 TASKS／DEV_LOG／HANDOFF／TODO；不進關鍵路徑；前置＝T-58-F1 🟠 `2e42eb6`）
+- **狀態（Opus 驗證，2026-09-18；另起新行追加，下方 🔵 狀態欄原字保留）**：✅ **工程已驗證**——Opus 5，審查 HEAD `1d5ca73`；「Opus 驗證重點」紅旗全部未觸發；Fable 處置第 2 點（不走 §7）Opus 獨立核對後同意。逐項證據見本卡末「✅ Opus 驗證紀錄（2026-09-18）」。
+- **四軸狀態（Opus 驗證，2026-09-18）**：工程：已驗證｜實驗：負向（沿用，本卡不重判）｜產品：不適用｜MVP：不適用
 - **狀態**：🔵 **完成（待驗證）**（Sonnet 2026-09-18；純文件修正輪，`scripts`／`src`／`data`／`output` 對 `31233ed` 零 diff；未執行任何子指令或測試；結果 commit 見交接筆記）
   （原 Fable 開卡狀態，原字保留：⬜ 可開跑（Fable 2026-09-18 開卡；可與 T-57-F1 平行——程式檔不相交（本卡根本不碰程式），但 TASKS／DEV_LOG／HANDOFF／TODO 會同時被兩個視窗改：commit 前先 `git status`，共用文件一律 `git add -p` 只挑本卡的 hunk））
 - **四軸狀態**：工程：待審｜實驗：負向（沿用 Opus 2026-09-18 兩次判定：H1 不支持｜H2 支持｜H3 不支持｜H4 不支持；**本卡不重判、不得改寫**）｜產品：不適用｜MVP：不適用
@@ -13310,6 +13320,151 @@ EOF
   - **下一步**：開 Opus 新視窗，依 T-58 卡「Opus 驗證重點」逐項複驗（對象＝本卡收工 commit，任務寫「T-58（含修正輪 T-58-F1／T-58-F2）」）→
     通過後 Opus 把 T-58 卡、T-58-F1 卡與本卡四軸同時改「工程：已驗證」（實驗：負向不變），commit 訊息用
     `T-58: 驗證通過（工程）（含修正輪 T-58-F1／T-58-F2）`。與 T-57-F1 平行，兩者皆非 T-17-R2 前置。
+- **✅ Opus 驗證紀錄（2026-09-18；Opus 5；只審不改碼；審查 HEAD `1d5ca73`〔工作樹乾淨、＝origin/main〕；對象＝T-58 全部交付物，含修正輪 T-58-F1／T-58-F2；另起新行追加，上文原字保留）**：
+  - **判定**：工程：已驗證｜實驗：負向（H1 不支持｜H2 支持｜H3 不支持｜H4 不支持；不變）｜產品：不適用｜MVP：不適用。本卡「Opus 驗證重點」紅旗逐條未觸發（證據原文見下方區塊）。
+  - **Q1（`change_record` 還原）**：對 `81158cd` 的 C1／C2 為空、C3（T-58-F1 對 `2e42eb6`）為空、C4 恰 1 行＝`2e42eb6` 版被接字那一行、C5 `exit=0`；修正前取證版（`81158cd 2e42eb6`）Opus 重跑＝C1 1 行、C2 2 行，與交接筆記相同——檢查式修正前抓得到、修正後為空。
+    另以 scratchpad 一次性 Python 把本卡步驟 2／3 的 8 行 `▸` 逐字樣板（`〈日期〉`→2026-09-18、`〈N〉`→31）與實際插入行逐位元比對：8/8 相同、縮排（2／4 空白）正確、三處插入點都在指定既有行正下方；`change_record: 無` 行尾無空白（`cat -e`）。
+  - **Q2（補貼原文）**：五個區塊在位（Q2A／Q2A-LABELS 各 31 行、Q2B1 7 行、Q2B2 2 行、Q2B3 7 行）；C6×4＋C7 以固定 commit 版重跑全 `exit=0`；LABELS 五類 A×6／B×12／C×6／D×1／E×6，Opus 逐行對 `31233ed` 原文核對分類正確，
+    A 類六筆的更正座標（`DEV_LOG.md:57`、`HANDOFF.md:48`、`HANDOFF.md:64`、`TASKS.md:12666`／`12667`、`TASKS.md:12703`）全部是更正行；七個 hunk 的歸屬 Opus 讀 `+`／`-` 行核對屬實（hunk 1＝import 多 `PRESETS`；hunk 2＝`evaluate_hypotheses` 簽章＋`verdicts` 初值，`build_table_c` 只是 `@@` 標籤；hunk 5 跨函式邊界、含三個新增小函式），全在 T-58-F1「只得動」範圍。
+  - **範圍**：`scripts`／`src`／`data`／`output` 對 `31233ed` 零 diff；收工 commit 只動 TASKS／DEV_LOG／HANDOFF／TODO，後三者刪除數 0；TASKS 3 條刪除行＝T-58 `change_record` 1 行＋本卡狀態／四軸 2 行（鐵則 16(c) 例外，卡上事前寫明）；
+    T-57／T-57-F1／T-17-R2／T-59 卡 0 行變動、全部 hunk 落在 T-58／T-58-F1／T-58-F2 卡內（共同鐵則未動）；已 push 的 `94b8287`／`317dc55`／`31233ed`／`2e42eb6`／`5e7c6df` 皆為 HEAD 祖先（無改寫歷史）。
+  - **程式面（沿用 2026-09-18 對 `31233ed` 的逐位元核對，前提 Opus 重驗成立）**：五項唯讀 sha256（兩份快取／`DATASET_MANIFEST.json`／`tables.md`／28 條 WAV 合併雜湊）＝T-58-F1 卡鎖定值（腳本未被跑過）；
+    `git archive 1d5ca73`＋複製兩份快取在 scratchpad 重跑 `report`，`REPORT.md`／`tables.md` 與 repo 逐位元相同；22 支 `scripts/test_*.py` Opus 重跑全 `EXIT=0`，跑完 `git status --short` 為空。
+  - **Fable 處置第 2 點（T-58-F1 卡）獨立核對——同意：還原 `change_record` 行＋追加句另起新行「不改驗收條件、不需走 §7」**：
+    (i) 被改的是紀錄的行排版，不是門檻：T-58 的 H1～H4 條文、`criteria_version`／`criteria_commit`／`criteria_changed_after_first_result`、T-58-F1 R1 驗收文字「零刪除行」全部未動（C3 空；T-58 卡對 `2e42eb6` 唯一的 `<` 行就是被接字那一行）；
+    (ii) 兩條指示同時滿足：首行＝`81158cd` 原字「change_record: 無」（§8 段「維持『無』」）、追加句逐字在下一行（C5；§8 段「其後追加一句」）、`81158cd`→HEAD 在 T-58 卡零刪除行（R1 驗收）——是讓交付物符合原條件，不是讓條件遷就交付物；
+    (iii) 相對 `31233ed` 唯一的變化＝插入一個換行與 2 格縮排，WORKFLOW §8「不得刪改、只能追加」保護的字元一個未少，`31233ed` 的舊寫法留在 git 歷史並由第 3 行揭露；
+    (iv) 反面做法（把驗收改讀成「字元層級只追加」）才是結果後放寬，Fable 已拒絕；鐵則 16／17 是只嚴不寬的程序規則、前瞻適用，未回頭放寬 T-58 任何門檻。
+  - **非阻擋（記錄，不退回；都不是驗收條件未達）**：
+    (a) 本卡「狀態」舊值以「（原 Fable 開卡狀態，原字保留：⬜ 可開跑（…））」留存，但原文 `**可開跑**` 的粗體記號被拿掉、舊四軸「工程：未開始」未留存——屬鐵則 16(c) 例外欄位的慣例，「原字保留」字樣與實際略有出入；
+    (b) 交接筆記「Q1 修正（步驟 2～3）」段先寫「C3 為空證實」，C3 的輸出區塊在其後「Q1 修正後取證」段——輸出存在且一致，自我檢查 1～7 各項都是輸出在前、結論在後，只是順序小瑕疵；
+    (c) 自我檢查 4 貼的 `git diff --cached --numstat`（TASKS 207／3）早於最後一次 `git add`，收工 commit 實際為 222／3——筆記已自行揭露，Opus 核對刪除行仍是同樣 3 條；
+    (d) Q2-B 的「只得動清單第 1～4 項」編號與 T-58-F1 卡清單的字面順序不完全對應，但每條都寫明項目名稱，實質正確；
+    (e) 鐵則 15 清單列的 `/tmp/q2a_raw.txt` 仍在（repo 外、已列出、未採用結果，不影響 repo）；下次請一律用 scratchpad。
+  - **證據原文（鐵則 17；除最後的測試迴圈與 `git status` 外，全部對固定 commit 執行，任何時候重跑應逐位元相同；`report` 重跑指令的 scratchpad 路徑為本視窗專用）**：
+    ```
+    $ git show --numstat --format= 1d5ca73
+    9	0	DEV_LOG.md
+    8	0	HANDOFF.md
+    222	3	TASKS.md
+    3	0	TODO.md
+
+    $ git show -U0 1d5ca73 -- TASKS.md | grep '^-' | grep -v '^--- '
+    -  change_record: 無（T-58-F1：判定程式對齊卡片條文『多數』＝＞半數；非門檻變更——Fable 2026-09-18 判定，Opus 於 T-58-F1 驗證時獨立核對）
+    -- **狀態**：⬜ **可開跑**（Fable 2026-09-18 開卡；可與 T-57-F1 平行——程式檔不相交（本卡根本不碰程式），但 TASKS／DEV_LOG／HANDOFF／TODO 會同時被兩個視窗改：commit 前先 `git status`，共用文件一律 `git add -p` 只挑本卡的 hunk）
+    -- **四軸狀態**：工程：未開始｜實驗：負向（沿用 Opus 2026-09-18 兩次判定：H1 不支持｜H2 支持｜H3 不支持｜H4 不支持；**本卡不重判、不得改寫**）｜產品：不適用｜MVP：不適用
+
+    $ git diff --stat 31233ed 1d5ca73 -- scripts src data output
+    （輸出為空）
+
+    $ git diff -U0 81158cd 1d5ca73 -- TASKS.md | awk -v s=12559 -v e=12704 '/^@@/{split($2,a,","); o=substr(a[1],2)+0; c=(a[2]==""?1:a[2]+0); inr=(c>0 && o+c-1>=s && o<=e); next} inr && /^-/{print}'
+    （輸出為空）
+
+    $ diff <(git show 81158cd:TASKS.md | awk '/^### /{f=($2=="T-58")} f') <(git show 1d5ca73:TASKS.md | awk '/^### /{f=($2=="T-58")} f') | grep -E '^(<|[0-9,]+[cd][0-9,]+$)'
+    （輸出為空）
+
+    $ diff <(git show 2e42eb6:TASKS.md | awk '/^### /{f=($2=="T-58-F1")} f') <(git show 1d5ca73:TASKS.md | awk '/^### /{f=($2=="T-58-F1")} f') | grep -E '^(<|[0-9,]+[cd][0-9,]+$)'
+    （輸出為空）
+
+    $ diff <(git show 2e42eb6:TASKS.md | awk '/^### /{f=($2=="T-58")} f') <(git show 1d5ca73:TASKS.md | awk '/^### /{f=($2=="T-58")} f') | grep '^<'
+    <   change_record: 無（T-58-F1：判定程式對齊卡片條文『多數』＝＞半數；非門檻變更——Fable 2026-09-18 判定，Opus 於 T-58-F1 驗證時獨立核對）
+
+    $ diff <(git show 31233ed:TASKS.md | awk '/^### /{f=($2=="T-58")} f' | grep '^  change_record: 無（' | sed 's/^  change_record: 無//') <(git show 1d5ca73:TASKS.md | awk '/^### /{f=($2=="T-58")} f' | grep -A1 '^  change_record: 無$' | tail -1 | sed 's/^  //'); echo "exit=$?"
+    exit=0
+
+    $ git show 1d5ca73:TASKS.md | awk -v b="    # BEGIN T58F2-Q2A" -v e="    # END T58F2-Q2A" '$0==b{f=1;next} $0==e{f=0} f' | sed 's/^    //' | diff - <(git grep -n "部分支持" 31233ed -- TASKS.md DEV_LOG.md HANDOFF.md TODO.md); echo "exit=$?"
+    exit=0
+
+    $ git show 1d5ca73:TASKS.md | awk -v b="    # BEGIN T58F2-Q2B1" -v e="    # END T58F2-Q2B1" '$0==b{f=1;next} $0==e{f=0} f' | sed 's/^    //' | diff - <(git show --stat=100 --format= 31233ed); echo "exit=$?"
+    exit=0
+
+    $ git show 1d5ca73:TASKS.md | awk -v b="    # BEGIN T58F2-Q2B2" -v e="    # END T58F2-Q2B2" '$0==b{f=1;next} $0==e{f=0} f' | sed 's/^    //' | diff - <(git diff --stat=100 81158cd 31233ed -- scripts/t58_rt60_basis_probe.py); echo "exit=$?"
+    exit=0
+
+    $ git show 1d5ca73:TASKS.md | awk -v b="    # BEGIN T58F2-Q2B3" -v e="    # END T58F2-Q2B3" '$0==b{f=1;next} $0==e{f=0} f' | sed 's/^    //' | diff - <(git diff 81158cd 31233ed -- scripts/t58_rt60_basis_probe.py | grep '^@@'); echo "exit=$?"
+    exit=0
+
+    $ diff <(git show 1d5ca73:TASKS.md | awk -v b="    # BEGIN T58F2-Q2A" -v e="    # END T58F2-Q2A" '$0==b{f=1;next} $0==e{f=0} f' | sed 's/^    //' | cut -d: -f2,3) <(git show 1d5ca73:TASKS.md | awk -v b="    # BEGIN T58F2-Q2A-LABELS" -v e="    # END T58F2-Q2A-LABELS" '$0==b{f=1;next} $0==e{f=0} f' | sed 's/^    //' | cut -d' ' -f1); echo "exit=$?"
+    exit=0
+
+    $ git show 1d5ca73:TASKS.md | awk -v b="    # BEGIN T58F2-Q2A-LABELS" -v e="    # END T58F2-Q2A-LABELS" '$0==b{f=1;next} $0==e{f=0} f' | awk '{print $2}' | sort | uniq -c
+       6 A
+      12 B
+       6 C
+       1 D
+       6 E
+
+    $ for s in DEV_LOG.md:57 HANDOFF.md:48 HANDOFF.md:64 TASKS.md:12666 TASKS.md:12667 TASKS.md:12703; do printf '%s ' $s; git show 31233ed:${s%%:*} | sed -n "${s#*:}p" | grep -oE '〔更正（T-58-F1|（Opus 2026-09-18 追加更正|（T-58-F1 2026-09-18 追加確認'; done
+    DEV_LOG.md:57 〔更正（T-58-F1
+    HANDOFF.md:48 〔更正（T-58-F1
+    HANDOFF.md:64 〔更正（T-58-F1
+    TASKS.md:12666 （Opus 2026-09-18 追加更正
+    TASKS.md:12667 （T-58-F1 2026-09-18 追加確認
+    TASKS.md:12703 〔更正（T-58-F1
+
+    $ shasum -a 256 output/rt60_basis_probe/runs/part_a_measurements.json output/rt60_basis_probe/runs/part_b_measurements.json output/rt60_basis_probe/DATASET_MANIFEST.json output/rt60_basis_probe/tables.md; (cd output/rt60_basis_probe/runs && ls *.wav | wc -l | tr -d ' ' && shasum -a 256 *.wav | shasum -a 256)
+    a9f757e3ac9073d9d0da668b527ecaa8d2ae43d8e46703a4783b10560078a930  output/rt60_basis_probe/runs/part_a_measurements.json
+    70b888c51bcea66166b5999f5b19c5c6127afc9e23413725560c46b35b81bd33  output/rt60_basis_probe/runs/part_b_measurements.json
+    cf44e3ba59117e219961e325adf2e2ce052156477bdc868b0349ed900fa9237c  output/rt60_basis_probe/DATASET_MANIFEST.json
+    e961d05ebbf92b24c2a1d55a1a7a5936a1b50a87268ec0d0980785c67bb56fe7  output/rt60_basis_probe/tables.md
+    28
+    28e99a69b8c5fafc7b229781224b29345816b4c44c5e99c1a18a16ed3e1d8778  -
+
+    $ for c in T-57 T-57-F1 T-17-R2 T-59; do printf '%s ' $c; diff <(git show 5e7c6df:TASKS.md | awk -v c=$c '/^### /{f=($2==c)} f') <(git show 1d5ca73:TASKS.md | awk -v c=$c '/^### /{f=($2==c)} f') | grep -cE '^[<>]'; done
+    T-57 0
+    T-57-F1 0
+    T-17-R2 0
+    T-59 0
+
+    $ git diff -U0 5e7c6df 1d5ca73 -- TASKS.md | grep '^@@'
+    @@ -12695 +12695,3 @@ EOF
+    @@ -12906,0 +12909 @@ EOF
+    @@ -12912,0 +12916,3 @@ EOF
+    @@ -12961,0 +12968 @@ EOF
+    @@ -13001,2 +13008,3 @@ EOF
+    @@ -13093,0 +13102,211 @@ EOF
+
+    $ for c in 94b8287 317dc55 31233ed 2e42eb6 5e7c6df; do git merge-base --is-ancestor $c 1d5ca73; echo "$c exit=$?"; done
+    94b8287 exit=0
+    317dc55 exit=0
+    31233ed exit=0
+    2e42eb6 exit=0
+    5e7c6df exit=0
+
+    $ SP=/private/tmp/claude-501/-Users-musicersho-Image-Reverb/ede16d65-0e2f-4954-970e-e1e6751a8f79/scratchpad/opus_t58f2; rm -rf $SP && mkdir -p $SP/output/rt60_basis_probe/runs && git archive 1d5ca73 | tar -x -C $SP && cp output/rt60_basis_probe/runs/part_a_measurements.json output/rt60_basis_probe/runs/part_b_measurements.json $SP/output/rt60_basis_probe/runs/ && (cd $SP && "$OLDPWD/.venv/bin/python" scripts/t58_rt60_basis_probe.py report >/dev/null) && cmp $SP/output/rt60_basis_probe/REPORT.md output/rt60_basis_probe/REPORT.md && echo REPORT_identical && cmp $SP/output/rt60_basis_probe/tables.md output/rt60_basis_probe/tables.md && echo TABLES_identical; rm -rf $SP
+    REPORT_identical
+    TABLES_identical
+
+    $ for t in scripts/test_*.py; do .venv/bin/python "$t" >/dev/null 2>&1; echo "$t EXIT=$?"; done
+    scripts/test_acoustics.py EXIT=0
+    scripts/test_confidence_axes.py EXIT=0
+    scripts/test_coupled.py EXIT=0
+    scripts/test_depth.py EXIT=0
+    scripts/test_eval_cache.py EXIT=0
+    scripts/test_furnishings.py EXIT=0
+    scripts/test_geometry_scope.py EXIT=0
+    scripts/test_ir_synth.py EXIT=0
+    scripts/test_material_fallback.py EXIT=0
+    scripts/test_output_gate.py EXIT=0
+    scripts/test_pipeline_dedup.py EXIT=0
+    scripts/test_preprocess.py EXIT=0
+    scripts/test_scene_text.py EXIT=0
+    scripts/test_segmentation.py EXIT=0
+    scripts/test_surface_trusted_scope.py EXIT=0
+    scripts/test_t17_provenance.py EXIT=0
+    scripts/test_t17r2_tools.py EXIT=0
+    scripts/test_t30_low_combined.py EXIT=0
+    scripts/test_t38_treatment_eval.py EXIT=0
+    scripts/test_t39_materials_invariant.py EXIT=0
+    scripts/test_t44_role_partition.py EXIT=0
+    scripts/test_t46_role_flag.py EXIT=0
+
+    $ git status --short
+    （輸出為空）
+    ```
+  - **Opus 本輪清理清單（鐵則 15；全部在本視窗 scratchpad，repo 外）**：`tmpl.py`／`evid.sh`／`cmds.txt`／`gen_evidence.py`／`evidence.txt`／`apply.py`／`record_head.txt`／`record_tail.txt`／`run_tests.sh`／`tests_summary.txt`／`log_test_*.txt`（22 個）／
+    `arch/`（第一次 `report` 重跑用的 `git archive` 複本）／`opus_t58f2/`（證據指令內建 `rm -rf`，已自動刪除）。未寫入 `output/`、未建立 git worktree、未動 `output/.archive/`。
+  - **下一步**：T-58 系列結案（工程）。`IR_RT60_BASIS` 產品決定與 T-59 照 Fable 處置第 4／5 點留到 T-17-R2 之後；T-17-R2 仍等使用者 held-out 照片，T-57-F1 照常。
 
 ### T-59 ir_synth 鄰帶洩漏診斷：合成側 vs 量測側分離＋判準頻段發生率（保留號；T-58 Fable 處置第 5 點；**未開卡——開卡條件＝T-17-R2 收工後的 Fable 重新規劃輪**）
 - **狀態**：⏸ 保留號（Fable 2026-09-18）——現在不開跑；不在關鍵路徑；Sonnet 不要做。
