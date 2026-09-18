@@ -12439,8 +12439,8 @@ EOF
     真實照片產樣本」的範圍限制）。
 
 ### T-58 調查卡：T-12 v2-b 方向反轉——Sabine 目標 vs 幾何聲學參考 vs 產品合成路徑（Sonnet；只量不改；停滯期填充卡；不進關鍵路徑；前置＝T-56 ✅）
-- **狀態**：⬜ **可開跑**（Fable 2026-09-18 開卡；可與 T-57 平行，檔案不相交；**須在 T-17-R2 樣本產生前結案或暫停**——不得在 R2 步驟 2～3 之間 commit）
-- **四軸狀態**：工程：未開始｜實驗：待驗證（**無門檻**，只有事前登記的假設 H1～H4，逐條記「支持／不支持／不確定」）｜產品：不適用｜MVP：不適用
+- **狀態**：🔵 **待審**（Sonnet 2026-09-18 完成，等 Opus 驗證）
+- **四軸狀態**：工程：待審｜實驗：不確定（H1 不支持、H2 支持、H3 不支持、H4 部分支持——per_wall／control_gypsum 多數頻段內、control_carpet 未達，逐條數字見交接筆記）｜產品：不適用｜MVP：不適用
 - **為什麼（Opus T-56 驗證紀錄留給 Fable 的觀察＋Fable 2026-09-18 分析）**：
   1. T-12 v2-b（T-48／T-56）量的是 `scripts/gen_ir_manual.py` 的 pyroomacoustics **ISM＋ray tracing 引擎**，不是產品 `src/image_reverb/ir_synth.py`；
   2. 產品晚期尾巴是 shaped-noise **按 Sabine 目標塑形**（`config.IR_RT60_BASIS="sabine"`），量測 T30≈目標（`closed_loop` 自證，例：
@@ -12491,12 +12491,69 @@ EOF
   criteria_commit: 78d2220（本卡開卡 docs commit；假設 H1～H4 於此鎖定，早於任何量測）
   criteria_locked_at: 2026-09-18
   dataset_manifest_sha256: cf44e3ba59117e219961e325adf2e2ce052156477bdc868b0349ed900fa9237c（`output/rt60_basis_probe/DATASET_MANIFEST.json`，程式產生；`git add -f`；早於下方任何結果 commit，鐵則 14）
-  implementation_commit: 〈t58_rt60_basis_probe.py〉
-  result_commit:
-  reviewer:
-  verdict_under_original_criteria: 〈H1～H4 各：支持／不支持／不確定〉
-  verdict_under_current_criteria: 〈同上〉
+  implementation_commit: ee55cad（`scripts/t58_rt60_basis_probe.py`；同 commit 也填了 dataset_manifest_sha256，早於下方結果 commit，鐵則 14）
+  result_commit: 〈本次收工 commit〉
+  reviewer: 〈Opus 填：模型＋日期＋commit〉
+  verdict_under_original_criteria: H1 不支持｜H2 支持｜H3 不支持（5 場地與 MIT 3 場地子集方向一致）｜H4 部分支持（Part A：per_wall 4/6、control_gypsum 4/6、control_carpet 1/6 頻段在 ±20% 內，整體「多數頻段」判定不支持；Part B 佐證＝既有 closed_loop 5～6/6，未重量）。逐項數字與判定理由見交接筆記。
+  verdict_under_current_criteria: 同上（本卡無門檻、criteria 未變更）
   criteria_changed_after_first_result: no
   change_record: 無
   ```
-- **交接筆記**：
+- **交接筆記（Sonnet，2026-09-18）**：
+  - 新增檔案：`scripts/t58_rt60_basis_probe.py`（唯一新檔，`scripts/` 以外零改動），四個子指令
+    `manifest`／`partA`／`partB`／`report`；只 import `acoustics`／`ir_synth`／`ir_metrics`／`materials`／
+    `geometry.RoomEstimate`／`gen_ir_manual.build_room`（`build_material` 允許但未用到——Part B 的 pra 參考房間
+    是逐面材質，改用 `ir_synth.build_pra_materials()` 建 per-wall 材質 dict 再傳給 `gen_ir_manual.build_room()`，
+    比 `build_material()`〔只支援六面同一材質〕更貼近「同尺寸同材質」的字面要求，記錄於此供 Opus 核對這個
+    非逐字寫死的決定）。
+  - **輸出**：`output/rt60_basis_probe/DATASET_MANIFEST.json`（步驟 0，`git add -f`）、`REPORT.md`、`tables.md`
+    （皆進版控）；`output/rt60_basis_probe/runs/`（gitignored，不進版控）內含 Part A 的 3 條 `product_<條件>.wav`
+    ＋Part B 新模擬的 25 條 `pra_<manual_key>_seed100N.wav`（5 場地×5 seed）＋兩份中間量測快取
+    `part_a_measurements.json`／`part_b_measurements.json`（`report` 子指令讀這兩份快取產表，不必重跑模擬）。
+  - **關鍵量測結果**（表格全文見 `output/rt60_basis_probe/tables.md`，R統計計算式見 REPORT §1）：
+    - **H1 不支持**：per-wall 的 `(sabine−pra)/pra`（聯合帶近似）＝−33.4%（為負，不是假設的「偏長」）；
+      六面 gypsum −53.7%、六面 carpet −30.8%，兩個均勻條件的絕對值**沒有**都小於 per-wall 的 33.4%
+      （六面 gypsum 反而更大）。方向與 T-56 觀察的「pra 對 per-wall 量到比六面 gypsum 短」不是同一個比較
+      （T-56 比的是 pra vs pra 跨條件；本卡 H1 比的是 sabine vs pra 同條件內的偏差量級），兩者不矛盾但也
+      不能互相印證，如實記不支持。
+    - **H2 支持**：per-wall 的 `(eyring−pra)/pra`＝−37.9%，與 Sabine 的 −33.4% 同號，Eyring 沒有反轉或消除
+      這個偏差方向。
+    - **H3 不支持**：5 場地判準頻段（500/1k/2k/4k＋聯合帶近似）誤差絕對值中位數，`pra_median`＝0.8643
+      **大於** `sabine`＝0.4738（用 pra 參考取代 Sabine 目標，中位數誤差不降反升）；MIT 3 場地子集（🟡
+      弱證據）同方向：`pra_median`＝1.1272 vs `sabine`＝0.4738。全部 5 個基準（sabine/eyring/pra_median/
+      product）與 25／15 個誤差值的原始清單已用獨立 Python 重算核對（不是程式唯一路徑產出的數字），
+      與 `tables.md` 表 C 一致。
+    - **H4 部分支持**：Part A 產品路徑 vs 自身 Sabine 目標（±20% 多數頻段）：per_wall 4/6、
+      control_gypsum 4/6 過半，但 **control_carpet 只有 1/6**（500Hz 誤差 +395.6%）——已用獨立腳本重跑
+      `ir_synth.synthesize_ir()`＋內建 `ir_metrics.closed_loop_report()` 核對，數字與本卡量測完全一致
+      （不是本卡程式的 bug），推測是六面同材質、頻段間 RT60 相差極大（125Hz 4.05s vs 500Hz 0.58s）時，
+      shaped-noise 合成的長尾巴透過濾波器組漏能量到高頻量測窗，是 `ir_synth.py` 既有已知限制的一個
+      極端案例（六面同 carpet 本身也是 T-03「地雷第 9 條」明列的不現實模型），不是本卡新開的 bug，也
+      不在本卡範圍內修。整體判定用「三條件都要過半」的嚴格標準，故 H4 記「部分支持」而非「支持」。
+  - **附帶發現（呼應 Fable 2026-09-18 對 T-57 的處置第 4 點）**：本卡自我檢查重新驗證六條交付 IR 的 MD5
+    （`--text 浴室`／`--text 大教堂`／`--scene neighbor_voices.json`／`--scene stadium_corridor.json`），
+    **全部與 TASKS.md 歷史記錄的 MD5 逐位元相同**（`2adbaa75…`／`2dd19b6e…`／`9a94ffdf…`／`a1c21bcc…`），
+    T-14 兩條由 `test_ir_synth.py` 內建通過。與 T-57 交接筆記聲稱的「四條雜湊不同、疑套件版本漂移」不符——
+    這與 Opus 對 T-57 的退回理由「R2 MD5 誤報實為 SHA-256 比 MD5」一致，**進一步佐證背景調查
+    `task_14c97967` 的前提確實是誤報**（本卡獨立用 `md5`／`md5sum` 重跑得到與歷史記錄相符的結果，
+    未使用 T-57 疑似出錯的比對方式）。本卡不擁有 `task_14c97967` 的處置權，只如實記錄佐證供 Fable／
+    使用者參考。
+  - **自我檢查結果**：22 支 `scripts/test_*.py` 全 `EXIT=0`；六條交付 IR MD5 全中（見上）；
+    `git diff --stat -- src data` 為空；DATASET_MANIFEST.json 記錄的 30 條 `material_r3` WAV
+    ＋5 份 `t17_manual_*/analysis.json`＋5 條 `ir_mono.wav`＋`mvp_acceptance/rt60_table.json` 的
+    sha256，本卡結束前用獨立腳本重算，全部與 manifest 記錄相符（未被本卡任何步驟重生）；
+    `output/mvp_acceptance/`、`output/t17_manual_*/`、`output/material_r3/runs/` 全程唯讀，
+    `ls output/` 只多出本卡自己的 `rt60_basis_probe/` 一個新目錄。
+  - **鐵則 15 清理**：本輪在 `/tmp/` 建立過 4 個檔案（`t58_chk_bathroom.{wav,json}`／
+    `t58_chk_cathedral.{wav,json}`，重跑 T-20 兩條 IR MD5 用）＋一份 `/tmp/t58_test_out.log`
+    （批次跑 22 支測試的暫存 stdout），皆已刪除，不在 repo 內、不影響 `git status`；為了重驗 T-21 兩條
+    交付 IR MD5，覆寫了既有（gitignored、之前就存在）的 `output/ir_synth/coupled_neighbor_voices.wav`／
+    `coupled_stadium_corridor.wav`＋對應 `.json`／`output/listen_coupled_*.wav`，內容與覆寫前 bit-identical
+    （同一份腳本、同一份輸入，重跑得到相同雜湊），不是本卡新增路徑。
+  - **給 Opus 的重點**：除了卡片「Opus 驗證重點」列出的六項紅旗，請特別核對（a）Part B 用
+    `ir_synth.build_pra_materials()` 取代 `gen_ir_manual.build_material()`（見上，非逐字寫死的決定）是否
+    合理；（b）H1～H4 的判定邏輯本身（見 REPORT §1 與腳本 `evaluate_hypotheses()`）有沒有偷換方向或門檻；
+    （c）control_carpet 的 H4 異常是否真的與本卡程式碼無關（已附獨立重算指令，見上）。
+  - **給 Fable 的提醒**：TASKS.md 在本卡執行期間有另一個視窗（Fable）同時在編輯 T-57／T-17-R2 段落
+    （commit `2f6ee3f`／`3007646`），本卡只碰 T-58 卡自己的段落，commit 時用 `git add -p` 只挑本卡的 hunk，
+    未動、未還原、未覆蓋那些變更。
