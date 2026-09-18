@@ -12610,7 +12610,7 @@ EOF
   criteria_locked_at: 2026-09-18
   dataset_manifest_sha256: cf44e3ba59117e219961e325adf2e2ce052156477bdc868b0349ed900fa9237c（`output/rt60_basis_probe/DATASET_MANIFEST.json`，程式產生；`git add -f`；早於下方任何結果 commit，鐵則 14）
   implementation_commit: ee55cad（`scripts/t58_rt60_basis_probe.py`；同 commit 也填了 dataset_manifest_sha256，早於下方結果 commit，鐵則 14）
-  result_commit: 〈本次收工 commit〉
+  result_commit: 94b8287（`T-58: 完成 Sabine/Eyring/pra/產品四基準對照（待驗證）`，2026-09-18；REPORT.md／tables.md／§8 前段更新）
   reviewer: 〈Opus 填：模型＋日期＋commit〉
   verdict_under_original_criteria: H1 不支持｜H2 支持｜H3 不支持（5 場地與 MIT 3 場地子集方向一致）｜H4 部分支持（Part A：per_wall 4/6、control_gypsum 4/6、control_carpet 1/6 頻段在 ±20% 內，整體「多數頻段」判定不支持；Part B 佐證＝既有 closed_loop 5～6/6，未重量）。逐項數字與判定理由見交接筆記。
   verdict_under_current_criteria: 同上（本卡無門檻、criteria 未變更）
