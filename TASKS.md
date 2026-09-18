@@ -12452,7 +12452,7 @@ EOF
   criteria_version: 無門檻（調查卡）；假設 H1～H4 於開卡時登記（Fable 2026-09-18）
   criteria_commit: 78d2220（本卡開卡 docs commit；假設 H1～H4 於此鎖定，早於任何量測）
   criteria_locked_at: 2026-09-18
-  dataset_manifest_sha256: 〈步驟 0〉
+  dataset_manifest_sha256: cf44e3ba59117e219961e325adf2e2ce052156477bdc868b0349ed900fa9237c（`output/rt60_basis_probe/DATASET_MANIFEST.json`，程式產生；`git add -f`；早於下方任何結果 commit，鐵則 14）
   implementation_commit: 〈t58_rt60_basis_probe.py〉
   result_commit:
   reviewer:

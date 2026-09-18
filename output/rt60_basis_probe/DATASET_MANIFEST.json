@@ -1,0 +1,233 @@
+{
+  "task": "T-58",
+  "git_head_at_manifest_time": "2f6ee3fa0c376eb3b2eedb9b71c6e4068ba776a2",
+  "material_r3_wav_count": 30,
+  "material_r3_wavs": [
+    {
+      "condition": "per_wall",
+      "seed": 1001,
+      "path": "output/material_r3/runs/per_wall_seed1001.wav",
+      "sha256": "886e5a75e4f6bd3ff421c1af02ff95829bab3b070431e12fffe0ee60a245f48c"
+    },
+    {
+      "condition": "per_wall",
+      "seed": 1002,
+      "path": "output/material_r3/runs/per_wall_seed1002.wav",
+      "sha256": "43563e08a58c3616702df4df0775c7b2c8c260dc1e436aaa7ee30fedb38ef411"
+    },
+    {
+      "condition": "per_wall",
+      "seed": 1003,
+      "path": "output/material_r3/runs/per_wall_seed1003.wav",
+      "sha256": "c3b8611ef60e03a8299782a318f5f5af7be37c0150aca00297ae07328292d0da"
+    },
+    {
+      "condition": "per_wall",
+      "seed": 1004,
+      "path": "output/material_r3/runs/per_wall_seed1004.wav",
+      "sha256": "48fa370cdc18d479aa679f3cda56990a3dfe52bcfd24330e8566f9661019d701"
+    },
+    {
+      "condition": "per_wall",
+      "seed": 1005,
+      "path": "output/material_r3/runs/per_wall_seed1005.wav",
+      "sha256": "bb6348ebbe672111172f1d60dc52261f25fff495f58bfc14db7fa855a5d38e3c"
+    },
+    {
+      "condition": "per_wall",
+      "seed": 1006,
+      "path": "output/material_r3/runs/per_wall_seed1006.wav",
+      "sha256": "a4f71517cf282f588a5a0e9725700cde4403d8ae9d4811c620625ceda7fc8b9a"
+    },
+    {
+      "condition": "per_wall",
+      "seed": 1007,
+      "path": "output/material_r3/runs/per_wall_seed1007.wav",
+      "sha256": "39767bf031819aacb42ec19a629be6cbbd6b125425ef858d4a350bc5533e1a6b"
+    },
+    {
+      "condition": "per_wall",
+      "seed": 1008,
+      "path": "output/material_r3/runs/per_wall_seed1008.wav",
+      "sha256": "9cf66e3493e81ba8c733b08bdf47b8f8bfff7bc9dcdeee3dbd589631811b45ed"
+    },
+    {
+      "condition": "per_wall",
+      "seed": 1009,
+      "path": "output/material_r3/runs/per_wall_seed1009.wav",
+      "sha256": "75c1123fee94c990d7ffb0b4d7622a87d5fd2b6908fae829be6392bb4a385f9d"
+    },
+    {
+      "condition": "per_wall",
+      "seed": 1010,
+      "path": "output/material_r3/runs/per_wall_seed1010.wav",
+      "sha256": "cbdc332d53006d47729dc3145592030ccc395ed632dab6325cd743f5a5f53676"
+    },
+    {
+      "condition": "control_gypsum",
+      "seed": 1001,
+      "path": "output/material_r3/runs/control_gypsum_seed1001.wav",
+      "sha256": "7111504cf39c00a22f7b191a16c315f193ceb0b22276a51b9fa566020bebd910"
+    },
+    {
+      "condition": "control_gypsum",
+      "seed": 1002,
+      "path": "output/material_r3/runs/control_gypsum_seed1002.wav",
+      "sha256": "411ef4e48b1bf81eeb736630a1d54b13704903b41b0d94023f5e2bdfca447644"
+    },
+    {
+      "condition": "control_gypsum",
+      "seed": 1003,
+      "path": "output/material_r3/runs/control_gypsum_seed1003.wav",
+      "sha256": "5fc4b44bda69d596d8dda861f8eae71bf782112c5901ff6640bcfb7ea82f876a"
+    },
+    {
+      "condition": "control_gypsum",
+      "seed": 1004,
+      "path": "output/material_r3/runs/control_gypsum_seed1004.wav",
+      "sha256": "f4466804b27404916f75d0a4bdabeadc63813d679252004a12def71f33678413"
+    },
+    {
+      "condition": "control_gypsum",
+      "seed": 1005,
+      "path": "output/material_r3/runs/control_gypsum_seed1005.wav",
+      "sha256": "0bb5de7716e475d17e6d3c4c4d705bb96f38a02687d9a69a6aaf7fc8643d19db"
+    },
+    {
+      "condition": "control_gypsum",
+      "seed": 1006,
+      "path": "output/material_r3/runs/control_gypsum_seed1006.wav",
+      "sha256": "b5f9ebd32f7fbf64672b9147367a26b4774c13fe7c75b67eab597a296c859e7a"
+    },
+    {
+      "condition": "control_gypsum",
+      "seed": 1007,
+      "path": "output/material_r3/runs/control_gypsum_seed1007.wav",
+      "sha256": "f70bed7c652892b7072252ab6042562210985eb5168371e857211af4aed339f1"
+    },
+    {
+      "condition": "control_gypsum",
+      "seed": 1008,
+      "path": "output/material_r3/runs/control_gypsum_seed1008.wav",
+      "sha256": "1f9e7ef54c5abc5749452ce5dc95884e9d81f187255744fb7cc301d598dfd515"
+    },
+    {
+      "condition": "control_gypsum",
+      "seed": 1009,
+      "path": "output/material_r3/runs/control_gypsum_seed1009.wav",
+      "sha256": "b6f53ce06132584fc6b9268f01c05ad13a2a087bb2dd31efe9112550ed74fa68"
+    },
+    {
+      "condition": "control_gypsum",
+      "seed": 1010,
+      "path": "output/material_r3/runs/control_gypsum_seed1010.wav",
+      "sha256": "dd64d05a6b6a0ee3046b998baeafff3059dd14af678dbc44cb8d0fcadcf09f07"
+    },
+    {
+      "condition": "control_carpet",
+      "seed": 1001,
+      "path": "output/material_r3/runs/control_carpet_seed1001.wav",
+      "sha256": "5b06df6052ee2992690dacd0692f83ed4fbc7df7ea8e9805676fb478d415f98f"
+    },
+    {
+      "condition": "control_carpet",
+      "seed": 1002,
+      "path": "output/material_r3/runs/control_carpet_seed1002.wav",
+      "sha256": "e4fe4133b19c07fd177a17f67021d40ee91d07bf5f5b2ef789d6b4440022514f"
+    },
+    {
+      "condition": "control_carpet",
+      "seed": 1003,
+      "path": "output/material_r3/runs/control_carpet_seed1003.wav",
+      "sha256": "8622a0ede245089f79ff57228a994945793bf9ac8ac58899fa0554df6283bed9"
+    },
+    {
+      "condition": "control_carpet",
+      "seed": 1004,
+      "path": "output/material_r3/runs/control_carpet_seed1004.wav",
+      "sha256": "182267582935a36866f6ed2def31e2b88fdc04e5882c2d549fcc70f6d0e3e817"
+    },
+    {
+      "condition": "control_carpet",
+      "seed": 1005,
+      "path": "output/material_r3/runs/control_carpet_seed1005.wav",
+      "sha256": "8253ac23e6dc81138124a8eaa6a48fd752f8ba52815a40569857bf56d8b7b7c8"
+    },
+    {
+      "condition": "control_carpet",
+      "seed": 1006,
+      "path": "output/material_r3/runs/control_carpet_seed1006.wav",
+      "sha256": "d162bfc8093985f97af4cf5cd9d525372b5f446a7db6db10625e624ae112976e"
+    },
+    {
+      "condition": "control_carpet",
+      "seed": 1007,
+      "path": "output/material_r3/runs/control_carpet_seed1007.wav",
+      "sha256": "ce5beba3eb5909336319467cf52cb3f0fa66f26e7346d3d717285da17dafb7af"
+    },
+    {
+      "condition": "control_carpet",
+      "seed": 1008,
+      "path": "output/material_r3/runs/control_carpet_seed1008.wav",
+      "sha256": "74900dad5b078ebda89d184cc29db58e0aee509e05863dc34cbdb59d5792502e"
+    },
+    {
+      "condition": "control_carpet",
+      "seed": 1009,
+      "path": "output/material_r3/runs/control_carpet_seed1009.wav",
+      "sha256": "a9b9a267880517068e616ab6f8d6b23ccb618917ba89281bb6eb0d11c308eaef"
+    },
+    {
+      "condition": "control_carpet",
+      "seed": 1010,
+      "path": "output/material_r3/runs/control_carpet_seed1010.wav",
+      "sha256": "e22c46b236745eef66e3382fb82be19042cecf642727b990d2acf07789815868"
+    }
+  ],
+  "t17_manual_sites": [
+    {
+      "venue_key": "mit_department_store",
+      "manual_key": "department_store",
+      "analysis_json_path": "output/t17_manual_department_store/analysis.json",
+      "analysis_json_sha256": "f8a75bbeac215d8134d785612bd8f7a2cc44d96ad33f8653f98d89b61e2481ad",
+      "ir_mono_wav_path": "output/t17_manual_department_store/ir_mono.wav",
+      "ir_mono_wav_sha256": "c58f745fc08abe5f0ec99684cd3a29c4e2aecc050a66f100fbfe3970170486c8"
+    },
+    {
+      "venue_key": "mit_gym",
+      "manual_key": "gym",
+      "analysis_json_path": "output/t17_manual_gym/analysis.json",
+      "analysis_json_sha256": "68b13d2cd105dac73872c57a9a74aa77d18ff252a3cbd9d79a2cdf9f374a06c1",
+      "ir_mono_wav_path": "output/t17_manual_gym/ir_mono.wav",
+      "ir_mono_wav_sha256": "8314105fc111aa72282a97adf664e2f46b87cf2289edb76a1b9c5b24ab877f41"
+    },
+    {
+      "venue_key": "mit_restaurant",
+      "manual_key": "restaurant",
+      "analysis_json_path": "output/t17_manual_restaurant/analysis.json",
+      "analysis_json_sha256": "19a2dcdc20581aeda4630a4be01bfd22a1fbc8d2988f95380a069257c78f5c7f",
+      "ir_mono_wav_path": "output/t17_manual_restaurant/ir_mono.wav",
+      "ir_mono_wav_sha256": "19492bf1fab54fec88a9d399a77eb9be685ad75d48d9b8eb6d2af21f0561e622"
+    },
+    {
+      "venue_key": "racquetball_court_4",
+      "manual_key": "racquetball",
+      "analysis_json_path": "output/t17_manual_racquetball/analysis.json",
+      "analysis_json_sha256": "b66692b4192e9d6b22f18a0eb3eb6a60c8804e1d3d3ad15004b262a49b58b684",
+      "ir_mono_wav_path": "output/t17_manual_racquetball/ir_mono.wav",
+      "ir_mono_wav_sha256": "428ddae70dd11f8288ddd755149eb06f4d13c92e8953d5f2095ae2316a5cf8a2"
+    },
+    {
+      "venue_key": "steinman_hall",
+      "manual_key": "steinman",
+      "analysis_json_path": "output/t17_manual_steinman/analysis.json",
+      "analysis_json_sha256": "ad5a18c3d8efa6c2c3736675ffc5a0335b34b93d66cb058f644ebeddd572870b",
+      "ir_mono_wav_path": "output/t17_manual_steinman/ir_mono.wav",
+      "ir_mono_wav_sha256": "81c9cb66086cfe0604ae696f57e17ec8c10fa2792c71d0fef5a45a6fbf6d2d24"
+    }
+  ],
+  "mvp_acceptance_rt60_table": {
+    "path": "output/mvp_acceptance/rt60_table.json",
+    "sha256": "c188b85a4a7f122e4ef3133dbd13ffaa3627c178b9df19603dc67f1372be96bf"
+  }
+}
