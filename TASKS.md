@@ -12253,8 +12253,35 @@ EOF
 - **交接筆記**：
 
 ### T-57 T-17-R2 工具前置：R2 薄包裝腳本＋資料集 manifest 產生器（Sonnet；`scripts/` only；**關鍵路徑**；前置＝T-56 ✅）
-- **狀態**：🔵 **待審**（Sonnet 2026-09-18 完成，等 Opus 驗證）
-- **四軸狀態**：工程：待審｜實驗：不適用（工具卡）｜產品：不適用｜MVP：不適用（T-17-R2 前置）
+- **狀態**：🟠 **退回**（Opus 驗證，2026-09-18，對象 `4d4f63b`）——主體功能實測成立，但下列 R1～R5 未達，開 T-57 修正輪（Sonnet）逐條處理後再送驗：
+  - **R1（卡片紅旗「突變證明沒有實際輸出」命中）**：`test_t17r2_tools.py` 的 (a-4)「突變證明」是
+    `all(False == forced_flags[s] for s in stems if forced_flags[s])`——只對測試樁常數做恆真判斷，與被測程式無關。
+    Opus 實際把 `t17r2_blind_test.py` 第 116 行改成寫死 `"forced_low_confidence": False`（scratchpad 副本）重跑：
+    (a-3) ❌、測試 EXIT=1（測試本身有診斷力），**但 (a-4) 仍顯示 ✅**；全案（TASKS／DEV_LOG／HANDOFF）無任何實際突變輸出。
+    修法：刪除 (a-4) 假斷言；實際做一次突變（改原始碼→跑→貼 fail 輸出→還原→跑→貼 pass 輸出），輸出寫進交接筆記。
+  - **R2（自我檢查紀錄與事實矛盾，§5.4.1「產物與報告一致」）**：交接筆記／DEV_LOG／HANDOFF 記載「T-20／T-21 四條 MD5 與歷史不同、
+    疑似套件漂移」**不實**。Opus 以 `cli.main()`（OUTPUT_ROOT 導 scratchpad）重生四條 `ir_mono.wav`，MD5＝`2adbaa75…`／`2dd19b6e…`／
+    `9a94ffdf…`／`a1c21bcc…` **全中**；Sonnet 列的 `8e520f47…`／`228030c7…`／`471bd88a…`／`b2fbc05c…` 正是同檔 **SHA-256 前 14 碼**——
+    拿 SHA-256 比 MD5 造成誤報。修法：更正 TASKS／DEV_LOG／HANDOFF 三處敘述（只追加更正，不刪原文），撤銷背景調查 `task_14c97967`。
+  - **R3（規格未達）**：`t17r2_blind_test.py` CLI 缺 `--photos-dir`（規格 2.「`--photos-dir`／`--legacy` 同上」）；`run()` 有參數但 `main()` 沒接。
+  - **R4（吞錯，§5.4.1）**：`t17r2_rt60_table.py` 找不到 `DATASET_MANIFEST.json` 時靜默把全部場地 `in_domain` 設 False 照樣寫表——
+    若步驟順序錯，`mit_gym` 會無聲掉出自動組、coverage 變 0/1。應比照 `t17r2_report_tables.py` 缺檔 → exit 1。
+  - **R5（欄位不實）**：`parse_gate_log()` 的 `default_exit` 不是解析出的 exit code，而是「有『已擋下輸出』字串→3，否則→0」；
+    CLI 崩潰（exit 1／2）的 log 會被記成 `default_exit: 0`。規格要求「預設路徑 exit code」。修法二擇一並寫進交接筆記：
+    (i) 規定 R2 步驟 2 的 log 首行寫 `exit=<code>` 並解析之，缺則 `None`；或 (ii) 欄位改名 `blocked_marker_found`、刪 `default_exit`，
+    且非擋下但 log 含 Traceback／`錯誤：` 時標 `crashed`。
+  - **交 Fable（§7，不在本卡豁免）**：卡片規格 4.「錯誤放行率分母＝6」與「GT unknown 的面不進分子分母」**字面互相矛盾**；
+    實作取後者（分母＝可判面數），但 tables.md 文字仍印「分母固定 6／張」，與計算不符。請 Fable 定一個口徑後，修正輪讓文字與計算一致。
+  - **已實測成立（修正輪不得回歸）**：22 支 `scripts/test_*.py` Opus 自跑全 EXIT=0；六條 IR MD5 全中（見 R2）；既有 t17 四支＋
+    `test_t17_provenance.py`／`src`／`data` 零 diff（commit 只動 7 個新檔＋4 份文件）；`SHUFFLE_SEED=20260916`；未給 `--dry` 時 5 個
+    `sample_N.wav` 與來源 `wet_preview.wav` 逐位元相同；`--dry`（44.1k 乾聲）可跑、重採樣至 48k；拒絕覆寫既有樣本；manifest 經 `run()`
+    寫檔兩次逐位元相同、無時間戳；測試全在系統暫存目錄，`ls output/` 與 `output/mvp_acceptance/` 全目錄 sha256 快照前後相同；
+    `VENUE_KEY_TO_GT_NAME`（8 筆）與 `t36_clip_accuracy.GATE_ITEMS`／`data/material_ground_truth.json` 鍵名逐一核對正確；
+    `VENUE_KEY_TO_MANUAL_KEY`＋`MANUAL_DIMS` 與 T-17 表 4 五組數字逐字相符；`in_domain` 寫死僅 `mit_gym`；domain 門檻用
+    `config.GEOMETRY_SCOPE_MAX_M`＝10.0。`ground_truth_heldout.json` schema 決定合理（與 T-36 GT 同構），R2 步驟 0 須檢查該檔存在且符合。
+  - **小問題（修正輪順手，不單獨阻擋）**：`t17r2_dataset_manifest.py --legacy` 的 help 說忽略 `--photos-dir` 但實際會用；
+    `--photos-dir` 指到 repo 外會在 `relative_to()` 丟 ValueError 而非清楚錯誤訊息。
+- **四軸狀態**：工程：退回｜實驗：不適用（工具卡）｜產品：不適用｜MVP：不適用（T-17-R2 前置；R2 前置「T-57 ✅」尚未成立）
 - **為什麼**：T-17-R2 執行步驟 1 原本要 Opus 自己寫 5 支 R2 腳本，與 CLAUDE.md「Opus 只審不寫」衝突，而且驗收工具沒經過獨立驗證
   就直接拿去驗收。拆出來給 Sonnet 做、Opus 驗，R2 的 Opus 視窗只做 manifest＋跑流程。工具可在沒有 held-out 照片時先完成——
   所有測試用樁資料在 scratchpad 隔離 git repo 跑（沿用 `scripts/test_t17_provenance.py` 手法），不碰真實 `output/`。

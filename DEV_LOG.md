@@ -1,5 +1,14 @@
 # Dev Log
 
+## 2026-09-18 (154)
+
+- **🟠 Opus：T-57 驗證——工程退回**（對象 `4d4f63b`）。主體功能實測成立（22 支測試自跑全 EXIT=0、既有 t17 四支零 diff、
+  seed 20260916、未給 `--dry` 逐位元複製、拒絕覆寫、manifest 逐位元可重現、兩張對照表與表 4 數字核對正確、`output/` 未動）。
+  退回理由 R1～R5 見 T-57 卡「狀態」：R1 (a-4)「突變證明」是恆真假斷言（Opus 實際突變後 (a-3) fail 但 (a-4) 仍 ✅），
+  R2 **上一筆 (153) 的「T-20／T-21 四條 MD5 與歷史不同」為誤報**——Opus 重生四條 MD5 全中，Sonnet 列的是 SHA-256 前 14 碼；
+  R3 blind_test 缺 `--photos-dir`；R4 rt60_table 缺 manifest 時靜默 in_domain=False；R5 `default_exit` 為字串推測非 exit code。
+  另交 Fable（§7）：卡片「錯誤放行率分母＝6」與「unknown 不進分母」字面矛盾。四軸：工程：退回｜實驗：不適用｜產品：不適用｜MVP：不適用。
+
 ## 2026-09-18 (153)
 
 - **🔵 Sonnet：T-57 完成（待驗證）**——新增 7 個檔案，`scripts/` 以外零改動：`t17r2_common.py`（可選共用常數）、
