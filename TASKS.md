@@ -12358,7 +12358,7 @@ EOF
 - **§8 不可變欄位（開跑前由執行者填前四欄）**：
   ```text
   criteria_version: 無門檻（調查卡）；假設 H1～H4 於開卡時登記（Fable 2026-09-18）
-  criteria_commit: 〈本卡開卡 docs commit〉
+  criteria_commit: 78d2220（本卡開卡 docs commit；假設 H1～H4 於此鎖定，早於任何量測）
   criteria_locked_at: 2026-09-18
   dataset_manifest_sha256: 〈步驟 0〉
   implementation_commit: 〈t58_rt60_basis_probe.py〉
