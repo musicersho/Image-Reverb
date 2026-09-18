@@ -12208,6 +12208,34 @@ EOF
   產物或 GT；紅旗：步驟 2～3 之間有 commit（`git log` 時間戳 vs `provenance.generated_at`）；紅旗：樣本在步驟 6 之後被重生
   （`generated_at` 晚於中途 commit）；紅旗：報告項 5 逐面表漏列無來源面或分母不是六面；紅旗：REPORT 的 in-domain 名單與 §3 不同；
   紅旗：任何一張 2:1 長寬比照片進入 held-out；紅旗：既有 `scripts/t17_*.py` 有 diff。
+- **🔮 裁定 T-57-D（Fable 2026-09-18；WORKFLOW §7 變更控制；報告項 5「錯誤放行率」分母口徑；判準 1～6 一字不改）**：
+  **0. 事由**：Opus 驗證 T-57（`2f6ee3f`）指出 T-57 卡規格 4.「錯誤放行率分母＝6」與同句括號「GT 為 unknown 的面標『無法判』另計，不進分子分母」
+  字面互相矛盾；實作取後者，`tables.md` 文字卻印「分母固定 6／張」。Opus 依 WORKFLOW §2.2 不在驗證紀錄內豁免、交 Fable。
+  **1. 時點**：結果出來**前**——`output/mvp_acceptance_r2/` 不存在、`assets/photos_heldout/` 不存在、R2 零樣本（Fable 2026-09-18 `ls` 實查）。
+  依 §7.2 本變更以**獨立 `criteria:` commit** 落地，早於 R2 任何結果；不與任何結果、任何程式改動同 commit。
+  **2. 追溯原意**：「分母＝六面」出自裁決 T-47-A 附帶發現 ⓐ 原文——「逐面正誤表必須列出無來源面並依 ground truth 判正誤、獨立計數，
+  分母＝被放行照片的全部六面（**不得只算 in-set**）」。它禁止的是依**管線側**理由（無來源／不在候選集）把面踢出分母；T-57 括號講的是
+  **GT 側**不可知（GT 缺、GT `material_id=="unknown"`）。兩句管的是不同軸，是 Fable 開 T-57 卡時把「分母＝6」寫得過寬造成字面衝突。
+  **3. 裁定口徑（寫死；自此為 T-17-R2 報告項 5 與 T-57 規格 4. 的唯一口徑）**：
+  1. **六面全列不變**：每張「未 forced 即通過 gate」的照片列六面（含無來源面）；**不得**因管線側任何理由（無來源、fallback、不在候選集、
+     role 收窄）把面排除出表或排除出分母——T-47-A ⓐ 原意完整保留。
+  2. **每面三態**：✅ 正確／❌ 錯誤／「無法判」。「無法判」**只限** GT 側原因：該面 GT 缺，或 GT `material_id=="unknown"`。GT `proxy: true` 的面
+     **照判**（沿用 T-36／T-47 口徑）。
+  3. **主率**：錯誤放行率＝❌ 面數 ÷ **可判面數**（✅＋❌）。可判面數＝0 → 印「—（無可判面）」，**不得印 0%**。
+  4. **必須同列揭露（缺一＝產表不合格）**：被放行照片數 N、總面數 6N、可判面數、無法判面數，以及以 **6N 為分母**的上下界——
+     下界＝❌÷6N（無法判全當對）、上界＝（❌＋無法判）÷6N（無法判全當錯）。逐張另列一行「❌ x／可判 y／無法判 z（共 6）」。
+  5. N＝0（沒有任何未 forced 通過的照片）→ 印「錯誤放行率不適用（0 張放行）」，不得印 0%。
+  6. 文字必須與計算一致：`tables.md` 不得再出現「分母固定 6」字樣；REPORT §5 引用時三個數字（主率＋上下界）一起引，不得只挑一個。
+  **4. 為什麼選這個口徑（不選「分母固定 6」）**：把 GT 不可知的面硬塞進分母只有兩種算法——當對＝稀釋錯誤率（往「看起來安全」偏，正是報告項 5
+  要防的假象）；當錯＝虛增、把 GT 標註缺口算成管線錯誤。兩者都不是量測。主率用可判面、再用 6N 上下界把兩種極端都攤開，資訊量嚴格多於任一固定口徑；
+  現況規模：`data/material_ground_truth.json` 13 張 78 面中 unknown 2 面；held-out 若使用者未附六面材質則整張「GT 缺」（本卡 §1 既有條文）。
+  **5. 連帶同步**：本卡「裁決 T-47-A 補註」與 §8 的「分母六面」、執行步驟 §5 紅旗「分母不是六面」——原文不改，自此解讀為本裁定 §3：
+  紅旗＝「逐面表漏列任何一面（含無來源面）、依管線側理由排除任何面、或漏印 6N 上下界」。T-44-R1 硬門檻 6 產表規格同此口徑（該卡 ⏸ 未跑，開跑時引用本裁定）。
+  **6. 核准者與是否需使用者核准**：**核准者＝Fable（裁定）；提出者＝Opus（獨立驗證者，`2f6ee3f`）；指派者＝使用者（2026-09-18 規劃 Prompt 明文要求 Fable 裁定口徑）。
+  判斷：不需使用者另行核准**——理由：(i) §7.4 的強制核准對象是「結果後」的變更，本次為結果前；(ii) 報告項 5 依判準原文「不是新門檻」，本裁定不改
+  判準 1～6、不影響 MVP 判定式；(iii) 非 Fable 自提自批（T-38 拆卡教訓）：矛盾由獨立驗證者提出，落地後還要經 T-57-F1 的 Opus 驗證獨立核對
+  「文字＝計算」；(iv) 方向是揭露更多（三個數字全印），不是放寬。**使用者保留否決權**：在 T-17-R2 步驟 1（資料集鎖定 commit）之前回 Fable 一句
+  「分母改固定 6」即可，Fable 再走一次 §7；步驟 1 之後不得再改。
 - **前置（全部硬性，缺一不跑）**：**T-57 ✅（工程；R2 工具，Fable 2026-09-18 追加）**、T-42 ✅、T-43 ✅、T-46 ✅、裁決 T-47-A、T-48 ✅、
   T-44-R1 結案（PASS→以 `--role-aware` 試用；FAIL／未跑→預設 `role_aware=False`，REPORT 標明
   用哪一種）、T-04 來源網址補齊**或**使用者明確決定「維持未結案」（REPORT 標明缺項）、
@@ -12239,6 +12267,10 @@ EOF
   criteria_commit: 3586bb0（判準 v1，2026-08-30）＋96e7716（裁決 T-45-A：R2 報告項＋本卡開卡，2026-09-03）＋a5f9e57（裁決 T-47-A 補註，2026-09-14）＋e253ac0（裁決 T-48-F 補註，2026-09-14）＋3499656（本次落地 docs commit：執行步驟／P1／in-domain 定義，2026-09-16）
   criteria_locked_at: 2026-08-30／2026-09-03／2026-09-14／2026-09-14／2026-09-16（皆早於 R2 任何量測；截至 2026-09-16 R2 尚無任何結果）
   dataset_manifest_sha256: 〈由 Opus 於執行步驟 1 產生 output/mvp_acceptance_r2/DATASET_MANIFEST.json 後回填其 sha256，並以獨立 commit 早於任何樣本（鐵則 14）；Fable 2026-09-16 無法先填——held-out 照片尚未存在〉
+    → 追加（Fable 2026-09-18；裁定 T-57-D；只追加）：
+  criteria_version: 同上＋報告項 5「錯誤放行率」分母口徑釐清（裁定 T-57-D：六面全列；主率＝❌÷可判面數；6N 上下界同列；判準 1～6 未變；結果前變更）
+  criteria_commit: 同上＋〈裁定 T-57-D 的獨立 `criteria:` commit；hash 由緊接的 docs commit 回填〉
+  criteria_locked_at: 同上／2026-09-18（早於 R2 任何量測；截至 2026-09-18 `output/mvp_acceptance_r2/` 不存在）
   implementation_commit: 不適用（驗收卡）
   result_commit:
   reviewer:
@@ -12246,6 +12278,9 @@ EOF
   verdict_under_current_criteria: 〈同上；判準未變〉
   criteria_changed_after_first_result: no
   change_record: 無
+    → 追加（Fable 2026-09-18；只追加）：
+  change_record: **結果前**口徑釐清一次——裁定 T-57-D（報告項 5 錯誤放行率分母）；理由＝T-57 規格 4. 字面自相矛盾（Opus `2f6ee3f` 提出）；
+    核准者＝Fable（使用者 2026-09-18 指派裁定；使用者保留否決權至步驟 1 前）；獨立 `criteria:` commit；`criteria_changed_after_first_result` 維持 no。
   ```
 - **Opus 驗證重點（四軸輸出）**：紅旗：任何素材 provenance 與 HEAD 不符仍納入；紅旗：重用
   `d958b3c` 盲測素材；紅旗：分組達標率被合併；紅旗：域外照片被算進自動組達標；紅旗：REPORT
@@ -12318,6 +12353,9 @@ EOF
      「域外誤放」標記（domain out 且未 forced 即通過）；每張**未 forced 通過**的照片列六面表：材質 id／來源（`surfaces_sources`）／GT
      （held-out 讀 `ground_truth_heldout.json`；8 場地讀 `data/material_ground_truth.json`，鍵名對照 `t36_clip_accuracy.GATE_ITEMS`）／正誤；
      **無來源面照列**、錯誤放行率分母＝6（GT 為 unknown 的面標「無法判」另計，不進分子分母）。輸出 `tables.md`。
+     **〔🔮 裁定 T-57-D（Fable 2026-09-18；WORKFLOW §7；原文保留不刪）〕上句「分母＝6」與括號字面矛盾（Opus `2f6ee3f` 提出）。現行口徑以
+     T-17-R2 卡「🔮 裁定 T-57-D」為準：六面全列；主率＝❌÷可判面數；同時印 6N 為分母的上下界。tables.md 文字「分母固定 6／張」須改
+     （修正輪 T-57-F1 第 7 條）。**
   5. `t17r2_make_player.py`：重用 `t17_make_player.to16`／`audio_block`；輸出 `output/mvp_acceptance_r2/播放頁.html`＋`_play/`；
      §7-1 五個 sample；§7-4 清單＝8 場地 wet（自動 run 存在則用自動，否則用 forced；標明）＋5 張 held-out wet，每檔標 forced 與否。
   6. `test_t17r2_tools.py`（純新工具，鐵則 5 第二類：**附突變證明**——把 MANIFEST 的 `forced_low_confidence` 抄寫改成寫死 `False`，
