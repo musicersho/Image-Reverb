@@ -1,5 +1,30 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔵 2026-09-18 Sonnet：T-58 完成（待審）——**現在該做的是：開 Opus 新視窗依 T-58 卡「Opus 驗證重點」驗證**，結果 commit 見 `94b8287`
+>
+> - 新增 `scripts/t58_rt60_basis_probe.py`（`manifest`／`partA`／`partB`／`report` 四個子指令，`scripts/` 以外零改動）。Part A：三條件
+>   （per-wall／六面 gypsum／六面 carpet，4×3×2.5m）沿用 T-56 首跑的 30 條 pra WAV（**不重生**），比較 Sabine／Eyring 公式值、pra 量測
+>   中位數、產品 `ir_synth.synthesize_ir()`。Part B：T-17 手動組 5 場地，pra 參考房間新模擬（seed 1001–1005）、產品讀既有 `ir_mono.wav`
+>   （**不重生**）、真實值讀 `output/mvp_acceptance/rt60_table.json`（**不重量**）。
+> - **事前登記 H1～H4 判定**：H1 不支持（per-wall 對 pra 的 Sabine 偏差 −33.4%，均勻條件偏差絕對值未皆更小）；H2 支持（per-wall 的
+>   Eyring 偏差 −37.9%，與 Sabine 同號，未消除偏差）；H3 不支持（5 場地與 MIT 3 場地子集，pra_median 誤差中位數皆大於 sabine，方向
+>   與假設相反）；H4 部分支持（Part A：per_wall／control_gypsum 4/6 頻段在 ±20% 內，**control_carpet 僅 1/6**——已用獨立重算證實不是
+>   本卡程式 bug，而是 `ir_synth` 對六面同材質、頻段間 RT60 差異極端時的既有限制）。全部數字見 `output/rt60_basis_probe/{REPORT.md,tables.md}`。
+> - **一個非逐字寫死、本卡自訂並記在 T-58 卡「交接筆記」的決定**：Part B 的 pra 參考房間改用 `ir_synth.build_pra_materials()`（逐面材質）
+>   建材質 dict 再傳給 `gen_ir_manual.build_room()`，未用卡片字面提到的 `gen_ir_manual.build_material()`（後者只支援六面同一材質，
+>   T-17 手動組場地都是逐面不同材質，用 `build_material()` 會失真）。
+> - **附帶佐證**：本卡自我檢查重驗六條交付 IR 的 MD5，**全部與歷史記錄相符**（`2adbaa75…`／`2dd19b6e…`／`9a94ffdf…`／`a1c21bcc…`），
+>   與上一則 Fable 記錄的「T-57 的 MD5 漂移是誤報（SHA-256 誤比 MD5）」一致，`task_14c97967` 可撤銷的結論再添一組獨立證據
+>   （本卡用 `md5`／`md5sum` 直接比對，未重複 T-57 出錯的比對方式）。
+> - 22 支測試全 `EXIT=0`；`src`／`data` 零 diff；DATASET_MANIFEST 記錄的所有輸入（30 條 WAV＋5 份 analysis.json＋5 條 ir_mono.wav＋
+>   rt60_table.json）sha256 前後相同；`output/` 只多出本卡自己的 `rt60_basis_probe/` 一個新目錄。
+> - **與 T-57-F1 並行收工**：TASKS.md／DEV_LOG.md／TODO.md 在本卡執行期間都被另一視窗（Fable，T-57-F1）同時編輯，全程用 `git add -p`
+>   只挑本卡自己的段落／行 commit，未動、未還原、未覆蓋 T-57-F1 或裁定 T-57-D 的內容（`ROADMAP.md` 曾誤加一行又自行撤銷，因為
+>   CLAUDE.md 規定 Sonnet 不得改 ROADMAP，已確認撤銷後與對方委交的版本逐位元相同）。
+> - **下一步**：開 Opus 新視窗，依 T-58 卡「Opus 驗證重點」逐項複驗（對象＝`ee55cad`／`94b8287`）→ 通過後回填四軸「工程：已驗證」；
+>   本卡不影響 T-17-R2／T-57-F1 排程（填充卡，只量不改，未進關鍵路徑）。四軸：工程：待審｜實驗：不確定（H1 不支持｜H2 支持｜
+>   H3 不支持｜H4 部分支持）｜產品：不適用｜MVP：不適用。詳見 TASKS.md T-58 卡「交接筆記」與 DEV_LOG `2026-09-18 (156)`。
+
 > ## 🔮 2026-09-18 Fable：分母口徑已裁定＋修正輪已開卡——**現在該做的是：開 Sonnet 視窗貼「執行 TASKS.md 的任務 T-57-F1。…」（WORKFLOW §2.1 Prompt）**
 >
 > - **裁定 T-57-D**（全文在 TASKS.md T-17-R2 卡；獨立 `criteria:` commit `3007646`；結果前變更、判準 1～6 一字未改）：報告項 5 錯誤放行率＝六面全列（含無來源面）、

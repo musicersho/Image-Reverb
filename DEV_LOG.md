@@ -1,5 +1,19 @@
 # Dev Log
 
+## 2026-09-18 (156)
+
+- **🔵 Sonnet：T-58 完成（待審）**——新增 `scripts/t58_rt60_basis_probe.py`（`manifest`／`partA`／`partB`／`report` 四個子指令，
+  唯一新檔）。Part A：三條件（per-wall／六面 gypsum／六面 carpet，4×3×2.5m）沿用 T-56 首跑的 30 條 pra WAV（不重生），比較
+  Sabine／Eyring 公式值、pra 量測中位數、產品 `ir_synth.synthesize_ir()`。Part B：T-17 手動組 5 場地，pra 參考新模擬
+  （seed 1001–1005）、產品讀既有 `ir_mono.wav`（不重生）、真實值讀 `output/mvp_acceptance/rt60_table.json`。
+  事前登記假設判定：**H1 不支持**（per-wall 對 pra 的 Sabine 偏差 −33.4%，兩個均勻條件偏差絕對值未皆更小）；
+  **H2 支持**（per-wall 的 Eyring 偏差 −37.9%，與 Sabine 同號）；**H3 不支持**（5 場地與 MIT 3 場地子集，pra_median 誤差
+  中位數皆大於 sabine，方向與假設相反）；**H4 部分支持**（Part A：per_wall／control_gypsum 4/6 頻段在 ±20% 內，
+  control_carpet 僅 1/6，已用獨立重算排除是本卡程式的 bug，判斷是 `ir_synth` 對六面同材質極端頻段差異的既有限制）。
+  22 支測試全 EXIT=0；`src`／`data` 零 diff；DATASET_MANIFEST 記錄的所有輸入 sha256 前後相同。附帶佐證：重驗六條交付
+  IR MD5 全中，與上一則 Fable 記錄的「MD5 漂移為誤報」一致，`task_14c97967` 可撤銷的結論再添一組獨立證據。
+  TASKS.md 用 `git add -p` 只 commit 本卡段落，未動同檔案內另一視窗（Fable）當時正在編輯的 T-57-F1／裁定內容。
+
 ## 2026-09-18 (155)
 
 - **🔮 Fable：T-57 退回後的三件事——裁定分母口徑（§7）、開修正輪 T-57-F1、註銷 MD5「漂移」背景調查**。
