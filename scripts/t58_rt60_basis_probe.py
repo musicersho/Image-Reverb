@@ -49,7 +49,7 @@ from src.image_reverb.materials import (  # noqa: E402
     SurfaceMaterials,
     load_materials,
 )
-from gen_ir_manual import build_room  # noqa: E402  （只 import build_room；build_material 未用到，見交接筆記）
+from gen_ir_manual import PRESETS, build_room  # noqa: E402  （T-58-F1 R4：import 白名單新增 PRESETS，唯讀常數，供取 small preset 位置；build_material 未用到，見交接筆記）
 
 OUTPUT_DIR = PROJECT_ROOT / "output" / "rt60_basis_probe"
 RUNS_DIR = OUTPUT_DIR / "runs"
@@ -504,8 +504,11 @@ def build_table_c(part_b: dict[str, Any]) -> tuple[str, dict[str, float], dict[s
     return "\n".join(lines), all_medians, mit_medians
 
 
-def evaluate_hypotheses(part_a: dict[str, Any], part_b: dict[str, Any], table_c_all: dict[str, float], table_c_mit: dict[str, float]) -> str:
+def evaluate_hypotheses(
+    part_a: dict[str, Any], part_b: dict[str, Any], table_c_all: dict[str, float], table_c_mit: dict[str, float]
+) -> tuple[str, dict[str, Any]]:
     lines = ["## §1 假設 H1～H4 逐條判定", ""]
+    verdicts: dict[str, Any] = {}
 
     # H1
     dev = {}
@@ -522,6 +525,11 @@ def evaluate_hypotheses(part_a: dict[str, Any], part_b: dict[str, Any], table_c_
         f"六面 carpet 偏差 {_pct(uniform_devs['control_carpet'])}（絕對值"
         f"{'皆小於' if h1_smaller_uniform else '未皆小於'} per-wall 絕對值 {abs(per_wall_dev)*100:.1f}%）。"
     )
+    verdicts["h1"] = {
+        "support": h1_support,
+        "dev": dev,
+        "all_negative": all(v < 0 for v in dev.values()),
+    }
 
     # H2
     eyring_dev_per_wall = (
@@ -533,34 +541,55 @@ def evaluate_hypotheses(part_a: dict[str, Any], part_b: dict[str, Any], table_c_
         f"{_pct(eyring_dev_per_wall)}，與 Sabine 偏差 {_pct(per_wall_dev)} "
         f"{'同號（Eyring 未消除非均勻偏差）' if same_sign else '不同號或近零（Eyring 有消除偏差的跡象）'}。"
     )
+    verdicts["h2"] = {"support": same_sign, "eyring_dev_per_wall": eyring_dev_per_wall}
 
-    # H3
+    # H3（T-58-F1 R2：MIT 括號比較的是「與 5 場地判定是否同向」，不是「MIT 子集本身是否支持」；
+    # H3 判定本身仍只由 5 場地 h3_all_support 決定）
     h3_all_support = table_c_all["pra_median"] < table_c_all["sabine"]
     h3_mit_support = table_c_mit["pra_median"] < table_c_mit["sabine"]
+    h3_dir_consistent = h3_all_support == h3_mit_support
     lines.append(
         f"- **H3**：{'支持' if h3_all_support else '不支持'}——5 場地判準頻段誤差絕對值中位數："
         f"pra_median={_fmt(table_c_all['pra_median'])} vs sabine={_fmt(table_c_all['sabine'])}"
         f"（{'下降' if h3_all_support else '未下降'}）。MIT 3 場地子集（🟡 弱證據，樣本小）："
         f"pra_median={_fmt(table_c_mit['pra_median'])} vs sabine={_fmt(table_c_mit['sabine'])}"
-        f"（{'方向一致，下降' if h3_mit_support else '方向不一致，未下降'}）。"
+        f"（{'下降' if h3_mit_support else '未下降'}；與 5 場地{'方向一致' if h3_dir_consistent else '方向不一致'}）。"
     )
+    verdicts["h3"] = {
+        "all_support": h3_all_support,
+        "mit_support": h3_mit_support,
+        "dir_consistent": h3_dir_consistent,
+    }
 
-    # H4
+    # H4（T-58-F1 R3：多數＝嚴格大於半數，對齊卡片條文；另加僅供參考的三條件合併計數）
     tol = 0.20
     h4_lines = []
     all_majority = True
+    per_cond_counts: dict[str, dict[str, Any]] = {}
     for cond, r in part_a.items():
         band_freqs = r["band_freqs"]
-        within = [
-            abs((prod - sab) / sab) <= tol
-            for prod, sab in zip(r["product_bands"], r["sabine_bands"])
-        ]
-        majority = sum(within) >= (len(within) + 1) // 2
+        devs = [(prod - sab) / sab for prod, sab in zip(r["product_bands"], r["sabine_bands"])]
+        within = [abs(d) <= tol for d in devs]
+        majority = sum(within) > len(within) / 2
         all_majority = all_majority and majority
-        h4_lines.append(
-            f"{cond}：{sum(within)}/{len(within)} 頻段在 ±20% 內"
-        )
-    # Part B 佐證（既有 closed_loop，不新量）
+        idx_max = max(range(len(devs)), key=lambda i: abs(devs[i]))
+        per_cond_counts[cond] = {
+            "within": sum(within),
+            "total": len(within),
+            "max_dev_band": band_freqs[idx_max],
+            "max_dev_pct": devs[idx_max],
+        }
+        h4_lines.append(f"{cond}：{sum(within)}/{len(within)} 頻段在 ±20% 內")
+    merged_n = sum(v["within"] for v in per_cond_counts.values())
+    merged_total = sum(v["total"] for v in per_cond_counts.values())
+    if merged_n > merged_total / 2:
+        merged_label = "＞半數"
+    elif merged_n == merged_total / 2:
+        merged_label = "＝半數"
+    else:
+        merged_label = "＜半數"
+
+    # Part B 佐證（既有 closed_loop，本卡未重量）
     b_within_counts = []
     for venue_key, r in part_b.items():
         cl = r.get("existing_closed_loop")
@@ -569,17 +598,187 @@ def evaluate_hypotheses(part_a: dict[str, Any], part_b: dict[str, Any], table_c_
             b_within_counts.append(f"{venue_key} {n_within}/{len(cl['bands'])}")
     lines.append(
         f"- **H4**：{'支持' if all_majority else '不支持'}——Part A 產品路徑 vs 自身 Sabine 目標，"
-        f"多數頻段（≥半數）在 ±20% 內：{'；'.join(h4_lines)}。"
-        f"Part B 佐證（沿用 T-17 各場地既有 `analysis.json.closed_loop`，未重量，僅重量一次做對照）："
+        f"多數頻段（＞半數；6 帶需 ≥4 帶）在 ±20% 內：{'；'.join(h4_lines)}。"
+        f"三條件合併 {merged_n}/{merged_total}（{merged_label}；僅供參考，不是判定式）。"
+        f"Part B 佐證（沿用 T-17 各場地既有 `analysis.json.closed_loop`；本卡**未**重量）："
         f"{'；'.join(b_within_counts) if b_within_counts else '無'}。"
     )
+    verdicts["h4"] = {
+        "support": all_majority,
+        "per_cond_counts": per_cond_counts,
+        "merged": (merged_n, merged_total, merged_label),
+    }
 
-    return "\n".join(lines) + "\n"
+    return "\n".join(lines) + "\n", verdicts
+
+
+def _part_a_position_diff() -> dict[str, Any]:
+    """T-58-F1 R4：Part A pra 參考（`gen_ir_manual.PRESETS["small"]`）與產品
+    `ir_synth._source_mic_positions(*ROOM_DIMS_A)` 的座標差（cm，程式算，不手打）。"""
+    preset_source = [float(v) for v in PRESETS["small"]["source_pos"]]
+    preset_mic = [float(v) for v in PRESETS["small"]["mic_pos"]]
+    raw_source, raw_mic = ir_synth._source_mic_positions(*ROOM_DIMS_A)
+    product_source = [float(v) for v in raw_source]
+    product_mic = [float(v) for v in raw_mic]
+
+    axis_names = ["x", "y", "z"]
+    diffs = [
+        ("聲源", axis_names[i], abs(preset_source[i] - product_source[i]) * 100.0) for i in range(3)
+    ] + [
+        ("麥克風", axis_names[i], abs(preset_mic[i] - product_mic[i]) * 100.0) for i in range(3)
+    ]
+    max_point, max_axis, max_cm = max(diffs, key=lambda t: t[2])
+
+    return {
+        "preset_source": preset_source,
+        "preset_mic": preset_mic,
+        "product_source": product_source,
+        "product_mic": product_mic,
+        "max_diff_cm": max_cm,
+        "max_diff_label": f"{max_point} {max_axis}",
+    }
+
+
+def _pra_credibility_lines(part_b: dict[str, Any]) -> tuple[list[str], str]:
+    """T-58-F1 R5 §3(b)：Part B 每場地 pra 參考可信度逐行＋`max_order=4` 彙總句
+    （程式從 part_b 逐場地算出，不手打）。"""
+    per_venue: dict[str, dict[str, Any]] = {}
+    for venue_key, r in part_b.items():
+        band_freqs = r["band_freqs"]
+        errs = []
+        for freq in CRITERIA_BAND_FREQS:
+            idx = band_freqs.index(freq)
+            errs.append((r["pra_band_median"][idx] - r["real_bands"][idx]) / r["real_bands"][idx])
+        errs.append((r["pra_combined_median"] - r["real_combined"]) / r["real_combined"])
+        all_pos = all(e > 0 for e in errs)
+        all_neg = all(e < 0 for e in errs)
+        sign_label = "全為正" if all_pos else ("全為負" if all_neg else "有正有負")
+        per_venue[venue_key] = {"preset": r["preset"], "errs": errs, "all_pos": all_pos, "sign_label": sign_label}
+
+    lines = []
+    for venue_key, info in per_venue.items():
+        p = info["preset"]
+        lines.append(
+            f"  - {venue_key}：preset（max_order={p['max_order']}／n_rays={p['n_rays']}），"
+            f"判準頻段 (pra−real)/real 範圍 {_pct(min(info['errs']))}～{_pct(max(info['errs']))}，{info['sign_label']}"
+        )
+
+    mo4 = {k: v for k, v in per_venue.items() if v["preset"]["max_order"] == 4}
+    mo4_all_pos = {k: v for k, v in mo4.items() if v["all_pos"]}
+    if mo4_all_pos:
+        combined_errs = [e for v in mo4_all_pos.values() for e in v["errs"]]
+        summary = (
+            f"`max_order=4` 的場地共 {len(mo4)} 個，其中 {len(mo4_all_pos)} 個五格全為正，"
+            f"範圍 {_pct(min(combined_errs))}～{_pct(max(combined_errs))}。"
+        )
+    else:
+        summary = f"`max_order=4` 的場地共 {len(mo4)} 個，沒有場地五格全為正。"
+
+    return lines, summary
+
+
+def _build_section_3(
+    part_b: dict[str, Any],
+    table_c_all: dict[str, float],
+    verdicts: dict[str, Any],
+    pos_diff: dict[str, Any],
+) -> str:
+    """T-58-F1 R5：§3 全段重寫——只列選項與證據，不下決定；不對未成立的假設寫『若…成立』。"""
+    lines = ["## §3 給 Fable 的決策輸入（只列選項與證據，不下決定）", ""]
+
+    # (a) 基準比較
+    sabine_v = table_c_all["sabine"]
+    eyring_v = table_c_all["eyring"]
+    pra_v = table_c_all["pra_median"]
+    not_support_change = sabine_v <= eyring_v and sabine_v <= pra_v
+    op_eyring = "≤" if sabine_v <= eyring_v else ">"
+    op_pra = "≤" if sabine_v <= pra_v else ">"
+    lines.append(
+        f"- **(a) 基準比較**：5 場地判準頻段誤差絕對值中位數 sabine={_fmt(sabine_v)}、"
+        f"eyring={_fmt(eyring_v)}、pra_median={_fmt(pra_v)}（MIT 子集見表 C）。"
+        f"現有證據{'不支持' if not_support_change else '支持'}把 `IR_RT60_BASIS` 由 sabine 換成 "
+        f"eyring 或 pra 量測值（sabine {op_eyring} eyring 且 sabine {op_pra} pra_median）。"
+        "此為證據陳述，不是產品決定；決定歸 Fable，T-17-R2 之後。"
+    )
+
+    # (b) pra 參考本身的可信度
+    venue_lines, mo4_summary = _pra_credibility_lines(part_b)
+    lines.append("- **(b) pra 參考本身的可信度**（逐場地，程式產生）：")
+    lines.extend(venue_lines)
+    lines.append(f"  {mo4_summary}")
+
+    # (c) H1／H2 的實際意涵
+    if not verdicts["h1"]["support"] and verdicts["h1"]["all_negative"]:
+        dev = verdicts["h1"]["dev"]
+        text_c = (
+            f"三條件 Sabine 相對 pra 的聯合帶偏差全為負（per_wall {_pct(dev['per_wall'])}、"
+            f"control_gypsum {_pct(dev['control_gypsum'])}、control_carpet {_pct(dev['control_carpet'])}）——"
+            "「Sabine 在非均勻房間相對幾何聲學參考偏長」未獲支持；H2 的「同號」只表示 Eyring 與 Sabine "
+            "同向偏短，在 H1 前提不成立下不具原假設的含意。"
+        )
+    else:
+        text_c = (
+            f"本輪 H1：{'支持' if verdicts['h1']['support'] else '不支持'}、"
+            f"H2：{'支持' if verdicts['h2']['support'] else '不支持'}，不符合上述已知分支，"
+            "含意需另行檢視 §1 的逐值敘述，此處不重複展開。"
+        )
+    lines.append(f"- **(c) H1／H2 的實際意涵**：{text_c}")
+
+    # (d) H4 的實際意涵
+    if not verdicts["h4"]["support"]:
+        cond_parts = []
+        for cond, info in verdicts["h4"]["per_cond_counts"].items():
+            cond_parts.append(
+                f"{cond} {info['within']}/{info['total']}（最大偏差頻段 {info['max_dev_band']}Hz "
+                f"{_pct(info['max_dev_pct'])}）"
+            )
+        b_parts = []
+        for venue_key, r in part_b.items():
+            cl = r.get("existing_closed_loop")
+            if not cl:
+                continue
+            n_within = sum(1 for b in cl["bands"] if b["within_tolerance"])
+            total = len(cl["bands"])
+            exceed = [b for b in cl["bands"] if not b["within_tolerance"]]
+            if exceed:
+                detail = "、".join(f"{b['freq_hz']}Hz {b['error_pct']:+.1f}%" for b in exceed)
+                b_parts.append(f"{venue_key} {n_within}/{total}（超差：{detail}）")
+            else:
+                b_parts.append(f"{venue_key} {n_within}/{total}")
+        text_d = (
+            f"逐條件：{'；'.join(cond_parts)}。Part B 既有 `closed_loop`：{'；'.join(b_parts)}。"
+            "已知機制＝T-14 裁決／T-17 裁決 B 記錄的『陡峭頻段階梯下的鄰帶耦合』；"
+            "control_carpet 是極端案例，且六面地毯是地雷 #9 明列的不現實模型；"
+            "本卡**未**重新驗證機制歸因（保留號 T-59）。對決策的含意：『產品 T30≈Sabine 目標』"
+            "不是無條件成立，產品對真實 IR 的誤差除了材質誤差與 Sabine 偏差，還可能含這一項。"
+        )
+    else:
+        text_d = (
+            "本輪 H4 支持，產品路徑忠實反映 Sabine 目標；對決策的含意：現有「T-17 生成側誤差為正」的"
+            "觀察，病因更可能是「Sabine 對真實房間本身的偏差」而非「產品合成環節額外引入誤差」。"
+        )
+    lines.append(f"- **(d) H4 的實際意涵**：{text_d}")
+
+    lines.append("")
+    return "\n".join(lines)
 
 
 def build_report(part_a: dict[str, Any], part_b: dict[str, Any]) -> str:
     table_c_md, table_c_all, table_c_mit = build_table_c(part_b)
-    h_section = evaluate_hypotheses(part_a, part_b, table_c_all, table_c_mit)
+    h_section, verdicts = evaluate_hypotheses(part_a, part_b, table_c_all, table_c_mit)
+    pos_diff = _part_a_position_diff()
+
+    sorted_bases = sorted(table_c_all.items(), key=lambda kv: kv[1])
+    sorted_bases_str = "、".join(f"{name} {_fmt(val)}" for name, val in sorted_bases)
+    result_sentence = (
+        "**結果**：H1 " + ("支持" if verdicts["h1"]["support"] else "不支持")
+        + "｜H2 " + ("支持" if verdicts["h2"]["support"] else "不支持")
+        + "｜H3 " + ("支持" if verdicts["h3"]["all_support"] else "不支持")
+        + "｜H4 " + ("支持" if verdicts["h4"]["support"] else "不支持")
+        + f"；表 C 5 場地判準頻段誤差絕對值中位數四個基準由小到大：{sorted_bases_str}。"
+    )
+
+    section_3 = _build_section_3(part_b, table_c_all, verdicts, pos_diff)
 
     lines = [
         "# T-58 REPORT：Sabine vs Eyring vs 幾何聲學（pra）參考 vs 產品合成路徑",
@@ -591,6 +790,8 @@ def build_report(part_a: dict[str, Any], part_b: dict[str, Any]) -> str:
         "以及產品 `ir_synth` 合成 IR 的 T30；Part B 在 T-17 手動組 5 個真實場地上，額外加入真實 IR"
         "（`output/mvp_acceptance/rt60_table.json` 的 `real_reference`）當比較基準。事前登記的假設"
         "H1～H4 判定見 §1，數字全部引用下方表 A／B／C（表格程式產出，見 `tables.md`）。",
+        "",
+        result_sentence,
         "",
         h_section,
         "## §2 限制",
@@ -609,19 +810,14 @@ def build_report(part_a: dict[str, Any], part_b: dict[str, Any]) -> str:
         "- Part B 的「產品」欄是 T-17 HEAD 時生成的既有 `ir_mono.wav`（未重生），與 Part A 的「產品」欄"
         "（本卡用當前 HEAD 的 `ir_synth.synthesize_ir()` 重新合成）不是同一次生成，兩者不可跨 Part 直接"
         "比較生成環境。",
+        f"- **R4**：Part A 的 pra 參考（T-56 首跑、已鎖定不可重生）位置＝聲源 {pos_diff['preset_source']}／"
+        f"麥克風 {pos_diff['preset_mic']}（`gen_ir_manual.PRESETS[\"small\"]`），與產品 "
+        f"`ir_synth._source_mic_positions(4,3,2.5)`＝聲源 {[round(v, 2) for v in pos_diff['product_source']]}／"
+        f"麥克風 {[round(v, 2) for v in pos_diff['product_mic']]} 不同（各軸最大差 {pos_diff['max_diff_cm']:.1f} cm，"
+        f"{pos_diff['max_diff_label']}）；Part B 的 pra 房間用的就是 `_source_mic_positions`（一致）；"
+        "本卡**未量化**此差異對 T30 的影響（T30 是晚期衰減斜率，預期影響小；但未驗證）。",
         "",
-        "## §3 給 Fable 的決策輸入（只列選項與證據，不下決定）",
-        "",
-        "- 若 H1／H2 成立（Sabine 對非均勻吸音房間系統性偏長、Eyring 不能消除）：`IR_RT60_BASIS` 若要"
-        "換成 pra 幾何聲學量測值，需要另建「以量測值當目標」的合成路徑（目前 `ir_synth` 只吃公式值），"
-        "屬於新開發工作，不是換一個字串常數。",
-        "- 若 H3 成立（pra 參考比 Sabine 更接近真實 IR 判準頻段）：方向上支持「以 pra 或其他幾何聲學量測"
-        "值取代 Sabine 當合成目標」的假說，但 Part B 場地數少（5 場、MIT 子集僅 3 場），R2 held-out 資料"
-        "回來後應一併重估。",
-        "- 若 H4 成立（產品路徑忠實反映 Sabine 目標）：現有「T-17 生成側誤差為正」的觀察，病因更可能是"
-        "「Sabine 對真實房間本身的偏差」而非「產品合成環節额外引入誤差」；若 H4 不成立，則產品合成環節"
-        "本身也可能是誤差來源之一，需要與材質誤差分開處理。",
-        "",
+        section_3,
         "## §4 可重跑指令",
         "",
         "```bash",

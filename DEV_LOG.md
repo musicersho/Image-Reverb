@@ -1,5 +1,20 @@
 # Dev Log
 
+## 2026-09-18 (159)
+
+- **🔵 Sonnet：T-58-F1 完成（待驗證）**——依卡片指示只改 `scripts/t58_rt60_basis_probe.py` 的 `evaluate_hypotheses()`／`build_report()`
+  （＋三個新增純計算小函式、import 多 `PRESETS`），只跑 `report` 子指令，`partA`／`partB`／`all`／`manifest` 全程未執行。
+- **R1～R5 全部修正**：H4 判定紀錄以程式輸出（不支持，per_wall 4/6、control_gypsum 4/6、control_carpet 1/6、合併 9/18）為準，
+  在 T-58 卡 §8／交接筆記、DEV_LOG、HANDOFF 四處只追加更正（原文一字未刪）；H3 的 MIT 括號改成「與 5 場地方向是否一致」；
+  H4「多數」改嚴格大於半數＋加三條件合併僅供參考句；REPORT §2 新增 Part A pra 參考位置差（程式算，最大差 5.0cm，麥克風 z）；
+  §0／§3 全段改由程式輸出的 `verdicts` 組成，不再手寫「若…成立」。
+- **驗證**：兩份量測快取＋28 條 WAV＋`DATASET_MANIFEST.json`＋`tables.md` 的 sha256 開跑前／收工前逐項相符，DATASET_MANIFEST
+  記錄的 41 個輸入獨立重算全部相符；22 支測試 EXIT=0；`src`／`data` 零 diff；`git diff 81158cd -- scripts/t58_rt60_basis_probe.py`
+  的每個 hunk 都落在允許修改的函式範圍內；R2 用四組合、R3 用 3/6 竄改資料＋`81158cd` git worktree 新舊碼對照（舊碼上重現錯誤
+  行為，符合鐵則 5），worktree 已清除。
+- 下一步：開 Opus 新視窗依 T-58 卡「Opus 驗證重點」複驗（對象＝本次收工 commit，任務寫「T-58（含修正輪 T-58-F1）」）；
+  T-57-F1 照常平行，兩者皆非 T-17-R2 前置。詳見 TASKS.md T-58-F1 卡「交接筆記」。
+
 ## 2026-09-18 (158)
 
 - **🔮 Fable：T-58 退回後的五個決定——開修正輪 T-58-F1、確認 H4＝不支持（不走 §7）、記錄對 `IR_RT60_BASIS` 的意涵、control_carpet 登記保留號 T-59、排程不變**。
@@ -39,6 +54,8 @@
   **H2 支持**（per-wall 的 Eyring 偏差 −37.9%，與 Sabine 同號）；**H3 不支持**（5 場地與 MIT 3 場地子集，pra_median 誤差
   中位數皆大於 sabine，方向與假設相反）；**H4 部分支持**（Part A：per_wall／control_gypsum 4/6 頻段在 ±20% 內，
   control_carpet 僅 1/6，已用獨立重算排除是本卡程式的 bug，判斷是 `ir_synth` 對六面同材質極端頻段差異的既有限制）。
+  〔更正（T-58-F1，2026-09-18；只追加，原文保留）〕H4 依卡片允許集合與程式輸出應記**不支持**（三條件 4/6、4/6、1/6；
+  合併 9/18 非多數），上文「部分支持」作廢，理由見 T-58 卡狀態欄 R1 與 Fable 處置第 2 點。
   22 支測試全 EXIT=0；`src`／`data` 零 diff；DATASET_MANIFEST 記錄的所有輸入 sha256 前後相同。附帶佐證：重驗六條交付
   IR MD5 全中，與上一則 Fable 記錄的「MD5 漂移為誤報」一致，`task_14c97967` 可撤銷的結論再添一組獨立證據。
   TASKS.md 用 `git add -p` 只 commit 本卡段落，未動同檔案內另一視窗（Fable）當時正在編輯的 T-57-F1／裁定內容。

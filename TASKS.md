@@ -12664,9 +12664,10 @@ EOF
   reviewer: 〈Opus 填：模型＋日期＋commit〉 → Opus 5，2026-09-18，審查 HEAD `81bad70`（對象 `ee55cad`／`94b8287`）；**工程退回**（R1～R5 見狀態欄）；量測獨立重跑逐位元重現
   verdict_under_original_criteria: H1 不支持｜H2 支持｜H3 不支持（5 場地與 MIT 3 場地子集方向一致）｜H4 部分支持（Part A：per_wall 4/6、control_gypsum 4/6、control_carpet 1/6 頻段在 ±20% 內，整體「多數頻段」判定不支持；Part B 佐證＝既有 closed_loop 5～6/6，未重量）。逐項數字與判定理由見交接筆記。
   （Opus 2026-09-18 追加更正，原字保留：H4「部分支持」不在卡片允許集合，且與程式產出 REPORT §1「不支持」矛盾；依程式結果 H4＝**不支持**〔三條件 4/6、4/6、1/6；合併 9/18 非多數〕。修正輪須以程式輸出為準再追加一行確認）
+  （T-58-F1 2026-09-18 追加確認，原字保留：重跑 report 後程式輸出 H4＝不支持〔per_wall 4/6、control_gypsum 4/6、control_carpet 1/6；合併 9/18〕，與上一行 Opus 更正一致；「部分支持」作廢但不刪）
   verdict_under_current_criteria: 同上（本卡無門檻、criteria 未變更）
   criteria_changed_after_first_result: no
-  change_record: 無
+  change_record: 無（T-58-F1：判定程式對齊卡片條文『多數』＝＞半數；非門檻變更——Fable 2026-09-18 判定，Opus 於 T-58-F1 驗證時獨立核對）
   ```
 - **交接筆記（Sonnet，2026-09-18）**：
   - 新增檔案：`scripts/t58_rt60_basis_probe.py`（唯一新檔，`scripts/` 以外零改動），四個子指令
@@ -12699,6 +12700,8 @@ EOF
       shaped-noise 合成的長尾巴透過濾波器組漏能量到高頻量測窗，是 `ir_synth.py` 既有已知限制的一個
       極端案例（六面同 carpet 本身也是 T-03「地雷第 9 條」明列的不現實模型），不是本卡新開的 bug，也
       不在本卡範圍內修。整體判定用「三條件都要過半」的嚴格標準，故 H4 記「部分支持」而非「支持」。
+    - 〔更正（T-58-F1，2026-09-18；只追加，原文保留）〕H4 依卡片允許集合與程式輸出應記**不支持**（理由見本卡狀態欄 R1 與 Fable 處置第 2 點）；
+      上文『故 H4 記「部分支持」而非「支持」』作廢。
   - **附帶發現（呼應 Fable 2026-09-18 對 T-57 的處置第 4 點）**：本卡自我檢查重新驗證六條交付 IR 的 MD5
     （`--text 浴室`／`--text 大教堂`／`--scene neighbor_voices.json`／`--scene stadium_corridor.json`），
     **全部與 TASKS.md 歷史記錄的 MD5 逐位元相同**（`2adbaa75…`／`2dd19b6e…`／`9a94ffdf…`／`a1c21bcc…`），
@@ -12728,9 +12731,10 @@ EOF
     未動、未還原、未覆蓋那些變更。
 
 ### T-58-F1 T-58 修正輪：退回理由 R1～R5（只改判定程式與 REPORT 敘述、只重跑 `report`；**禁止重跑 partA／partB／manifest**）（Sonnet；只動 `scripts/t58_rt60_basis_probe.py`；不進關鍵路徑；前置＝T-58 🟠 `81158cd`）
-- **狀態**：⬜ **可開跑**（Fable 2026-09-18 開卡；可與 T-57-F1 平行——程式檔不相交，但 TASKS／DEV_LOG／HANDOFF／TODO 會同時被兩個視窗改：
+- **狀態**：🔵 **完成（待驗證）**（Sonnet 2026-09-18；R1～R5 全部修正，只跑 `report`，`src`／`data` 零 diff、22 支測試 EXIT=0；
+  結果 commit 見交接筆記。可與 T-57-F1 平行——程式檔不相交，但 TASKS／DEV_LOG／HANDOFF／TODO 會同時被兩個視窗改：
   commit 前先 `git status`，**只 `git add` 本卡列名的檔案**，共用文件用 `git add -p` 只挑本卡的 hunk，不得把 `scripts/t17r2_*.py`／`scripts/test_t17r2_tools.py` 等 T-57-F1 產物帶進本卡 commit）
-- **四軸狀態**：工程：未開始｜實驗：負向（沿用 Opus 2026-09-18 對 T-58 的判定：H1 不支持｜H2 支持｜H3 不支持｜H4 不支持；**本卡不重判、不得改寫**）｜產品：不適用｜MVP：不適用
+- **四軸狀態**：工程：待審｜實驗：負向（沿用 Opus 2026-09-18 對 T-58 的判定：H1 不支持｜H2 支持｜H3 不支持｜H4 不支持；**本卡不重判、不得改寫**）｜產品：不適用｜MVP：不適用
 - **為什麼**：Opus 2026-09-18 驗證 T-58（對象 `ee55cad`／`94b8287`，紀錄 `81158cd`）：**量測可重現**（Opus 在 scratchpad 獨立重跑，REPORT／tables 逐字相同、28 條 WAV 逐位元相同），
   但判定文字有 R1～R5 五個問題→工程退回。本卡逐條修、逐條附證據。三件需要 Fable 先定的事已定（T-58 卡「🔮 Fable 處置」第 2～4 點）：**H4＝不支持**、**不走 §7**、
   **pra 大房間偏長的數字由程式逐場地列出**。Sonnet **不得**重新解讀這三項。
@@ -12832,6 +12836,107 @@ EOF
 - **收工**：commit `T-58-F1: 完成修正輪（待驗證）` → 開 Opus 新視窗驗證（WORKFLOW §2.2 Prompt，任務寫「T-58（含修正輪 T-58-F1）」）→ 通過時 Opus 把 **T-58 卡與本卡**四軸同時改
   「工程：已驗證」（實驗：負向不變），commit 訊息用 `T-58: 驗證通過（工程）（含修正輪 T-58-F1）`，訊息內附四軸判定。再退回→由 Fable 開 T-58-F2，不在本卡內續修。
 - **交接筆記**：
+  - **開跑前唯讀值核對（全部相符，才繼續）**：`part_a_measurements.json`＝`a9f757e3…`✓；`part_b_measurements.json`＝`70b888c5…`✓；
+    `DATASET_MANIFEST.json`＝`cf44e3ba…`✓；28 條 WAV 合併雜湊＝`28e99a69…`✓；`tables.md`＝`e961d05e…`✓；wav 數量＝28✓。
+  - **改動範圍**：只動 `scripts/t58_rt60_basis_probe.py`：①檔頭 import 多一項 `PRESETS`（`from gen_ir_manual import PRESETS, build_room`）；
+    ②`evaluate_hypotheses()` 改回傳 `(text, verdicts)`（`verdicts` 供 `build_report()` 組 §0／§3，不再是純文字函式）；③`build_report()` 改用
+    `verdicts` 組 §0「結果」一句與全新 §3；④新增三個純計算小函式服務這兩者：`_part_a_position_diff()`（R4）、`_pra_credibility_lines()`
+    （R5 §3(b)）、`_build_section_3()`（R5 §3 全段）。`cmd_report()` 簽章未變，未動。`git diff --stat -- src data` 為空；
+    `git diff --stat -- scripts` 只含本檔；`git diff 81158cd -- scripts/t58_rt60_basis_probe.py` 的每個 `@@` hunk 都落在上述①～④範圍內
+    （`build_manifest`／`run_part_a`／`run_part_b`／`build_table_a/b/c`／`_criteria_abs_errors`／`measure_bands_and_combined`／
+    `median_over_runs`／`combined_approx_from_bands`／`normalize_peak`／`main()`／全部模組層常數／`tol = 0.20` 一字未動）。
+  - **R1（H4 判定紀錄同步）**：程式端不必改判定（REPORT §1 本來就印「不支持」）；重跑 `report` 後把程式輸出的實際值
+    （per_wall 4/6、control_gypsum 4/6、control_carpet 1/6、合併 9/18）分別追加進：①T-58 卡 §8 `verdict_under_original_criteria`
+    區塊 Opus 更正行之下；②T-58 卡交接筆記「H4 部分支持」那一點正下方；③DEV_LOG `2026-09-18 (156)` 該點正下方；④HANDOFF
+    「🔵 2026-09-18 Sonnet：T-58 完成」段內兩處「H4 部分支持」各自正下方。四處都用「只追加、原文保留」寫法，未刪一字。
+    `grep -n "部分支持" TASKS.md DEV_LOG.md HANDOFF.md TODO.md` 逐筆標註（見下方獨立小節）；`git diff 81158cd -- TASKS.md`
+    整份 diff 零刪除行（只有 `git diff` 標準檔頭 `---`/`+++`，無任何 `-` 開頭的內容行）。
+  - **R2（H3 MIT 字樣）**：改成 `h3_dir_consistent = (h3_all_support == h3_mit_support)`，MIT 括號印「（未下降／下降；與 5 場地方向
+    一致／不一致）」；H3 判定本身仍只由 `h3_all_support`（5 場地）決定，MIT 子集只是旁註，判定邏輯未變。本輪實際輸出：
+    `…pra_median=1.1272 vs sabine=0.4738（未下降；與 5 場地方向一致）。`——與卡片預期完全相符。scratchpad 四組合驗證見下方獨立小節，
+    四行「方向一致／不一致」依序為 一致／不一致／不一致／一致，與卡片要求相符。
+  - **R3（H4「多數」嚴格大於半數）**：`majority = sum(within) > len(within) / 2`；判定式仍是「三條件各自都要多數」，未改成合併計數或
+    「2/3 條件」。另加「三條件合併」僅供參考句，程式依 `merged_n` 與 `merged_total/2` 比較產生「＞半數／＝半數／＜半數」字樣。
+    本輪實際輸出：per_wall 4/6、control_gypsum 4/6、control_carpet 1/6；合併 9/18（＝半數）；H4 仍「不支持」（與修改前相同，未翻轉任何
+    判定）。3/6 情境新舊碼對照見下方獨立小節：新碼印「不支持」、舊碼（`81158cd` worktree）印「支持」，證明是在**舊碼上**重現了
+    「≥半數即算多數」的錯誤行為，符合鐵則 5。**Fable 處置第 3 點「R3 不屬 §7 變更」本卡不重新判定，原樣沿用，請 Opus 獨立核對此判斷**
+    （T-58 卡§8 `change_record` 已追加對應一句）。
+  - **R4（Part A pra 位置差）**：`_part_a_position_diff()` 用程式讀 `PRESETS["small"]["source_pos"/"mic_pos"]` 與
+    `ir_synth._source_mic_positions(*ROOM_DIMS_A)`，逐軸算絕對差（cm）取最大值＋標註是聲源還是麥克風的哪一軸。實際輸出：
+    small preset 聲源 [1.0, 1.0, 1.5]／麥克風 [3.0, 2.0, 1.2]；`_source_mic_positions(4,3,2.5)`＝聲源 [1.0, 0.99, 1.5]／
+    麥克風 [3.0, 2.01, 1.25]；最大差 5.0 cm（麥克風 z）——與卡片預期值完全相符，已追加到 REPORT §2。`grep -n "0\.99\|2\.01\|1\.25"
+    scripts/t58_rt60_basis_probe.py` 為空（無手打座標，見下方獨立小節）。
+  - **R5（§0／§1 H4／§3 全段）**：`evaluate_hypotheses()` 現在同時回傳 `verdicts`（四條判定＋H4 逐條件計數／最大偏差頻段＋H3 方向一致性），
+    `build_report()` 用它組 §0「結果」一句（四條判定＋表 C 4 基準由小到大：sabine 0.4738、product 0.4793、eyring 0.5386、
+    pra_median 0.8643）與全新 §3（(a)基準比較、(b)pra 可信度逐場地＋`max_order=4` 彙總、(c)H1/H2 實際意涵、(d)H4 實際意涵，
+    全部數字由 `verdicts`／`part_a`／`part_b`／`table_c_all` 變數帶出，未手打）。§3(b) 本輪實際輸出：`max_order=4` 共 4 個場地，
+    3 個五格全為正（範圍 +70.9%～+371.1%，對應 `mit_department_store`／`mit_restaurant`／`steinman_hall`），`racquetball_court_4`
+    全為負（−61.2%～−37.4%）——與 Fable 更正後的數字完全相符，不是照抄「四場地 +70%～+370%」。§3(d) 本輪實際輸出 control_carpet
+    最大偏差頻段 500Hz +395.6%、`mit_department_store` closed_loop 超差 500Hz +50.8%、`mit_gym` 超差 125Hz +30.4%——與卡片預期完全相符。
+    §1 的 H4 句尾改成「Part B 佐證（…；本卡**未**重量）」，移除自相矛盾的「僅重量一次做對照」。**§1 的 H1、H2 兩行逐位元不變**
+    （`git diff` 未觸及）。
+  - **重產**：只跑 `python scripts/t58_rt60_basis_probe.py report`；`partA`／`partB`／`all`／`manifest` 全程未執行。
+  - **REPORT.md／tables.md 結果**：`git diff -- output/rt60_basis_probe/tables.md` 為空（逐位元不變，sha256 仍 `e961d05e…`）；
+    `git diff -- output/rt60_basis_probe/REPORT.md` 全部 hunk 落在 §0（新增「結果」句）／§1 的 H3、H4 兩行／§2（新增 R4 一條）／
+    §3（全段重寫）；§4 未變。
+  - **Grep 驗收**：`grep -n "0\.99\|2\.01\|1\.25" scripts/t58_rt60_basis_probe.py` 為空；
+    `grep -nE "0\.47|0\.53|0\.86|1\.12|395|371|\+70|9/18|[0-9]/6" scripts/t58_rt60_basis_probe.py` 為空（腳本內無手打結果數字，
+    全部經 f-string 變數帶出）；`grep -n "若 H" output/rt60_basis_probe/REPORT.md` 為空；`grep -n "僅重量一次"
+    output/rt60_basis_probe/REPORT.md scripts/t58_rt60_basis_probe.py` 為空；`grep -n "MVP" output/rt60_basis_probe/REPORT.md` 為空。
+  - **`部分支持` 全文逐筆標註**（`grep -n "部分支持" TASKS.md DEV_LOG.md HANDOFF.md TODO.md`，本卡收工前執行；HANDOFF.md 因本卡在檔案
+    最上方另加一則新交接區塊，行號比本卡執行中途重新整理過一次，以下為收工前最終行號）：
+    TODO.md:15、HANDOFF.md:34、DEV_LOG.md:42、TASKS.md:12570-12571＝**退回理由敘述內**（Opus／Fable 描述「REPORT 說不支持 vs
+    交接文件說部分支持」這個問題本身，非未更正的原始主張）；HANDOFF.md:36＝**更正敘述內**（Opus 自己的更正句）；
+    HANDOFF.md:46＝**原文（下一行 49 已有更正，本輪新增）**；HANDOFF.md:49＝**更正敘述內**（本輪新增）；
+    HANDOFF.md:63＝**原文（下一行 64 已有更正，本輪新增）**；HANDOFF.md:64＝**更正敘述內**（本輪新增）；
+    DEV_LOG.md:55＝**原文（下一行已有更正，本輪新增）**；
+    DEV_LOG.md:58＝**更正敘述內**；TASKS.md:12611＝**⚠️ 例外**——「原 Sonnet 版四軸」括號內的歷史記錄，依 WORKFLOW §3.4
+    回溯規則刻意保留不覆寫（正上方已是 Opus 2026-09-18 的當前四軸「H4 不支持」），且本卡範圍明文只准動 T-58 卡「§8 追加一行、
+    交接筆記追加更正」兩處，不含這行，故未動、不屬於「原文（下一行已有更正）」也不屬於「退回理由敘述內」，如實記錄為第三種情況；
+    TASKS.md:12665＝原文（下一行 12666 Opus 更正＋本輪新增 12667 再確認）；TASKS.md:12666-12667＝更正敘述內；
+    TASKS.md:12696＝原文（下方新增更正）；TASKS.md:12702＝原文（緊接的下一行本輪新增更正）；TASKS.md:12704＝更正敘述內（本輪新增）；
+    TASKS.md:12758＝說明性指示文字（範圍規則，非結果陳述，指示已 push 的 commit 訊息不必改寫）；
+    TASKS.md:12764-12768＝本卡自己的條文（R1 修正項目指示文字＋驗收方式說明，非結果陳述，含 grep 指令字面本身）。
+    ⚠️ **自我引用說明**：本「交接筆記」段落自己在分析『部分支持』一詞時，也會被同一個 `grep -n "部分支持"` 命中（例如上面幾句
+    分析文字與下方「R1」小節的敘述）；這些是本卡討論該詞彙處置方式的說明文字，不是未更正的原始判定主張，故不逐行複述座標
+    （座標會隨本段文字增修而變動，以文字內容而非行號為準）。
+  - **R2 scratchpad 驗證輸出**（四組合，`part_a`／`part_b` 用真實快取）：
+    ```
+    all支持 x MIT支持 → h3_all_support=True  h3_mit_support=True  dir_consistent=True
+    all支持 x MIT不支持 → h3_all_support=True  h3_mit_support=False dir_consistent=False
+    all不支持 x MIT支持 → h3_all_support=False h3_mit_support=True  dir_consistent=False
+    all不支持 x MIT不支持 → h3_all_support=False h3_mit_support=False dir_consistent=True
+    ```
+    四行「方向一致／不一致」依序＝一致／不一致／不一致／一致，符合卡片要求。
+  - **R3 scratchpad 驗證輸出**（竄改 `control_carpet` 的 `product_bands` 使其恰好 3/6，`per_wall`／`control_gypsum` 維持真實資料的 4/6）：
+    ```
+    竄改後：per_wall 4/6、control_gypsum 4/6、control_carpet 3/6
+
+    新碼（T-58-F1 修正後）：
+    - **H4**：不支持——…per_wall：4/6…；control_gypsum：4/6…；control_carpet：3/6…。三條件合併 11/18（＞半數；僅供參考，不是判定式）。…
+      all_majority(support)=False
+
+    舊碼（81158cd，git worktree）：
+    - **H4**：支持——…per_wall：4/6…；control_gypsum：4/6…；control_carpet：3/6…。Part B 佐證…
+    ```
+    新碼在同一份竄改資料上印「不支持」，舊碼（`81158cd`，用 `git worktree add` 建立、驗證後 `git worktree remove` 清除、未用
+    `git stash`／`git checkout --`）印「支持」——證明修 bug 的檢查在舊碼上呈現了錯誤行為（鐵則 5）。
+  - **DATASET_MANIFEST 重算**（scratchpad 一次性腳本，非重跑 `manifest`）：獨立重算 30 條 `material_r3` WAV＋5 份
+    `t17_manual_*/analysis.json`＋5 條 `ir_mono.wav`＋`mvp_acceptance/rt60_table.json`，共 41 個檔案，逐一與
+    `DATASET_MANIFEST.json` 記錄的 sha256 比對，**0 筆不符**。
+  - **收工前複驗（與開跑前並列，逐項相同）**：`part_a_measurements.json`＝`a9f757e3…`✓；`part_b_measurements.json`＝
+    `70b888c5…`✓；`DATASET_MANIFEST.json`＝`cf44e3ba…`✓；28 條 WAV 合併雜湊＝`28e99a69…`✓；`tables.md`＝`e961d05e…`✓；
+    wav 數量仍 28；`git status --short` 除本卡列名檔案外無其他變動，`output/` 未新增任何目錄。
+  - **測試套件**：22 支 `scripts/test_*.py`（本卡未新增測試檔）全部 `EXIT=0`（含 T-57-F1 已落地的 `test_t17r2_tools.py`）。
+  - **六條交付 IR MD5**：依卡片「本卡不要求重驗」，本輪未重驗。
+  - **鐵則 15 清理**：本輪唯一自建路徑是驗證用的 `git worktree`（`81158cd` 於 scratchpad 下）＋三支 scratchpad 一次性腳本
+    （R2／R3／manifest 重算），worktree 已 `git worktree remove` 移除（`git worktree list` 確認不再出現）、scratchpad 腳本本不在
+    repo 內；`output/rt60_basis_probe/` 未新增檔案（只有既有 `REPORT.md` 被改寫），`.archive/` 未碰。
+  - **T-17-R2 互鎖檢查**：收工前查看 HANDOFF.md 頂部，T-17-R2 卡狀態仍是「⬜ 可開跑（等使用者 held-out 照片）」，未進入步驟 2（產樣本），
+    本卡可正常 commit／push。
+  - **下一步**：開 Opus 新視窗，依 T-58 卡「Opus 驗證重點」逐項複驗（對象＝本卡收工 commit，任務寫「T-58（含修正輪 T-58-F1）」）→
+    通過後 Opus 把 T-58 卡與本卡四軸同時改「工程：已驗證」（實驗：負向不變），commit 訊息用
+    `T-58: 驗證通過（工程）（含修正輪 T-58-F1）`。與 T-57-F1 平行，兩者皆非 T-17-R2 前置。
 
 ### T-59 ir_synth 鄰帶洩漏診斷：合成側 vs 量測側分離＋判準頻段發生率（保留號；T-58 Fable 處置第 5 點；**未開卡——開卡條件＝T-17-R2 收工後的 Fable 重新規劃輪**）
 - **狀態**：⏸ 保留號（Fable 2026-09-18）——現在不開跑；不在關鍵路徑；Sonnet 不要做。

@@ -1,5 +1,20 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔵 2026-09-18 Sonnet：T-58-F1 完成（待驗證）——**現在該做的是：開 Opus 新視窗依 T-58 卡「Opus 驗證重點」驗證**（任務寫「T-58（含修正輪 T-58-F1）」），結果 commit 見本次收工 commit
+>
+> - 依卡片指示只改 `scripts/t58_rt60_basis_probe.py` 的 `evaluate_hypotheses()`／`build_report()`（＋三個新增純計算小函式、import 多 `PRESETS`），只跑 `report` 子指令；
+>   `partA`／`partB`／`all`／`manifest` 全程未執行；`src`／`data` 零 diff；兩份量測快取／28 條 WAV／`DATASET_MANIFEST.json`／`tables.md` 的 sha256 開跑前後逐項相符（與卡片鎖定值一致）。
+> - **R1**：H4 判定紀錄以程式輸出（不支持，per_wall 4/6、control_gypsum 4/6、control_carpet 1/6、合併 9/18）為準，在 T-58 卡 §8／交接筆記、DEV_LOG、HANDOFF 四處只追加更正（原文一字未刪）。
+> - **R2**：H3 的 MIT 括號改成「與 5 場地方向是否一致」（不再是「MIT 子集是否支持」）；判定式仍只由 5 場地決定。
+> - **R3**：H4「多數」改成嚴格大於半數（`> len/2`），另加三條件合併計數（僅供參考，不是判定式）；本輪結果不受影響（仍不支持）。
+> - **R4**：REPORT §2 新增 Part A pra 參考聲源／麥克風位置與產品 `_source_mic_positions` 的差異（程式算，最大差 5.0cm，麥克風 z）。
+> - **R5**：§0 新增「結果」一句、§3 全段改為程式從 `verdicts`／`part_a`／`part_b` 產生，不再手寫「若…成立」；§1 的 H1／H2 兩行逐位元不變。
+> - **驗證**：22 支測試 EXIT=0；DATASET_MANIFEST 記錄的 41 個輸入獨立重算全部相符；`tables.md` 逐位元不變；R2 用四組合、R3 用 3/6 竄改資料＋`81158cd` git worktree
+>   新舊碼對照（新碼「不支持」、舊碼「支持」，鐵則 5 成立），worktree 已清除；`git diff 81158cd -- scripts/t58_rt60_basis_probe.py` 每個 hunk 都落在允許範圍內。
+> - **互鎖**：收工前已核對 T-17-R2 仍在「⬜ 可開跑（等使用者 held-out 照片）」，未進入步驟 2，可正常 commit／push；與 T-57-F1 平行，兩者皆非 T-17-R2 前置。
+> - 本輪只改 `scripts/t58_rt60_basis_probe.py`（唯一程式檔）與 `output/rt60_basis_probe/REPORT.md`（重跑 `report` 產生）＋TASKS／DEV_LOG／HANDOFF／TODO；`SPEC`／`ROADMAP`／`WORKFLOW` 未碰。
+>   詳見 TASKS.md T-58-F1 卡「交接筆記」與 DEV_LOG `2026-09-18 (159)`。
+>
 > ## 🔮 2026-09-18 Fable：T-58 修正輪已開卡——**現在該做的是：開 Sonnet 視窗貼「執行 TASKS.md 的任務 T-58-F1。…」（WORKFLOW §2.1 Prompt）**；T-57-F1 照常平行，兩者都做完各自找 Opus 驗
 >
 > - **T-58-F1（Sonnet）**：只改 `scripts/t58_rt60_basis_probe.py` 的 `evaluate_hypotheses()`／`build_report()`，**只准跑 `report`**；`partA`／`partB`／`all`／`manifest` 全禁
@@ -30,6 +45,8 @@
 >   Eyring 偏差 −37.9%，與 Sabine 同號，未消除偏差）；H3 不支持（5 場地與 MIT 3 場地子集，pra_median 誤差中位數皆大於 sabine，方向
 >   與假設相反）；H4 部分支持（Part A：per_wall／control_gypsum 4/6 頻段在 ±20% 內，**control_carpet 僅 1/6**——已用獨立重算證實不是
 >   本卡程式 bug，而是 `ir_synth` 對六面同材質、頻段間 RT60 差異極端時的既有限制）。全部數字見 `output/rt60_basis_probe/{REPORT.md,tables.md}`。
+>   〔更正（T-58-F1，2026-09-18；只追加，原文保留）〕H4 依卡片允許集合與程式輸出應記**不支持**（per_wall 4/6、control_gypsum 4/6、
+>   control_carpet 1/6；合併 9/18 非多數），上文「部分支持」作廢，理由見 T-58 卡狀態欄 R1 與 Fable 處置第 2 點。
 > - **一個非逐字寫死、本卡自訂並記在 T-58 卡「交接筆記」的決定**：Part B 的 pra 參考房間改用 `ir_synth.build_pra_materials()`（逐面材質）
 >   建材質 dict 再傳給 `gen_ir_manual.build_room()`，未用卡片字面提到的 `gen_ir_manual.build_material()`（後者只支援六面同一材質，
 >   T-17 手動組場地都是逐面不同材質，用 `build_material()` 會失真）。
@@ -44,6 +61,7 @@
 > - **下一步**：開 Opus 新視窗，依 T-58 卡「Opus 驗證重點」逐項複驗（對象＝`ee55cad`／`94b8287`）→ 通過後回填四軸「工程：已驗證」；
 >   本卡不影響 T-17-R2／T-57-F1 排程（填充卡，只量不改，未進關鍵路徑）。四軸：工程：待審｜實驗：不確定（H1 不支持｜H2 支持｜
 >   H3 不支持｜H4 部分支持）｜產品：不適用｜MVP：不適用。詳見 TASKS.md T-58 卡「交接筆記」與 DEV_LOG `2026-09-18 (156)`。
+>   〔更正（T-58-F1，2026-09-18；只追加，原文保留）〕H4 應記**不支持**（合併 9/18 非多數），上文「部分支持」作廢，理由同上。
 
 > ## 🔮 2026-09-18 Fable：分母口徑已裁定＋修正輪已開卡——**現在該做的是：開 Sonnet 視窗貼「執行 TASKS.md 的任務 T-57-F1。…」（WORKFLOW §2.1 Prompt）**
 >
