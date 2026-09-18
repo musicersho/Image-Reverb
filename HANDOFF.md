@@ -1,5 +1,19 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔮 2026-09-18 Fable：T-58 修正輪已開卡——**現在該做的是：開 Sonnet 視窗貼「執行 TASKS.md 的任務 T-58-F1。…」（WORKFLOW §2.1 Prompt）**；T-57-F1 照常平行，兩者都做完各自找 Opus 驗
+>
+> - **T-58-F1（Sonnet）**：只改 `scripts/t58_rt60_basis_probe.py` 的 `evaluate_hypotheses()`／`build_report()`，**只准跑 `report`**；`partA`／`partB`／`all`／`manifest` 全禁
+>   （`manifest` 會改掉 §8 鎖定的 sha256）。兩份量測快取＋28 條 WAV＋manifest 的 sha256 寫死在卡上，不符＝卡關，不准重跑補檔；`tables.md` 必須逐位元不變。
+>   通過 Opus 驗證時 commit 訊息用 `T-58: 驗證通過（工程）（含修正輪 T-58-F1）`。再退回→Fable 開 T-58-F2。
+> - **H4＝不支持（確認 Opus 更正）**，屬依原條文更正、**不走 §7**（條文未動；程式對齊條文、只嚴不寬、無判定翻轉）；這個判斷交 T-58-F1 的 Opus 驗證獨立核對。
+> - **實驗：負向 的意涵（只記錄，不下產品決定）**：判準頻段誤差中位數 sabine 0.474 ≈ 產品 0.479 ＜ eyring 0.539 ＜ pra 0.864 → 現有證據不支持把 `IR_RT60_BASIS` 換成 eyring 或 pra；
+>   `config.IR_RT60_BASIS` 維持 `"sabine"`，決定留到 T-17-R2 之後。⚠️ **更正下方 Opus 段與 T-58 狀態欄的一個數字**：「大房間 pra 四場地 +70%～+370%」不精確——
+>   hall preset 場地共 4 個，偏長的是 3 個（+70.9%～+371.1%），`racquetball_court_4` 反而偏短（−61%～−37%）。pra 在這個設定下當參考，可信度有限。
+> - **control_carpet 500Hz +395.6% → 保留號 T-59（未開卡，Sonnet 不要做）**：已知機制（T-14 裁決／T-17 裁決 B 的鄰帶耦合）的極端案例；但真實場地 `t17_manual_department_store`
+>   判準頻段 500Hz 也中過一次（`closed_loop` +50.8%），R2 收工後與 `IR_RT60_BASIS` 一起處理。
+> - **互鎖**：T-58-F1 不是 T-17-R2 前置，但 R2 步驟 2～3 之間不得有它的 commit（兩張卡都寫了）。兩個視窗平行收工時各自只 `git add` 自己的檔案／hunk。
+> - 本輪零改動 `src`／`scripts`／`data`／`output`／SPEC／WORKFLOW；只改 TASKS／DEV_LOG／HANDOFF／TODO／ROADMAP。詳見 TASKS.md T-58「🔮 Fable 處置」、T-58-F1、T-59 卡與 DEV_LOG `2026-09-18 (158)`。
+>
 > ## 🟠 2026-09-18 Opus：T-58 工程退回——**現在該做的是：開 Fable 視窗決定 T-58 續修或開 T-58-F1**（T-57-F1 照常，兩者互不相依）
 >
 > - 量測已獨立重跑逐位元重現（不必重跑模擬）；問題全在判定文字：R1 H4 程式說「不支持」、交接文件說「部分支持」（且不在允許集合）；

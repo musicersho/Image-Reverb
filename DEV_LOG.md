@@ -1,5 +1,25 @@
 # Dev Log
 
+## 2026-09-18 (158)
+
+- **🔮 Fable：T-58 退回後的五個決定——開修正輪 T-58-F1、確認 H4＝不支持（不走 §7）、記錄對 `IR_RT60_BASIS` 的意涵、control_carpet 登記保留號 T-59、排程不變**。
+- **(1) 開 T-58-F1（Sonnet），不在 T-58 卡內續修**（比照 T-57-F1）：只得改 `scripts/t58_rt60_basis_probe.py` 的 `evaluate_hypotheses()`／`build_report()`（＋接線與新增小函式、import 只多 `PRESETS`），
+  **只准跑 `report`**；`partA`／`partB`／`all`／`manifest` 全禁（`manifest` 會把當下 HEAD 寫進檔案、改掉 §8 鎖定的 `cf44e3ba…`）。兩份量測快取、28 條 WAV、manifest 的 sha256 寫死在卡上，
+  不符＝卡關、不准重跑補檔；`tables.md` 必須逐位元不變。R1 紀錄只追加更正（已 push 的 commit 訊息不改寫）；R2 改成比較「5 場地 vs MIT 子集是否同向」；R3 `>` 半數＋3/6 情境新舊碼對照（舊碼用 `81158cd` worktree）；
+  R4 位置差由程式讀 `PRESETS["small"]` 與 `_source_mic_positions` 算；R5 §0／§3 的判定字樣與數字全部由變數帶出。通過時 Opus 用 `T-58: 驗證通過（工程）（含修正輪 T-58-F1）`。
+- **(2) H4＝不支持，屬依原條文更正、不走 §7**：條文自 `78d2220` 未動；判定式是 `ee55cad`（結果前）寫的「三條件各自都要多數」→ 4/6、4/6、1/6 不支持；合併 9/18 非多數也不支持；
+  Fable 另檢查「2/3 條件達多數即支持」讀法——條文是逐房間主張、結果前無此口徑，不採用。R3 是把程式對齊條文、只嚴不寬、不翻轉任何判定；被改的是程式與紀錄，不是門檻（與 T-52 4(ii) 改卡片文字不同）。
+  防自批：交 T-58-F1 的 Opus 驗證獨立核對，不同意就退回走 §7。
+- **(3) 實驗軸負向的意涵（記錄，不下產品決定）**：表 C 5 場地判準頻段誤差中位數 sabine 0.4738 ≈ product 0.4793 ＜ eyring 0.5386 ＜ pra 0.8643 → 現有證據不支持把 `IR_RT60_BASIS` 換成 eyring 或 pra。
+  **更正一個數字**：Opus 狀態欄寫「表 B 四場地 +70%～+370%」，Fable 由快取重算——hall preset（`max_order=4`）場地共 4 個，偏長的是其中 **3 個**（+70.9%～+371.1%），
+  `racquetball_court_4` 反而偏短（−61.2%～−37.4%）；F1 的 REPORT 必須由程式逐場地列，不得照抄。pra 在這個設定下當參考可信度有限，H3 不支持≠幾何聲學必然較差。決定留到 R2 之後。
+- **(4) control_carpet（500Hz +395.6%、1/6）→ 保留號 T-59，不開執行卡**：機制是 T-14 裁決／T-17 裁決 B 已裁過的鄰帶耦合，條件是地雷 #9 的不現實模型，JSON 已警示。
+  但有兩個新證據值得 R2 後處理：同一量測下產品 500Hz 2.87s vs pra 0.89s（合成側可能也有份，未驗證）；真實場地 `t17_manual_department_store` 判準頻段 500Hz `closed_loop` +50.8%
+  （Sabine 對真實 +3.3% → 產品對真實 +55.7%，足以翻掉一個 §7-2 判準頻段）。現在不開的理由：任何 `ir_synth` 修改都排在 R2 後、R2 產物本身是最好的發生率資料、不與 R2 搶 HEAD、與 `IR_RT60_BASIS` 是同一題。
+- **(5) 排程**：T-58-F1 與 T-57-F1 平行（程式檔不相交；共用文件各自 `git add -p`）；都不是 T-17-R2 前置。T-17-R2 步驟 0(a) 追加一句程序說明（T-58-F1 同樣不得在步驟 2～3 之間 commit；判準未動）。
+  本輪零改動 `src`／`scripts`／`data`／`output`／SPEC／WORKFLOW；只改 TASKS／DEV_LOG／HANDOFF／TODO／ROADMAP。
+- 下一步：開 Sonnet 視窗貼「執行 TASKS.md 的任務 T-58-F1。…」（WORKFLOW §2.1）→ Opus 驗證；T-57-F1 → Opus → 等 held-out 照片 → T-17-R2 照舊。
+
 ## 2026-09-18 (157)
 
 - **🟠 Opus：T-58 工程退回**（審查 HEAD `81bad70`，對象 `ee55cad`／`94b8287`）。量測本身紮實：22 支測試 EXIT=0、`src`／`data` 零 diff、

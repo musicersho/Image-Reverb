@@ -12161,6 +12161,8 @@ EOF
          〔Fable 2026-09-18 補：T-57 首驗 🟠 退回（`2f6ee3f`），「T-57 ✅（工程）」要等修正輪 **T-57-F1** 經 Opus 驗證通過才成立；屆時的 commit 訊息仍是
          `T-57: 驗證通過（工程）`（註明含 T-57-F1），本項 `git log --grep` 照查。另查 `assets/photos_heldout/ground_truth_heldout.json` 存在且符合
          T-57 交接筆記第 1 點 schema（Opus `2f6ee3f` 建議）〕
+         〔Fable 2026-09-18 再補（程序說明，判準 1～6 未動）：上句「T-58 若在跑必須已收工或暫停」**同樣適用修正輪 T-58-F1**（T-58 首驗 🟠 退回 `81158cd`）；
+         T-58／T-58-F1 **不是**本卡前置，未結案不擋 R2，只要求步驟 2～3 之間沒有它的 commit（T-58-F1 卡已寫互鎖條款）。保留號 T-59 未開卡，不會產生 commit。〕
      (b) 核准句：使用者 Prompt 含「程序 P1 核准」（若含「P2」→ 停，回 Fable）；且含「held-out 已就位」（Prompt A）或「沿用舊五張（降級）」（Prompt B）；
      (c) held-out（Prompt A）：§1.4 規則；另對每張檢查長寬比非 2:1±5%（PIL 讀尺寸）、每張 sha256 **不出現在** `output/.archive/`、
          `data/material_ground_truth.json`、任何 `output/**/*.md`／`MANIFEST.json`（`grep -r <sha256>` 為空）→ 證明未曾用過；
@@ -12583,6 +12585,28 @@ EOF
     control_carpet H4 異常已由 Opus 重跑確認與本卡程式無關（產品 WAV 逐位元重現），屬 `ir_synth` 行為，非本卡範圍。
   **下一步**：量測數字不需重跑（已證可重現），只需改 `evaluate_hypotheses()`／`build_report()` 的判定文字與門檻 → 重跑 `report` 子指令 → 同步交接文件；
   由 Fable 決定在本卡續修或開 T-58-F1（比照 T-57-F1 慣例）。
+- **🔮 Fable 處置（2026-09-18；Opus 退回後；只追加，上方 Opus 原文一字未動）**：
+  1. **修正輪＝下一張卡 T-58-F1**（Sonnet；不在本卡內續修）。理由：比照 T-57-F1 慣例；本卡 §8 與交接筆記是不可變歷史，修正輪另立「只得修改」清單與自我檢查，
+     Opus 複驗範圍才乾淨。本卡四軸維持「工程：退回」，直到 T-58-F1 經 Opus 驗證通過才由 Opus 改「已驗證」。
+  2. **H4＝不支持（確認 Opus 更正；不是新增判定類別）**。H4 條文自 `78d2220` 起一字未動（「±20% 內為多數頻段」；允許標籤只有支持／不支持／不確定）。
+     判定式＝`ee55cad`（早於任何結果）寫進程式的「三條件**各自**都要多數」：per_wall 4/6 ✓、control_gypsum 4/6 ✓、control_carpet 1/6 ✗ → 不支持；
+     合併看 9/18＝剛好半數、非多數 → 也是不支持。Fable 另外檢查過第三種讀法「三條件中兩條件達多數就算支持」：條文寫的是「在**同一房間**的 T30 與其 Sabine 目標一致」，
+     是逐房間的主張，條文與結果前的程式都沒有「2/3 房間」這個口徑，結果後不得引入——不採用。「不確定」也不適用：control_carpet 的 1/6 是決定性合成、Opus 逐位元重現，不是量測噪聲。
+  3. **不走 WORKFLOW §7 變更控制**，理由三點：(i) 被改的是**紀錄與程式**，不是門檻——卡片條文（§7 保護的對象）不動，`criteria_version`／`criteria_commit` 不變、
+     `criteria_changed_after_first_result` 維持 `no`；(ii) R3 把程式的「≥半數」改回條文的「多數（＞半數）」是**對齊事前鎖定的條文、方向只嚴不寬**，且本輪 4/4/1 在兩種寫法下判定相同，
+     沒有任何 verdict 因此翻轉；(iii) 與 T-52 步驟 4(ii) 的差別：那次要改的是**卡片文字本身**所以走了 §7 全套，這次卡片文字不改。
+     **防自批**（§7.4 精神）：本判定由 T-58-F1 的 Opus 驗證獨立核對；Opus 若認為 R3 屬門檻變更，不得用附註放行，退回 Fable 改走 §7（使用者核准＋獨立 `criteria:` commit）。
+  4. **實驗軸「負向」對 `IR_RT60_BASIS` 的意涵（記錄，不是產品決定）**：表 C 判準頻段（500Hz–4kHz＋聯合帶）誤差絕對值中位數，5 場地：
+     sabine 0.4738 ≈ product 0.4793 ＜ eyring 0.5386 ＜ pra_median 0.8643 → **現有證據不支持把 `IR_RT60_BASIS` 由 `sabine` 改成 `eyring` 或 pra 量測值**。
+     但 pra 當「參考」本身可信度有限：Part B 用 hall preset（`max_order=4`／`n_rays=140000`）的場地有 **4 個**，其中 **3 個**（`mit_department_store`／`mit_restaurant`／`steinman_hall`）
+     判準頻段全部偏長 **+70.9%～+371.1%**；第 4 個 `racquetball_court_4` 反而偏短 **−61.2%～−37.4%**（與 Sabine 同向，屬材質低估反射）。
+     〔更正 Opus 狀態欄 R5 的「表 B 四場地 +70%～+370%」：Fable 由 `runs/part_b_measurements.json` 重算，偏長的是 4 個 hall-preset 場地中的 3 個；T-58-F1 的 REPORT 必須由程式逐場地列出，不得照抄這句。〕
+     所以 H3 的「不支持」該讀成「**這個設定的** pra 參考沒有比 Sabine 更接近真實」，不是「幾何聲學必然比 Sabine 差」。樣本也小（5 場地、手動尺寸與材質是 T-17 的人工估計）。
+     **產品決定照原規劃留到 T-17-R2 之後的 Fable 重新規劃輪，本輪不下**；`config.IR_RT60_BASIS` 維持 `"sabine"`。
+  5. **control_carpet（500Hz +395.6%、1/6）不另開執行卡，登記保留號 T-59**（理由與開卡條件見 T-59）。一句話：這是 T-14 裁決／T-17 裁決 B 已裁過的「陡峭頻段階梯下鄰帶耦合」的極端案例，
+     發生在地雷 #9 明列的不現實模型（六面地毯），產品 JSON 已逐帶警示；但 T-58 多給了兩個新證據（同一量測下產品 500Hz 2.87s vs pra 0.89s；真實場地 `t17_manual_department_store`
+     的判準頻段 500Hz `closed_loop` +50.8%），值得在 R2 之後與 `IR_RT60_BASIS` 一起處理，現在開跑只會和 R2 搶 HEAD。
+  6. **排程**：T-58-F1 與 T-57-F1 平行（程式檔不相交）；都不是 T-17-R2 前置（T-58 系列從未進關鍵路徑）。兩個視窗同時收工時各自只 `git add` 自己的檔案／hunk。
 - **四軸狀態**：工程：退回（Opus 2026-09-18，理由見上）｜實驗：負向（Opus 判定：H1 不支持、H2 支持、H3 不支持、**H4 不支持**——核心假設「Sabine 在非均勻房間偏長、幾何聲學參考更接近真實」被資料否定；Eyring 也不更好；H2 同號只在 H1 前提不成立下成立）｜產品：不適用｜MVP：不適用
   （原 Sonnet 版四軸：工程：待審｜實驗：不確定（H1 不支持、H2 支持、H3 不支持、H4 部分支持——per_wall／control_gypsum 多數頻段內、control_carpet 未達，逐條數字見交接筆記）｜產品：不適用｜MVP：不適用）
 - **為什麼（Opus T-56 驗證紀錄留給 Fable 的觀察＋Fable 2026-09-18 分析）**：
@@ -12702,3 +12726,138 @@ EOF
   - **給 Fable 的提醒**：TASKS.md 在本卡執行期間有另一個視窗（Fable）同時在編輯 T-57／T-17-R2 段落
     （commit `2f6ee3f`／`3007646`），本卡只碰 T-58 卡自己的段落，commit 時用 `git add -p` 只挑本卡的 hunk，
     未動、未還原、未覆蓋那些變更。
+
+### T-58-F1 T-58 修正輪：退回理由 R1～R5（只改判定程式與 REPORT 敘述、只重跑 `report`；**禁止重跑 partA／partB／manifest**）（Sonnet；只動 `scripts/t58_rt60_basis_probe.py`；不進關鍵路徑；前置＝T-58 🟠 `81158cd`）
+- **狀態**：⬜ **可開跑**（Fable 2026-09-18 開卡；可與 T-57-F1 平行——程式檔不相交，但 TASKS／DEV_LOG／HANDOFF／TODO 會同時被兩個視窗改：
+  commit 前先 `git status`，**只 `git add` 本卡列名的檔案**，共用文件用 `git add -p` 只挑本卡的 hunk，不得把 `scripts/t17r2_*.py`／`scripts/test_t17r2_tools.py` 等 T-57-F1 產物帶進本卡 commit）
+- **四軸狀態**：工程：未開始｜實驗：負向（沿用 Opus 2026-09-18 對 T-58 的判定：H1 不支持｜H2 支持｜H3 不支持｜H4 不支持；**本卡不重判、不得改寫**）｜產品：不適用｜MVP：不適用
+- **為什麼**：Opus 2026-09-18 驗證 T-58（對象 `ee55cad`／`94b8287`，紀錄 `81158cd`）：**量測可重現**（Opus 在 scratchpad 獨立重跑，REPORT／tables 逐字相同、28 條 WAV 逐位元相同），
+  但判定文字有 R1～R5 五個問題→工程退回。本卡逐條修、逐條附證據。三件需要 Fable 先定的事已定（T-58 卡「🔮 Fable 處置」第 2～4 點）：**H4＝不支持**、**不走 §7**、
+  **pra 大房間偏長的數字由程式逐場地列出**。Sonnet **不得**重新解讀這三項。
+- **範圍／禁止修改**（鐵則 13 句型）：
+  - `src/`／`data/` 零 diff；`scripts/` **只得修改** `scripts/t58_rt60_basis_probe.py`；**不得新增任何腳本或測試檔**（一次性檢查腳本放 scratchpad，不進 repo）。
+  - 該檔內**只得動**：`evaluate_hypotheses()`、`build_report()`、`cmd_report()`（僅限配合前兩者回傳值的接線）、為這兩個函式服務的**新增**純文字／純計算小函式、
+    檔頭 import 區**只准多一項** `PRESETS`（`from gen_ir_manual import …` 那一行；唯讀常數，供 R4 取 small preset 位置——import 白名單本卡只擴這一項）。
+  - 該檔內**不得動**（`git diff` 不得出現在這些函式／常數的行範圍內）：`build_manifest()`／`cmd_manifest()`、`run_part_a()`／`cmd_part_a()`、`run_part_b()`／`cmd_part_b()`、
+    `build_table_a()`／`build_table_b()`／`build_table_c()`／`_criteria_abs_errors()`、`measure_bands_and_combined()`／`median_over_runs()`／`combined_approx_from_bands()`／`normalize_peak()`、
+    全部模組層常數（`SEEDS_A`／`SEEDS_B`／`CONDITIONS_A`／`ROOM_DIMS_A`／`CRITERIA_BAND_FREQS`／`MIT_VENUE_KEYS`／`IR_SCATTERING` 等）、H4 的 `tol = 0.20`、`main()` 的子指令清單。
+  - **禁止執行** `python scripts/t58_rt60_basis_probe.py partA`／`partB`／`all`／`manifest`。**只准跑 `report`**。理由：量測已由 Opus 證明可重現、首跑即定案；
+    `manifest` 會把當下 HEAD 寫進 `DATASET_MANIFEST.json`（`git_head_at_manifest_time` 欄）→ 重跑就會改掉 §8 已鎖定的 sha256 `cf44e3ba…`。
+  - **唯讀（開跑前後 sha256 必須相同；開跑前先核對下列值，任何一項不符或檔案不存在→停，狀態寫「🔴 卡關」，不得為了補檔而重跑模擬）**：
+    `output/rt60_basis_probe/runs/part_a_measurements.json`＝`a9f757e3ac9073d9d0da668b527ecaa8d2ae43d8e46703a4783b10560078a930`；
+    `output/rt60_basis_probe/runs/part_b_measurements.json`＝`70b888c51bcea66166b5999f5b19c5c6127afc9e23413725560c46b35b81bd33`；
+    `output/rt60_basis_probe/DATASET_MANIFEST.json`＝`cf44e3ba59117e219961e325adf2e2ce052156477bdc868b0349ed900fa9237c`；
+    `runs/` 內 28 條 WAV：`(cd output/rt60_basis_probe/runs && shasum -a 256 *.wav | shasum -a 256)`＝`28e99a69b8c5fafc7b229781224b29345816b4c44c5e99c1a18a16ed3e1d8778`；
+    另 `output/material_r3/runs/`、`output/t17_manual_*/`、`output/mvp_acceptance/` 全程唯讀（`report` 本來就不碰）。
+  - **`output/rt60_basis_probe/tables.md` 必須逐位元不變**（現值 sha256 `e961d05ebbf92b24c2a1d55a1a7a5936a1b50a87268ec0d0980785c67bb56fe7`；重跑 `report` 後 `git diff -- output/rt60_basis_probe/tables.md` 為空）——這是「數字沒被動到」的硬證據。
+  - 文件只得動：TASKS.md（**本卡**＋**T-58 卡只追加**：§8 追加一行、交接筆記追加更正；T-58 卡任何既有文字——含 Opus 狀態欄、Fable 處置、原 Sonnet 四軸——一字不刪不改）、DEV_LOG.md、HANDOFF.md、TODO.md。
+    **不得動** T-57／T-57-F1／T-17-R2／T-59 卡任何文字、SPEC／ROADMAP／WORKFLOW。**不得** `git commit --amend`／rebase／force-push 去改 `94b8287`／`317dc55` 等已 push 的 commit 訊息（訊息裡的「部分支持」留著，由本卡交接筆記註明已被更正取代）。
+  - 不改 `config.IR_RT60_BASIS`；REPORT 不得出現任何 MVP 字樣，也不得寫產品決定（T-58 原卡紅線照舊）。
+- **修正項目（逐條；每條都有「驗收方式」，缺證據＝未完成；建議照 3→1→2→4→5 的順序做，最後才重跑 `report`）**：
+  1. **R1 H4 判定：以程式輸出為單一來源，紀錄同步改「不支持」（只追加）**
+     - 程式端不用改判定結果（REPORT §1 本來就印「不支持」）；要改的是紀錄。重跑 `report` 之後，把**程式印出的那一行 H4**當來源，做四處追加：
+       ① T-58 卡 §8 `verdict_under_original_criteria` 區塊內、Opus 更正行**之下**追加一行（逐字，`〈…〉` 填實際值，數字**從新 REPORT §1 複製**不得自己算）：
+       `（T-58-F1 〈日期〉 追加確認，原字保留：重跑 report 後程式輸出 H4＝不支持〔per_wall 〈a〉/6、control_gypsum 〈b〉/6、control_carpet 〈c〉/6；合併 〈n〉/18〕，與上一行 Opus 更正一致；「部分支持」作廢但不刪）`；
+       ② T-58 卡交接筆記「**H4 部分支持**…」那一點**正下方**追加「〔更正（T-58-F1，〈日期〉；只追加，原文保留）〕H4 依卡片允許集合與程式輸出應記**不支持**（理由見本卡狀態欄 R1 與 Fable 處置第 2 點）；
+       上文『故 H4 記「部分支持」而非「支持」』作廢。」；③ DEV_LOG `2026-09-18 (156)` 該點正下方追加同型更正；④ HANDOFF「🔵 2026-09-18 Sonnet：T-58 完成」段內兩處「H4 部分支持」各自正下方追加同型更正。
+       TODO.md 若有「部分支持」字樣且不在 Opus／Fable 的更正敘述內→同法追加。
+     - 驗收方式：交接筆記貼 `grep -n "部分支持" TASKS.md DEV_LOG.md HANDOFF.md TODO.md` 全部輸出，逐筆標註「原文（下一行已有更正）」或「更正／退回理由敘述內」；
+       `git diff 81158cd -- TASKS.md` 在 T-58 卡範圍內**零刪除行**（`git diff --numstat` 或肉眼逐 hunk 確認，貼結論）。
+  2. **R2 H3 的 MIT 子集字樣：比較的是「5 場地與 MIT 子集的判定是否同向」，不是「MIT 子集是否支持」**
+     - 做法：`h3_dir_consistent = (h3_all_support == h3_mit_support)`；MIT 那個括號改印 `（{'下降' if h3_mit_support else '未下降'}；與 5 場地{'方向一致' if h3_dir_consistent else '方向不一致'}）`。
+       **H3 的判定本身不變**：仍只由 5 場地（`h3_all_support`）決定，MIT 子集是 🟡 弱證據旁註。
+     - 本輪預期輸出：`…pra_median=1.1272 vs sabine=0.4738（未下降；與 5 場地方向一致）。`
+     - 驗收方式：scratchpad 一次性腳本 import 本模組、用四組合成的 `table_c_all`／`table_c_mit`（all 支持×MIT 支持、支持×不支持、不支持×支持、不支持×不支持）呼叫 `evaluate_hypotheses()`
+       （`part_a`／`part_b` 用真實快取），貼出四次的 H3 行；四行的「方向一致／不一致」必須分別是 一致／不一致／不一致／一致。
+  3. **R3 H4「多數」＝嚴格大於半數（對齊卡片條文；Fable 已判定非 §7 變更）**
+     - 做法：`majority = sum(within) > len(within) / 2`（6 帶→需 ≥4 帶）；REPORT 文字把「多數頻段（≥半數）」改成「多數頻段（＞半數；6 帶需 ≥4 帶）」。
+       **判定式維持 `ee55cad` 的寫法：三條件各自都要多數才記「支持」，否則「不支持」**——不得改成合併計數或「2/3 條件」。
+       另加一段**僅供參考**的合併計數（程式算）：`三條件合併 〈n〉/〈N〉（〈＞半數｜＝半數｜＜半數〉；僅供參考，不是判定式）`，三種字樣由程式比較 `n` 與 `N/2` 產生。
+     - 本輪預期：per_wall 4/6、control_gypsum 4/6、control_carpet 1/6；合併 9/18（＝半數）；H4 不支持（與修改前相同——本條不翻轉任何判定）。
+     - 驗收方式：同一支 scratchpad 腳本，把真實 `part_a` 深拷貝後竄改某一條件的 `product_bands`，使該條件**恰好 3/6** 在 ±20% 內、其餘兩條件 ≥4/6 → 新碼必須印「不支持」；
+       再證明舊碼會印「支持」：`git worktree add <scratchpad>/t58_old 81158cd` → 同一支 scratchpad 腳本改把 `<scratchpad>/t58_old/scripts` 放進 `sys.path` 首位、import 舊版模組，
+       同一份竄改資料餵舊版 `evaluate_hypotheses()` → 預期「支持」→ `git worktree remove <scratchpad>/t58_old`（列入鐵則 15 清單；**不得用 `git stash`／`git checkout -- <檔>`**，那會洗掉本卡未 commit 的修改）。
+       兩段輸出原文貼交接筆記（鐵則 5：修 bug 的檢查必須在舊碼呈現錯誤行為）。
+  4. **R4 Part A 的 pra 聲源／麥克風位置差異：REPORT §2 加一條限制（數字由程式取，不手打）**
+     - 事實（Fable 已核對）：T-56 的 30 條 WAV 由 `scripts/t48_geometry_material_r2.py` 以 `gen_ir_manual.py small …` 產生（該檔 `:869`／`:876`／`:883`），位置＝`gen_ir_manual.PRESETS["small"]` 的
+       `source_pos`／`mic_pos`；產品早期反射用 `ir_synth._source_mic_positions(*ROOM_DIMS_A)`。
+     - 做法：`build_report()` 由程式讀出兩組座標、算各軸差的絕對值最大值（cm，一位小數），在 §2 追加一條：Part A 的 pra 參考（T-56 首跑、已鎖定不可重生）位置＝〈small preset 值〉，
+       與產品 `_source_mic_positions(4,3,2.5)`＝〈值〉不同（各軸最大差 〈x〉 cm）；Part B 的 pra 房間用的就是 `_source_mic_positions`（一致）；本卡**未量化**此差異對 T30 的影響（T30 是晚期衰減斜率，預期影響小；但未驗證）。
+     - 本輪預期值：small preset [1.0, 1.0, 1.5]／[3.0, 2.0, 1.2]；`_source_mic_positions`＝[1.0, 0.99, 1.5]／[3.0, 2.01, 1.25]；最大差 5.0 cm（麥克風 z）。
+     - 驗收方式：`grep -n "0\.99\|2\.01\|1\.25" scripts/t58_rt60_basis_probe.py` 為空（沒有手打座標）；新 REPORT §2 出現該條且數值與上列預期相符。
+  5. **R5 REPORT §0／§3 要交代結果；§1 H4 自相矛盾字句一併改**
+     - `evaluate_hypotheses()` 改成同時回傳判定結果（例如 `(text, verdicts)`，`verdicts` 至少含四條的 支持／不支持 與 H4 逐條件計數），`build_report()` 用它組 §0／§3；**REPORT 內所有判定字樣與數字一律由變數帶出**。
+     - **§0**：原段落保留，後面加「**結果**」一句（程式產生）：四條判定＋表 C 5 場地中位數四個基準**由小到大**（程式排序）。
+     - **§3 全段重寫**（標題不變；仍是「只列選項與證據，不下決定」）：不得再對**未成立**的假設寫「若…成立」。至少含下列四點，每點的數字都從 `part_a`／`part_b`／表 C 變數取：
+       (a) **基準比較**：表 C 5 場地與 MIT 子集四個基準的中位數；依實際大小關係由程式產生結論句——本輪應為「現有證據**不支持**把 `IR_RT60_BASIS` 由 sabine 換成 eyring 或 pra 量測值
+       （sabine ≤ eyring 且 sabine ≤ pra_median）」，句尾註明「此為證據陳述，不是產品決定；決定歸 Fable，T-17-R2 之後」。
+       (b) **pra 參考本身的可信度**：由程式對 Part B **每個場地**列一行：preset（`max_order`／`n_rays`）、判準頻段（500/1k/2k/4k＋聯合帶）`(pra−real)/real` 的最小值～最大值、五格是否全為正／全為負／有正有負；
+       再由程式彙總「`max_order=4` 的場地共 〈K〉 個，其中 〈k〉 個五格全為正，範圍 〈min〉～〈max〉」。**不得照抄**「四場地 +70%～+370%」。
+       本輪預期（供 Opus 對照，Sonnet 不得手打）：`max_order=4` 共 4 個；3 個全為正（`mit_department_store` +86.4%～+189.6%、`mit_restaurant` +142.7%～+371.1%、`steinman_hall` +70.9%～+135.1%），
+       `racquetball_court_4` 全為負（−61.2%～−37.4%）；`mit_gym`（`max_order=12`）有正有負（−16.1%～+39.6%）。
+       (c) **H1／H2 的實際意涵**：依 `verdicts` 分支。本輪（H1 不支持且 per-wall 偏差為負）應印出：三條件 Sabine 相對 pra 的聯合帶偏差全為負（列三個值）——「Sabine 在非均勻房間相對幾何聲學參考**偏長**」未獲支持；
+       H2 的「同號」只表示 Eyring 與 Sabine **同向偏短**，在 H1 前提不成立下不具原假設的含意。
+       (d) **H4 的實際意涵**：依 `verdicts` 分支。本輪（不支持）應印出：逐條件 〈a〉/6、〈b〉/6、〈c〉/6，與每條件偏差絕對值最大的頻段及其百分比（程式找；control_carpet 應為 500Hz +395.6%）；
+       Part B 既有 `closed_loop` 逐場地 〈n〉/6 **並列出超差的帶與百分比**（程式從 `existing_closed_loop` 取；本輪應列出 `mit_department_store` 500Hz +50.8%、`mit_gym` 125Hz +30.4%）；
+       固定敘述一句：「已知機制＝T-14 裁決／T-17 裁決 B 記錄的『陡峭頻段階梯下的鄰帶耦合』；control_carpet 是極端案例，且六面地毯是地雷 #9 明列的不現實模型；**本卡未重新驗證機制歸因**（保留號 T-59）。
+       對決策的含意：『產品 T30≈Sabine 目標』不是無條件成立，產品對真實 IR 的誤差除了材質誤差與 Sabine 偏差，還可能含這一項。」
+       未走到的分支（例如 H3 若支持）保留一句通用短文即可，不必寫長。
+     - **§1 H4**：把「Part B 佐證（沿用…既有 `analysis.json.closed_loop`，未重量，僅重量一次做對照）」改成「Part B 佐證（沿用…既有 `analysis.json.closed_loop`；本卡**未**重量）」。
+     - 驗收方式：`grep -n "若 H" output/rt60_basis_probe/REPORT.md` 只可能出現在未走到分支的通用短文（本輪預期為空）；`grep -n "僅重量一次" output/rt60_basis_probe/REPORT.md scripts/t58_rt60_basis_probe.py` 為空；
+       `grep -nE "0\.47|0\.53|0\.86|1\.12|395|371|\+70|9/18|[0-9]/6" scripts/t58_rt60_basis_probe.py` 為空（沒有手打結果數字；若命中的是與結果無關的既有程式碼，逐筆說明）；
+       `grep -n "MVP" output/rt60_basis_probe/REPORT.md` 為空。
+  6. **重產**：`source .venv/bin/activate && python scripts/t58_rt60_basis_probe.py report`（只這一條）。
+- **自我檢查（每項貼實際輸出）**：
+  1. 22 支 `scripts/test_*.py` 全 `EXIT=0`（本卡不新增測試檔；若 T-57-F1 已先落地，仍是 22 支）；`git diff --stat -- src data` 為空。
+  2. 「唯讀」清單五項 sha256 開跑前／收工前兩次輸出並列，逐項相同；`DATASET_MANIFEST.json` 內列的 30＋5＋5＋1 個輸入用 scratchpad 一次性腳本逐筆重算 sha256，全部相符（**不是**重跑 `manifest`）。
+  3. `git diff -- output/rt60_basis_probe/tables.md` 為空；`git diff -- output/rt60_basis_probe/REPORT.md` 逐 hunk 說明落在 §0／§1 的 H3、H4 兩行／§2 新增一條／§3；**§1 的 H1、H2 兩行逐位元不變**；§4 不變。
+  4. 第 2、3 條的 scratchpad 輸出原文（四組合＋3/6 新舊碼對照）。
+  5. 本卡結果 commit 的 `git show --stat` 在 `scripts/` 下只含 `t58_rt60_basis_probe.py`；`git diff 81158cd -- scripts/t58_rt60_basis_probe.py` 的 hunk 全部落在「只得動」範圍（貼 `git diff --stat` 與各 hunk 的 `@@` 行）。
+  6. 六條交付 IR MD5：**本卡不要求重驗**（`src`／`data` 零 diff、`report` 不呼叫任何合成路徑；T-57-F1 同期會驗）。若仍要驗，用 `md5 -q`，重生目錄導到 scratchpad，不得覆寫 `output/` 既有檔。
+  7. 鐵則 15 清理清單（scratchpad 檔不在 repo 內，仍列出；`output/.archive/` 不碰）。
+- **卡關規則**：同一條嘗試超過 3 次仍不過 → 停，狀態寫「🔴 卡關」＋原因，請使用者問 Fable。快取或 WAV 的 sha256 不符＝直接卡關（**不准**重跑 partA／partB 來「修好」）。
+  **不得**為了過關改寫本卡「驗收方式」、H1～H4 條文、或 Fable 處置第 2～4 點（WORKFLOW §5 紅旗 3）。
+- **Opus 驗證重點（四軸輸出；對象＝T-58 全部交付物在修正輪後的 HEAD，不是只看 diff）**：
+  紅旗：`tables.md` 有任何 diff，或兩份快取／28 條 WAV／`DATASET_MANIFEST.json` 的 sha256 與本卡所列不同（＝模擬或 manifest 被重跑）；
+  紅旗：H4 判定式被改成合併計數或「2/3 條件」，或 `tol` 被動；紅旗：`majority` 仍是 `>=` 半數；紅旗：3/6 情境新碼仍印「支持」，或舊碼對照沒做；
+  紅旗：REPORT §0／§3 的判定字樣或數字是手打的（把快取裡某個值改掉重跑 `report`——在 scratchpad 複本上做——文字沒有跟著變）；
+  紅旗：§3(b) 寫成「四場地 +70%～+370%」或漏列 `racquetball_court_4` 為負；紅旗：REPORT 出現產品決定或 MVP 字樣；
+  紅旗：T-58 卡 §8／交接筆記／Opus 狀態欄／Fable 處置有任何刪改（只准追加）；紅旗：已 push 的 commit 被改寫；紅旗：動了「只得修改」清單以外的檔案或函式；
+  **另請獨立核對 Fable 處置第 3 點「R3 不屬 §7 變更」**——不同意就退回 Fable 改走 §7，不得用附註放行。
+  實驗軸維持 Opus 2026-09-18 的「負向」；若修正後的程式輸出與該判定有任何出入（不應該有）→ 退回並說明。
+- **§8**：不另立。本卡的更正一律**追加**在 T-58 卡 §8（`verdict_under_original_criteria` 區塊內追加一行；`criteria_changed_after_first_result` 維持 `no`；`change_record` 維持「無」，
+  其後追加一句「（T-58-F1：判定程式對齊卡片條文『多數』＝＞半數；非門檻變更——Fable 2026-09-18 判定，Opus 於 T-58-F1 驗證時獨立核對）」）。
+- **與 T-17-R2 的互鎖**：開跑前與**每次 commit／push 前**看 HANDOFF 頂部——若 T-17-R2 已進入步驟 2（產樣本）且尚未完成步驟 3（打包），**本卡不得 commit、不得 push**，暫停等它過了再收工
+  （R2 的 provenance 是 HEAD 精確比對）。
+- **收工**：commit `T-58-F1: 完成修正輪（待驗證）` → 開 Opus 新視窗驗證（WORKFLOW §2.2 Prompt，任務寫「T-58（含修正輪 T-58-F1）」）→ 通過時 Opus 把 **T-58 卡與本卡**四軸同時改
+  「工程：已驗證」（實驗：負向不變），commit 訊息用 `T-58: 驗證通過（工程）（含修正輪 T-58-F1）`，訊息內附四軸判定。再退回→由 Fable 開 T-58-F2，不在本卡內續修。
+- **交接筆記**：
+
+### T-59 ir_synth 鄰帶洩漏診斷：合成側 vs 量測側分離＋判準頻段發生率（保留號；T-58 Fable 處置第 5 點；**未開卡——開卡條件＝T-17-R2 收工後的 Fable 重新規劃輪**）
+- **狀態**：⏸ 保留號（Fable 2026-09-18）——現在不開跑；不在關鍵路徑；Sonnet 不要做。
+- **四軸狀態**：工程：未開始｜實驗：待量測｜產品：不適用｜MVP：不適用
+- **起因（T-58 Part A／Part B 的附帶觀察；Opus 已確認不是 T-58 腳本的 bug，產品 WAV 逐位元重現）**：
+  1. `control_carpet`（4×3×2.5m 六面地毯）：產品 `ir_synth` 的 T30 對自己的 Sabine 目標，250Hz +184.1%、**500Hz +395.6%**、1kHz +170.8%、2kHz +51.7%，只有 1/6 帶在 ±20% 內。
+     該條件的目標階梯極陡（125Hz 4.05s → 250Hz 1.35s → 500Hz 0.58s → 1kHz 0.22s）。
+  2. **這不是新機制**：T-14 Fable 裁決（2026-08-27）與 T-17 裁決 B 已裁過「陡峭頻段階梯下，衰減慢的鄰帶主導量測尾段」，所以 T-14 閉環改兩層、§7-2 低頻改用聯合帶；
+     產品 JSON 的 `closed_loop` 會逐帶列誤差並進 `warnings`，沒有藏。六面地毯也是地雷 #9 明列的不現實模型。
+  3. **但 T-58 多給了兩個新證據，T-14 裁決當時沒有**：
+     (i) **同一套量測（`ir_metrics`）下，產品比 pra 差很多**：control_carpet 500Hz 產品 2.87s vs pra 0.89s（目標 0.58s）；250Hz 產品 3.84s vs pra 2.93s。T-14 裁決的結論「問題在量測不在引擎」
+     在這種極端階梯下不完全成立——合成端濾波器組（中間段 3 階 Butterworth 帶通，裙邊約 18 dB/oct；最低段 4 階低通）的帶外洩漏也有份（**推測，未驗證**——這正是本卡要量的）。較現實的兩條件（per_wall／control_gypsum）下，500Hz–4kHz 產品對自身目標的偏差在 −4.3%～+29.0% 之間，所以不是日常問題。
+     (ii) **真實場地的判準頻段也中過一次**：`output/t17_manual_department_store/analysis.json` 的 `closed_loop` 500Hz **+50.8%**（目標 0.706s、量到 1.065s；鄰帶 250Hz 目標 1.295s，階梯只有 1.8 倍）
+     ——同一帶 Sabine 公式值對真實 IR 只差 +3.3%，產品 IR 對真實 IR 卻是 +55.7%：**這一項足以把 §7-2 的一個判準頻段從過關翻成不過**。
+     Fable 另掃現存 227 份含 `closed_loop` 的 `analysis.json`（不含 `.archive`；多為同 13 張照片在不同輪次的重複產物，只能看「有沒有發生」，不能當發生率）：判準頻段（500Hz–4kHz）超差的有 2kHz +20～+30%（CathedralRoom／TunnelToHell／stairwell_tiled 等硬質空間）、
+     bathroom role_aware 1kHz +25.8%、`text_church` 4kHz +21.1%；125Hz 超差則幾乎每張都有（已知、已由聯合帶處理）。
+- **為什麼現在不開**：(a) 任何 `ir_synth` 的修改都必須排在 T-17-R2 之後（held-out 基線先於任何調參，T-17-R2-pre 已定）；只量不改的診斷現在做，結論也要等 R2 後才用得上；
+  (b) R2 的產物（held-out 5 張＋8 場地的 `closed_loop`）本身就是最好的發生率資料，R2 後一起量比現在量兩次划算；(c) 現在多一張會 commit 的卡，只會增加與 R2 步驟 2～3 撞 HEAD 的風險；
+  (d) 這件事與 `IR_RT60_BASIS` 的產品決定是同一題（「產品對真實 IR 的誤差＝材質誤差＋Sabine 偏差＋**合成／量測鄰帶耦合**」要怎麼拆），應該同一輪規劃。
+- **開卡條件（全部硬性）**：T-17-R2 收工（不論 PASS／FAIL）；T-58 經 T-58-F1 取得「工程：已驗證」；由 Fable 在 R2 後的重新規劃輪正式開卡（屆時補 §8、資料集 manifest、事前登記的假設）。
+  **提前開卡的唯一例外**：R2 執行中 Opus 發現某個 in-domain 場地的判準頻段 `closed_loop` 超差 >20% 且直接影響 §7-2 判定——那時先照 R2 卡如實記錄（不得因此改 R2 判準），R2 收工後本卡優先。
+- **規格草稿（給屆時的 Fable；不是執行指示）**：只量不改、`src/`／`data/` 零 diff、`scripts/` 只新增一支。
+  Part A 發生率：掃 R2 與既有產物的 `closed_loop`，按「鄰帶目標比值」分箱，統計判準頻段超差率（全部程式產表）。
+  Part B 分離：對 T-58 三條件＋`t17_manual_department_store`，比較 ① 產品 IR 用 `ir_metrics` 量、② 產品 IR 用腳本內自建陡峭 FIR 量測濾波器量（量測側洩漏≈0）、
+  ③ 自建陡峭 FIR 濾波器組合成的參考訊號用 `ir_metrics` 量（合成側洩漏≈0；T-14 Opus 驗證時做過同型參考訊號）→ 三者對目標的誤差拆出「合成側／量測側」各佔多少。
+  事前登記假設（草稿）：H-a 判準頻段超差只發生在鄰帶目標比 ≥1.8 倍且慢帶在低頻側；H-b 極端階梯下合成側貢獻大於量測側；H-c 現實材質組合（非六面同材質）下合成側貢獻 <10%。
+  若 H-b／H-c 的結果指向要改合成濾波器組，那是另一張 `src/` 卡，必須守六條交付 IR MD5 的零回歸或走 criteria 新版——屆時再議。
+- **§8 不可變欄位**：開卡時補（鐵則 14）。
+- **交接筆記**：
