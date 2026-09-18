@@ -1,5 +1,30 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔵 2026-09-18 Sonnet：T-57 完成（待驗證）——**現在該做的是：開 Opus 新視窗依 T-57 卡「Opus 驗證重點」驗證**，結果 commit 見本次收工 commit
+>
+> - 新增 7 個檔案，`scripts/` 以外零改動：`t17r2_common.py`（可選共用常數）、`t17r2_dataset_manifest.py`／
+>   `t17r2_blind_test.py`／`t17r2_rt60_table.py`／`t17r2_report_tables.py`／`t17r2_make_player.py`（五支規格
+>   要求的 R2 薄包裝腳本）、`test_t17r2_tools.py`（隔離 git repo 樁資料測試，涵蓋規格第 6 點 (a)～(f)，
+>   27 條斷言＋突變證明）。既有 `scripts/t17_*.py`（四支）與 `test_t17_provenance.py` 零 diff；
+>   22 支 `scripts/test_*.py` 全 `EXIT=0`；`output/` 零新增目錄，`assets/photos_heldout/` 未碰
+>   （目前仍是空的，未拍照）；未建立 `output/mvp_acceptance_r2/`。
+> - **三個規格沒逐字寫死、本卡自訂並記在 T-57 卡「交接筆記」的決定**（Opus 請重點複核）：
+>   `ground_truth_heldout.json` 的 schema（沿用 T-36 GT 六面命名）；gate log（`<run>.log`）只存
+>   「預設路徑」那次的慣例、`gate_result`／「域外誤放」只依 `forced_low_confidence` 判定（不依賴
+>   log 是否存在）；venue key ↔ GT 名稱（`VENUE_KEY_TO_GT_NAME`）／venue key ↔ 手動尺寸鍵
+>   （`VENUE_KEY_TO_MANUAL_KEY`）兩張新對照表。
+> - **附帶發現（與本卡無關，已 `spawn_task` 另開背景調查 `task_14c97967`，不佔用關鍵路徑）**：六條交付
+>   IR MD5 只有 T-14 的 2 條（`test_ir_synth.py` 內建）確認通過；T-20（`--text 浴室`／`--text 大教堂`）／
+>   T-21（`neighbor_voices`／`stadium_corridor`）另外 4 條本輪實跑重生的雜湊與 HANDOFF 歷史記錄不同，
+>   但 `git log` 顯示 `scene_text.py`／`ir_synth.py`／`acoustics.py`／`data/materials.json` 自 `3d2d9c2`
+>   （T-39，09-02）起零 commit，HANDOFF 卻在 09-14（T-51）仍記錄相同——懷疑套件版本漂移（現在 `.venv`
+>   是 numpy 2.0.2／scipy 1.13.1）。本卡對 `src`／`data` 零 diff，不受影響，四軸「工程：待審」不變；
+>   但這個落差可能影響 T-56／T-17-R2 規劃倚賴的「同 seed 同碼＝逐位元相同」前提，值得 Fable 留意。
+> - **下一步**：開 Opus 新視窗，依 T-57 卡「Opus 驗證重點」逐項複驗（對象＝本次收工 commit）→ 通過後
+>   T-17-R2 前置「T-57 ✅（工程）」滿足。T-58 仍可另一視窗平行（本輪未動）；使用者有空時可拍 5 張
+>   held-out 照片放 `assets/photos_heldout/`。四軸：工程：待審｜實驗：不適用（工具卡）｜產品：不適用｜
+>   MVP：不適用（T-17-R2 前置）。詳見 TASKS.md T-57 卡「交接筆記」與 DEV_LOG `2026-09-18 (153)`。
+
 > ## 🔮 2026-09-18 Fable：等照片期間先跑 **T-57**（R2 工具，Sonnet，關鍵路徑）；**T-58**（Sabine vs 幾何聲學參考調查卡）可平行——**現在該做的是：開 Sonnet 視窗貼 WORKFLOW §2.1 Prompt 跑 T-57**
 >
 > - T-57：五支 `scripts/t17r2_*.py`＋`test_t17r2_tools.py`，只新增、既有 t17 四支零 diff、隔離 repo 樁資料測試、不建 `output/mvp_acceptance_r2/`。完成→Opus 驗→T-17-R2 前置「T-57 ✅」滿足。

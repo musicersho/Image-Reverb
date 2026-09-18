@@ -12253,8 +12253,8 @@ EOF
 - **交接筆記**：
 
 ### T-57 T-17-R2 工具前置：R2 薄包裝腳本＋資料集 manifest 產生器（Sonnet；`scripts/` only；**關鍵路徑**；前置＝T-56 ✅）
-- **狀態**：⬜ **可開跑**（Fable 2026-09-18 開卡；等 held-out 照片期間先做）
-- **四軸狀態**：工程：未開始｜實驗：不適用（工具卡）｜產品：不適用｜MVP：不適用（T-17-R2 前置）
+- **狀態**：🔵 **待審**（Sonnet 2026-09-18 完成，等 Opus 驗證）
+- **四軸狀態**：工程：待審｜實驗：不適用（工具卡）｜產品：不適用｜MVP：不適用（T-17-R2 前置）
 - **為什麼**：T-17-R2 執行步驟 1 原本要 Opus 自己寫 5 支 R2 腳本，與 CLAUDE.md「Opus 只審不寫」衝突，而且驗收工具沒經過獨立驗證
   就直接拿去驗收。拆出來給 Sonnet 做、Opus 驗，R2 的 Opus 視窗只做 manifest＋跑流程。工具可在沒有 held-out 照片時先完成——
   所有測試用樁資料在 scratchpad 隔離 git repo 跑（沿用 `scripts/test_t17_provenance.py` 手法），不碰真實 `output/`。
@@ -12306,7 +12306,72 @@ EOF
   紅旗：`--dry` 未給時試聽檔不是 `wet_preview.wav` 的逐位元複製；紅旗：突變證明沒有實際輸出。
 - **§8**：不適用（工具卡，無實驗結果；鐵則 8 補充細則：零 `src`／`data` 卡以 diff 為空＋六條 MD5 代替 13 張重跑）。
 - **收工**：commit `T-57: 完成 R2 工具（待驗證）` → Opus 驗證 → `T-57: 驗證通過（工程）`。**T-17-R2 前置追加「T-57 ✅（工程）」。**
-- **交接筆記**：
+- **交接筆記（Sonnet，2026-09-18）**：
+  - 新增 7 個檔案，`scripts/` 以外零改動：`t17r2_common.py`（規格允許的可選共用常數：SHUFFLE_SEED、held-out
+    五類、8 場地手動尺寸表 4 逐字抄、venue key 對照表、`classify_domain()`／`find_photo()`）、
+    `t17r2_dataset_manifest.py`、`t17r2_blind_test.py`、`t17r2_rt60_table.py`、`t17r2_report_tables.py`、
+    `t17r2_make_player.py`、`test_t17r2_tools.py`。既有 `scripts/t17_*.py`（四支）與
+    `test_t17_provenance.py` 零 diff（`git diff --stat` 已核對為空）。五支主腳本都刻意寫成
+    `run(*, repo_root=..., ...)` 帶預設值＝真實路徑的形式（沿用 `t17_blind_test.run()` 手法），
+    讓測試能指到隔離 repo，`main()` 只是套真實參數的薄殼。
+  - **規格沒有逐字講清楚、本卡自行定義並記錄於此供 Opus／Fable 核對的三個決定**：
+    1. **`ground_truth_heldout.json` 的 schema**（該檔案 held-out 照片還沒拍，目前不存在）：
+       定為 `{"<stem>": {"dims_m": {"length","width","height"}, "surfaces": {"floor"／"ceiling"／
+       "west"／"east"／"south"／"north": {"material_id","confirmed_by",...}}}}`，六面命名與
+       `data/material_ground_truth.json`（T-36 GT）逐字相同，方便沿用同一套比對邏輯。R2 實際填寫
+       這份檔案時要照這個 schema，否則 `t17r2_dataset_manifest.py`（讀 `dims_m` 判 domain）與
+       `t17r2_report_tables.py`（讀 `surfaces` 做六面對照）都讀不到值，會全部退化成「缺→unknown／GT 缺」
+       （不會報錯，但報告會失真，Opus 步驟 0 应該檢查這份檔案是否存在且符合 schema）。
+    2. **gate log（`<run>.log`）的格式與職責**：沿用 `t48_geometry_material_r2._run_cli()` 既有慣例
+       （`stdout + "\n--- stderr ---\n" + stderr`）；本卡設計是**每個 run 只有一份 `<run>.log`，
+       代表「預設路徑」（不帶 `--force-low-confidence`）那次的原始輸出**——`gate_result`／
+       `域外誤放` 判定最終**只依 `analysis.json.forced_low_confidence`**，不依賴這份 log 是否存在
+       （`output/<run>/` 目錄存在＝最終有輸出，唯一問題只剩「是不是被擋過、靠 force 才輸出」，這正是
+       `forced_low_confidence` 記的事）；log 檔只用來補「有沒有印出 `--override-dims` 導引」這個
+       輔助細節，缺檔不影響主判定。R2 執行步驟 2 要把預設路徑那次的 stdout/stderr 存成
+       `output/mvp_acceptance_r2/runs/<run>.log`（`<run>` = 照片 stem 或 `t17r2_manual_<key>`）。
+    3. **兩個對照表是本卡新增判斷**（規格沒明講怎麼建，我依既有常數手動比對）：
+       `t17r2_common.VENUE_KEY_TO_GT_NAME`（`t17_rt60_table.VENUES` 的 8 個 `key` → `t36_clip_accuracy.GATE_ITEMS`
+       的 `name`，`data/material_ground_truth.json` 用後者當鍵）；`t17r2_common.VENUE_KEY_TO_MANUAL_KEY`
+       （8 場地 `key` → `MANUAL_DIMS`／T-17 表 4 的鍵，只有 5 個場地有手動組）。**Opus 驗證重點請逐一核對
+       這兩張表**，這是本卡唯一「規格沒寫死數字，靠比對既有常數推出來」的地方。
+    4. （較小的擴充，非新判斷）`t17r2_report_tables.py` 在 venue 層級也記了一份 `in_domain`
+       （規格只講 generated 條目要有這欄），純粹是為了讓表 2 的 coverage 分母算得出來（要知道
+       「in-domain 場地總數」，不能只看有沒有 generated 條目），值本身仍是直接抄自
+       `DATASET_MANIFEST.venues[].in_domain`，不是另一個判斷來源。
+  - **自我檢查結果**：
+    - 22 支 `scripts/test_*.py` 全 `EXIT=0`（21 支既有＋新增 `test_t17r2_tools.py`，含 (a)～(f) 六項＋
+      (f) 額外的 `--legacy` 檢查，共 27 條斷言，`test_t17r2_tools.py` 自己單獨跑也是 `EXIT=0`）。
+    - `git diff --stat -- src data scripts/t17_blind_test.py scripts/t17_rt60_table.py
+      scripts/t17_report_tables.py scripts/t17_make_player.py scripts/test_t17_provenance.py` 為空。
+    - `git status --porcelain` 只有本卡新增的 7 個檔案；`output/` 零新增目錄、`output/mvp_acceptance/`
+      全程未碰（未實跑任何 `t17r2_*.py` 對真實 `assets/photos_heldout/`——那個目錄目前是空的，held-out
+      照片還沒拍，也刻意**沒有**建立 `output/mvp_acceptance_r2/`，符合本卡範圍限制）。
+    - **⚠️ 六條交付 IR MD5：只有 T-14 的 2 條（`test_ir_synth.py` 內建硬編碼比對）確認通過；
+      T-20／T-21 的另外 4 條本輪實跑重生後與 HANDOFF 歷史記錄的雜湊不同**——
+      `--text 浴室` → `8e520f4739634d…`（歷史記錄 `2adbaa75…`）；`--text 大教堂` → `228030c7c11ff…`
+      （歷史 `2dd19b6e…`）；`--scene neighbor_voices.json` → `471bd88adefb0…`（歷史 `9a94ffdf…`）；
+      `--scene stadium_corridor.json` → `b2fbc05c3353f…`（歷史 `a1c21bcc…`）。同一指令原地重跑兩次
+      得到相同的新雜湊（環境內是決定性的，不是隨機不穩定）。`git log --oneline -- src/image_reverb/
+      scene_text.py src/image_reverb/ir_synth.py src/image_reverb/acoustics.py data/materials.json`
+      顯示這些檔案自 `3d2d9c2`（T-39，2026-09-02）起零 commit，但 HANDOFF 在 2026-09-14（T-51）仍記錄
+      與舊雜湊「逐位元相同」——落差發生在 09-14 之後、且找不到對應的 src/data commit，懷疑是套件版本
+      漂移（本機 `.venv` 現在是 numpy 2.0.2／scipy 1.13.1，未核對過歷史值）。**這與本卡無關**（本卡
+      七支新檔案都不呼叫 `ir_synth`／`scene_text`，`src`／`data` 零 diff），但影響多張已收工卡片
+      （T-56／T-17-R2 規劃）假設「同 seed 同碼＝逐位元相同」的前提，已用 `spawn_task` 另開一張背景
+      調查任務（`task_14c97967`），不佔用本卡或關鍵路徑，本卡不因此卡關。**四軸「工程：待審」不受此
+      發現影響**——本卡的驗收標準（22 支測試、`src/data` 零 diff、既有 t17 腳本零 diff）全部達成，
+      這個發現是本卡自我檢查過程中的**附帶發現**，如實記錄供 Fable／Opus 參考，不是本卡的待辦。
+    - 鐵則 15 清理：本輪只在系統 `tempfile.TemporaryDirectory()`（`test_t17r2_tools.py` 內部，跑完自動
+      清除）與 repo 外的 `/tmp/t57_test_*.log`（跑 22 支測試時的暫存 stdout，不在 repo 內、不影響
+      `git status`）建立過暫存資料；`git status --porcelain -- output` 為空，未在 `output/` 留下任何
+      本輪新增路徑。
+  - **給 Opus 的重點**：除了「Opus 驗證重點」列出的六項紅旗，請特別複核上面 4 點裡的三個對照表／schema
+    決定是否合理，以及六條 IR MD5 那則附帶發現的敘述是否屬實（`git log` 與雜湊都可以獨立重跑核對）。
+  - **給下一步（R2 現場）的提醒**：`assets/photos_heldout/` 目前是空的，`ground_truth_heldout.json`
+    還不存在——五支腳本在沒有 held-out 照片／GT 檔的情況下設計上會優雅地回報「找不到照片」或標
+    `unknown`，不會 crash，但沒有辦法在本卡對著真實 held-out 照片再跑一次驗證（那正是「不得跑任何
+    真實照片產樣本」的範圍限制）。
 
 ### T-58 調查卡：T-12 v2-b 方向反轉——Sabine 目標 vs 幾何聲學參考 vs 產品合成路徑（Sonnet；只量不改；停滯期填充卡；不進關鍵路徑；前置＝T-56 ✅）
 - **狀態**：⬜ **可開跑**（Fable 2026-09-18 開卡；可與 T-57 平行，檔案不相交；**須在 T-17-R2 樣本產生前結案或暫停**——不得在 R2 步驟 2～3 之間 commit）

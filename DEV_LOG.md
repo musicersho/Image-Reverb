@@ -1,5 +1,23 @@
 # Dev Log
 
+## 2026-09-18 (153)
+
+- **🔵 Sonnet：T-57 完成（待驗證）**——新增 7 個檔案，`scripts/` 以外零改動：`t17r2_common.py`（可選共用常數）、
+  `t17r2_dataset_manifest.py`／`t17r2_blind_test.py`／`t17r2_rt60_table.py`／`t17r2_report_tables.py`／
+  `t17r2_make_player.py`（五支規格要求的 R2 薄包裝腳本）、`test_t17r2_tools.py`（隔離 git repo 樁資料測試，
+  涵蓋規格第 6 點 (a)～(f) 共 27 條斷言＋突變證明）。既有 `scripts/t17_*.py`（四支）與 `test_t17_provenance.py`
+  零 diff；22 支 `scripts/test_*.py` 全 `EXIT=0`。
+- 三個規格沒逐字寫死、本卡自行定義並記在 T-57 卡「交接筆記」的決定：`ground_truth_heldout.json` 的
+  schema（沿用 T-36 GT 六面命名）、gate log（`<run>.log`）只存「預設路徑」那次、`gate_result`／「域外誤放」
+  只依 `forced_low_confidence` 判定（不依賴 log 是否存在）、venue key ↔ GT 名稱／手動尺寸鍵兩張對照表。
+- **附帶發現（與本卡無關，已 spawn_task 另開背景調查）**：六條交付 IR MD5 只有 T-14 的 2 條（`test_ir_synth.py`
+  內建）確認通過；T-20／T-21 另外 4 條本輪實跑重生與 HANDOFF 歷史記錄的雜湊不同，但 `src/image_reverb/
+  scene_text.py`／`ir_synth.py`／`acoustics.py`／`data/materials.json` 自 `3d2d9c2`（T-39，09-02）起零 commit，
+  HANDOFF 卻在 09-14（T-51）仍記錄相同——懷疑套件版本漂移（現在 `.venv` 是 numpy 2.0.2／scipy 1.13.1）。
+  本卡對 `src`／`data` 零 diff，不受影響，工程軸「待審」不變。
+- 下一步：開 Opus 新視窗依 T-57 卡「Opus 驗證重點」驗證 → 通過後 T-17-R2 前置「T-57 ✅」滿足；
+  T-58 可另一視窗平行（未動）；六條 IR MD5 落差的調查任務已排入背景佇列，不佔用關鍵路徑。
+
 ## 2026-09-18 (152)
 
 - **🔮 Fable：等 held-out 照片期間可先做的事——開 T-57（R2 工具前置，Sonnet，關鍵路徑）＋T-58（調查卡：Sabine vs 幾何聲學參考 vs 產品路徑，Sonnet，填充）**。
