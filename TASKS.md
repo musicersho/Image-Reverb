@@ -12157,26 +12157,25 @@ EOF
   **4. 執行步驟（Opus 主導；本卡是驗收卡：`src/`／`data/` 零 diff、`ir_metrics.py` 零 diff、既有 `scripts/t17_*.py` 零 diff、
   `output/mvp_acceptance/` 一個 bit 不改）**：
   0. **前置檢查（全部程式化，任一不成立→停、回報，不開跑）**：
-     (a) HEAD 乾淨：`git status --porcelain` 為空；`git log` 含 `c1b3f63`（T-56 結案）；
+     (a) HEAD 乾淨：`git status --porcelain` 為空；`git log` 含 `c1b3f63`（T-56 結案）與 T-57「驗證通過（工程）」commit；T-58 若在跑必須已收工或暫停（R2 步驟 2～3 之間不得有它的 commit）；
      (b) 核准句：使用者 Prompt 含「程序 P1 核准」（若含「P2」→ 停，回 Fable）；且含「held-out 已就位」（Prompt A）或「沿用舊五張（降級）」（Prompt B）；
      (c) held-out（Prompt A）：§1.4 規則；另對每張檢查長寬比非 2:1±5%（PIL 讀尺寸）、每張 sha256 **不出現在** `output/.archive/`、
          `data/material_ground_truth.json`、任何 `output/**/*.md`／`MANIFEST.json`（`grep -r <sha256>` 為空）→ 證明未曾用過；
      (d) T-48-S (c) 重跑規則：執行
         `git diff 012a07f..HEAD --stat -- src/image_reverb/geometry.py src/image_reverb/acoustics.py src/image_reverb/ir_synth.py src/image_reverb/ir_metrics.py src/image_reverb/config.py data/`
-        預期**非空**（T-54 改 `geometry.py`）；再執行 `git diff 80dd527..HEAD --stat -- <同一組路徑>` 預期**為空**——兩段輸出原文貼進 REPORT §0，
+        預期**非空**（T-54 改 `geometry.py`；Fable 2026-09-18 實跑確認：`geometry.py | 15 ++++++++++++---`）；再執行 `git diff 80dd527..HEAD --stat -- <同一組路徑>`
+        預期**為空**（Fable 2026-09-18 實跑確認為空）。⚠️ zsh 下路徑要逐字貼在指令列，不要放進未加引號的變數（zsh 不做字詞切分，會得到假的空輸出）。兩段輸出原文貼進 REPORT §0，
         記「A 由 T-55 於 T-54 之後重量（`80dd527`）、B 由 T-56 重量（`c1b3f63`），其後量測路徑零 diff」；若第二段非空 → 停、回 Fable；
      (e) 21 支 `scripts/test_*.py` 全 EXIT=0；六條交付 IR MD5 全中（鐵則 2）；
      (f) `output/mvp_acceptance/` 全目錄 sha256 快照存 scratchpad（收工時再比一次，必須逐位元相同）。
   1. **鎖定資料集＋工具（獨立 commit，早於任何樣本；鐵則 14）**：
-     - 新增 `scripts/t17r2_dataset_manifest.py`：產 `output/mvp_acceptance_r2/DATASET_MANIFEST.json`＝HEAD＋held-out 5 張（或舊五張）sha256
-       ＋8 場地照片 sha256＋13 條真實 IR sha256＋`assets/dry/clap_synth.wav` sha256＋§3 in-domain 分類表＋手動組 5 組尺寸（逐字抄表 4）；
-     - 新增薄包裝腳本（**只 import、不改**既有 t17 模組）：`t17r2_blind_test.py`（重用 `t17_blind_test.verify_source_provenance()`；
-       `SHUFFLE_SEED = 20260916`；`SPACES` 指向 held-out stem；輸出 `output/mvp_acceptance_r2/blind_test/`；MANIFEST 逐筆帶
-       `source_provenance`＋`forced_low_confidence`；檔名只有 `sample_N`、固定種子打亂、mtime 對齊三項盲性保證照舊）、
-       `t17r2_rt60_table.py`（重用 `t17_rt60_table` 的 `VENUES`／`measure_file`／`real_reference`／`error_vs_reference`；run 清單改為 R2 的
-       auto／forced／manual run 名；輸出 `rt60_table.json`）、`t17r2_report_tables.py`（表 1～4 同 T-17 口徑＋**表 2 三組分列**
-       （自動／forced／手動）＋表 5 報告項 5：in-domain coverage、逐張 gate 結果與導引、被放行照片逐面正誤含無來源面（分母六面）、
-       域外誤放清單）、`t17r2_make_player.py`（輸出 `播放頁.html`＋`_play/`）；
+     - **（Fable 2026-09-18 改）五支 R2 腳本改由 T-57 先行完成並經 Opus 驗證，本步驟只跑 `python scripts/t17r2_dataset_manifest.py`
+       （held-out 路徑）或 `--legacy`（降級路徑）產 `output/mvp_acceptance_r2/DATASET_MANIFEST.json`；R2 的 Opus 視窗不寫任何腳本
+       （CLAUDE.md「Opus 只審不寫」）。若 T-57 工具在 R2 現場發現缺陷 → 停、回 Fable 開 T-57 修正輪，不得現場改腳本。**
+       原文保留供對照：新增 `scripts/t17r2_dataset_manifest.py`／`t17r2_blind_test.py`（`SHUFFLE_SEED = 20260916`）／`t17r2_rt60_table.py`／
+       `t17r2_report_tables.py`（表 2 三組分列＋表 5 報告項 5）／`t17r2_make_player.py`——規格全文見 T-57 卡。
+     - 可選：使用者若提供真實說話乾聲（`assets/dry/`，SOURCES.md 記「使用者自錄」），步驟 3 以 `--dry` 指定；未提供則沿用合成拍手
+       （T-17 REPORT 已註明拍手讓 §7-1 偏保守）。用哪一種寫進 REPORT §1。
      - 若走 Prompt A：`assets/photos_heldout/*`、`ground_truth_heldout.json`、`SOURCES.md` §4 補齊一起進這個 commit；
      - 回填本卡 §8 `dataset_manifest_sha256`＝`shasum -a 256 output/mvp_acceptance_r2/DATASET_MANIFEST.json`；`git add -f` 該 JSON；
        commit：`T-17-R2: §8 前四欄＋資料集鎖定＋R2 工具（開跑前）`。
@@ -12209,7 +12208,7 @@ EOF
   產物或 GT；紅旗：步驟 2～3 之間有 commit（`git log` 時間戳 vs `provenance.generated_at`）；紅旗：樣本在步驟 6 之後被重生
   （`generated_at` 晚於中途 commit）；紅旗：報告項 5 逐面表漏列無來源面或分母不是六面；紅旗：REPORT 的 in-domain 名單與 §3 不同；
   紅旗：任何一張 2:1 長寬比照片進入 held-out；紅旗：既有 `scripts/t17_*.py` 有 diff。
-- **前置（全部硬性，缺一不跑）**：T-42 ✅、T-43 ✅、T-46 ✅、裁決 T-47-A、T-48 ✅、
+- **前置（全部硬性，缺一不跑）**：**T-57 ✅（工程；R2 工具，Fable 2026-09-18 追加）**、T-42 ✅、T-43 ✅、T-46 ✅、裁決 T-47-A、T-48 ✅、
   T-44-R1 結案（PASS→以 `--role-aware` 試用；FAIL／未跑→預設 `role_aware=False`，REPORT 標明
   用哪一種）、T-04 來源網址補齊**或**使用者明確決定「維持未結案」（REPORT 標明缺項）、
   §7-1 用 **held-out 五類照片**（使用者提供、未曾用於任何調參；若無法提供，§7-1 沿用舊五張但
@@ -12251,4 +12250,123 @@ EOF
 - **Opus 驗證重點（四軸輸出）**：紅旗：任何素材 provenance 與 HEAD 不符仍納入；紅旗：重用
   `d958b3c` 盲測素材；紅旗：分組達標率被合併；紅旗：域外照片被算進自動組達標；紅旗：REPORT
   寫「通過」但四項有任一未達；紅旗：動了 `output/mvp_acceptance/`。
+- **交接筆記**：
+
+### T-57 T-17-R2 工具前置：R2 薄包裝腳本＋資料集 manifest 產生器（Sonnet；`scripts/` only；**關鍵路徑**；前置＝T-56 ✅）
+- **狀態**：⬜ **可開跑**（Fable 2026-09-18 開卡；等 held-out 照片期間先做）
+- **四軸狀態**：工程：未開始｜實驗：不適用（工具卡）｜產品：不適用｜MVP：不適用（T-17-R2 前置）
+- **為什麼**：T-17-R2 執行步驟 1 原本要 Opus 自己寫 5 支 R2 腳本，與 CLAUDE.md「Opus 只審不寫」衝突，而且驗收工具沒經過獨立驗證
+  就直接拿去驗收。拆出來給 Sonnet 做、Opus 驗，R2 的 Opus 視窗只做 manifest＋跑流程。工具可在沒有 held-out 照片時先完成——
+  所有測試用樁資料在 scratchpad 隔離 git repo 跑（沿用 `scripts/test_t17_provenance.py` 手法），不碰真實 `output/`。
+- **範圍／禁止修改**（鐵則 13 句型）：`src/`／`data/` 零 diff；既有 `scripts/t17_*.py`（四支）與 `scripts/test_t17_provenance.py` 零 diff；
+  `ir_metrics.py` 零 diff；`output/mvp_acceptance/` 一個 bit 不改；**不得跑任何真實照片產樣本**、不得建立 `output/mvp_acceptance_r2/`
+  （那是 R2 的事）；`scripts/` **只得新增**：`t17r2_common.py`（可選，共用常數）、`t17r2_dataset_manifest.py`、`t17r2_blind_test.py`、
+  `t17r2_rt60_table.py`、`t17r2_report_tables.py`、`t17r2_make_player.py`、`test_t17r2_tools.py`。既有 t17 模組**只 import 不改**。
+- **規格（逐支；口徑全部依 T-17-R2 卡「🔮 Fable 落地」§2 程序 P1 與 §3 in-domain 定義，數字不得另立）**：
+  1. `t17r2_dataset_manifest.py`：參數 `--photos-dir`（預設 `assets/photos_heldout`）、`--legacy`（改用 `assets/photos/` 舊五張並標
+     `degraded: true`）、`--out`（預設 `output/mvp_acceptance_r2/DATASET_MANIFEST.json`）。內容：`head`（`git rev-parse HEAD`；
+     `git status --porcelain -- src data scripts` 非空 → exit 1）、`heldout_photos`（5 筆：stem／path／sha256／類別／domain：
+     讀 `assets/photos_heldout/ground_truth_heldout.json` 的尺寸，最大邊 ≤10m→`in`、>10m→`out`、車內→`non_room`、缺→`unknown`）、
+     `venues`（8 場地：照片 sha256、真實 IR sha256 清單、`in_domain` 旗標**寫死**＝只有 `mit_gym` true）、`manual_dims`（5 組，**逐字抄**
+     `output/mvp_acceptance/tables.md` 表 4 的數字，寫死在腳本常數）、`dry`（path＋sha256）。**不含時間戳**（同 HEAD 重跑必須逐位元相同）。
+  2. `t17r2_blind_test.py`：`SHUFFLE_SEED = 20260916`（寫死）；`--photos-dir`／`--legacy` 同上；五類 → stem（held-out：`heldout_bathroom`
+     ／`heldout_living`／`heldout_hall`／`heldout_corridor`／`heldout_car`；legacy：T-17 `SPACES` 五個 stem）；照片檔以 stem glob
+     （jpg／jpeg／png／heic）；每張讀 `output/<stem>/{wet_preview.wav,ir_mono.wav,analysis.json}`，呼叫
+     `t17_blind_test.verify_source_provenance(meta, photo, materials_path, REPO_ROOT, t17_blind_test._expected_model_config())`，
+     任一不符 → 列出後 exit 1。可選 `--dry <wav>`：給了就用 `scripts/convolve.py` 的 `convolve_signals()`＋`normalize_peak()`
+     把 `ir_mono.wav` 與該乾聲卷積成試聽檔（取代 `wet_preview.wav`）；沒給就**複製** `wet_preview.wav`（與 T-17 逐位元同手法）。
+     輸出 `output/mvp_acceptance_r2/blind_test/sample_N.wav`＋`sample_N_IR.wav`＋`作答表.md`＋`MANIFEST.json`、
+     `output/mvp_acceptance_r2/blind_test_ANSWERS.json`；MANIFEST 逐筆：`run`／`photo_sha256`／`ir_sha256`／`wet_sha256`／`dims_source`
+     ／`confidence`／**`forced_low_confidence`（抄 analysis.json）**／`source_provenance`（原文複製）＋`packaging_git_revision`＋
+     `shuffle_seed`＋`dry`（path＋sha256）；mtime 對齊。**輸出目錄已有 `sample_*.wav` → exit 1 拒絕覆寫**（首跑即最終；沒有 `--force`）。
+  3. `t17r2_rt60_table.py`：`from t17_rt60_table import VENUES, measure_file, real_reference, error_vs_reference, ratio, BANDS`；每場地的
+     run 清單＝自動 run（`output/<照片 stem>/`，stem 同 `VENUES[i]["runs"][0]`）＋手動 run `output/t17r2_manual_<key>/`；每筆 generated
+     加 `forced_low_confidence`（analysis.json）、`group`（`auto`＝`dims_source∈AUTO_SOURCES` 且未 forced；`forced`＝自動來源且 forced；
+     `manual`＝`dims_source=="manual"`，另記 forced 與否）、`in_domain`（讀 DATASET_MANIFEST）、`gate`（解析
+     `output/mvp_acceptance_r2/runs/<stem>.log`：預設路徑 exit code、stderr 是否含 `--override-dims`）。缺 run 印「尚未產生」跳過
+     （T-17 同手法）。輸出 `output/mvp_acceptance_r2/rt60_table.json`。
+  4. `t17r2_report_tables.py`：表 1（同 T-17）；**表 2 三組分列不合併**——自動組只計 `group=="auto"` 且 `in_domain` 的場地，
+     另印一行 `coverage = 通過 gate 的 in-domain 場地數 / in-domain 場地數`；forced 組只列不計達標率；手動組照 T-17 口徑（逐 run 標 forced）；
+     表 3、表 4 同 T-17；**表 5 報告項 5**：13 張（5 held-out＋8 場地）逐張 gate 結果／forced／`--override-dims` 導引有無／domain／
+     「域外誤放」標記（domain out 且未 forced 即通過）；每張**未 forced 通過**的照片列六面表：材質 id／來源（`surfaces_sources`）／GT
+     （held-out 讀 `ground_truth_heldout.json`；8 場地讀 `data/material_ground_truth.json`，鍵名對照 `t36_clip_accuracy.GATE_ITEMS`）／正誤；
+     **無來源面照列**、錯誤放行率分母＝6（GT 為 unknown 的面標「無法判」另計，不進分子分母）。輸出 `tables.md`。
+  5. `t17r2_make_player.py`：重用 `t17_make_player.to16`／`audio_block`；輸出 `output/mvp_acceptance_r2/播放頁.html`＋`_play/`；
+     §7-1 五個 sample；§7-4 清單＝8 場地 wet（自動 run 存在則用自動，否則用 forced；標明）＋5 張 held-out wet，每檔標 forced 與否。
+  6. `test_t17r2_tools.py`（純新工具，鐵則 5 第二類：**附突變證明**——把 MANIFEST 的 `forced_low_confidence` 抄寫改成寫死 `False`，
+     測試必須 fail）：在 scratchpad 隔離 git repo 用樁資料（不跑模型）斷言：(a) provenance 相符 → blind test exit 0，MANIFEST 5 筆且
+     forced 旗標逐筆等於樁 analysis.json；(b) 同 seed 跑兩次順序相同、且與 T-17 seed 20260830 的順序不同；(c) provenance 不符 → exit 1；
+     (d) 目錄已有樣本 → exit 1；(e) 合成 `rt60_table.json` → 表 2 forced run 不出現在自動組小計、域外未 forced 通過被標「域外誤放」、
+     coverage 行數字正確；(f) manifest：sha256 正確、工作樹 dirty → exit 1、兩次產生逐位元相同。
+- **自我檢查**：22 支 `scripts/test_*.py` 全 EXIT=0；六條交付 IR MD5 全中（鐵則 2）；
+  `git diff --stat -- src data scripts/t17_blind_test.py scripts/t17_rt60_table.py scripts/t17_report_tables.py scripts/t17_make_player.py scripts/test_t17_provenance.py`
+  為空；`ls output/` 與開跑前相同（零新增目錄）；`output/mvp_acceptance/` 全目錄 sha256 快照前後相同；鐵則 15 清理清單（只刪 scratchpad）。
+- **Opus 驗證重點（四軸輸出）**：紅旗：既有 t17 四支腳本或 `test_t17_provenance.py` 有 diff；紅旗：表 2 任一組被合併或 forced 計入自動組；
+  紅旗：`SHUFFLE_SEED` 仍是 20260830；紅旗：測試碰到真實 `output/`；紅旗：manifest 含時間戳；紅旗：blind test 可覆寫既有樣本；
+  紅旗：`--dry` 未給時試聽檔不是 `wet_preview.wav` 的逐位元複製；紅旗：突變證明沒有實際輸出。
+- **§8**：不適用（工具卡，無實驗結果；鐵則 8 補充細則：零 `src`／`data` 卡以 diff 為空＋六條 MD5 代替 13 張重跑）。
+- **收工**：commit `T-57: 完成 R2 工具（待驗證）` → Opus 驗證 → `T-57: 驗證通過（工程）`。**T-17-R2 前置追加「T-57 ✅（工程）」。**
+- **交接筆記**：
+
+### T-58 調查卡：T-12 v2-b 方向反轉——Sabine 目標 vs 幾何聲學參考 vs 產品合成路徑（Sonnet；只量不改；停滯期填充卡；不進關鍵路徑；前置＝T-56 ✅）
+- **狀態**：⬜ **可開跑**（Fable 2026-09-18 開卡；可與 T-57 平行，檔案不相交；**須在 T-17-R2 樣本產生前結案或暫停**——不得在 R2 步驟 2～3 之間 commit）
+- **四軸狀態**：工程：未開始｜實驗：待驗證（**無門檻**，只有事前登記的假設 H1～H4，逐條記「支持／不支持／不確定」）｜產品：不適用｜MVP：不適用
+- **為什麼（Opus T-56 驗證紀錄留給 Fable 的觀察＋Fable 2026-09-18 分析）**：
+  1. T-12 v2-b（T-48／T-56）量的是 `scripts/gen_ir_manual.py` 的 pyroomacoustics **ISM＋ray tracing 引擎**，不是產品 `src/image_reverb/ir_synth.py`；
+  2. 產品晚期尾巴是 shaped-noise **按 Sabine 目標塑形**（`config.IR_RT60_BASIS="sabine"`），量測 T30≈目標（`closed_loop` 自證，例：
+     `output/t17_manual_gym/analysis.json` 500Hz–4kHz 誤差 +8.8～+14.1%）——所以產品的 §7-2 誤差＝材質誤差＋**Sabine 公式對真實房間的偏差**；
+  3. T-56 顯示對非均勻吸音房間，Sabine 與幾何聲學參考**方向相反**：Sabine 說 per-wall（地毯地板＋石膏板）比六面石膏板長（125Hz 0.348 vs 0.282s，+23%），
+     pra 引擎量到反而短 −21.7%；
+  4. T-17 §7-2 生成側誤差幾乎全為正（+45%～+676%）、§7-4 使用者聽到「還應再短 1–1.5 秒」——與「Sabine 在非均勻吸音下高估」一致，
+     但 T-17 §2.4 把病因隔離到材質（壁球場改對材質 +13%）；兩者可以同時成立，現在沒有資料分開它們。
+  **目的**：用**現有素材**把 Sabine／Eyring／幾何聲學參考／產品路徑四者在同一房間的差距量清楚，給 R2 之後決定 `IR_RT60_BASIS` 的證據。
+  **本卡不改任何程式、不下產品決定**（歸 Fable，R2 之後）。
+- **事前登記的假設（結果出來後不得增刪改寫；每條只記支持／不支持／不確定）**：
+  - **H1**：三條件（T-56）中，Sabine 相對 pra 參考的偏差（`(sabine − pra_median)/pra_median`，聯合帶）在均勻條件（六面 gypsum、六面 carpet）
+    絕對值小於非均勻條件（per-wall），且 per-wall 為正（Sabine 偏長）。
+  - **H2**：Eyring 不能消除 H1 的非均勻偏差（per-wall 的 Eyring 偏差符號與 Sabine 相同）。
+  - **H3**：T-17 手動組 5 場地，若以 pra 參考取代 Sabine 目標，對**真實 IR** 的判準頻段（500Hz–4kHz＋聯合帶）誤差絕對值中位數下降
+    （方向對即記支持；不設幅度門檻；MIT 三場地用區間中位數，弱證據照 T-17 標 🟡）。
+  - **H4**：產品 `ir_synth` 在同一房間的 T30 與其 Sabine 目標一致（±20% 內為多數頻段）——重量一次做對照，不是新發現。
+- **範圍／禁止修改**（鐵則 13 句型）：`src/`／`data/` 零 diff；`scripts/` 只得新增 `t58_rt60_basis_probe.py`（只 import `acoustics`／`ir_synth`／
+  `ir_metrics`／`materials`／`geometry.RoomEstimate`／`gen_ir_manual.build_material`／`build_room`）；輸出只寫 `output/rt60_basis_probe/{REPORT.md,tables.md,runs/}`；
+  **唯讀**：`output/material_r3/runs/`（重用 30 條 WAV，sha256 必須與 T-56 REPORT §2 逐條相同，**不重生**）、`output/mvp_acceptance/rt60_table.json`
+  （只讀真實 IR 的量測值，不重量真實 IR）、`output/t17_manual_*/`（讀 `analysis.json` 的 `dims_m`／`surfaces`，量既有 `ir_mono.wav`，**不重生**——
+  它們生成於 T-17 HEAD，REPORT 標明）；不跑任何照片 CLI、不建任何 `output/<照片 stem>/`；不改 `config.IR_RT60_BASIS`。
+- **執行步驟**：
+  0. 填 §8 前四欄並 commit（鐵則 14）：`dataset_manifest_sha256`＝程式產生的 `output/rt60_basis_probe/DATASET_MANIFEST.json`
+     （30 條 WAV sha256＋5 份 `t17_manual_*/analysis.json` sha256＋5 條 `t17_manual_*/ir_mono.wav` sha256＋`output/mvp_acceptance/rt60_table.json` sha256）的 sha256；`git add -f`。
+  1. **Part A（三條件，4×3×2.5m）**：每條件建 `RoomEstimate`＋`SurfaceMaterials`（per-wall：floor=carpet／其餘 gypsum_board；六面 gypsum_board；六面 carpet）→
+     `acoustics.compute_acoustics()` 取 `rt60_bands_sabine`／`rt60_bands_eyring`（聯合帶對應值＝以 125／250Hz 兩帶依 `ir_metrics.t30_low_combined()` 同法，
+     若無公式對應則取兩帶平均並在 REPORT 註明近似）；pra 參考＝對 `output/material_r3/runs/<條件>_seed10NN.wav` 十條各量 `band_t30`＋`t30_low_combined`，取中位數；
+     產品路徑＝`ir_synth.synthesize_ir(acoustics)`（預設 `IR_NOISE_SEED`，決定性）→ 存 `runs/product_<條件>.wav` → 同法量測。
+     表 A：條件 × 頻段（125…4000＋聯合帶）× {sabine, eyring, pra_median, product}＋偏差欄 `(sabine−pra)/pra`、`(eyring−pra)/pra`、`(product−sabine)/sabine`。
+  2. **Part B（T-17 手動組 5 場地）**：對每個 `output/t17_manual_<x>/analysis.json` 讀 `dims_m`＋`surfaces`；pra 參考＝用 `gen_ir_manual.build_material()`／
+     `build_room()` 建同尺寸同材質房間（自訂 preset dict：聲源／麥克風用 `ir_synth._source_mic_positions(*dims)`；最大邊 ≤10m 用 small preset 的
+     `max_order=12`／`n_rays=20000`，否則用 hall preset 的 `4`／`140000`；`time_thres = max(2.0, 2×max(rt60_bands_sabine))`；scattering 0.1）
+     seed 1001–1005 各一條 → 存 `runs/pra_<x>_seed10NN.wav` → 中位數；真實 IR 參考值直接讀 `output/mvp_acceptance/rt60_table.json` 的 `real_reference`；
+     產品 T30＝量既有 `ir_mono.wav`；Sabine＝`analysis.json.rt60_bands_target_sabine`；Eyring＝重算。
+     表 B：場地 × 頻段 × {real, sabine, eyring, pra_median, product}＋各基準對 real 的誤差；表 C：判準頻段（500/1k/2k/4k/聯合帶）誤差絕對值的中位數，按基準彙總。
+  3. `REPORT.md`：§0 一段話；§1 H1～H4 逐條判定＋引用表格數字；§2 限制（pra 射線追蹤本身是模型不是真值；MIT 場地為區間；手動尺寸是 Opus 估計；
+     產品 IR 生成於 T-17 HEAD）；§3 給 Fable 的決策輸入（**只列選項與證據，不下決定**）；§4 可重跑指令。表格全部程式產出（地雷 #15）。
+  4. 自我檢查：21 支（＋T-57 若已落地則 22 支）測試 EXIT=0；六條交付 IR MD5 全中；`git diff --stat -- src data` 為空；30 條 WAV 與 5 條 `t17_manual_*/ir_mono.wav`
+     sha256 前後相同；鐵則 15 清理清單。
+- **紅線**：假設 H1～H4 不得事後改寫；不得為了讓某假設成立而換 seed、換 n_rays、換 time_thres 規則（規則在步驟 2 寫死）；REPORT 不得寫「建議改成 eyring／pra」
+  以外的產品決定，也不得寫任何 MVP 字樣。
+- **Opus 驗證重點（四軸輸出）**：紅旗：30 條 WAV 任一 sha256 與 T-56 REPORT §2 不符（被重生）；紅旗：`t17_manual_*` 產物被重生或 `output/mvp_acceptance/` 有變；
+  紅旗：手打數字；紅旗：假設條文與開卡原文不同；紅旗：`src`／`data` 有 diff；紅旗：pra 房間的聲源／麥克風位置與 `ir_synth._source_mic_positions` 不同卻未註明。
+- **§8 不可變欄位（開跑前由執行者填前四欄）**：
+  ```text
+  criteria_version: 無門檻（調查卡）；假設 H1～H4 於開卡時登記（Fable 2026-09-18）
+  criteria_commit: 〈本卡開卡 docs commit〉
+  criteria_locked_at: 2026-09-18
+  dataset_manifest_sha256: 〈步驟 0〉
+  implementation_commit: 〈t58_rt60_basis_probe.py〉
+  result_commit:
+  reviewer:
+  verdict_under_original_criteria: 〈H1～H4 各：支持／不支持／不確定〉
+  verdict_under_current_criteria: 〈同上〉
+  criteria_changed_after_first_result: no
+  change_record: 無
+  ```
 - **交接筆記**：

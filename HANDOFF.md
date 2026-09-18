@@ -1,5 +1,11 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔮 2026-09-18 Fable：等照片期間先跑 **T-57**（R2 工具，Sonnet，關鍵路徑）；**T-58**（Sabine vs 幾何聲學參考調查卡）可平行——**現在該做的是：開 Sonnet 視窗貼 WORKFLOW §2.1 Prompt 跑 T-57**
+>
+> - T-57：五支 `scripts/t17r2_*.py`＋`test_t17r2_tools.py`，只新增、既有 t17 四支零 diff、隔離 repo 樁資料測試、不建 `output/mvp_acceptance_r2/`。完成→Opus 驗→T-17-R2 前置「T-57 ✅」滿足。
+> - T-58：只量不改（重用 T-56 30 條 WAV＋`output/t17_manual_*`），假設 H1～H4 事前登記、無門檻；須在 R2 樣本產生前收工。
+> - T-17-R2 卡已改：步驟 1 只產 manifest（腳本歸 T-57）、步驟 0(a) 加 T-57 ✅、0(d) 補 Fable 實跑結果與 zsh 陷阱。Prompt A／B 不變（使用者拍好照片後貼）。
+
 > ## 🔮 2026-09-16 Fable：T-17-R2 已落地執行步驟＋程序 P1＋§8 前三欄——**現在該做的是：使用者拍 5 張 held-out 照片放 `assets/photos_heldout/`，再開 Opus 新視窗貼 Prompt A**（拍不了→貼 Prompt B 走降級）
 >
 > - 使用者三項回覆：① T-04 明確「不需網址、內部使用」→ 走裁決 E 第二路徑（維持未結案＋R2 REPORT 標缺項；MVP 軸只能 `FAIL（R2）` 或 `PASS（R2；T-04 缺項）`）；

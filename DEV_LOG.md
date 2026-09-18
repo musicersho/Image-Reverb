@@ -1,5 +1,15 @@
 # Dev Log
 
+## 2026-09-18 (152)
+
+- **🔮 Fable：等 held-out 照片期間可先做的事——開 T-57（R2 工具前置，Sonnet，關鍵路徑）＋T-58（調查卡：Sabine vs 幾何聲學參考 vs 產品路徑，Sonnet，填充）**。
+- T-57：把 T-17-R2 步驟 1 的五支 `t17r2_*.py` 拆給 Sonnet 寫、Opus 驗（原本要 Opus 自己寫，與 CLAUDE.md「Opus 只審不寫」衝突）；全部用隔離 repo 樁資料測試，
+  不碰真實 `output/`；可選 `--dry` 接使用者自錄乾聲。T-17-R2 前置追加「T-57 ✅」，步驟 1 改為只產 manifest。
+- T-58：Opus 在 T-56 留給 Fable 的觀察（Sabine 說 per-wall 較長、pra 量到較短 −21.7%）＋Fable 分析：v2-b 量的是 Phase 0 的 pra 引擎，產品尾巴按 Sabine 塑形，
+  §7-2 正向誤差可能含 Sabine 對非均勻吸音的高估。只量不改：重用 T-56 30 條 WAV＋T-17 手動組 5 房間，四基準對照，假設 H1～H4 事前登記、無門檻，產品決定留 R2 後。
+- 順手實跑 T-17-R2 步驟 0(d)：`012a07f..HEAD` 只有 `geometry.py`（T-54）、`80dd527..HEAD` 為空，與卡片預期一致；卡片補 zsh 變數陷阱提醒。
+- 下一步：Sonnet 跑 T-57 → Opus 驗；T-58 可另一視窗平行；使用者有空時拍 5 張放 `assets/photos_heldout/`（可選：錄一段 5–10 秒說話乾聲）。
+
 ## 2026-09-16 (151)
 
 - **🔮 Fable 落地 T-17-R2**（使用者三項回覆後）：① T-04 使用者明確「不需網址、內部使用」→ 裁決 E 第二路徑，R2 REPORT 標缺項；② held-out 建議 H1 自拍（規格表＋一句話 GT），退路 H2 圖庫／H3 沿用舊五張降級；
