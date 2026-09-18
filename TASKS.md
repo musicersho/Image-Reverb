@@ -12557,8 +12557,34 @@ EOF
 - **交接筆記**：
 
 ### T-58 調查卡：T-12 v2-b 方向反轉——Sabine 目標 vs 幾何聲學參考 vs 產品合成路徑（Sonnet；只量不改；停滯期填充卡；不進關鍵路徑；前置＝T-56 ✅）
-- **狀態**：🔵 **待審**（Sonnet 2026-09-18 完成，等 Opus 驗證）
-- **四軸狀態**：工程：待審｜實驗：不確定（H1 不支持、H2 支持、H3 不支持、H4 部分支持——per_wall／control_gypsum 多數頻段內、control_carpet 未達，逐條數字見交接筆記）｜產品：不適用｜MVP：不適用
+- **狀態**：🟠 **工程退回**（Opus 5，2026-09-18，審查 HEAD `81bad70`；對象 `ee55cad`／`94b8287`）。
+  **量測本身沒問題**：22 支測試 EXIT=0；`src`／`data` 自 `78d2220` 起零 diff；30 條 `material_r3` WAV sha256 與 T-56 REPORT §2 逐條相同；
+  5 份 `analysis.json`／5 條 `ir_mono.wav`／`rt60_table.json` sha256 與 manifest 相同；manifest sha256＝`cf44e3ba…` 相符；
+  六條交付 IR MD5 全中；H1～H4 條文與開卡 `78d2220` 逐字相同；**Opus 在 scratchpad 獨立重跑 partA／partB／report（不寫 repo），
+  `REPORT.md`／`tables.md` 逐字相同、28 條 WAV 逐位元相同**；表 C 用獨立程式重算相符（sabine／eyring／product 的 5 場地與 MIT 中位數相同
+  是巧合，中位元素都落在 mit_gym，已查證）。
+  **退回理由（WORKFLOW §5.4.1「REPORT 與程式產出不得矛盾」＋地雷 #15；§5 紅旗 6）**：
+  - **R1（主因）H4 判定三處互相矛盾，且用了卡片不允許的標籤**：程式產出的 `REPORT.md` §1 寫「H4：**不支持**」，TASKS 四軸／§8
+    `verdict_under_original_criteria`／交接筆記／DEV_LOG／TODO／HANDOFF／commit 訊息寫「**部分支持**」；卡片明文「每條只記支持／不支持／不確定」，
+    「部分支持」不在允許集合。以程式結果為準：三條件分開看 per_wall 4/6、control_gypsum 4/6、control_carpet 1/6；合併看 9/18＝半數，**非多數**
+    ——任何讀法都是「不支持」。修法：以程式結果為單一來源，§8 **只追加**更正行（不得刪原字），四軸與交接文件同步改「H4 不支持」。
+  - **R2 H3 的 MIT 子集文字與交接筆記相反**：REPORT §1 印「方向**不一致**，未下降」，交接筆記寫「5 場地與 MIT 3 場地子集方向**一致**」。
+    實際兩者方向一致（都不支持）；`evaluate_hypotheses()` 把「是否支持」誤寫成「是否一致」，要改成比較 5 場地與 MIT 子集的判定是否同向。
+  - **R3 H4「多數」門檻被程式放寬**：`majority = sum(within) >= (len(within)+1)//2` 讓 3/6（剛好半數）算多數，REPORT 也寫成「多數頻段（≥半數）」
+    ——這是把「多數」改寫成「≥半數」（本輪結果 4/4/1 不受影響，但屬門檻改寫，須改成 `> len/2` 並重產 REPORT）。
+  - **R4 Part A 的 pra 參考位置未註明**：T-56 的 30 條 WAV 用 small preset 聲源 [1,1,1.5]／麥克風 [3,2,1.2]，與
+    `ir_synth._source_mic_positions(4,3,2.5)`＝[1,0.99,1.5]／[3,2.01,1.25] 不同（差 1～5cm，實質影響應很小），卡片紅旗要求註明，REPORT §2 未寫。
+  - **R5 REPORT §0／§3 沒有交代結果**：§0 只描述方法、未一句話說結論；§3 全部寫成「若 H1／H3／H4 成立…」，但 H1／H3／H4 都不成立，
+    給 Fable 的決策輸入等於空白。應直接列：Sabine 對真實 IR 判準頻段中位誤差 0.474、Eyring 0.539、pra 0.864、產品 0.479（表 C）
+    ——現有證據不支持把 `IR_RT60_BASIS` 換成 eyring 或 pra；並註明 pra 大房間用 hall preset `max_order=4` 時系統性偏長（表 B 四場地 +70%～+370%），
+    pra 作為「參考」的可信度本身有限。§1 H4 的「Part B 佐證…未重量，僅重量一次做對照」自相矛盾，一併改。
+  - **不列退回、僅記錄**：Part B 改用 `ir_synth.build_pra_materials()` 取代 `build_material()`——合理（後者只能六面同材質，`ir_synth` 在 import 白名單內），
+    已註明，接受；為驗 MD5 覆寫 `output/ir_synth/coupled_*`／`output/listen_coupled_*`（gitignored、bit-identical、已自報）——接受；
+    control_carpet H4 異常已由 Opus 重跑確認與本卡程式無關（產品 WAV 逐位元重現），屬 `ir_synth` 行為，非本卡範圍。
+  **下一步**：量測數字不需重跑（已證可重現），只需改 `evaluate_hypotheses()`／`build_report()` 的判定文字與門檻 → 重跑 `report` 子指令 → 同步交接文件；
+  由 Fable 決定在本卡續修或開 T-58-F1（比照 T-57-F1 慣例）。
+- **四軸狀態**：工程：退回（Opus 2026-09-18，理由見上）｜實驗：負向（Opus 判定：H1 不支持、H2 支持、H3 不支持、**H4 不支持**——核心假設「Sabine 在非均勻房間偏長、幾何聲學參考更接近真實」被資料否定；Eyring 也不更好；H2 同號只在 H1 前提不成立下成立）｜產品：不適用｜MVP：不適用
+  （原 Sonnet 版四軸：工程：待審｜實驗：不確定（H1 不支持、H2 支持、H3 不支持、H4 部分支持——per_wall／control_gypsum 多數頻段內、control_carpet 未達，逐條數字見交接筆記）｜產品：不適用｜MVP：不適用）
 - **為什麼（Opus T-56 驗證紀錄留給 Fable 的觀察＋Fable 2026-09-18 分析）**：
   1. T-12 v2-b（T-48／T-56）量的是 `scripts/gen_ir_manual.py` 的 pyroomacoustics **ISM＋ray tracing 引擎**，不是產品 `src/image_reverb/ir_synth.py`；
   2. 產品晚期尾巴是 shaped-noise **按 Sabine 目標塑形**（`config.IR_RT60_BASIS="sabine"`），量測 T30≈目標（`closed_loop` 自證，例：
@@ -12611,8 +12637,9 @@ EOF
   dataset_manifest_sha256: cf44e3ba59117e219961e325adf2e2ce052156477bdc868b0349ed900fa9237c（`output/rt60_basis_probe/DATASET_MANIFEST.json`，程式產生；`git add -f`；早於下方任何結果 commit，鐵則 14）
   implementation_commit: ee55cad（`scripts/t58_rt60_basis_probe.py`；同 commit 也填了 dataset_manifest_sha256，早於下方結果 commit，鐵則 14）
   result_commit: 94b8287（`T-58: 完成 Sabine/Eyring/pra/產品四基準對照（待驗證）`，2026-09-18；REPORT.md／tables.md／§8 前段更新）
-  reviewer: 〈Opus 填：模型＋日期＋commit〉
+  reviewer: 〈Opus 填：模型＋日期＋commit〉 → Opus 5，2026-09-18，審查 HEAD `81bad70`（對象 `ee55cad`／`94b8287`）；**工程退回**（R1～R5 見狀態欄）；量測獨立重跑逐位元重現
   verdict_under_original_criteria: H1 不支持｜H2 支持｜H3 不支持（5 場地與 MIT 3 場地子集方向一致）｜H4 部分支持（Part A：per_wall 4/6、control_gypsum 4/6、control_carpet 1/6 頻段在 ±20% 內，整體「多數頻段」判定不支持；Part B 佐證＝既有 closed_loop 5～6/6，未重量）。逐項數字與判定理由見交接筆記。
+  （Opus 2026-09-18 追加更正，原字保留：H4「部分支持」不在卡片允許集合，且與程式產出 REPORT §1「不支持」矛盾；依程式結果 H4＝**不支持**〔三條件 4/6、4/6、1/6；合併 9/18 非多數〕。修正輪須以程式輸出為準再追加一行確認）
   verdict_under_current_criteria: 同上（本卡無門檻、criteria 未變更）
   criteria_changed_after_first_result: no
   change_record: 無

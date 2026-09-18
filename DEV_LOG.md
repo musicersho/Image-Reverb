@@ -1,5 +1,14 @@
 # Dev Log
 
+## 2026-09-18 (157)
+
+- **🟠 Opus：T-58 工程退回**（審查 HEAD `81bad70`，對象 `ee55cad`／`94b8287`）。量測本身紮實：22 支測試 EXIT=0、`src`／`data` 零 diff、
+  30 條 T-56 WAV 與全部唯讀輸入 sha256 相符、六條交付 IR MD5 全中；Opus 在 scratchpad 獨立重跑 partA／partB／report，REPORT／tables 逐字相同、28 條 WAV 逐位元相同。
+- 退回理由：**R1** H4 在程式 REPORT 是「不支持」、在 TASKS／§8／交接文件是卡片不允許的「部分支持」（地雷 #15、紅旗 6）；**R2** H3 MIT 子集 REPORT 寫「方向不一致」與實際相反；
+  **R3** H4「多數」被程式寫成「≥半數」；**R4** Part A pra 聲源／麥克風與 `_source_mic_positions` 差 1～5cm 未註明；**R5** REPORT §0／§3 未交代結果（§3 全寫「若成立」但三條不成立）。
+- 四軸：工程：退回｜實驗：負向（H1／H3／H4 不支持，H2 支持）｜產品：不適用｜MVP：不適用。只需改判定文字與門檻、重跑 `report`，不必重跑模擬。
+- 下一步：Fable 決定本卡續修或開 T-58-F1。不影響 T-57-F1／R2 排程。
+
 ## 2026-09-18 (156)
 
 - **🔵 Sonnet：T-58 完成（待審）**——新增 `scripts/t58_rt60_basis_probe.py`（`manifest`／`partA`／`partB`／`report` 四個子指令，
