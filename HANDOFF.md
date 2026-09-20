@@ -1,5 +1,7 @@
 # 交接文件 — 給下一個視窗
 
+> 2026-09-20 後續更新：依使用者指定，大空間由禮堂改為大型演唱會巨蛋，現行檔 `assets/photos/t04_gpt_arena_concert.png`。穹頂／多層看台／滿場觀眾／大型舞台清楚可見；1448×1086 解碼與 SHA-256 檢查通過，禮堂版本已備份。現行九張＝四張沿用＋五張新生成；R2 原禮堂圖不變。 工程整卡未結案／素材待審；實驗未執行／產品與 MVP 不適用。
+
 > **2026-09-20 Codex：T-04 九張照片已替換；五類沿用 T-17-R2 合成候選，另四張由 GPT Image 新生成。现行 assets/photos/t04_gpt_*.png；舊圖本機備份 assets/photos_legacy_20260920/。詳見 assets/t04_refresh/README.md、PROMPTS.json、ASSET_MANIFEST.json。**
 > T-04 工程未結案／本輪素材自檢完成待審；實驗未執行／產品不適用／MVP 不適用。新圖與舊 GT、baseline 不相容，歷史脚本用原版 checkout；R2 五張仍只有 1448px，且已成 T-04 共用開發素材，正式 held-out 資格需重查。
 

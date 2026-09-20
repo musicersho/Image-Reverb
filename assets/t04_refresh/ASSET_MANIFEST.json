@@ -34,18 +34,26 @@
     },
     {
       "old_file": "arena_ntsu_linkou.png",
-      "new_file": "t04_gpt_hall.png",
-      "scene": "大空間／禮堂",
-      "source_path": "/Users/musicersho/Image Reverb/assets/t17r2_synthetic_candidates/heldout_hall.png",
-      "reused": true,
+      "new_file": "t04_gpt_arena_concert.png",
+      "scene": "巨蛋體育館／大型演唱會",
+      "source_path": "/Users/musicersho/.codex/generated_images/01a0bdd6-0e59-7440-b001-b2d744ece55f/exec-634273ac-a5c5-4a91-8c7b-35e31e697d6f.png",
+      "reused": false,
       "width": 1448,
       "height": 1086,
       "old_sha256": "2b72af99bbaf6ae791b4c462af1da4808a4fded5f4cb39f9a3f1eb89df0a9b10",
-      "sha256": "eb4f1d09b86c9c6b7658662820a7d419a0f4b243c4746353aae09f94c59adc59",
+      "sha256": "a36cddce96130078e7b1fedf695326c2373b904b91cb25d4268a3bb363c31672",
       "backup_path": "assets/photos_legacy_20260920/arena_ntsu_linkou.png",
-      "active_path": "assets/photos/t04_gpt_hall.png",
+      "active_path": "assets/photos/t04_gpt_arena_concert.png",
       "synthetic": true,
-      "ground_truth_confirmed": false
+      "ground_truth_confirmed": false,
+      "previous_replacement": {
+        "new_file": "t04_gpt_hall.png",
+        "sha256": "eb4f1d09b86c9c6b7658662820a7d419a0f4b243c4746353aae09f94c59adc59",
+        "source_path": "/Users/musicersho/Image Reverb/assets/t17r2_synthetic_candidates/heldout_hall.png",
+        "scene": "大空間／禮堂",
+        "backup_path": "assets/photos_legacy_20260920/t04_gpt_hall.png"
+      },
+      "prompt_file": "assets/t04_refresh/ARENA_PROMPT.json"
     },
     {
       "old_file": "corridor_hotel_carpet.png",

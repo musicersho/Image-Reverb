@@ -1,5 +1,11 @@
 # Dev Log
 
+## 2026-09-20 T-04 巨蛋體育館更新
+
+- 2026-09-20 後續更新：依使用者指定，大空間由禮堂改為大型演唱會巨蛋，現行檔 `assets/photos/t04_gpt_arena_concert.png`。穹頂／多層看台／滿場觀眾／大型舞台清楚可見；1448×1086 解碼與 SHA-256 檢查通過，禮堂版本已備份。現行九張＝四張沿用＋五張新生成；R2 原禮堂圖不變。
+- 新生成提示詞見 `assets/t04_refresh/ARENA_PROMPT.json`；更新 manifest、對照與預覽。
+- 工程：素材自檢完成待審、T-04 整卡未結案／實驗未執行／產品不適用／MVP 不適用；未跑模型或 IR。
+
 ## 2026-09-20 T-04 合成照片替換（Codex）
 
 - 2026-09-20 Codex：T-04 九張照片已替換；五類沿用 T-17-R2 合成候選，另四張由 GPT Image 新生成。现行 assets/photos/t04_gpt_*.png；舊圖本機備份 assets/photos_legacy_20260920/。詳見 assets/t04_refresh/README.md、PROMPTS.json、ASSET_MANIFEST.json。
