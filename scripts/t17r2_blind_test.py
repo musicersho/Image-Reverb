@@ -4,7 +4,10 @@
 跑法：
     python scripts/t17r2_blind_test.py                 # held-out 五張
     python scripts/t17r2_blind_test.py --legacy         # 降級：舊五張（T-17 用過）
+    python scripts/t17r2_blind_test.py --photos-dir assets/photos_heldout   # 指定照片目錄（必須在 repo 內）
     python scripts/t17r2_blind_test.py --dry assets/dry/真實人聲.wav   # 可選：換乾聲
+`--legacy` 固定使用 `assets/photos/`，**不可**與 `--photos-dir` 併用（CLI 層互斥，exit 2）；
+`--photos-dir` 指到 repo 外 → stderr 清楚訊息＋exit 1（manifest 只記 repo 相對路徑）。
 輸出：`output/mvp_acceptance_r2/blind_test/`（5 組試聽檔＋作答表＋MANIFEST）、
       `output/mvp_acceptance_r2/blind_test_ANSWERS.json`。
 
@@ -43,6 +46,22 @@ import t17_blind_test  # noqa: E402
 import t17r2_common as common  # noqa: E402
 
 
+def _inside_repo(path: Path, repo_root: Path) -> bool:
+    """`path` 是否在 `repo_root` 內。與 `t17r2_dataset_manifest._repo_relative()` 同算法
+    （先文字比對＝不跟隨符號連結、再 resolve 補 /var↔/private/var 與 cwd 相對路徑；
+    不得丟 ValueError／RuntimeError）——兩支工具對「在 repo 內」的定義必須一致。"""
+    try:
+        Path(os.path.abspath(path)).relative_to(os.path.abspath(repo_root))
+        return True
+    except ValueError:
+        pass
+    try:
+        Path(path).resolve().relative_to(Path(repo_root).resolve())
+        return True
+    except (ValueError, RuntimeError, OSError):
+        return False
+
+
 def run(
     *,
     repo_root: Path = REPO_ROOT,
@@ -63,6 +82,13 @@ def run(
         list(t17_blind_test.SPACES) if legacy else list(common.HELDOUT_SPACES)
     )
     photos_dir = photos_dir or (common.LEGACY_PHOTOS_DIR if legacy else common.HELDOUT_PHOTOS_DIR)
+    if not _inside_repo(photos_dir, repo_root):
+        print(
+            f"❌ --photos-dir 必須位於 repo 內：manifest 只記 repo 相對路徑"
+            f"（收到 {photos_dir}；repo＝{repo_root}）",
+            file=sys.stderr,
+        )
+        return 1
     outputs_dir = outputs_dir or (repo_root / "output")
     materials_path = materials_path or (repo_root / "data" / "materials.json")
     expected_config = (
@@ -248,11 +274,21 @@ def main() -> int:
     import argparse
 
     parser = argparse.ArgumentParser(description="T-17-R2 §7-1 盲聽配對測試素材產生器")
-    parser.add_argument("--legacy", action="store_true", help="降級：改用 assets/photos/ 舊五張")
+    parser.add_argument(
+        "--legacy", action="store_true",
+        help="降級：改用 assets/photos/ 舊五張（固定使用該目錄，不可與 --photos-dir 併用）",
+    )
+    parser.add_argument(
+        "--photos-dir", default=None, metavar="DIR",
+        help="held-out 照片目錄（預設 assets/photos_heldout；必須位於 repo 內；--legacy 固定使用 assets/photos/，不可與本參數併用）",
+    )
     parser.add_argument("--dry", default=None, metavar="WAV", help="可選：用這個乾聲重新卷積試聽檔")
     args = parser.parse_args()
+    if args.legacy and args.photos_dir is not None:
+        parser.error("--legacy 固定使用 assets/photos/，不可與 --photos-dir 併用")
+    photos_dir = Path(args.photos_dir) if args.photos_dir else None
     dry_path = Path(args.dry) if args.dry else None
-    return run(legacy=args.legacy, dry_path=dry_path)
+    return run(legacy=args.legacy, photos_dir=photos_dir, dry_path=dry_path)
 
 
 if __name__ == "__main__":

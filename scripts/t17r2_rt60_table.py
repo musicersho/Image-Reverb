@@ -17,6 +17,9 @@
 - `in_domain`：讀 `output/mvp_acceptance_r2/DATASET_MANIFEST.json` 對應場地的
   `in_domain` 旗標（T-17-R2 卡「in-domain 場地事前定義」，寫死只有 mit_gym
   true）——本檔不重新判斷，只搬過來，避免兩處各自維護同一個判斷。
+  **manifest 不存在、無法解析，或某場地 key（或它的 `in_domain` 布林欄位）不在其中
+  → 直接 exit 1（不寫 `rt60_table.json`）**：不得靜默當成 `in_domain=False`——那會讓
+  `mit_gym` 無聲掉出自動組、coverage 變 0/1（T-57-F1 R4）。
 
 **run 清單（與 T-17 不同，R2 只認兩種 run，不像 T-17 那樣把「自動候選」與
 「手動候選」混在同一個 `runs` 清單裡逐個嘗試）**：
@@ -26,17 +29,26 @@
 缺 run 印「尚未產生」跳過（T-17 同手法），不當成錯誤。
 
 **gate 欄位**：解析 `output/mvp_acceptance_r2/runs/<run>.log`（每個 run 的
-stdout＋stderr，格式沿用 `t48_geometry_material_r2._run_cli()` 的既有慣例：
-`stdout + "\\n--- stderr ---\\n" + stderr`）——這一份**一律是「預設路徑」（不帶
-`--force-low-confidence`）那次**的 log，用來讀「預設路徑本身有沒有被 gate 擋下」
-與「有沒有印出 `--override-dims` 導引」，跟這個 run 最終量測用的 IR 是不是
-forced 產生的是兩回事（那個看 `forced_low_confidence`）。log 不存在 → `gate`
-欄位為 `None`（尚未產生 default log，例如域外場地一開始就沒有嘗試預設路徑）。
+stdout＋stderr）——這一份**一律是「預設路徑」（不帶 `--force-low-confidence`）
+那次**的 log，用來讀「預設路徑本身有沒有被 gate 擋下」與「有沒有印出
+`--override-dims` 導引」，跟這個 run 最終量測用的 IR 是不是 forced 產生的是
+兩回事（那個看 `forced_low_confidence`）。**只讀 `<run>.log`，不讀
+`<run>.forced.log`**（forced 重跑另存、只留稽核）。log 不存在 → `gate` 欄位為
+`None`（尚未產生 default log，例如域外場地一開始就沒有嘗試預設路徑）。
+
+**`default_exit`＝CLI 真實結束碼（T-17-R2 步驟 2(e)，Fable 裁定選項 (i)）**：
+log 的**最後一個非空行**必須是 `exit=<整數>`（指令樣板見該步驟），本檔以
+`^exit=(-?\\d+)$` 解析它；該行不存在或格式不符 → `default_exit: None`，表 5 印
+「未記錄」（看得見的缺口）——**不得**再用字串推測填 0 或 3。`blocked`＝log 含
+「已擋下輸出」標記（語義就是「標記有無」，與結束碼是兩件事）；
+`exit_marker_consistent`＝`(default_exit == 3) == blocked`（`default_exit` 為
+`None` 時為 `None`），不一致代表 log 被手改或 CLI 行為與標記脫鉤。
 """
 
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -50,17 +62,29 @@ import t17r2_common as common  # noqa: E402
 
 BLOCKED_MARKER = "已擋下輸出"
 OVERRIDE_DIMS_MARKER = "--override-dims"
+# re.ASCII：只認半形 0-9（否則全形「３」之類的 Unicode 數字也會被 \d 吃進去）
+EXIT_LINE_RE = re.compile(r"^exit=(-?\d+)$", re.ASCII)
 
 
 def parse_gate_log(log_path: Path) -> dict | None:
-    """解析一份 `<run>.log`（預設路徑那次）。找不到檔案回傳 `None`。"""
+    """解析一份 `<run>.log`（預設路徑那次）。找不到檔案回傳 `None`。
+
+    `default_exit` 只認最後一個非空行的 `exit=<整數>`；缺／格式不符 → `None`
+    （不用字串推測）。只讀傳進來的這一份，呼叫端不得把 `<run>.forced.log` 傳進來。
+    """
     if not log_path.exists():
         return None
     text = log_path.read_text(encoding="utf-8", errors="replace")
     blocked = BLOCKED_MARKER in text
+    # 只依 "\n" 分行（read_text 的 universal newlines 已把 CRLF／CR 統一成 "\n"）：
+    # str.splitlines() 還會在 \x0b／\x0c／\x85／\u2028 等字元斷行，'exit=3\x0b' 會被誤讀成 3
+    non_empty = [ln for ln in text.split("\n") if ln.strip()]
+    m = EXIT_LINE_RE.match(non_empty[-1]) if non_empty else None
+    default_exit = int(m.group(1)) if m else None
     return {
-        "default_exit": 3 if blocked else 0,
+        "default_exit": default_exit,
         "blocked": blocked,
+        "exit_marker_consistent": None if default_exit is None else (default_exit == 3) == blocked,
         "override_dims_guidance": OVERRIDE_DIMS_MARKER in text,
     }
 
@@ -84,11 +108,37 @@ def run(
     venues = list(VENUES) if venues is None else venues
     manifest_path = manifest_path if manifest_path is not None else (out_root / "DATASET_MANIFEST.json")
 
-    in_domain_by_key: dict[str, bool] = {}
-    if manifest_path.exists():
+    # manifest 缺檔或缺場地 key 一律 exit 1、不寫表：靜默當成 in_domain=False 會讓
+    # mit_gym 無聲掉出自動組（步驟順序錯時 coverage 變 0/1）。比照 t17r2_report_tables.py。
+    if not manifest_path.exists():
+        print(f"❌ 找不到 {manifest_path}，請先跑 scripts/t17r2_dataset_manifest.py", file=sys.stderr)
+        return 1
+    try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        for v in manifest.get("venues", []):
-            in_domain_by_key[v["key"]] = bool(v.get("in_domain"))
+        manifest_venues = manifest["venues"]
+        if not isinstance(manifest_venues, list):
+            raise TypeError("venues 不是清單")
+        # 只收「有 key 且 in_domain 是布林」的條目；缺欄位的場地一律當成缺項（不得靜默當 False）
+        in_domain_by_key: dict[str, bool] = {
+            v["key"]: v["in_domain"]
+            for v in manifest_venues
+            if isinstance(v, dict) and "key" in v and isinstance(v.get("in_domain"), bool)
+        }
+    except (ValueError, OSError, KeyError, TypeError) as exc:
+        print(
+            f"❌ {manifest_path} 無法解析（{type(exc).__name__}: {exc}）；"
+            "請重跑 scripts/t17r2_dataset_manifest.py",
+            file=sys.stderr,
+        )
+        return 1
+    missing_keys = [v["key"] for v in venues if v["key"] not in in_domain_by_key]
+    if missing_keys:
+        print(
+            f"❌ {manifest_path} 沒有這些場地 key（或該場地缺 in_domain 欄位）：{', '.join(missing_keys)}"
+            "（不得靜默當成 in_domain=False；請重跑 scripts/t17r2_dataset_manifest.py）",
+            file=sys.stderr,
+        )
+        return 1
 
     ref_root = repo_root / "assets" / "reference_irs"
     output_root = repo_root / "output"
@@ -98,7 +148,7 @@ def run(
     for v in venues:
         print(f"=== {v['label']}")
         entry = {k: v[k] for k in ("key", "label", "source", "photo")}
-        entry["in_domain"] = in_domain_by_key.get(v["key"], False)
+        entry["in_domain"] = in_domain_by_key[v["key"]]
 
         entry["real"] = []
         for rel in v["real_irs"]:

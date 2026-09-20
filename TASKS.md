@@ -12473,6 +12473,9 @@ EOF
       調查任務（`task_14c97967`），不佔用本卡或關鍵路徑，本卡不因此卡關。**四軸「工程：待審」不受此
       發現影響**——本卡的驗收標準（22 支測試、`src/data` 零 diff、既有 t17 腳本零 diff）全部達成，
       這個發現是本卡自我檢查過程中的**附帶發現**，如實記錄供 Fable／Opus 參考，不是本卡的待辦。
+    - 〔更正（T-57-F1，2026-09-20；只追加，原文保留）〕上述『T-20／T-21 四條 MD5 與歷史不同、疑似套件漂移』為**誤報**：當時是拿 SHA-256 的前 14 碼去比歷史 **MD5**。
+      Opus 2026-09-18（`2f6ee3f`）重生四條 `ir_mono.wav`，MD5＝`2adbaa75…`／`2dd19b6e…`／`9a94ffdf…`／`a1c21bcc…` 全中；『同碼同 seed＝逐位元相同』前提仍成立；
+      背景調查 `task_14c97967` 前提不成立，可撤銷。
     - 鐵則 15 清理：本輪只在系統 `tempfile.TemporaryDirectory()`（`test_t17r2_tools.py` 內部，跑完自動
       清除）與 repo 外的 `/tmp/t57_test_*.log`（跑 22 支測試時的暫存 stdout，不在 repo 內、不影響
       `git status`）建立過暫存資料；`git status --porcelain -- output` 為空，未在 `output/` 留下任何
@@ -12485,9 +12488,11 @@ EOF
     真實照片產樣本」的範圍限制）。
 
 ### T-57-F1 T-57 修正輪：退回理由 R1～R5＋Fable 補列 R6＋兩個小問題＋分母文字（Sonnet；只動 T-57 既有檔案；**關鍵路徑**；前置＝裁定 T-57-D `3007646`）
-- **狀態**：⬜ **可開跑**（Fable 2026-09-18 開卡；可與 T-58 平行——程式檔不相交，但 TASKS／DEV_LOG／HANDOFF／TODO 會同時被兩個視窗改：
-  commit 前先 `git status`，**只 `git add` 本卡列名的檔案**，不得把 `output/rt60_basis_probe/` 等 T-58 產物帶進本卡 commit）
-- **四軸狀態**：工程：未開始｜實驗：不適用（工具卡修正輪）｜產品：不適用｜MVP：不適用（T-17-R2 前置「T-57 ✅（工程）」要等本卡經 Opus 驗證通過才成立）
+- **狀態**：🔵 **完成（待驗證）**（Sonnet 2026-09-20；R1～R8 全部修正，逐條證據與 commit 見交接筆記）
+  （原 Fable 開卡狀態，原字保留：⬜ **可開跑**（Fable 2026-09-18 開卡；可與 T-58 平行——程式檔不相交，但 TASKS／DEV_LOG／HANDOFF／TODO 會同時被兩個視窗改：
+  commit 前先 `git status`，**只 `git add` 本卡列名的檔案**，不得把 `output/rt60_basis_probe/` 等 T-58 產物帶進本卡 commit））
+- **四軸狀態**：工程：待審｜實驗：不適用（工具卡修正輪）｜產品：不適用｜MVP：不適用（T-17-R2 前置「T-57 ✅（工程）」要等本卡經 Opus 驗證通過才成立）
+  （原 Fable 開卡四軸，原字保留：工程：未開始｜實驗：不適用（工具卡修正輪）｜產品：不適用｜MVP：不適用（T-17-R2 前置「T-57 ✅（工程）」要等本卡經 Opus 驗證通過才成立））
 - **為什麼**：Opus 2026-09-18 驗證 T-57（對象 `4d4f63b`，紀錄 `2f6ee3f`）：主體成立，但 R1～R5 未達→工程退回。本卡逐條修、逐條附證據。
   兩個需要 Fable 先定的事已定：**分母口徑＝裁定 T-57-D**（T-17-R2 卡）、**R5＝選項 (i)**（T-17-R2 步驟 2(e)）。Sonnet **不得**重新解讀這兩項。
 - **範圍／禁止修改**（鐵則 13 句型）：`src/`／`data/` 零 diff；既有 `scripts/t17_*.py`（四支）與 `scripts/test_t17_provenance.py` 零 diff；`ir_metrics.py` 零 diff；
@@ -12576,6 +12581,731 @@ EOF
 - **收工**：commit `T-57-F1: 完成修正輪（待驗證）` → 開 Opus 新視窗驗證 → 通過時 Opus 把 **T-57 卡與本卡**四軸同時改「工程：已驗證」，commit 訊息用
   `T-57: 驗證通過（工程）（含修正輪 T-57-F1）`（T-17-R2 步驟 0(a) 以此字樣查 `git log`）。再退回→由 Fable 開 T-57-F2，不在本卡內續修。
 - **交接筆記**：
+  - **完成摘要（Sonnet，2026-09-20；共同鐵則 16／17 全程適用）**：R1～R8 全部完成，結果 commit 見本次收工 commit。
+    只動「只得修改」清單的 5 個檔：`scripts/t17r2_dataset_manifest.py`／`t17r2_blind_test.py`／`t17r2_rt60_table.py`／`t17r2_report_tables.py`／`test_t17r2_tools.py`；
+    `t17r2_common.py`／`t17r2_make_player.py` **零 diff**（沒有動的必要，見「自我檢查 5」原文）；`src`／`data`／`ir_metrics.py`／既有 `scripts/t17_*.py` 四支／`test_t17_provenance.py`／`output/mvp_acceptance/` 零改動；
+    未跑任何真實照片、未建立 `output/mvp_acceptance_r2/`、未新增任何腳本或測試檔。
+    文件（TASKS／DEV_LOG／HANDOFF／TODO）本輪只新增整行（本卡「狀態」「四軸狀態」兩欄依鐵則 16(c) 就地改寫並保留原字）；下面所有「貼原文」區塊都是一次性腳本從 scratchpad 輸出檔原樣讀入，並用 `# BEGIN／# END` 夾住、事後機械 `diff` 核對。
+    ⚠️ 工作樹另有**另一個視窗（Codex）**的未追蹤檔 `assets/t17r2_synthetic_candidates/heldout_*.png`（5 張），**不是本卡的、未 add**；該視窗的文件改動已由它自己 commit（`aa13c55`），本卡收工 commit 只含本卡列名的檔案。
+  - **測試檔現況**：`scripts/test_t17r2_tools.py` 共 74 條斷言（全 ✅，逐條原文見下「自我檢查 2」⑤）；在舊碼 `4d4f63b` 上 36 條 ❌、38 條 ✅（其中 27 條是既有 (a)–(f)，11 條是新加的「原行為不變」guard，明列於「自我檢查 4」結論）。
+  - **修正對照表（項目 → 改在哪 → 驗收證據）**：
+    - **R1**：`test_t17r2_tools.py` 刪 (a-4) 假斷言，並刪檔頭 docstring／(a) 段註解的「含突變證明」字樣（測試檔內不再自稱有突變證明）；真實突變證據見「自我檢查 2」。
+      ⚠️ 卡片寫的「原第 116 行」在 R3／R8 加行後已漂到第 142 行；突變改用**內容比對**（`sed` 換掉 `"forced_low_confidence": meta.get(…)` 那一行）而非行號，`diff` 證明恰改 1 行。
+    - **R2**：三處更正（TASKS.md T-57 卡交接筆記、DEV_LOG `2026-09-18 (153)`、HANDOFF「🔵 2026-09-18 Sonnet：T-57 完成」段）各在原誤報文字**正下方另起新行**追加（原文一字未動）；四條 `md5 -q` 完整 32 碼見「自我檢查 1」(b)。
+    - **R3**：`t17r2_blind_test.py` `main()` 加 `--photos-dir DIR` 並傳進 `run(photos_dir=…)`（說明文字與 manifest 逐字相同）→ (g-1)(g-2)。
+    - **R4**：`t17r2_rt60_table.py` `run()`：缺 `DATASET_MANIFEST.json` → stderr「❌ 找不到 …，請先跑 scripts/t17r2_dataset_manifest.py」、`return 1`、不寫 `rt60_table.json`；某場地 key 不在 manifest → 同樣 exit 1 並列出缺的 key（不再 `.get(k, False)`）→ (h-1)(h-2)(h-3)。
+      **加碼**（獨立複審抓到同型缺口，卡片沒明列，Opus 請核對不與卡片衝突）：manifest 條目有 key 但缺 `in_domain` 布林欄位、壞 JSON、空檔、非 dict、`venues` 非清單 → 同樣 exit 1、不當 False、不出現 Traceback → (h-4)(h-5)。
+    - **R5**：`parse_gate_log()` 只認**最後一個非空行**的 `^exit=(-?\d+)$`（`re.ASCII`；只依 `\n` 分行）；缺／不符 → `default_exit: None`（不再有任何字串推測，見「自我檢查 5」的 grep 原文）；保留 `blocked`／`override_dims_guidance`；新增 `exit_marker_consistent`（`None` 或 `(default_exit == 3) == blocked`）；只解析 `<run>.log`（不讀 `.forced.log`）；
+      表 5 加最後一欄「預設路徑 exit」（整數／「未記錄」／不一致加 ⚠️）；`gate_result`／「域外誤放」仍只依 `analysis.json.forced_low_confidence` → (i-1)…(i-11)、(h-3)、(k-8)。
+    - **R6**：`t17r2_dataset_manifest.py` `run(dry_path=…)`＋`main()` `--dry WAV`（預設＝`assets/dry/clap_synth.wav`，原行為不變）→ (j-1)…(j-4)。**不做** blind_test 與 manifest 的程式化交叉比對（卡片明訂不在本卡）。
+    - **第 7 條**（裁定 T-57-D §3，未另立口徑）：`render_item5_table()` 刪「分母固定 6」（檔頭 docstring 第 5 點同改）；逐張一行「❌ x／可判 y／無法判 z（共 6）」；彙總行同列 N、6N、可判面數、無法判面數、**主率＝❌÷可判面數**、**下界＝❌÷6N**、**上界＝（❌＋無法判）÷6N**；
+      可判＝0 → 主率「—（無可判面）」；N＝0 → 「錯誤放行率不適用（0 張放行）」，兩者的彙總行都不含「0%」；「無法判」判定式、GT `proxy: true` 照判、無來源面照列照判維持原樣 → (k-1)…(k-8)。
+    - **第 8 條 (a)**：兩支 `main()` 在 `--legacy` 與 `--photos-dir` 同給時 `parser.error("--legacy 固定使用 assets/photos/，不可與 --photos-dir 併用")`（exit 2）；`--photos-dir` 的 help 改為與行為一致；`run()` 層仍可並存 → (l-1)(l-2)(l-10)。
+      **(b)**：`--photos-dir`（兩支）／`--dry`（manifest）在 repo 外 → stderr「…必須位於 repo 內：manifest 只記 repo 相對路徑…」＋exit 1、無 Traceback → (l-3)…(l-9)；另修 `--dry` 指到「目錄」的 Traceback → (l-12)。
+  - **執行時的決定（卡片沒逐字寫死；Opus 請逐條核對）**：
+    1. 可判面數＝0 時，上下界只印**分數**（例：`0/12`、`12/12`）並註明「不換算百分比」——卡片與驗收都要求該彙總行不含「0%」，而 `100%`、`50%` 等也含子字串「0%」；上下界仍同列揭露（裁定 §3.4 要的是揭露，未強制百分比）。可判＞0 時三個比率都印「分數（百分比）」；百分比用 `:.0f`（half-even，例 12.5% 印 12%），分數同列所以資訊不受影響。
+    2. 表 5 新欄放在**最後一欄**（既有斷言 (e-4)(e-5) 比對列中段子字串，不必改）；「尚未產生」列該欄印「—」（該 run 根本沒產生），不是「未記錄」（「未記錄」專指 run 已產生但 log 沒有 `exit=` 行）。
+    3. 「在 repo 內」算法（manifest 的 `_repo_relative()`、blind_test 的 `_inside_repo()`）：先**文字比對**（`os.path.abspath`，不跟隨符號連結）、不過才 `resolve()` 補位（macOS `/var`↔`/private/var`、cwd 相對路徑）。理由：獨立複審實測，只用 `resolve()` 時 repo 內指向 repo 外的符號連結會被誤判成 repo 外、別名目錄會改寫記下的路徑、符號連結迴圈會丟 RuntimeError；
+       文字優先則與修改前的 `relative_to()` 行為在正常情況逐字相同。兩支工具各放一份同算法實作（`t17r2_common.py` 預期零 diff，故不抽共用），由 (l-13) 鎖住兩者判定一致。
+    4. manifest 的「參數先驗」（`--photos-dir`／`--dry` 必須在 repo 內）排在 git dirty 檢查**之前**：參數錯誤不該被工作樹狀態蓋掉。
+    5. blind_test 的 `--dry` **沒有**「必須在 repo 內」限制（卡片只要求 manifest 的 `--dry`）：自錄乾聲放 repo 外時盲測可跑、manifest 無法鎖定——T-17-R2 步驟 1 已寫「乾聲檔必須放在 repo 內」，提醒現場遵守。
+    6. 測試 (l-1)(l-2)(l-7)(l-8)(l-9) 用 subprocess 對**真實 repo** 跑 CLI：安全前提＝argparse 錯誤／路徑檢查先於任何讀寫（並核對真實 `output/mvp_acceptance_r2` 有無變化），不是隔離 repo。若日後有人拿掉「先驗參數」這個前提，這幾條可能碰到真實 `output/`——Opus 若認為與 T-57「測試全在系統暫存目錄」字面有張力，請直說。
+    7. 新增 (m) 段，替「不得回歸」清單中原本沒有測試的項目補測試：未給 `--dry` 時 5 個 `sample_N.wav` 與來源 `wet_preview.wav` 逐位元相同、`--dry`（44.1k）重採樣至 48k 且非靜音、manifest 經 `run()` 寫檔兩次逐位元相同且無時間戳、`SHUFFLE_SEED==20260916`。
+    8. 卡片自我檢查 5 的字面式 `git diff --stat 4d4f63b..HEAD -- scripts/` **不可能只出現本卡五檔**：`4d4f63b..HEAD` 早已含 T-58 帶進來的 `scripts/t58_rt60_basis_probe.py`（commit `ee55cad`／`31233ed`），且該式的輸出會隨 HEAD 移動（commit 前看不到本卡五檔、commit 後多出六檔）。本卡改貼固定 commit 版（見「自我檢查 5」），並註明 t58 檔屬 T-58。
+  - **額外的獨立複審（非卡片要求；供 Opus 參考，不取代 Opus 驗證）**：收工前另外跑了一輪 8 個唯讀 agent（只讀 repo、只在 scratchpad 複本操作）：逐條對照驗收方式、對每個修正各做突變檢驗、對抗式找 bug、規格完整性審查。
+    結果：第一輪突變檢驗抓到 3 個「偏弱斷言」（(h-1) 沒綁定訊息文字、(k-1) 抓不到主率／下界／上界互換、R4 缺檔檢查與缺 key 檢查互相冗餘）；對抗式審查抓到 3 個真缺陷（符號連結誤判 repo 外且兩支工具判定不一致／manifest 壞 JSON 與缺 `in_domain` 欄位／`--dry` 指到目錄的 Traceback）與數個測試覆蓋缺口——全部已修並補測試。
+    修完後再對最終版測試做 51 個突變體：48 個被預期的斷言抓到；3 個例外皆有解釋（`re.match`→`re.search` 是**等價突變**，正則本身已有 `^…$` 錨；`rstrip("\r")` 是死碼——`read_text` 的 universal newlines 已把 CRLF 轉成 `\n`，已刪除該死碼，CRLF 變體仍由 (i-9) 守；另 1 個被更早的 (a-1) 抓到而非預期的 (l-10)）。
+  - **自我檢查 1（原卡全部項目；共同鐵則 17：指令列＋stdout 逐字全文，結論在區塊之後）**：
+    以下指令都在 repo 根目錄、已 `source .venv/bin/activate` 下執行；凡以 `( 指令 ) > <scratchpad 檔> 2>&1` 導出再貼入者，區塊內的指令列省略該包裝。
+    (a) **22 支 `scripts/test_*.py`**（`ls scripts/test_*.py | wc -l` 仍是 22；本卡沒有新增測試檔）：
+    ```
+    $ for t in scripts/test_*.py; do python "$t" > /dev/null 2>&1; echo "$t EXIT=$?"; done
+    # BEGIN T57F1-SC1-22TESTS
+    scripts/test_acoustics.py EXIT=0
+    scripts/test_confidence_axes.py EXIT=0
+    scripts/test_coupled.py EXIT=0
+    scripts/test_depth.py EXIT=0
+    scripts/test_eval_cache.py EXIT=0
+    scripts/test_furnishings.py EXIT=0
+    scripts/test_geometry_scope.py EXIT=0
+    scripts/test_ir_synth.py EXIT=0
+    scripts/test_material_fallback.py EXIT=0
+    scripts/test_output_gate.py EXIT=0
+    scripts/test_pipeline_dedup.py EXIT=0
+    scripts/test_preprocess.py EXIT=0
+    scripts/test_scene_text.py EXIT=0
+    scripts/test_segmentation.py EXIT=0
+    scripts/test_surface_trusted_scope.py EXIT=0
+    scripts/test_t17_provenance.py EXIT=0
+    scripts/test_t17r2_tools.py EXIT=0
+    scripts/test_t30_low_combined.py EXIT=0
+    scripts/test_t38_treatment_eval.py EXIT=0
+    scripts/test_t39_materials_invariant.py EXIT=0
+    scripts/test_t44_role_partition.py EXIT=0
+    scripts/test_t46_role_flag.py EXIT=0
+    # END T57F1-SC1-22TESTS
+    ```
+    結論：22 支全部 `EXIT=0`（含 `test_ir_synth.py`【6】內建比對的 T-14 兩條交付 IR MD5，以及本卡的 `test_t17r2_tools.py`）。
+    (b) **六條交付 IR MD5**：T-14 兩條由上面 `test_ir_synth.py`（`EXIT=0`）內建硬編碼比對；T-20／T-21 四條＝**R2 證據**：`pipeline.OUTPUT_ROOT` 導到 scratchpad、經 `cli.main()` 重生（沿用鐵則 2／Opus 的做法；repo 的 `output/` 完全沒被寫入，所以沒有 `chk_*` 要清），MD5 用 macOS `md5 -q`（**不是** `shasum`），四條分開各附名稱。
+       重生腳本原文（`$SP/md5_regen.py`，在 scratchpad、不在 repo 內）：
+    ```
+    """T-57-F1 R2：重生四條交付 IR（T-20 兩條＋T-21 兩條），OUTPUT_ROOT 導到 scratchpad，不寫 repo 的 output/。"""
+    import sys
+    from pathlib import Path
+    
+    REPO = Path("/Users/musicersho/Image Reverb")
+    OUT = Path(sys.argv[1])
+    sys.path.insert(0, str(REPO))
+    
+    from src.image_reverb import cli, pipeline  # noqa: E402
+    
+    pipeline.OUTPUT_ROOT = OUT
+    runs = [
+        ["--text", "浴室", "--no-viz"],
+        ["--text", "大教堂", "--no-viz"],
+        ["--scene", str(REPO / "assets/scenes/neighbor_voices.json"), "--no-viz"],
+        ["--scene", str(REPO / "assets/scenes/stadium_corridor.json"), "--no-viz"],
+    ]
+    for argv in runs:
+        rc = cli.main(argv)
+        print(f"cli.main({argv}) rc={rc}")
+    ```
+    ```
+    $ SP=/private/tmp/claude-501/-Users-musicersho-Image-Reverb/6b7ffd69-17ef-4d28-9e73-5f7cf57d3a2d/scratchpad
+    $ python $SP/md5_regen.py $SP/md5_regen
+    # BEGIN T57F1-SC1-MD5-REGEN
+    === 文字場景：浴室（preset: bathroom） ===
+    尺寸：2.5×2.0×2.4 m（dims_source=text_description, confidence=medium）
+    已輸出：ir_mono.wav、ir_stereo.wav、analysis.json → /private/tmp/claude-501/-Users-musicersho-Image-Reverb/6b7ffd69-17ef-4d28-9e73-5f7cf57d3a2d/scratchpad/md5_regen/text_bathroom
+    🎧 試聽檔：/private/tmp/claude-501/-Users-musicersho-Image-Reverb/6b7ffd69-17ef-4d28-9e73-5f7cf57d3a2d/scratchpad/md5_regen/text_bathroom/wet_preview.wav（mix=0.6；數字合理 ≠ 聽起來對，請實聽）
+      ⚠️ 250 Hz 量測 T30 0.835s 與目標 0.685s 誤差 +21.8%，超出 ±20%
+    cli.main(['--text', '浴室', '--no-viz']) rc=0
+    === 文字場景：教堂（preset: church） ===
+    尺寸：25.0×15.0×15.0 m（dims_source=text_description, confidence=medium）
+    已輸出：ir_mono.wav、ir_stereo.wav、analysis.json → /private/tmp/claude-501/-Users-musicersho-Image-Reverb/6b7ffd69-17ef-4d28-9e73-5f7cf57d3a2d/scratchpad/md5_regen/text_church
+    🎧 試聽檔：/private/tmp/claude-501/-Users-musicersho-Image-Reverb/6b7ffd69-17ef-4d28-9e73-5f7cf57d3a2d/scratchpad/md5_regen/text_church/wet_preview.wav（mix=0.6；數字合理 ≠ 聽起來對，請實聽）
+      ⚠️ 4000 Hz 量測 T30 4.873s 與目標 4.025s 誤差 +21.1%，超出 ±20%
+    cli.main(['--text', '大教堂', '--no-viz']) rc=0
+    === 複合場景：neighbor_voices（method: path_cascade_v1，工程近似） ===
+      [聲源空間] 臥室：4.0×3.5×2.5 m，T30 量測 [0.4136, 0.519, 0.5911, 0.547, 0.4924, 0.4644] s
+      [聽者空間] 臥室：4.0×3.5×2.5 m，T30 量測 [0.4374, 0.5548, 0.5743, 0.5317, 0.4795, 0.4766] s
+      [路徑2中繼空間] 家用小走廊：4.0×1.5×2.5 m，T30 量測 [0.4542, 0.7817, 0.931, 1.2062, 0.8921, 0.6645] s
+    已輸出：ir_mono.wav（mono，stereo 留待後續）、analysis.json → /private/tmp/claude-501/-Users-musicersho-Image-Reverb/6b7ffd69-17ef-4d28-9e73-5f7cf57d3a2d/scratchpad/md5_regen/neighbor_voices
+    🎧 試聽檔：/private/tmp/claude-501/-Users-musicersho-Image-Reverb/6b7ffd69-17ef-4d28-9e73-5f7cf57d3a2d/scratchpad/md5_regen/neighbor_voices/wet_preview.wav（全濕 mix=1.0）
+      ⚠️ [聲源空間／臥室] 125 Hz 量測 T30 0.414s 與目標 0.324s 誤差 +27.5%，超出 ±20%
+      ⚠️ [聽者空間／臥室] 125 Hz 量測 T30 0.437s 與目標 0.324s 誤差 +34.8%，超出 ±20%
+      ⚠️ [路徑2中繼空間／家用小走廊] 125 Hz 量測 T30 0.454s 與目標 0.212s 誤差 +114.4%，超出 ±20%
+      ⚠️ [路徑2中繼空間／家用小走廊] 250 Hz 量測 T30 0.782s 與目標 0.515s 誤差 +51.7%，超出 ±20%
+    cli.main(['--scene', '/Users/musicersho/Image Reverb/assets/scenes/neighbor_voices.json', '--no-viz']) rc=0
+    === 複合場景：stadium_corridor（method: path_cascade_v1，工程近似） ===
+      [聲源空間] 巨蛋（滿場演唱會）：160.0×130.0×45.0 m，T30 量測 [5.1532, 4.3373, 3.3493, 2.6198, 2.5749, 2.2244] s
+      [聽者空間] 走廊：20.0×2.5×3.0 m，T30 量測 [1.1521, 1.7251, 2.3964, 2.6776, 1.9191, 1.3045] s
+    已輸出：ir_mono.wav（mono，stereo 留待後續）、analysis.json → /private/tmp/claude-501/-Users-musicersho-Image-Reverb/6b7ffd69-17ef-4d28-9e73-5f7cf57d3a2d/scratchpad/md5_regen/stadium_corridor
+    🎧 試聽檔：/private/tmp/claude-501/-Users-musicersho-Image-Reverb/6b7ffd69-17ef-4d28-9e73-5f7cf57d3a2d/scratchpad/md5_regen/stadium_corridor/wet_preview.wav（全濕 mix=1.0）
+      ⚠️ [聽者空間／走廊] 125 Hz 量測 T30 1.152s 與目標 0.445s 誤差 +158.6%，超出 ±20%
+      ⚠️ [聽者空間／走廊] 250 Hz 量測 T30 1.725s 與目標 1.259s 誤差 +37.0%，超出 ±20%
+    cli.main(['--scene', '/Users/musicersho/Image Reverb/assets/scenes/stadium_corridor.json', '--no-viz']) rc=0
+    # END T57F1-SC1-MD5-REGEN
+    ```
+    ```
+    $ SP=/private/tmp/claude-501/-Users-musicersho-Image-Reverb/6b7ffd69-17ef-4d28-9e73-5f7cf57d3a2d/scratchpad
+    $ for d in text_bathroom text_church neighbor_voices stadium_corridor; do printf '%s ' "$d"; md5 -q "$SP/md5_regen/$d/ir_mono.wav"; done
+    # BEGIN T57F1-SC1-MD5
+    text_bathroom 2adbaa75eb698772a8c9aa693179ec47
+    text_church 2dd19b6e6d351d713887636fe45cd67e
+    neighbor_voices 9a94ffdf5d8295aee7889729c39c9cd8
+    stadium_corridor a1c21bcc3fd9aa3480df203a89c8cd05
+    # END T57F1-SC1-MD5
+    ```
+       結論：四條完整 32 碼與歷史記錄逐字相同——`text_bathroom`（`--text 浴室`）＝`2adbaa75eb698772a8c9aa693179ec47`、`text_church`（`--text 大教堂`）＝`2dd19b6e6d351d713887636fe45cd67e`、`neighbor_voices`＝`9a94ffdf5d8295aee7889729c39c9cd8`、`stadium_corridor`＝`a1c21bcc3fd9aa3480df203a89c8cd05`（前 8 碼 `2adbaa75`／`2dd19b6e`／`9a94ffdf`／`a1c21bcc`）；
+       T-57 交接筆記原本列的 `8e520f47…`／`228030c7…`／`471bd88a…`／`b2fbc05c…` 是同檔 **SHA-256** 前 14 碼，確認是誤報（三處更正已另起新行追加）；「同碼同 seed＝逐位元相同」前提仍成立。
+    (c) **`git diff --stat` 為空**：卡片原式（工作樹對 index）＋固定 commit 版（無 rev 的 `git diff` 若已 `git add` 會看不到 staged 變更，所以另對 `aa13c55` 比一次，並把 `t17r2_common.py`／`t17r2_make_player.py` 一併納入）：
+    ```
+    $ git diff --stat -- src data scripts/t17_blind_test.py scripts/t17_rt60_table.py scripts/t17_report_tables.py scripts/t17_make_player.py scripts/test_t17_provenance.py; echo "exit=$?"
+    # BEGIN T57F1-SC1-DIFFSTAT-LITERAL
+    exit=0
+    # END T57F1-SC1-DIFFSTAT-LITERAL
+    $ git diff --stat aa13c55 -- src data scripts/t17_blind_test.py scripts/t17_rt60_table.py scripts/t17_report_tables.py scripts/t17_make_player.py scripts/test_t17_provenance.py scripts/t17r2_common.py scripts/t17r2_make_player.py; echo "exit=$?"
+    # BEGIN T57F1-SC1-DIFFSTAT-FIXED
+    exit=0
+    # END T57F1-SC1-DIFFSTAT-FIXED
+    ```
+       結論：兩式都只印 `exit=0`（無任何 diff 行＝輸出為空）。
+    (d) **`ls output/` 與開跑前相同**（開跑前、任何修改之前，以 `ls output/ > $SP/ls_output_before.txt` 存了清單，59 行，已含 T-58 的 `output/rt60_basis_probe/`）：
+    ```
+    $ SP=/private/tmp/claude-501/-Users-musicersho-Image-Reverb/6b7ffd69-17ef-4d28-9e73-5f7cf57d3a2d/scratchpad
+    $ ls output/ | diff - $SP/ls_output_before.txt; echo "diff_exit=$?"
+    # BEGIN T57F1-SC1-LS-OUTPUT
+    diff_exit=0
+    # END T57F1-SC1-LS-OUTPUT
+    ```
+       結論：頂層清單前後相同（`diff_exit=0`）；`output/rt60_basis_probe/` 是 T-58 的、開跑前已存在且已被 T-58 commit 追蹤，不算本卡。
+    (e) **`output/mvp_acceptance/` 全目錄 sha256 快照前後相同**（開跑前以同一條管線 `find output/mvp_acceptance -type f -exec shasum -a 256 {} \; | sort -k2 > $SP/mvp_acceptance_sha_before.txt` 存了 41 個檔）：
+    ```
+    $ SP=/private/tmp/claude-501/-Users-musicersho-Image-Reverb/6b7ffd69-17ef-4d28-9e73-5f7cf57d3a2d/scratchpad
+    $ find output/mvp_acceptance -type f -exec shasum -a 256 {} \; | sort -k2 | diff - $SP/mvp_acceptance_sha_before.txt; echo "diff_exit=$?"
+    # BEGIN T57F1-SC1-MVP-SHA
+    diff_exit=0
+    # END T57F1-SC1-MVP-SHA
+    ```
+       結論：快照相同（`diff_exit=0`）。
+    (f) **`output/` 在整套自我檢查後的狀態**（22 支測試跑完之後才量；標記檔 `$SP/md5_marker2` 建於 R2 重生之前）：
+    ```
+    $ SP=/private/tmp/claude-501/-Users-musicersho-Image-Reverb/6b7ffd69-17ef-4d28-9e73-5f7cf57d3a2d/scratchpad
+    $ git status --short -- output; echo "exit=$?"; ls output/.archive | wc -l
+    # BEGIN T57F1-SC1-OUTPUT-STATUS
+    exit=0
+          14
+    # END T57F1-SC1-OUTPUT-STATUS
+    $ find output -maxdepth 1 -newer $SP/md5_marker2 | sort
+    # BEGIN T57F1-SC1-NEWER-TOP
+    output
+    output/.archive
+    output/.staging
+    output/preprocess
+    # END T57F1-SC1-NEWER-TOP
+    ```
+       結論：`git status -- output` 為空（`output/` 被 gitignore，沒有追蹤檔變動、沒有未追蹤新檔）；`output/.archive` 仍 14 個條目、每個條目的 mtime 都還是 9/15（`ls -la output/.archive` 已核對；未動，鐵則 15(c)），只有 `.archive` 目錄自身的 mtime 在 22 支測試執行期間被更新。頂層除 `output` 自身外，有 3 個既有目錄（`output/.archive`、`output/.staging`、`output/preprocess`）mtime 比重生標記新——那是 22 支**既有**測試（例如 `test_segmentation.py`／`test_pipeline_dedup.py`／`test_output_gate.py`／`test_t46_role_flag.py`）自己刷新 `output/seg/`、`output/preprocess/`、`output/.staging` 裡 gitignored、可重生的中間檔，
+       與 T-57 原卡跑同一套測試時相同，不是本卡新增的路徑（`ls output/` 頂層清單前後相同，見 (d)）。
+    (g) **鐵則 15 清理清單（逐條完整路徑）**：本輪自己建立的路徑——(1) `output/` 下：**無**（R2 重生的 `OUTPUT_ROOT` 導到 scratchpad）。(2) scratchpad（session 暫存，不在 repo 內、不影響 `git status`；**未清除**）：
+       `$SP/md5_regen/`、`$SP/wf_a/`（複審 agent 的 scratch 複本）、`$SP/mutall/`（51 個突變體複本，跑完即由腳本刪除）、`$SP/dev/`、`$SP/wf_probe/`、`$SP/rekill_*`、`$SP/r1/`、`$SP/sc1/`、`$SP/sc4/`、`$SP/sc5/`。
+       (3) `git worktree`：`$SP/t57_old`（自我檢查 4）已用 `git worktree remove --force` 移除（前後 `git worktree list` 見自我檢查 4；因為放進新版測試後該 worktree 有已修改的追蹤檔，需要 `--force`，且**只**對這個路徑用）；**未執行** `git worktree prune`。
+       (4) **未動**：`.claude/worktrees/compassionate-boyd-1380a7`（`git worktree list` 顯示它在本輪開始前就存在、停在 `4d4f63b`，不是本輪建的）、`output/.archive/**`（14 個）、`output/listen_chk_bath.wav`／`listen_chk_church.wav` 等前輪遺留檔。
+  - **自我檢查 2：修正全部做完之後的真實突變（R1 ①～⑤）**（`blind_test.py` 此時已含 R3／R8 全部修正；全程**沒有** commit 突變碼、**沒有**用 `git checkout --` 還原）：
+    ① 備份＋② 內容比對式突變，並用 `diff` 證明恰改 1 行：
+    ```
+    $ SP=/private/tmp/claude-501/-Users-musicersho-Image-Reverb/6b7ffd69-17ef-4d28-9e73-5f7cf57d3a2d/scratchpad
+    $ cp scripts/t17r2_blind_test.py "$SP/t17r2_blind_test.py.bak"
+    $ sed -i '' 's/"forced_low_confidence": meta.get("forced_low_confidence", False),/"forced_low_confidence": False,/' scripts/t17r2_blind_test.py
+    $ diff "$SP/t17r2_blind_test.py.bak" scripts/t17r2_blind_test.py; echo "diff_exit=$?"
+    # BEGIN T57F1-R1-A-DIFF
+    142c142
+    <                 "forced_low_confidence": meta.get("forced_low_confidence", False),
+    ---
+    >                 "forced_low_confidence": False,
+    diff_exit=1
+    # END T57F1-R1-A-DIFF
+    ```
+    ③ 突變版跑測試（預期 (a-3) ❌ 且 `EXIT=1`；指令 stderr 併入 stdout，故 stderr 的 5 行預期訊息排在最前——與 stdout 緩衝順序有關，不影響判定）：
+    ```
+    $ python scripts/test_t17r2_tools.py 2>&1; echo "EXIT=$?"
+    # BEGIN T57F1-R1-B-MUTATED
+    ❌ 溯源驗證失敗（可能拿舊產物驗收新程式，或環境已變更）：
+       - heldout_test_c：git_revision 不符：來源產物生成於 '0000000000000000000000000000000000000000'，盲測當下主 repo HEAD 是 'b599144a4b1a6b49717edb55ccb20cc5638a7397'（拿舊碼產物驗收新碼，或反過來，必須重生）
+    ❌ 輸出目錄已有 sample_*.wav，拒絕覆寫（首跑即最終，沒有 --force）：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/isolated_repo/output/run_d/blind_test
+    ❌ 無法產生 DATASET_MANIFEST.json：
+       - git status --porcelain -- src data scripts 非空：工作樹不乾淨，不得鎖定資料集（先 commit 或還原）
+    【a】provenance 全部相符 → t17r2_blind_test 5 張 exit 0
+    ✅ 盲聽素材：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/isolated_repo/output/mvp_acceptance_r2/blind_test/（5 組，檔名不洩露答案）
+       作答表：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/isolated_repo/output/mvp_acceptance_r2/blind_test/作答表.md
+       答案鍵：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/isolated_repo/output/mvp_acceptance_r2/blind_test_ANSWERS.json（作答前請勿打開）
+      ✅ (a-1) exit 0：rc=0
+      ✅ (a-2) generated_from 5 筆：n=5
+      ❌ (a-3) forced_low_confidence 逐筆等於樁 analysis.json：[('heldout_bathroom', False), ('heldout_living', False), ('heldout_hall', False), ('heldout_corridor', False), ('heldout_car', False)]
+    【b】SHUFFLE_SEED：同 seed 兩次相同、與 T-17 舊 seed（20260830）不同
+      ✅ (b-1) R2 種子不是 T-17 種子：20260916
+      ✅ (b-2) 同 seed 兩次打亂順序相同：[1, 2, 4, 3, 0] vs [1, 2, 4, 3, 0]
+      ✅ (b-3) 與 T-17 舊 seed 順序不同：[1, 2, 4, 3, 0] vs [2, 4, 3, 1, 0]
+    ✅ 盲聽素材：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/isolated_repo/output/run_b1/blind_test/（5 組，檔名不洩露答案）
+       作答表：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/isolated_repo/output/run_b1/blind_test/作答表.md
+       答案鍵：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/isolated_repo/output/run_b1/blind_test_ANSWERS.json（作答前請勿打開）
+    ✅ 盲聽素材：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/isolated_repo/output/run_b2/blind_test/（5 組，檔名不洩露答案）
+       作答表：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/isolated_repo/output/run_b2/blind_test/作答表.md
+       答案鍵：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/isolated_repo/output/run_b2/blind_test_ANSWERS.json（作答前請勿打開）
+      ✅ (b-4) 實際跑兩次 blind_test，答案順序一致：['heldout_living', 'heldout_hall', 'heldout_car', 'heldout_corridor', 'heldout_bathroom'] vs ['heldout_living', 'heldout_hall', 'heldout_car', 'heldout_corridor', 'heldout_bathroom']
+    【c】provenance 不符（git_revision 記舊 commit）→ exit 1
+      ✅ (c) provenance 不符 → exit 非 0：rc=1
+    【d】輸出目錄已有 sample_*.wav → exit 1，拒絕覆寫
+    ✅ 盲聽素材：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/isolated_repo/output/run_d/blind_test/（5 組，檔名不洩露答案）
+       作答表：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/isolated_repo/output/run_d/blind_test/作答表.md
+       答案鍵：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/isolated_repo/output/run_d/blind_test_ANSWERS.json（作答前請勿打開）
+      ✅ (d-1) 首次產生 exit 0：rc=0
+      ✅ (d-2) 再次呼叫同一目錄 → exit 非 0：rc=1
+      ✅ (d-3) 檔案內容未被覆寫：39a6044165e380ccb6310dd20339d2a9fc227dc2cac8adf08eac3ab18298ee4b vs 39a6044165e380ccb6310dd20339d2a9fc227dc2cac8adf08eac3ab18298ee4b
+    【e】合成 rt60_table.json → t17r2_report_tables 表 2／表 5
+    已寫入 /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/isolated_repo/output/mvp_acceptance_r2/tables.md（54 行）
+      ✅ (e-1) exit 0：rc=0
+      ✅ (e-2) forced run（gym_stem）不進自動組小計 —— 自動組小計為 0/0：應出現自動組 0/0 小計行（唯一候選是 forced，被排除）
+      ✅ (e-3) coverage = 0/1（1 個 in-domain 場地，沒有真正 auto 通過）：### 表 1　完整誤差表：8 場地 ×（6 頻段 ＋ 低頻聯合帶）
+    
+    誤差 =（生成 IR 量測 T30 − 真實 IR 量測 T30）/ 真實。✅ = 誤差 ≤20%；❌ = 超差；🟡 = 對多檔中位數超差但落在該場地多條真實 IR 的區間內。
+    
+    | 場地 | 路徑 | dims_source | group | forced | 125Hz | 250Hz | **500Hz** | **1
+      ✅ (e-4) steinman（域外、auto、未 forced、通過）被標「域外誤放」：應出現該列且標 ⚠️ 是
+      ✅ (e-5) gym（in-domain、forced）不標域外誤放：應出現該列且標 否
+    【f】t17r2_dataset_manifest：sha256、domain、dirty、可重現、--legacy
+      ✅ (f-1) 建置成功、無錯誤：errs=[]
+      ✅ (f-2) heldout_bathroom sha256 正確：
+      ✅ (f-3) domain：bathroom 3x2x2.4（≤10m）→ in：in
+      ✅ (f-4) domain：hall 20x15x8（>10m）→ out：out
+      ✅ (f-5) domain：車內固定 → non_room（不看尺寸）：non_room
+      ✅ (f-6) 同一輸入重跑兩次逐位元相同：
+      ✅ (f-7) 工作樹 dirty（scripts/ 未 commit）→ exit 1：rc=1
+      ✅ (f-8) --legacy 建置成功：errs=[]
+      ✅ (f-9) --legacy → degraded: true：True
+      ✅ (f-10) legacy 車內仍固定 non_room：non_room
+      ✅ (f-11) legacy 無 GT 檔 → 其餘 unknown：unknown
+    【g】R3：t17r2_blind_test.main() 把 --photos-dir 接進 run(photos_dir=…)
+      ✅ (g-1) --photos-dir some/dir → run() 收到 photos_dir == Path('some/dir')：photos_dir=PosixPath('some/dir')
+      ✅ (g-2) 未給 --photos-dir → run() 收到 photos_dir=None：kwargs={'legacy': False, 'photos_dir': None, 'dry_path': None}
+    【h】R4：t17r2_rt60_table.run() 缺 manifest／缺場地 key → exit 1，不寫 rt60_table.json
+      ✅ (h-1) 無 DATASET_MANIFEST.json → exit 1、不寫 rt60_table.json、stderr＝「找不到 …DATASET_MANIFEST.json，請先跑 scripts/t17r2_dataset_manifest.py」：rc=1, rt60_table.json 已寫出=False, 訊息含「找不到…DATASET_MANIFEST…請先跑 scripts/t17r2_dataset_manifest.py」=True, stderr='❌ 找不到 /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/isolated_repo/output/run_h1/DATASET_MANIFEST.json，請先跑 scripts/t17r2_dataset_manifest.py'
+      ✅ (h-2) manifest 缺該場地 key → exit 1、列出缺的 key、不寫 rt60_table.json：rc=1, rt60_table.json 已寫出=False, stderr='❌ /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/isolated_repo/output/run_h2/DATASET_MANIFEST.json 沒有這些場地 key（或該場地缺 in_domain 欄位）：stub_venue_h（不得靜默當成 in_domain=False；請重跑 scripts/t17r2_dataset_manifest.py）'
+      ✅ (h-3) manifest 齊全 → exit 0；兩場地 in_domain 各照 manifest（True／False）；gate 讀 <run>.log（不讀 .forced.log）：rc=0；場地1 in_domain=True group=forced gate={'default_exit': 3, 'blocked': True, 'exit_marker_consistent': True, 'override_dims_guidance': False}；場地2 in_domain=False group=auto gate=None
+      ✅ (h-4) manifest 有場地 key 但缺 in_domain 欄位 → exit 1（不得靜默當 False）、不寫表：rc=1, rt60_table.json 已寫出=False, stderr='❌ /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/isolated_repo/output/run_h4/DATASET_MANIFEST.json 沒有這些場地 key（或該場地缺 in_domain 欄位）：stub_venue_h（不得靜默當成 in_domain=False；請重跑 scripts/t17r2_dataset_manifest.py）'
+      ✅ (h-5) manifest 壞 JSON／空檔／非 dict／venues 為 null → exit 1、訊息提到 DATASET_MANIFEST、不寫表、無例外：(情境, rc, 已寫表, stderr 含 DATASET_MANIFEST)＝[('bad_json', 1, False, True), ('empty', 1, False, True), ('list', 1, False, True), ('venues_null', 1, False, True)]
+    【i】R5：parse_gate_log() 回報真實結束碼（log 末行 exit=<整數>）；表 5 印「預設路徑 exit」
+      ✅ (i-1) 擋下標記＋末行 exit=3 → default_exit 3、blocked True、consistent True：{'default_exit': 3, 'blocked': True, 'exit_marker_consistent': True, 'override_dims_guidance': False}
+      ✅ (i-2) Traceback＋末行 exit=1 → default_exit 1（不是 0）、blocked False：{'default_exit': 1, 'blocked': False, 'exit_marker_consistent': True, 'override_dims_guidance': False}
+      ✅ (i-3) 無 exit 行 → default_exit None、consistent None：{'default_exit': None, 'blocked': False, 'exit_marker_consistent': None, 'override_dims_guidance': False}
+      ✅ (i-4) 擋下標記＋末行 exit=0 → consistent False：{'default_exit': 0, 'blocked': True, 'exit_marker_consistent': False, 'override_dims_guidance': False}
+      ✅ (i-5) log 不存在→None；只有 <run>.forced.log 也→None（不讀 forced log）：不存在→None；只有 .forced.log→None
+      ✅ (i-6) 只認最後一個非空行的 exit=（中間的不算、多行取末行）：中間的 exit= 不算→None；兩行 exit= 取末行→1
+      ✅ (i-7) 表 5 表頭有「預設路徑 exit」欄：| 照片 | domain | gate | forced | override-dims 導引 | 域外誤放？ | 預設路徑 exit |
+      ✅ (i-8) 表 5：exit=3→「3」、exit=1→「1」、無 exit 行→「未記錄」、不一致→「0 ⚠️…」（每個 run 旁另有 exit=0 的 .forced.log，不得被讀到）：{'gate_i': '3', 'gate_ii': '1', 'gate_iii': '未記錄', 'gate_iv': '0 ⚠️（與「已擋下輸出」標記不一致）'}
+      ✅ (i-9) 嚴格度：exit=3junk／全形數字／EXIT=3／行尾空白／\x0b／process exit=3→None；exit=-1→-1；檔尾空行、CRLF→照取：9 種變體；(實得, 預期) 不符：{}
+      ✅ (i-10) 末行不是 exit= 時：override_dims_guidance 仍照 log 內容、default_exit＝None：{'default_exit': None, 'blocked': False, 'exit_marker_consistent': None, 'override_dims_guidance': True}
+      ✅ (i-11) gate_result／域外誤放只依 forced_low_confidence（log 說被擋／沒擋都不改變判定）：未 forced（log 說被擋）→PASS／域外誤放=True；forced（log 說沒擋）→BLOCK→forced／域外誤放=False
+    【j】R6：t17r2_dataset_manifest 的 --dry 接線（run(dry_path=…)、main()）
+      ✅ (j-1) run(dry_path=第二個乾聲) → manifest dry.path／dry.sha256 等於該檔：rc=0, dry={'path': 'assets/dry/my_voice.wav', 'sha256': '815bdc3e43afa8efcf1f71f80cfc25bb49e81bc93e07e4aec8c132b5b89f7d3a'}
+      ✅ (j-2) 未給 dry_path → manifest dry 仍是 assets/dry/clap_synth.wav（原行為不變）：rc=0, dry={'path': 'assets/dry/clap_synth.wav', 'sha256': '800ad29a1a7a7c3afb28e9a8c31cd6dfa52c3cc45c07745ce516afeaecfe7856'}
+      ✅ (j-3) main() --dry some/voice.wav → run() 收到 dry_path == Path('some/voice.wav')：dry_path=PosixPath('some/voice.wav')
+      ✅ (j-4) main() 未給 --dry → run() 收到 dry_path=None：kwargs={'legacy': False, 'photos_dir': None, 'out_path': None, 'dry_path': None}
+    【k】裁定 T-57-D：tables.md 錯誤放行率彙總（N／6N／可判／無法判／主率／上下界）
+      ✅ (k-1) 彙總行：N／6N／可判／無法判／主率／下界／上界＝測試端獨立重算（2／12／10／2／3/10=30%／3/12=25%／5/12=42%）：獨立重算 N/✅/❌/無法判=(2, 7, 3, 2)；彙總行缺：[]；標籤↔數值不符：[]；**錯誤放行率彙總**：被放行照片數 N＝2／總面數 6N＝12／可判面數 10／無法判面數 2／❌ 3；主率（❌÷可判面數）＝3/10（30%）；下界（❌÷6N，無法判全當對）＝3/12（25%）；上界（（❌＋無法判）÷6N，無法判全當錯）＝5/12（42%）
+      ✅ (k-2) tables.md 不含「分母固定 6」：tables.md 全文不得再出現「分母固定 6」
+      ✅ (k-3) 每張照片六面表下有「❌ x／可判 y／無法判 z（共 6）」：逐張計數行：['❌ 1／可判 5／無法判 1（共 6）', '❌ 2／可判 5／無法判 1（共 6）']；缺：[]
+      ✅ (k-4) 無來源面被判 ❌ 仍照列、算進分子與可判面數：無來源面照列、照判：'| west | carpet | 無 | gypsum_board | ❌ |' 在表中=True；k_a2(✅/❌/無法判)=(3, 2, 1)
+      ✅ (k-5) 可判面數 > 0 時不印「—（無可判面）」：**錯誤放行率彙總**：被放行照片數 N＝2／總面數 6N＝12／可判面數 10／無法判面數 2／❌ 3；主率（❌÷可判面數）＝3/10（30%）；下界（❌÷6N，無法判全當對）＝3/12（25%）；上界（（❌＋無法判）÷6N，無法判全當錯）＝5/12（42%）
+      ✅ (k-8) report_tables.run() 端到端：runs/<run>.log 末行 exit=1→表 5 印「1」；沒有 log→「未記錄」：report_tables.run() 端到端：表 5「預設路徑 exit」欄＝{'k_a1': '1', 'k_a2': '未記錄'}
+      ✅ (k-6) 可判＝0 → 含「—（無可判面）」、N／6N／無法判正確、彙總行不含「0%」：缺：[]；「主率」段以「＝—（無可判面）」結尾=True；含「0%」=False；**錯誤放行率彙總**：被放行照片數 N＝1／總面數 6N＝6／可判面數 0／無法判面數 6／❌ 0；主率（❌÷可判面數）＝—（無可判面）；下界（❌÷6N）＝0/6；上界（（❌＋無法判）÷6N）＝6/6（無可判面，不換算百分比）
+      ✅ (k-7) N＝0 → 含「錯誤放行率不適用（0 張放行）」、該行不含「0%」：命中行=['**錯誤放行率彙總**：錯誤放行率不適用（0 張放行）']
+    【l】小問題：--legacy 與 --photos-dir 互斥（exit 2）；repo 外路徑 → exit 1＋清楚訊息；repo 內相對路徑可用
+      ✅ (l-1) t17r2_dataset_manifest.py --legacy --photos-dir x → exit 2、stderr 含「不可」：returncode=2；stderr 末行='t17r2_dataset_manifest.py: error: --legacy 固定使用 assets/photos/，不可與 --photos-dir 併用'
+      ✅ (l-2) t17r2_blind_test.py --legacy --photos-dir x → exit 2、stderr 含「不可」：returncode=2；stderr 末行='t17r2_blind_test.py: error: --legacy 固定使用 assets/photos/，不可與 --photos-dir 併用'
+      ✅ (l-3) manifest --photos-dir 在 repo 外 → exit 1、訊息含「必須位於 repo 內…」、無例外、不寫檔：rc=1；已寫出=False；stderr='❌ 無法產生 DATASET_MANIFEST.json：\n   - --photos-dir 必須位於 repo 內：manifest 只記 repo 相對路徑（收到 /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/outside_photos；repo＝/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/isolated_repo）'
+      ✅ (l-4) manifest --dry 在 repo 外 → exit 1、訊息含「必須位於 repo 內…」與「--dry」、無例外、不寫檔：rc=1；已寫出=False；stderr='❌ 無法產生 DATASET_MANIFEST.json：\n   - --dry 必須位於 repo 內：manifest 只記 repo 相對路徑（收到 /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/outside_dry.wav；repo＝/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/isolated_repo）'
+      ✅ (l-5) blind_test --photos-dir 在 repo 外 → exit 1、訊息含「必須位於 repo 內…」、不產生樣本：rc=1；已產生樣本=False；stderr='❌ --photos-dir 必須位於 repo 內：manifest 只記 repo 相對路徑（收到 /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/outside_photos；repo＝/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/isolated_repo）'
+      ✅ (l-6) manifest 的 --photos-dir／--dry 給 repo 內相對路徑 → exit 0、記 repo 相對路徑：rc=0；stderr=''；paths=['assets/photos_heldout/heldout_bathroom.png', 'assets/photos_heldout/heldout_living.png']…
+      ✅ (l-7) CLI：t17r2_dataset_manifest.py --photos-dir <repo 外> → exit 1、訊息清楚、無 Traceback：returncode=1；Traceback=False；stderr 末行='   - --photos-dir 必須位於 repo 內：manifest 只記 repo 相對路徑（收到 /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/outs'
+      ✅ (l-8) CLI：t17r2_dataset_manifest.py --dry <repo 外> → exit 1、訊息清楚、無 Traceback：returncode=1；Traceback=False；stderr 末行='   - --dry 必須位於 repo 內：manifest 只記 repo 相對路徑（收到 /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/outside_dry'
+      ✅ (l-9) CLI：t17r2_blind_test.py --photos-dir <repo 外> → exit 1、訊息清楚、無 Traceback：returncode=1；Traceback=False；stderr 末行='❌ --photos-dir 必須位於 repo 內：manifest 只記 repo 相對路徑（收到 /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/outside'
+      ✅ (l-10) run() 層 legacy=True 與自訂 photos_dir 並存（manifest、blind_test 都是；只有 CLI 互斥）：manifest(legacy=True, photos_dir=自訂目錄)：errs=[]、路徑=['assets/photos_legacy_custom/bathroom_tiled.png']…；blind_test.run(legacy=True, photos_dir=…) rc=0
+      ✅ (l-11) blind_test.run() 給 repo 內相對 photos_dir（cwd＝repo）→ exit 0（不得被「repo 內」檢查擋死）：rc=0；stderr=''
+      ✅ (l-12) manifest --dry 指到 repo 內的「目錄」→ exit 1、訊息清楚、不寫檔、無例外：rc=1；已寫出=False；stderr='❌ 無法產生 DATASET_MANIFEST.json：\n   - 找不到乾聲檔（或不是檔案）：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmp7px11gcv/isolated_repo/assets/dry'
+      ✅ (l-13) manifest 與 blind_test 對「在 repo 內」判定一致（符號連結／迴圈／.. 逃逸／相對路徑），且都不丟例外：8 種路徑；(manifest, blind_test, 預期) 不一致或不符：{}
+    【m】不得回歸：樣本＝來源 wet_preview 逐位元複製；--dry（44.1k）重採樣至 48k；manifest 兩次寫檔逐位元相同且無時間戳
+      ✅ (m-1) 未給 --dry：5 個 sample_N.wav 與來源 wet_preview.wav 逐位元相同：未給 --dry：5 個 sample_N.wav 與各自來源 wet_preview.wav 逐位元相同；不符=[]
+      ✅ (m-2) --dry（44.1k 乾聲）可跑，樣本重採樣至 48k、非靜音、MANIFEST 記該乾聲 sha256：rc=0；sample_1.wav 取樣率=48000、38399 取樣點、峰值=0.891；MANIFEST dry.sha256 相符=True；stderr=''
+      ✅ (m-3) manifest 經 run() 寫檔兩次逐位元相同、無時間戳：rc=0,0；經 run() 寫檔兩次逐位元相同=True；含時間戳樣式=False
+      ✅ (m-4) SHUFFLE_SEED 仍是 20260916：20260916
+    
+    ❌ 1 項失敗：['(a-3) forced_low_confidence 逐筆等於樁 analysis.json']
+    EXIT=1
+    # END T57F1-R1-B-MUTATED
+    ```
+       結論③：全案只有 `(a-3)` 一條 ❌（該行與 `❌ 1 項失敗` 彙總行），其餘 73 條 ✅；`EXIT=1`——測試對「MANIFEST 抄 forced 抄錯」有診斷力。（輸出含隨機暫存目錄名與 git HEAD，重跑只能比對「哪些斷言 ❌／EXIT」，不是逐位元相同。）
+    ④ 還原（`cp` 備份，**不是** `git checkout --`）＋確認：
+    ```
+    $ SP=/private/tmp/claude-501/-Users-musicersho-Image-Reverb/6b7ffd69-17ef-4d28-9e73-5f7cf57d3a2d/scratchpad
+    $ cp "$SP/t17r2_blind_test.py.bak" scripts/t17r2_blind_test.py
+    $ cmp "$SP/t17r2_blind_test.py.bak" scripts/t17r2_blind_test.py; echo "cmp_exit=$?"; grep -n '"forced_low_confidence": False' scripts/t17r2_blind_test.py; echo "grep_exit=$?"
+    # BEGIN T57F1-R1-C-RESTORE
+    cmp_exit=0
+    grep_exit=1
+    # END T57F1-R1-C-RESTORE
+    ```
+       結論④：`cmp_exit=0`（還原後與備份逐位元相同）；`grep` 無輸出、`grep_exit=1`（＝無命中，寫死 False 那行已不在）。
+    ⑤ 還原後重跑同一指令（預期全 ✅、`EXIT=0`）：
+    ```
+    $ python scripts/test_t17r2_tools.py 2>&1; echo "EXIT=$?"
+    # BEGIN T57F1-R1-D-RESTORED
+    ❌ 溯源驗證失敗（可能拿舊產物驗收新程式，或環境已變更）：
+       - heldout_test_c：git_revision 不符：來源產物生成於 '0000000000000000000000000000000000000000'，盲測當下主 repo HEAD 是 '6727c061d97313bfeaffdb2cba5051cacb443a5a'（拿舊碼產物驗收新碼，或反過來，必須重生）
+    ❌ 輸出目錄已有 sample_*.wav，拒絕覆寫（首跑即最終，沒有 --force）：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/isolated_repo/output/run_d/blind_test
+    ❌ 無法產生 DATASET_MANIFEST.json：
+       - git status --porcelain -- src data scripts 非空：工作樹不乾淨，不得鎖定資料集（先 commit 或還原）
+    【a】provenance 全部相符 → t17r2_blind_test 5 張 exit 0
+    ✅ 盲聽素材：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/isolated_repo/output/mvp_acceptance_r2/blind_test/（5 組，檔名不洩露答案）
+       作答表：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/isolated_repo/output/mvp_acceptance_r2/blind_test/作答表.md
+       答案鍵：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/isolated_repo/output/mvp_acceptance_r2/blind_test_ANSWERS.json（作答前請勿打開）
+      ✅ (a-1) exit 0：rc=0
+      ✅ (a-2) generated_from 5 筆：n=5
+      ✅ (a-3) forced_low_confidence 逐筆等於樁 analysis.json：[('heldout_bathroom', False), ('heldout_living', True), ('heldout_hall', False), ('heldout_corridor', True), ('heldout_car', False)]
+    【b】SHUFFLE_SEED：同 seed 兩次相同、與 T-17 舊 seed（20260830）不同
+      ✅ (b-1) R2 種子不是 T-17 種子：20260916
+      ✅ (b-2) 同 seed 兩次打亂順序相同：[1, 2, 4, 3, 0] vs [1, 2, 4, 3, 0]
+      ✅ (b-3) 與 T-17 舊 seed 順序不同：[1, 2, 4, 3, 0] vs [2, 4, 3, 1, 0]
+    ✅ 盲聽素材：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/isolated_repo/output/run_b1/blind_test/（5 組，檔名不洩露答案）
+       作答表：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/isolated_repo/output/run_b1/blind_test/作答表.md
+       答案鍵：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/isolated_repo/output/run_b1/blind_test_ANSWERS.json（作答前請勿打開）
+    ✅ 盲聽素材：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/isolated_repo/output/run_b2/blind_test/（5 組，檔名不洩露答案）
+       作答表：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/isolated_repo/output/run_b2/blind_test/作答表.md
+       答案鍵：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/isolated_repo/output/run_b2/blind_test_ANSWERS.json（作答前請勿打開）
+      ✅ (b-4) 實際跑兩次 blind_test，答案順序一致：['heldout_living', 'heldout_hall', 'heldout_car', 'heldout_corridor', 'heldout_bathroom'] vs ['heldout_living', 'heldout_hall', 'heldout_car', 'heldout_corridor', 'heldout_bathroom']
+    【c】provenance 不符（git_revision 記舊 commit）→ exit 1
+      ✅ (c) provenance 不符 → exit 非 0：rc=1
+    【d】輸出目錄已有 sample_*.wav → exit 1，拒絕覆寫
+    ✅ 盲聽素材：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/isolated_repo/output/run_d/blind_test/（5 組，檔名不洩露答案）
+       作答表：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/isolated_repo/output/run_d/blind_test/作答表.md
+       答案鍵：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/isolated_repo/output/run_d/blind_test_ANSWERS.json（作答前請勿打開）
+      ✅ (d-1) 首次產生 exit 0：rc=0
+      ✅ (d-2) 再次呼叫同一目錄 → exit 非 0：rc=1
+      ✅ (d-3) 檔案內容未被覆寫：39a6044165e380ccb6310dd20339d2a9fc227dc2cac8adf08eac3ab18298ee4b vs 39a6044165e380ccb6310dd20339d2a9fc227dc2cac8adf08eac3ab18298ee4b
+    【e】合成 rt60_table.json → t17r2_report_tables 表 2／表 5
+    已寫入 /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/isolated_repo/output/mvp_acceptance_r2/tables.md（54 行）
+      ✅ (e-1) exit 0：rc=0
+      ✅ (e-2) forced run（gym_stem）不進自動組小計 —— 自動組小計為 0/0：應出現自動組 0/0 小計行（唯一候選是 forced，被排除）
+      ✅ (e-3) coverage = 0/1（1 個 in-domain 場地，沒有真正 auto 通過）：### 表 1　完整誤差表：8 場地 ×（6 頻段 ＋ 低頻聯合帶）
+    
+    誤差 =（生成 IR 量測 T30 − 真實 IR 量測 T30）/ 真實。✅ = 誤差 ≤20%；❌ = 超差；🟡 = 對多檔中位數超差但落在該場地多條真實 IR 的區間內。
+    
+    | 場地 | 路徑 | dims_source | group | forced | 125Hz | 250Hz | **500Hz** | **1
+      ✅ (e-4) steinman（域外、auto、未 forced、通過）被標「域外誤放」：應出現該列且標 ⚠️ 是
+      ✅ (e-5) gym（in-domain、forced）不標域外誤放：應出現該列且標 否
+    【f】t17r2_dataset_manifest：sha256、domain、dirty、可重現、--legacy
+      ✅ (f-1) 建置成功、無錯誤：errs=[]
+      ✅ (f-2) heldout_bathroom sha256 正確：
+      ✅ (f-3) domain：bathroom 3x2x2.4（≤10m）→ in：in
+      ✅ (f-4) domain：hall 20x15x8（>10m）→ out：out
+      ✅ (f-5) domain：車內固定 → non_room（不看尺寸）：non_room
+      ✅ (f-6) 同一輸入重跑兩次逐位元相同：
+      ✅ (f-7) 工作樹 dirty（scripts/ 未 commit）→ exit 1：rc=1
+      ✅ (f-8) --legacy 建置成功：errs=[]
+      ✅ (f-9) --legacy → degraded: true：True
+      ✅ (f-10) legacy 車內仍固定 non_room：non_room
+      ✅ (f-11) legacy 無 GT 檔 → 其餘 unknown：unknown
+    【g】R3：t17r2_blind_test.main() 把 --photos-dir 接進 run(photos_dir=…)
+      ✅ (g-1) --photos-dir some/dir → run() 收到 photos_dir == Path('some/dir')：photos_dir=PosixPath('some/dir')
+      ✅ (g-2) 未給 --photos-dir → run() 收到 photos_dir=None：kwargs={'legacy': False, 'photos_dir': None, 'dry_path': None}
+    【h】R4：t17r2_rt60_table.run() 缺 manifest／缺場地 key → exit 1，不寫 rt60_table.json
+      ✅ (h-1) 無 DATASET_MANIFEST.json → exit 1、不寫 rt60_table.json、stderr＝「找不到 …DATASET_MANIFEST.json，請先跑 scripts/t17r2_dataset_manifest.py」：rc=1, rt60_table.json 已寫出=False, 訊息含「找不到…DATASET_MANIFEST…請先跑 scripts/t17r2_dataset_manifest.py」=True, stderr='❌ 找不到 /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/isolated_repo/output/run_h1/DATASET_MANIFEST.json，請先跑 scripts/t17r2_dataset_manifest.py'
+      ✅ (h-2) manifest 缺該場地 key → exit 1、列出缺的 key、不寫 rt60_table.json：rc=1, rt60_table.json 已寫出=False, stderr='❌ /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/isolated_repo/output/run_h2/DATASET_MANIFEST.json 沒有這些場地 key（或該場地缺 in_domain 欄位）：stub_venue_h（不得靜默當成 in_domain=False；請重跑 scripts/t17r2_dataset_manifest.py）'
+      ✅ (h-3) manifest 齊全 → exit 0；兩場地 in_domain 各照 manifest（True／False）；gate 讀 <run>.log（不讀 .forced.log）：rc=0；場地1 in_domain=True group=forced gate={'default_exit': 3, 'blocked': True, 'exit_marker_consistent': True, 'override_dims_guidance': False}；場地2 in_domain=False group=auto gate=None
+      ✅ (h-4) manifest 有場地 key 但缺 in_domain 欄位 → exit 1（不得靜默當 False）、不寫表：rc=1, rt60_table.json 已寫出=False, stderr='❌ /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/isolated_repo/output/run_h4/DATASET_MANIFEST.json 沒有這些場地 key（或該場地缺 in_domain 欄位）：stub_venue_h（不得靜默當成 in_domain=False；請重跑 scripts/t17r2_dataset_manifest.py）'
+      ✅ (h-5) manifest 壞 JSON／空檔／非 dict／venues 為 null → exit 1、訊息提到 DATASET_MANIFEST、不寫表、無例外：(情境, rc, 已寫表, stderr 含 DATASET_MANIFEST)＝[('bad_json', 1, False, True), ('empty', 1, False, True), ('list', 1, False, True), ('venues_null', 1, False, True)]
+    【i】R5：parse_gate_log() 回報真實結束碼（log 末行 exit=<整數>）；表 5 印「預設路徑 exit」
+      ✅ (i-1) 擋下標記＋末行 exit=3 → default_exit 3、blocked True、consistent True：{'default_exit': 3, 'blocked': True, 'exit_marker_consistent': True, 'override_dims_guidance': False}
+      ✅ (i-2) Traceback＋末行 exit=1 → default_exit 1（不是 0）、blocked False：{'default_exit': 1, 'blocked': False, 'exit_marker_consistent': True, 'override_dims_guidance': False}
+      ✅ (i-3) 無 exit 行 → default_exit None、consistent None：{'default_exit': None, 'blocked': False, 'exit_marker_consistent': None, 'override_dims_guidance': False}
+      ✅ (i-4) 擋下標記＋末行 exit=0 → consistent False：{'default_exit': 0, 'blocked': True, 'exit_marker_consistent': False, 'override_dims_guidance': False}
+      ✅ (i-5) log 不存在→None；只有 <run>.forced.log 也→None（不讀 forced log）：不存在→None；只有 .forced.log→None
+      ✅ (i-6) 只認最後一個非空行的 exit=（中間的不算、多行取末行）：中間的 exit= 不算→None；兩行 exit= 取末行→1
+      ✅ (i-7) 表 5 表頭有「預設路徑 exit」欄：| 照片 | domain | gate | forced | override-dims 導引 | 域外誤放？ | 預設路徑 exit |
+      ✅ (i-8) 表 5：exit=3→「3」、exit=1→「1」、無 exit 行→「未記錄」、不一致→「0 ⚠️…」（每個 run 旁另有 exit=0 的 .forced.log，不得被讀到）：{'gate_i': '3', 'gate_ii': '1', 'gate_iii': '未記錄', 'gate_iv': '0 ⚠️（與「已擋下輸出」標記不一致）'}
+      ✅ (i-9) 嚴格度：exit=3junk／全形數字／EXIT=3／行尾空白／\x0b／process exit=3→None；exit=-1→-1；檔尾空行、CRLF→照取：9 種變體；(實得, 預期) 不符：{}
+      ✅ (i-10) 末行不是 exit= 時：override_dims_guidance 仍照 log 內容、default_exit＝None：{'default_exit': None, 'blocked': False, 'exit_marker_consistent': None, 'override_dims_guidance': True}
+      ✅ (i-11) gate_result／域外誤放只依 forced_low_confidence（log 說被擋／沒擋都不改變判定）：未 forced（log 說被擋）→PASS／域外誤放=True；forced（log 說沒擋）→BLOCK→forced／域外誤放=False
+    【j】R6：t17r2_dataset_manifest 的 --dry 接線（run(dry_path=…)、main()）
+      ✅ (j-1) run(dry_path=第二個乾聲) → manifest dry.path／dry.sha256 等於該檔：rc=0, dry={'path': 'assets/dry/my_voice.wav', 'sha256': '815bdc3e43afa8efcf1f71f80cfc25bb49e81bc93e07e4aec8c132b5b89f7d3a'}
+      ✅ (j-2) 未給 dry_path → manifest dry 仍是 assets/dry/clap_synth.wav（原行為不變）：rc=0, dry={'path': 'assets/dry/clap_synth.wav', 'sha256': '800ad29a1a7a7c3afb28e9a8c31cd6dfa52c3cc45c07745ce516afeaecfe7856'}
+      ✅ (j-3) main() --dry some/voice.wav → run() 收到 dry_path == Path('some/voice.wav')：dry_path=PosixPath('some/voice.wav')
+      ✅ (j-4) main() 未給 --dry → run() 收到 dry_path=None：kwargs={'legacy': False, 'photos_dir': None, 'out_path': None, 'dry_path': None}
+    【k】裁定 T-57-D：tables.md 錯誤放行率彙總（N／6N／可判／無法判／主率／上下界）
+      ✅ (k-1) 彙總行：N／6N／可判／無法判／主率／下界／上界＝測試端獨立重算（2／12／10／2／3/10=30%／3/12=25%／5/12=42%）：獨立重算 N/✅/❌/無法判=(2, 7, 3, 2)；彙總行缺：[]；標籤↔數值不符：[]；**錯誤放行率彙總**：被放行照片數 N＝2／總面數 6N＝12／可判面數 10／無法判面數 2／❌ 3；主率（❌÷可判面數）＝3/10（30%）；下界（❌÷6N，無法判全當對）＝3/12（25%）；上界（（❌＋無法判）÷6N，無法判全當錯）＝5/12（42%）
+      ✅ (k-2) tables.md 不含「分母固定 6」：tables.md 全文不得再出現「分母固定 6」
+      ✅ (k-3) 每張照片六面表下有「❌ x／可判 y／無法判 z（共 6）」：逐張計數行：['❌ 1／可判 5／無法判 1（共 6）', '❌ 2／可判 5／無法判 1（共 6）']；缺：[]
+      ✅ (k-4) 無來源面被判 ❌ 仍照列、算進分子與可判面數：無來源面照列、照判：'| west | carpet | 無 | gypsum_board | ❌ |' 在表中=True；k_a2(✅/❌/無法判)=(3, 2, 1)
+      ✅ (k-5) 可判面數 > 0 時不印「—（無可判面）」：**錯誤放行率彙總**：被放行照片數 N＝2／總面數 6N＝12／可判面數 10／無法判面數 2／❌ 3；主率（❌÷可判面數）＝3/10（30%）；下界（❌÷6N，無法判全當對）＝3/12（25%）；上界（（❌＋無法判）÷6N，無法判全當錯）＝5/12（42%）
+      ✅ (k-8) report_tables.run() 端到端：runs/<run>.log 末行 exit=1→表 5 印「1」；沒有 log→「未記錄」：report_tables.run() 端到端：表 5「預設路徑 exit」欄＝{'k_a1': '1', 'k_a2': '未記錄'}
+      ✅ (k-6) 可判＝0 → 含「—（無可判面）」、N／6N／無法判正確、彙總行不含「0%」：缺：[]；「主率」段以「＝—（無可判面）」結尾=True；含「0%」=False；**錯誤放行率彙總**：被放行照片數 N＝1／總面數 6N＝6／可判面數 0／無法判面數 6／❌ 0；主率（❌÷可判面數）＝—（無可判面）；下界（❌÷6N）＝0/6；上界（（❌＋無法判）÷6N）＝6/6（無可判面，不換算百分比）
+      ✅ (k-7) N＝0 → 含「錯誤放行率不適用（0 張放行）」、該行不含「0%」：命中行=['**錯誤放行率彙總**：錯誤放行率不適用（0 張放行）']
+    【l】小問題：--legacy 與 --photos-dir 互斥（exit 2）；repo 外路徑 → exit 1＋清楚訊息；repo 內相對路徑可用
+      ✅ (l-1) t17r2_dataset_manifest.py --legacy --photos-dir x → exit 2、stderr 含「不可」：returncode=2；stderr 末行='t17r2_dataset_manifest.py: error: --legacy 固定使用 assets/photos/，不可與 --photos-dir 併用'
+      ✅ (l-2) t17r2_blind_test.py --legacy --photos-dir x → exit 2、stderr 含「不可」：returncode=2；stderr 末行='t17r2_blind_test.py: error: --legacy 固定使用 assets/photos/，不可與 --photos-dir 併用'
+      ✅ (l-3) manifest --photos-dir 在 repo 外 → exit 1、訊息含「必須位於 repo 內…」、無例外、不寫檔：rc=1；已寫出=False；stderr='❌ 無法產生 DATASET_MANIFEST.json：\n   - --photos-dir 必須位於 repo 內：manifest 只記 repo 相對路徑（收到 /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/outside_photos；repo＝/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/isolated_repo）'
+      ✅ (l-4) manifest --dry 在 repo 外 → exit 1、訊息含「必須位於 repo 內…」與「--dry」、無例外、不寫檔：rc=1；已寫出=False；stderr='❌ 無法產生 DATASET_MANIFEST.json：\n   - --dry 必須位於 repo 內：manifest 只記 repo 相對路徑（收到 /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/outside_dry.wav；repo＝/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/isolated_repo）'
+      ✅ (l-5) blind_test --photos-dir 在 repo 外 → exit 1、訊息含「必須位於 repo 內…」、不產生樣本：rc=1；已產生樣本=False；stderr='❌ --photos-dir 必須位於 repo 內：manifest 只記 repo 相對路徑（收到 /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/outside_photos；repo＝/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/isolated_repo）'
+      ✅ (l-6) manifest 的 --photos-dir／--dry 給 repo 內相對路徑 → exit 0、記 repo 相對路徑：rc=0；stderr=''；paths=['assets/photos_heldout/heldout_bathroom.png', 'assets/photos_heldout/heldout_living.png']…
+      ✅ (l-7) CLI：t17r2_dataset_manifest.py --photos-dir <repo 外> → exit 1、訊息清楚、無 Traceback：returncode=1；Traceback=False；stderr 末行='   - --photos-dir 必須位於 repo 內：manifest 只記 repo 相對路徑（收到 /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/outs'
+      ✅ (l-8) CLI：t17r2_dataset_manifest.py --dry <repo 外> → exit 1、訊息清楚、無 Traceback：returncode=1；Traceback=False；stderr 末行='   - --dry 必須位於 repo 內：manifest 只記 repo 相對路徑（收到 /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/outside_dry'
+      ✅ (l-9) CLI：t17r2_blind_test.py --photos-dir <repo 外> → exit 1、訊息清楚、無 Traceback：returncode=1；Traceback=False；stderr 末行='❌ --photos-dir 必須位於 repo 內：manifest 只記 repo 相對路徑（收到 /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/outside'
+      ✅ (l-10) run() 層 legacy=True 與自訂 photos_dir 並存（manifest、blind_test 都是；只有 CLI 互斥）：manifest(legacy=True, photos_dir=自訂目錄)：errs=[]、路徑=['assets/photos_legacy_custom/bathroom_tiled.png']…；blind_test.run(legacy=True, photos_dir=…) rc=0
+      ✅ (l-11) blind_test.run() 給 repo 內相對 photos_dir（cwd＝repo）→ exit 0（不得被「repo 內」檢查擋死）：rc=0；stderr=''
+      ✅ (l-12) manifest --dry 指到 repo 內的「目錄」→ exit 1、訊息清楚、不寫檔、無例外：rc=1；已寫出=False；stderr='❌ 無法產生 DATASET_MANIFEST.json：\n   - 找不到乾聲檔（或不是檔案）：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpsmci1tat/isolated_repo/assets/dry'
+      ✅ (l-13) manifest 與 blind_test 對「在 repo 內」判定一致（符號連結／迴圈／.. 逃逸／相對路徑），且都不丟例外：8 種路徑；(manifest, blind_test, 預期) 不一致或不符：{}
+    【m】不得回歸：樣本＝來源 wet_preview 逐位元複製；--dry（44.1k）重採樣至 48k；manifest 兩次寫檔逐位元相同且無時間戳
+      ✅ (m-1) 未給 --dry：5 個 sample_N.wav 與來源 wet_preview.wav 逐位元相同：未給 --dry：5 個 sample_N.wav 與各自來源 wet_preview.wav 逐位元相同；不符=[]
+      ✅ (m-2) --dry（44.1k 乾聲）可跑，樣本重採樣至 48k、非靜音、MANIFEST 記該乾聲 sha256：rc=0；sample_1.wav 取樣率=48000、38399 取樣點、峰值=0.891；MANIFEST dry.sha256 相符=True；stderr=''
+      ✅ (m-3) manifest 經 run() 寫檔兩次逐位元相同、無時間戳：rc=0,0；經 run() 寫檔兩次逐位元相同=True；含時間戳樣式=False
+      ✅ (m-4) SHUFFLE_SEED 仍是 20260916：20260916
+    
+    ✅ 全部通過
+    EXIT=0
+    # END T57F1-R1-D-RESTORED
+    ```
+       結論⑤：74 條斷言全 ✅、`EXIT=0`；`grep -n "a-4\|突變" scripts/test_t17r2_tools.py` 為空（輸出見「自我檢查 5」）。
+  - **自我檢查 3：「tables.md 的分母文字與計算一致」測試斷言**：(k-1)…(k-8) 存在且通過（逐條原文見上 ⑤ 輸出）——(k-1) 彙總行的 N／6N／可判／無法判／主率／下界／上界＝測試端從輸入**獨立重算**（2／12／10／2／3/10=30%／3/12=25%／5/12=42%）並逐一綁定「標籤↔數值」；(k-2) 全文不含「分母固定 6」；(k-4) 無來源面被判 ❌ 仍在分子與可判面數內；(k-6) 可判＝0、(k-7) N＝0 不印 0%。
+    診斷力：對這幾條各做了突變（主率分母改 6N／主率與下界互換／上下界互換／無來源面不計／unknown 當 ❌／彙總行加回「分母固定 6」／可判＝0 或 N＝0 分支加印 0%），全部被 (k-*) 抓到（見「額外的獨立複審」）。
+  - **自我檢查 4（鐵則 5 第一類：修 bug 的新測試必須在舊碼 fail）**：`git worktree add` 在 scratchpad 建 `4d4f63b` 的 worktree → 把**新版** `test_t17r2_tools.py` 複製進該 worktree 的 `scripts/` → 在該 worktree 跑 → `git worktree remove`：
+    ```
+    $ SP=/private/tmp/claude-501/-Users-musicersho-Image-Reverb/6b7ffd69-17ef-4d28-9e73-5f7cf57d3a2d/scratchpad
+    $ git worktree list
+    # BEGIN T57F1-SC4-A-LIST
+    /Users/musicersho/Image Reverb                                              aa13c55 [main]
+    /Users/musicersho/Image Reverb/.claude/worktrees/compassionate-boyd-1380a7  4d4f63b [claude/compassionate-boyd-1380a7]
+    # END T57F1-SC4-A-LIST
+    $ git worktree add "$SP/t57_old" 4d4f63b; echo "add_exit=$?"
+    # BEGIN T57F1-SC4-B-ADD
+    Preparing worktree (detached HEAD 4d4f63b)
+    HEAD is now at 4d4f63b T-57: 完成 R2 工具（待驗證）
+    add_exit=0
+    # END T57F1-SC4-B-ADD
+    $ cp scripts/test_t17r2_tools.py "$SP/t57_old/scripts/test_t17r2_tools.py"
+    $ ( cd "$SP/t57_old" && python scripts/test_t17r2_tools.py 2>&1; echo "EXIT=$?" )
+    # BEGIN T57F1-SC4-C-OLDCODE
+    ❌ 溯源驗證失敗（可能拿舊產物驗收新程式，或環境已變更）：
+       - heldout_test_c：git_revision 不符：來源產物生成於 '0000000000000000000000000000000000000000'，盲測當下主 repo HEAD 是 '6e016165182963dba19c2337c298d79a23f6805e'（拿舊碼產物驗收新碼，或反過來，必須重生）
+    ❌ 輸出目錄已有 sample_*.wav，拒絕覆寫（首跑即最終，沒有 --force）：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpisqbjjvk/isolated_repo/output/run_d/blind_test
+    ❌ 無法產生 DATASET_MANIFEST.json：
+       - git status --porcelain -- src data scripts 非空：工作樹不乾淨，不得鎖定資料集（先 commit 或還原）
+    【a】provenance 全部相符 → t17r2_blind_test 5 張 exit 0
+    ✅ 盲聽素材：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpisqbjjvk/isolated_repo/output/mvp_acceptance_r2/blind_test/（5 組，檔名不洩露答案）
+       作答表：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpisqbjjvk/isolated_repo/output/mvp_acceptance_r2/blind_test/作答表.md
+       答案鍵：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpisqbjjvk/isolated_repo/output/mvp_acceptance_r2/blind_test_ANSWERS.json（作答前請勿打開）
+      ✅ (a-1) exit 0：rc=0
+      ✅ (a-2) generated_from 5 筆：n=5
+      ✅ (a-3) forced_low_confidence 逐筆等於樁 analysis.json：[('heldout_bathroom', False), ('heldout_living', True), ('heldout_hall', False), ('heldout_corridor', True), ('heldout_car', False)]
+    【b】SHUFFLE_SEED：同 seed 兩次相同、與 T-17 舊 seed（20260830）不同
+      ✅ (b-1) R2 種子不是 T-17 種子：20260916
+      ✅ (b-2) 同 seed 兩次打亂順序相同：[1, 2, 4, 3, 0] vs [1, 2, 4, 3, 0]
+      ✅ (b-3) 與 T-17 舊 seed 順序不同：[1, 2, 4, 3, 0] vs [2, 4, 3, 1, 0]
+    ✅ 盲聽素材：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpisqbjjvk/isolated_repo/output/run_b1/blind_test/（5 組，檔名不洩露答案）
+       作答表：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpisqbjjvk/isolated_repo/output/run_b1/blind_test/作答表.md
+       答案鍵：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpisqbjjvk/isolated_repo/output/run_b1/blind_test_ANSWERS.json（作答前請勿打開）
+    ✅ 盲聽素材：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpisqbjjvk/isolated_repo/output/run_b2/blind_test/（5 組，檔名不洩露答案）
+       作答表：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpisqbjjvk/isolated_repo/output/run_b2/blind_test/作答表.md
+       答案鍵：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpisqbjjvk/isolated_repo/output/run_b2/blind_test_ANSWERS.json（作答前請勿打開）
+      ✅ (b-4) 實際跑兩次 blind_test，答案順序一致：['heldout_living', 'heldout_hall', 'heldout_car', 'heldout_corridor', 'heldout_bathroom'] vs ['heldout_living', 'heldout_hall', 'heldout_car', 'heldout_corridor', 'heldout_bathroom']
+    【c】provenance 不符（git_revision 記舊 commit）→ exit 1
+      ✅ (c) provenance 不符 → exit 非 0：rc=1
+    【d】輸出目錄已有 sample_*.wav → exit 1，拒絕覆寫
+    ✅ 盲聽素材：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpisqbjjvk/isolated_repo/output/run_d/blind_test/（5 組，檔名不洩露答案）
+       作答表：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpisqbjjvk/isolated_repo/output/run_d/blind_test/作答表.md
+       答案鍵：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpisqbjjvk/isolated_repo/output/run_d/blind_test_ANSWERS.json（作答前請勿打開）
+      ✅ (d-1) 首次產生 exit 0：rc=0
+      ✅ (d-2) 再次呼叫同一目錄 → exit 非 0：rc=1
+      ✅ (d-3) 檔案內容未被覆寫：39a6044165e380ccb6310dd20339d2a9fc227dc2cac8adf08eac3ab18298ee4b vs 39a6044165e380ccb6310dd20339d2a9fc227dc2cac8adf08eac3ab18298ee4b
+    【e】合成 rt60_table.json → t17r2_report_tables 表 2／表 5
+    已寫入 /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpisqbjjvk/isolated_repo/output/mvp_acceptance_r2/tables.md（53 行）
+      ✅ (e-1) exit 0：rc=0
+      ✅ (e-2) forced run（gym_stem）不進自動組小計 —— 自動組小計為 0/0：應出現自動組 0/0 小計行（唯一候選是 forced，被排除）
+      ✅ (e-3) coverage = 0/1（1 個 in-domain 場地，沒有真正 auto 通過）：### 表 1　完整誤差表：8 場地 ×（6 頻段 ＋ 低頻聯合帶）
+    
+    誤差 =（生成 IR 量測 T30 − 真實 IR 量測 T30）/ 真實。✅ = 誤差 ≤20%；❌ = 超差；🟡 = 對多檔中位數超差但落在該場地多條真實 IR 的區間內。
+    
+    | 場地 | 路徑 | dims_source | group | forced | 125Hz | 250Hz | **500Hz** | **1
+      ✅ (e-4) steinman（域外、auto、未 forced、通過）被標「域外誤放」：應出現該列且標 ⚠️ 是
+      ✅ (e-5) gym（in-domain、forced）不標域外誤放：應出現該列且標 否
+    【f】t17r2_dataset_manifest：sha256、domain、dirty、可重現、--legacy
+      ✅ (f-1) 建置成功、無錯誤：errs=[]
+      ✅ (f-2) heldout_bathroom sha256 正確：
+      ✅ (f-3) domain：bathroom 3x2x2.4（≤10m）→ in：in
+      ✅ (f-4) domain：hall 20x15x8（>10m）→ out：out
+      ✅ (f-5) domain：車內固定 → non_room（不看尺寸）：non_room
+      ✅ (f-6) 同一輸入重跑兩次逐位元相同：
+      ✅ (f-7) 工作樹 dirty（scripts/ 未 commit）→ exit 1：rc=1
+      ✅ (f-8) --legacy 建置成功：errs=[]
+      ✅ (f-9) --legacy → degraded: true：True
+      ✅ (f-10) legacy 車內仍固定 non_room：non_room
+      ✅ (f-11) legacy 無 GT 檔 → 其餘 unknown：unknown
+    【g】R3：t17r2_blind_test.main() 把 --photos-dir 接進 run(photos_dir=…)
+      ❌ (g-1) --photos-dir some/dir → run() 收到 photos_dir == Path('some/dir')：例外：SystemExit: 2
+      ❌ (g-2) 未給 --photos-dir → run() 收到 photos_dir=None：kwargs={'legacy': False, 'dry_path': None}
+    【h】R4：t17r2_rt60_table.run() 缺 manifest／缺場地 key → exit 1，不寫 rt60_table.json
+      ❌ (h-1) 無 DATASET_MANIFEST.json → exit 1、不寫 rt60_table.json、stderr＝「找不到 …DATASET_MANIFEST.json，請先跑 scripts/t17r2_dataset_manifest.py」：rc=0, rt60_table.json 已寫出=True, 訊息含「找不到…DATASET_MANIFEST…請先跑 scripts/t17r2_dataset_manifest.py」=False, stderr=''
+      ❌ (h-2) manifest 缺該場地 key → exit 1、列出缺的 key、不寫 rt60_table.json：rc=0, rt60_table.json 已寫出=True, stderr=''
+      ❌ (h-3) manifest 齊全 → exit 0；兩場地 in_domain 各照 manifest（True／False）；gate 讀 <run>.log（不讀 .forced.log）：例外：KeyError: 'exit_marker_consistent'
+      ❌ (h-4) manifest 有場地 key 但缺 in_domain 欄位 → exit 1（不得靜默當 False）、不寫表：rc=0, rt60_table.json 已寫出=True, stderr=''
+      ❌ (h-5) manifest 壞 JSON／空檔／非 dict／venues 為 null → exit 1、訊息提到 DATASET_MANIFEST、不寫表、無例外：例外：JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+    【i】R5：parse_gate_log() 回報真實結束碼（log 末行 exit=<整數>）；表 5 印「預設路徑 exit」
+      ❌ (i-1) 擋下標記＋末行 exit=3 → default_exit 3、blocked True、consistent True：例外：KeyError: 'exit_marker_consistent'
+      ❌ (i-2) Traceback＋末行 exit=1 → default_exit 1（不是 0）、blocked False：{'default_exit': 0, 'blocked': False, 'override_dims_guidance': False}
+      ❌ (i-3) 無 exit 行 → default_exit None、consistent None：{'default_exit': 0, 'blocked': False, 'override_dims_guidance': False}
+      ❌ (i-4) 擋下標記＋末行 exit=0 → consistent False：{'default_exit': 3, 'blocked': True, 'override_dims_guidance': False}
+      ✅ (i-5) log 不存在→None；只有 <run>.forced.log 也→None（不讀 forced log）：不存在→None；只有 .forced.log→None
+      ❌ (i-6) 只認最後一個非空行的 exit=（中間的不算、多行取末行）：中間的 exit= 不算→0；兩行 exit= 取末行→0
+      ❌ (i-7) 表 5 表頭有「預設路徑 exit」欄：| 照片 | domain | gate | forced | override-dims 導引 | 域外誤放？ |
+      ❌ (i-8) 表 5：exit=3→「3」、exit=1→「1」、無 exit 行→「未記錄」、不一致→「0 ⚠️…」（每個 run 旁另有 exit=0 的 .forced.log，不得被讀到）：{'gate_i': '否', 'gate_ii': '否', 'gate_iii': '否', 'gate_iv': '否'}
+      ❌ (i-9) 嚴格度：exit=3junk／全形數字／EXIT=3／行尾空白／\x0b／process exit=3→None；exit=-1→-1；檔尾空行、CRLF→照取：9 種變體；(實得, 預期) 不符：{'exit=3junk\n': (0, None), 'exit=-1\n': (0, -1), 'exit=3\n\n  \n\n': (0, 3), 'Traceback…\r\nexit=3\r\n': (0, 3), 'exit=３\n': (0, None), 'EXIT=3\n': (0, None), 'exit=3 \n': (0, None), 'exit=3\x0b\n': (0, None), 'process exit=3\n': (0, None)}
+      ❌ (i-10) 末行不是 exit= 時：override_dims_guidance 仍照 log 內容、default_exit＝None：{'default_exit': 0, 'blocked': False, 'override_dims_guidance': True}
+      ✅ (i-11) gate_result／域外誤放只依 forced_low_confidence（log 說被擋／沒擋都不改變判定）：未 forced（log 說被擋）→PASS／域外誤放=True；forced（log 說沒擋）→BLOCK→forced／域外誤放=False
+    【j】R6：t17r2_dataset_manifest 的 --dry 接線（run(dry_path=…)、main()）
+      ❌ (j-1) run(dry_path=第二個乾聲) → manifest dry.path／dry.sha256 等於該檔：例外：TypeError: run() got an unexpected keyword argument 'dry_path'
+      ✅ (j-2) 未給 dry_path → manifest dry 仍是 assets/dry/clap_synth.wav（原行為不變）：rc=0, dry={'path': 'assets/dry/clap_synth.wav', 'sha256': '800ad29a1a7a7c3afb28e9a8c31cd6dfa52c3cc45c07745ce516afeaecfe7856'}
+      ❌ (j-3) main() --dry some/voice.wav → run() 收到 dry_path == Path('some/voice.wav')：例外：SystemExit: 2
+      ❌ (j-4) main() 未給 --dry → run() 收到 dry_path=None：kwargs={'legacy': False, 'photos_dir': None, 'out_path': None}
+    【k】裁定 T-57-D：tables.md 錯誤放行率彙總（N／6N／可判／無法判／主率／上下界）
+      ❌ (k-1) 彙總行：N／6N／可判／無法判／主率／下界／上界＝測試端獨立重算（2／12／10／2／3/10=30%／3/12=25%／5/12=42%）：獨立重算 N/✅/❌/無法判=(2, 7, 3, 2)；彙總行缺：['N＝2', '6N＝12', '可判面數 10', '無法判面數 2', '3/12（25%）', '5/12（42%）', 'N＝2', '6N＝12', '可判面數 10', '無法判面數 2', '3/12（25%）', '5/12（42%）']；標籤↔數值不符：['主率', '下界', '上界']；**錯誤放行率彙總**：3/10（30%）——分母固定 6／張，GT 缺或 `unknown` 的面標「無法判」不進分子分母。
+      ❌ (k-2) tables.md 不含「分母固定 6」：tables.md 全文不得再出現「分母固定 6」
+      ❌ (k-3) 每張照片六面表下有「❌ x／可判 y／無法判 z（共 6）」：逐張計數行：['❌ 1／可判 5／無法判 1（共 6）', '❌ 2／可判 5／無法判 1（共 6）']；缺：['❌ 1／可判 5／無法判 1（共 6）', '❌ 2／可判 5／無法判 1（共 6）']
+      ✅ (k-4) 無來源面被判 ❌ 仍照列、算進分子與可判面數：無來源面照列、照判：'| west | carpet | 無 | gypsum_board | ❌ |' 在表中=True；k_a2(✅/❌/無法判)=(3, 2, 1)
+      ✅ (k-5) 可判面數 > 0 時不印「—（無可判面）」：**錯誤放行率彙總**：3/10（30%）——分母固定 6／張，GT 缺或 `unknown` 的面標「無法判」不進分子分母。
+      ❌ (k-8) report_tables.run() 端到端：runs/<run>.log 末行 exit=1→表 5 印「1」；沒有 log→「未記錄」：report_tables.run() 端到端：表 5「預設路徑 exit」欄＝{'k_a1': '否', 'k_a2': '否'}
+      ❌ (k-6) 可判＝0 → 含「—（無可判面）」、N／6N／無法判正確、彙總行不含「0%」：缺：['N＝1', '6N＝6', '可判面數 0', '無法判面數 6', '—（無可判面）']；「主率」段以「＝—（無可判面）」結尾=False；含「0%」=False；**錯誤放行率彙總**：0/0（—）——分母固定 6／張，GT 缺或 `unknown` 的面標「無法判」不進分子分母。
+      ❌ (k-7) N＝0 → 含「錯誤放行率不適用（0 張放行）」、該行不含「0%」：命中行=[]
+    【l】小問題：--legacy 與 --photos-dir 互斥（exit 2）；repo 外路徑 → exit 1＋清楚訊息；repo 內相對路徑可用
+      ❌ (l-1) t17r2_dataset_manifest.py --legacy --photos-dir x → exit 2、stderr 含「不可」：returncode=1；stderr 末行='   - git status --porcelain -- src data scripts 非空：工作樹不乾淨，不得鎖定資料集（先 commit 或還原）'
+      ❌ (l-2) t17r2_blind_test.py --legacy --photos-dir x → exit 2、stderr 含「不可」：returncode=2；stderr 末行='t17r2_blind_test.py: error: unrecognized arguments: --photos-dir no_such_dir'
+      ❌ (l-3) manifest --photos-dir 在 repo 外 → exit 1、訊息含「必須位於 repo 內…」、無例外、不寫檔：例外：ValueError: '/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpisqbjjvk/outside_photos/heldout_bathroom.png' is not in the subpath of '/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpisqbjjvk/isolated_repo' OR one path is relative and the other is absolute.
+      ❌ (l-4) manifest --dry 在 repo 外 → exit 1、訊息含「必須位於 repo 內…」與「--dry」、無例外、不寫檔：例外：TypeError: run() got an unexpected keyword argument 'dry_path'
+      ❌ (l-5) blind_test --photos-dir 在 repo 外 → exit 1、訊息含「必須位於 repo 內…」、不產生樣本：rc=1；已產生樣本=False；stderr="❌ 溯源驗證失敗（可能拿舊產物驗收新程式，或環境已變更）：\n   - heldout_bathroom：git_revision 不符：來源產物生成於 '6e016165182963dba19c2337c298d79a23f6805e'，盲測當下主 repo HEAD 是 'e5ca724c6d95bef95161297fc4eadb4da962c9f2'（拿舊碼產物驗收新碼，或反過來，必須重生）\n   - heldout_living：git_revision 不符：來源產物生成於 '6e016165182963dba19c2337c298d79a23f6805e'，盲測當下主 repo HEAD 是 'e5ca724c6d95bef95161297fc4eadb4da962c9f2'（拿舊碼產物驗收新碼，或反過來，必須重生）\n   - heldout_hall：git_revision 不符：來源產物生成於 '6e016165182963dba19c2337c298d79a23f6805e'，盲測當下主 repo HEAD 是 'e5ca724c6d95bef95161297fc4eadb4da962c9f2'（拿舊碼產物驗收新碼，或反過來，必須重生）\n   - heldout_corridor：git_revision 不符：來源產物生成於 '6e016165182963dba19c2337c298d79a23f6805e'，盲測當下主 repo HEAD 是 'e5ca724c6d95bef95161297fc4eadb4da962c9f2'（拿舊碼產物驗收新碼，或反過來，必須重生）\n   - heldout_car：git_revision 不符：來源產物生成於 '6e016165182963dba19c2337c298d79a23f6805e'，盲測當下主 repo HEAD 是 'e5ca724c6d95bef95161297fc4eadb4da962c9f2'（拿舊碼產物驗收新碼，或反過來，必須重生）"
+      ❌ (l-6) manifest 的 --photos-dir／--dry 給 repo 內相對路徑 → exit 0、記 repo 相對路徑：例外：TypeError: run() got an unexpected keyword argument 'dry_path'
+      ❌ (l-7) CLI：t17r2_dataset_manifest.py --photos-dir <repo 外> → exit 1、訊息清楚、無 Traceback：returncode=1；Traceback=False；stderr 末行='   - git status --porcelain -- src data scripts 非空：工作樹不乾淨，不得鎖定資料集（先 commit 或還原）'
+      ❌ (l-8) CLI：t17r2_dataset_manifest.py --dry <repo 外> → exit 1、訊息清楚、無 Traceback：returncode=2；Traceback=False；stderr 末行='t17r2_dataset_manifest.py: error: unrecognized arguments: --dry /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpisqb'
+      ❌ (l-9) CLI：t17r2_blind_test.py --photos-dir <repo 外> → exit 1、訊息清楚、無 Traceback：returncode=2；Traceback=False；stderr 末行='t17r2_blind_test.py: error: unrecognized arguments: --photos-dir /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpisq'
+      ✅ (l-10) run() 層 legacy=True 與自訂 photos_dir 並存（manifest、blind_test 都是；只有 CLI 互斥）：manifest(legacy=True, photos_dir=自訂目錄)：errs=[]、路徑=['assets/photos_legacy_custom/bathroom_tiled.png']…；blind_test.run(legacy=True, photos_dir=…) rc=0
+      ✅ (l-11) blind_test.run() 給 repo 內相對 photos_dir（cwd＝repo）→ exit 0（不得被「repo 內」檢查擋死）：rc=0；stderr=''
+      ❌ (l-12) manifest --dry 指到 repo 內的「目錄」→ exit 1、訊息清楚、不寫檔、無例外：例外：TypeError: run() got an unexpected keyword argument 'dry_path'
+      ❌ (l-13) manifest 與 blind_test 對「在 repo 內」判定一致（符號連結／迴圈／.. 逃逸／相對路徑），且都不丟例外：例外：AttributeError: module 't17r2_dataset_manifest' has no attribute '_repo_relative'
+    【m】不得回歸：樣本＝來源 wet_preview 逐位元複製；--dry（44.1k）重採樣至 48k；manifest 兩次寫檔逐位元相同且無時間戳
+      ✅ (m-1) 未給 --dry：5 個 sample_N.wav 與來源 wet_preview.wav 逐位元相同：未給 --dry：5 個 sample_N.wav 與各自來源 wet_preview.wav 逐位元相同；不符=[]
+      ✅ (m-2) --dry（44.1k 乾聲）可跑，樣本重採樣至 48k、非靜音、MANIFEST 記該乾聲 sha256：rc=0；sample_1.wav 取樣率=48000、38399 取樣點、峰值=0.891；MANIFEST dry.sha256 相符=True；stderr=''
+      ✅ (m-3) manifest 經 run() 寫檔兩次逐位元相同、無時間戳：rc=0,0；經 run() 寫檔兩次逐位元相同=True；含時間戳樣式=False
+      ✅ (m-4) SHUFFLE_SEED 仍是 20260916：20260916
+    
+    ❌ 36 項失敗：["(g-1) --photos-dir some/dir → run() 收到 photos_dir == Path('some/dir')", '(g-2) 未給 --photos-dir → run() 收到 photos_dir=None', '(h-1) 無 DATASET_MANIFEST.json → exit 1、不寫 rt60_table.json、stderr＝「找不到 …DATASET_MANIFEST.json，請先跑 scripts/t17r2_dataset_manifest.py」', '(h-2) manifest 缺該場地 key → exit 1、列出缺的 key、不寫 rt60_table.json', '(h-3) manifest 齊全 → exit 0；兩場地 in_domain 各照 manifest（True／False）；gate 讀 <run>.log（不讀 .forced.log）', '(h-4) manifest 有場地 key 但缺 in_domain 欄位 → exit 1（不得靜默當 False）、不寫表', '(h-5) manifest 壞 JSON／空檔／非 dict／venues 為 null → exit 1、訊息提到 DATASET_MANIFEST、不寫表、無例外', '(i-1) 擋下標記＋末行 exit=3 → default_exit 3、blocked True、consistent True', '(i-2) Traceback＋末行 exit=1 → default_exit 1（不是 0）、blocked False', '(i-3) 無 exit 行 → default_exit None、consistent None', '(i-4) 擋下標記＋末行 exit=0 → consistent False', '(i-6) 只認最後一個非空行的 exit=（中間的不算、多行取末行）', '(i-7) 表 5 表頭有「預設路徑 exit」欄', '(i-8) 表 5：exit=3→「3」、exit=1→「1」、無 exit 行→「未記錄」、不一致→「0 ⚠️…」（每個 run 旁另有 exit=0 的 .forced.log，不得被讀到）', '(i-9) 嚴格度：exit=3junk／全形數字／EXIT=3／行尾空白／\\x0b／process exit=3→None；exit=-1→-1；檔尾空行、CRLF→照取', '(i-10) 末行不是 exit= 時：override_dims_guidance 仍照 log 內容、default_exit＝None', '(j-1) run(dry_path=第二個乾聲) → manifest dry.path／dry.sha256 等於該檔', "(j-3) main() --dry some/voice.wav → run() 收到 dry_path == Path('some/voice.wav')", '(j-4) main() 未給 --dry → run() 收到 dry_path=None', '(k-1) 彙總行：N／6N／可判／無法判／主率／下界／上界＝測試端獨立重算（2／12／10／2／3/10=30%／3/12=25%／5/12=42%）', '(k-2) tables.md 不含「分母固定 6」', '(k-3) 每張照片六面表下有「❌ x／可判 y／無法判 z（共 6）」', '(k-8) report_tables.run() 端到端：runs/<run>.log 末行 exit=1→表 5 印「1」；沒有 log→「未記錄」', '(k-6) 可判＝0 → 含「—（無可判面）」、N／6N／無法判正確、彙總行不含「0%」', '(k-7) N＝0 → 含「錯誤放行率不適用（0 張放行）」、該行不含「0%」', '(l-1) t17r2_dataset_manifest.py --legacy --photos-dir x → exit 2、stderr 含「不可」', '(l-2) t17r2_blind_test.py --legacy --photos-dir x → exit 2、stderr 含「不可」', '(l-3) manifest --photos-dir 在 repo 外 → exit 1、訊息含「必須位於 repo 內…」、無例外、不寫檔', '(l-4) manifest --dry 在 repo 外 → exit 1、訊息含「必須位於 repo 內…」與「--dry」、無例外、不寫檔', '(l-5) blind_test --photos-dir 在 repo 外 → exit 1、訊息含「必須位於 repo 內…」、不產生樣本', '(l-6) manifest 的 --photos-dir／--dry 給 repo 內相對路徑 → exit 0、記 repo 相對路徑', '(l-7) CLI：t17r2_dataset_manifest.py --photos-dir <repo 外> → exit 1、訊息清楚、無 Traceback', '(l-8) CLI：t17r2_dataset_manifest.py --dry <repo 外> → exit 1、訊息清楚、無 Traceback', '(l-9) CLI：t17r2_blind_test.py --photos-dir <repo 外> → exit 1、訊息清楚、無 Traceback', '(l-12) manifest --dry 指到 repo 內的「目錄」→ exit 1、訊息清楚、不寫檔、無例外', '(l-13) manifest 與 blind_test 對「在 repo 內」判定一致（符號連結／迴圈／.. 逃逸／相對路徑），且都不丟例外']
+    EXIT=1
+    # END T57F1-SC4-C-OLDCODE
+    $ git worktree remove --force "$SP/t57_old"; echo "remove_exit=$?"; git worktree list
+    # BEGIN T57F1-SC4-D-REMOVE
+    remove_exit=0
+    /Users/musicersho/Image Reverb                                              aa13c55 [main]
+    /Users/musicersho/Image Reverb/.claude/worktrees/compassionate-boyd-1380a7  4d4f63b [claude/compassionate-boyd-1380a7]
+    # END T57F1-SC4-D-REMOVE
+    ```
+    結論：舊碼 `4d4f63b` 上 74 條斷言中 **36 條 ❌、38 條 ✅，`EXIT=1`**。36 條 ❌ 的新斷言：(g-1)(g-2)／(h-1)…(h-5)／(i-1)(i-2)(i-3)(i-4)(i-6)…(i-10)／(j-1)(j-3)(j-4)／(k-1)(k-2)(k-3)(k-6)(k-7)(k-8)／(l-1)…(l-9)(l-12)(l-13)——第 3～8 條每一項都至少有數條 ❌（R3：g-1／g-2；R4：h-1…h-5；R5：i-1…i-10；R6：j-1／j-3／j-4；第 7 條：k-1／k-2／k-3／k-6／k-7／k-8；第 8 條：l-1…l-9、l-12、l-13）。
+    **11 條新斷言在舊碼上仍 ✅，它們是「原行為不變」guard／新檢查的迴歸網，不是修正項的鑑別斷言，預期舊碼也過**：(i-5)（log 不存在→`None`，卡片明訂原行為不變）、(i-11)（`gate_result`／「域外誤放」只依 `forced_low_confidence`，Opus 已驗、不得回歸）、(j-2)（未給 `--dry` 仍是 `clap_synth.wav`，卡片明訂）、(k-4)（無來源面照列照判）、(k-5)（可判＞0 不印「—（無可判面）」）、
+    (l-10)（`run()` 層 `legacy=True` 與自訂 `photos_dir` 並存，卡片明訂保留）、(l-11)（blind_test 相對 `photos_dir` 不被新檢查擋死）、(m-1)…(m-4)（不得回歸項）。另 27 條是既有 (a)–(f) 斷言（含無編號的 (c)；舊碼當然 ✅）。R7「無來源面在分母內」真正的鑑別力在 (k-1)／(k-3)（舊碼 ❌），不在 (k-4)。
+    `git worktree remove --force` 只用在這個自建的 `$SP/t57_old`（新版測試檔放進去後該 worktree 有已修改的追蹤檔，不加 `--force` 會被拒）；前後 `git worktree list` 相同的只有既有的那一個 `compassionate-boyd-1380a7`（未動）。
+  - **自我檢查 5（只動「只得修改」清單的 5 個檔；`t17r2_common.py`／`t17r2_make_player.py` 零 diff）**：卡片字面式 `git diff --stat 4d4f63b..HEAD -- scripts/` 不可能只出現五檔（見「執行時的決定」8），以下改貼固定 commit 版；`aa13c55` 是本卡開工後的 HEAD（另一視窗的 docs commit，未動 `scripts/`）：
+    ```
+    $ git diff --stat aa13c55 -- scripts/
+    # BEGIN T57F1-SC5-A-HEAD
+     scripts/t17r2_blind_test.py       |  40 +-
+     scripts/t17r2_dataset_manifest.py |  82 +++-
+     scripts/t17r2_report_tables.py    |  89 ++++-
+     scripts/t17r2_rt60_table.py       |  76 +++-
+     scripts/test_t17r2_tools.py       | 812 +++++++++++++++++++++++++++++++++++++-
+     5 files changed, 1042 insertions(+), 57 deletions(-)
+    # END T57F1-SC5-A-HEAD
+    $ git diff --stat 4d4f63b aa13c55 -- scripts/
+    # BEGIN T57F1-SC5-B-4D4-AA1
+     scripts/t58_rt60_basis_probe.py | 871 ++++++++++++++++++++++++++++++++++++++++
+     1 file changed, 871 insertions(+)
+    # END T57F1-SC5-B-4D4-AA1
+    $ git diff --stat 4d4f63b -- scripts/
+    # BEGIN T57F1-SC5-C-4D4-WT
+     scripts/t17r2_blind_test.py       |  40 +-
+     scripts/t17r2_dataset_manifest.py |  82 +++-
+     scripts/t17r2_report_tables.py    |  89 +++-
+     scripts/t17r2_rt60_table.py       |  76 +++-
+     scripts/t58_rt60_basis_probe.py   | 871 ++++++++++++++++++++++++++++++++++++++
+     scripts/test_t17r2_tools.py       | 812 ++++++++++++++++++++++++++++++++++-
+     6 files changed, 1913 insertions(+), 57 deletions(-)
+    # END T57F1-SC5-C-4D4-WT
+    $ git diff --stat aa13c55 -- scripts/t17r2_common.py scripts/t17r2_make_player.py; echo "exit=$?"
+    # BEGIN T57F1-SC5-D-COMMON
+    exit=0
+    # END T57F1-SC5-D-COMMON
+    ```
+    結論：對 `aa13c55` 恰好只有本卡「只得修改」的 5 個檔；`4d4f63b`→`aa13c55` 之間 `scripts/` 唯一的變動是 T-58 的 `t58_rt60_basis_probe.py`（+871，屬 T-58，不是本卡）；兩者相加就是第三段的 6 個檔；`t17r2_common.py`／`t17r2_make_player.py` 零 diff（`exit=0`、無 diff 行）。
+    其他檢查（同樣依鐵則 17）：`(a-4)`／「突變」字樣已從測試檔清除；`default_exit` 全部出現處都只有解析與消費，沒有任何字串推測；`git worktree list` 最終狀態；`git status --short`（文件尚未編輯時的快照）；R2 未被觸發的證據：
+    ```
+    $ grep -n "a-4\|突變" scripts/test_t17r2_tools.py; echo "grep_exit=$?"
+    # BEGIN T57F1-SC5-F-GREP-A4
+    grep_exit=1
+    # END T57F1-SC5-F-GREP-A4
+    $ grep -rn "default_exit" scripts/t17r2_*.py | grep -v "^scripts/test_"
+    # BEGIN T57F1-SC5-G-GREP-EXIT
+    scripts/t17r2_report_tables.py:108:    （`default_exit`／`exit_marker_consistent`，T-57-F1 R5）；缺檔不影響判定，
+    scripts/t17r2_report_tables.py:120:        "default_exit": gate["default_exit"] if gate else None,
+    scripts/t17r2_report_tables.py:159:    code = it.get("default_exit")
+    scripts/t17r2_report_tables.py:436:                    "default_exit": None, "exit_marker_consistent": None,
+    scripts/t17r2_rt60_table.py:39:**`default_exit`＝CLI 真實結束碼（T-17-R2 步驟 2(e)，Fable 裁定選項 (i)）**：
+    scripts/t17r2_rt60_table.py:41:`^exit=(-?\\d+)$` 解析它；該行不存在或格式不符 → `default_exit: None`，表 5 印
+    scripts/t17r2_rt60_table.py:44:`exit_marker_consistent`＝`(default_exit == 3) == blocked`（`default_exit` 為
+    scripts/t17r2_rt60_table.py:72:    `default_exit` 只認最後一個非空行的 `exit=<整數>`；缺／格式不符 → `None`
+    scripts/t17r2_rt60_table.py:83:    default_exit = int(m.group(1)) if m else None
+    scripts/t17r2_rt60_table.py:85:        "default_exit": default_exit,
+    scripts/t17r2_rt60_table.py:87:        "exit_marker_consistent": None if default_exit is None else (default_exit == 3) == blocked,
+    # END T57F1-SC5-G-GREP-EXIT
+    $ git worktree list
+    # BEGIN T57F1-SC5-H-WT-FINAL
+    /Users/musicersho/Image Reverb                                              aa13c55 [main]
+    /Users/musicersho/Image Reverb/.claude/worktrees/compassionate-boyd-1380a7  4d4f63b [claude/compassionate-boyd-1380a7]
+    # END T57F1-SC5-H-WT-FINAL
+    $ git status --short
+    # BEGIN T57F1-SC5-E-STATUS
+     M scripts/t17r2_blind_test.py
+     M scripts/t17r2_dataset_manifest.py
+     M scripts/t17r2_report_tables.py
+     M scripts/t17r2_rt60_table.py
+     M scripts/test_t17r2_tools.py
+    ?? assets/t17r2_synthetic_candidates/heldout_bathroom.png
+    ?? assets/t17r2_synthetic_candidates/heldout_car.png
+    ?? assets/t17r2_synthetic_candidates/heldout_corridor.png
+    ?? assets/t17r2_synthetic_candidates/heldout_hall.png
+    ?? assets/t17r2_synthetic_candidates/heldout_living.png
+    # END T57F1-SC5-E-STATUS
+    $ ls -d output/mvp_acceptance_r2 assets/photos_heldout 2>&1
+    # BEGIN T57F1-SC5-I-R2-ABSENT
+    ls: assets/photos_heldout: No such file or directory
+    ls: output/mvp_acceptance_r2: No such file or directory
+    # END T57F1-SC5-I-R2-ABSENT
+    ```
+    結論：`grep` 無輸出（`grep_exit=1`）；`default_exit` 只在 `parse_gate_log()`（`t17r2_rt60_table.py:83` 起）解析、`build_item5()`／`_exit_cell()` 消費，沒有任何 `3 if …`／`else 0` 之類的推測；`.forced.log` 只出現在 docstring 與測試（`grep -rn "forced.log" scripts/t17r2_*.py` 的命中皆非解析呼叫）；
+       `git status --short`（文件尚未編輯時）只有 5 個 `M scripts/…` 加另一視窗的 5 個未追蹤 PNG；`output/mvp_acceptance_r2/` 與 `assets/photos_heldout/` 都不存在（R2 互鎖：T-17-R2 仍是「⬜ 可開跑」，未進入步驟 2，本卡 commit 可正常進行）。
+  - **不得回歸清單逐項**（有對應測試者以測試為證；原本無測試者補了 (m) 段或寫明怎麼確認）：
+    1. 既有 t17 四支＋`test_t17_provenance.py`／`src`／`data` 零 diff → 自我檢查 1(c)（兩式皆 `exit=0`）。
+    2. `SHUFFLE_SEED=20260916` → `t17r2_common.py` 零 diff（自我檢查 5）＋(b-1)、(m-4)。
+    3. 未給 `--dry` 時 5 個 `sample_N.wav` 與來源 `wet_preview.wav` 逐位元相同 → (m-1)（新增；原本無測試）。
+    4. `--dry`（44.1k）可跑並重採樣至 48k → (m-2)（新增；原本無測試）。
+    5. 拒絕覆寫既有樣本 → (d-1)(d-2)(d-3)。
+    6. manifest 同 HEAD 寫兩次逐位元相同、無時間戳 → (f-6)（dict 層）＋(m-3)（`run()` 寫檔層，新增）。
+    7. 測試全在系統暫存目錄、不碰真實 `output/` → 見「執行時的決定」6（(l-1)(l-2)(l-7)(l-8)(l-9) 對真實 repo 跑 CLI 的安全前提）＋自我檢查 1(d)(e)(f)（`ls output/`、`output/mvp_acceptance/` sha、`git status -- output`）。
+    8. `VENUE_KEY_TO_GT_NAME`／`VENUE_KEY_TO_MANUAL_KEY`／`MANUAL_DIMS` 數字與對照不變 → `t17r2_common.py` 零 diff（自我檢查 5）。
+    9. `in_domain` 寫死僅 `mit_gym`；domain 門檻用 `config.GEOMETRY_SCOPE_MAX_M` → `t17r2_common.py` 零 diff＋(f-3)(f-4)(f-5)。
+    10. 表 2 三組分列、forced 不進自動組、coverage 行 → (e-2)(e-3)（`t17r2_report_tables.py` 的 diff 只在檔頭 docstring、`build_item5()`、表 5 渲染與 `run()` 內「尚無自動路徑 run」的 dict，表 2 段程式沒動）。
+    11. `ground_truth_heldout.json` schema 不變 → `common.load_ground_truth_heldout()` 零 diff；`t17r2_report_tables.py` 讀 GT 的段落未動。
+  - **文件行層級檢查（共同鐵則 16(b)；基準＝`aa13c55`；輸出依鐵則 17 貼原文）**：
+    ```
+    $ diff <(git show aa13c55:TASKS.md | awk '/^### /{f=($2=="T-57")} f') <(awk '/^### /{f=($2=="T-57")} f' TASKS.md) | grep -E '^(<|[0-9,]+[cd][0-9,]+$)'
+    （輸出為空）
+    $ diff <(git show aa13c55:TASKS.md | awk '/^### /{f=($2=="T-57-F1")} f') <(awk '/^### /{f=($2=="T-57-F1")} f' TASKS.md) | grep -E '^(<|[0-9,]+[cd][0-9,]+$)'
+    # BEGIN T57F1-R16-B-T57F1
+    2,4c2,6
+    < - **狀態**：⬜ **可開跑**（Fable 2026-09-18 開卡；可與 T-58 平行——程式檔不相交，但 TASKS／DEV_LOG／HANDOFF／TODO 會同時被兩個視窗改：
+    <   commit 前先 `git status`，**只 `git add` 本卡列名的檔案**，不得把 `output/rt60_basis_probe/` 等 T-58 產物帶進本卡 commit）
+    < - **四軸狀態**：工程：未開始｜實驗：不適用（工具卡修正輪）｜產品：不適用｜MVP：不適用（T-17-R2 前置「T-57 ✅（工程）」要等本卡經 Opus 驗證通過才成立）
+    # END T57F1-R16-B-T57F1
+    $ git show aa13c55:TASKS.md | grep -E '^### ' | awk '{print $2}' | while read c; do n=$(diff <(git show aa13c55:TASKS.md | awk -v c=$c '/^### /{f=($2==c)} f') <(awk -v c=$c '/^### /{f=($2==c)} f' TASKS.md) | grep -cE '^[<>]'); [ "$n" != 0 ] && echo "$c"; done; echo "done"
+    # BEGIN T57F1-R16-C-CHANGED-CARDS
+    T-57
+    T-57-F1
+    done
+    # END T57F1-R16-C-CHANGED-CARDS
+    $ diff <(git show aa13c55:TASKS.md) TASKS.md | grep -E '^[0-9]' | sed -E 's/[acd].*//'
+    # BEGIN T57F1-R16-D-OLD-LINES
+    12475
+    12488,12490
+    12578
+    # END T57F1-R16-D-OLD-LINES
+    $ git show aa13c55:TASKS.md | grep -n -E '^### (T-57|T-57-F1|T-58) ' | cut -c1-32
+    # BEGIN T57F1-R16-E-CARD-STARTS
+    12332:### T-57 T-17-R2 工具前
+    12487:### T-57-F1 T-57 修正輪
+    12580:### T-58 調查卡：T-12 
+    # END T57F1-R16-E-CARD-STARTS
+    $ git diff -U0 aa13c55 -- DEV_LOG.md HANDOFF.md TODO.md | grep '^-[^-]'
+    （輸出為空）
+    ```
+    結論：T-57 卡對 `aa13c55` **零刪除行**（R2 更正是純新增行，第一個區塊輸出為空）；T-57-F1 卡只有「狀態」「四軸狀態」兩欄被改寫（`2,4c2,6`：舊 3 行＝狀態 2 行＋四軸 1 行，鐵則 16(c) 明訂的唯二例外；舊值都已留存在新行的「（原…，原字保留）」內）；
+    全檔只有 T-57 與 T-57-F1 兩張卡有差異（T-58／T-58-F1／T-58-F2／T-17-R2 等其餘各卡逐行相同）；所有差異的舊檔行號（12475、12488–12490、12578）都落在 T-57（12332–12486）與 T-57-F1（12487–12579）範圍內；DEV_LOG／HANDOFF／TODO 對 `aa13c55` 零刪除行（最後一個區塊輸出為空）。
+  - **T-57 原交接筆記／DEV_LOG (153)／HANDOFF 裡的「27 條斷言＋突變證明」**指的是已刪除的 (a-4) 假斷言；本輪測試共 74 條斷言（全 ✅），真實突變證據在上方「自我檢查 2」——原文未動（只追加），以本點為準。
+  - **背景調查 `task_14c97967`**：其前提（T-20／T-21 MD5 漂移）已由本卡 R2 再證為誤報。該 chip 是前一個 session 用 `spawn_task` 建立的，本視窗沒有它的控制權，**未在此撤銷**——使用者在 App 的背景任務清單直接關閉即可；若它已產出任何結論或 commit，一律不採用、回報 Fable。
+  - **下一步**：開 Opus 新視窗，依本卡「Opus 驗證重點」複驗（任務寫「T-57（含修正輪 T-57-F1）」）：對象＝T-57 全部交付物在本次收工 commit 的狀態；重做一次 R1 突變對照（備份→內容比對式改寫死 `False`→跑→`cp` 還原→`cmp`）；輸出含隨機暫存目錄名，重做只能比對「哪些斷言 ❌／EXIT」。
+    通過時 Opus 把 T-57 卡與本卡四軸同時改「工程：已驗證」，commit 訊息 `T-57: 驗證通過（工程）（含修正輪 T-57-F1）`（T-17-R2 步驟 0(a) 以此字樣查 `git log`）；再退回→Fable 開 T-57-F2。T-17-R2 仍等使用者 held-out 照片（另一視窗已生成 1448×1086 合成候選圖、未達 1920px，見 `assets/t17r2_synthetic_candidates/README.md`）。
 
 ### T-58 調查卡：T-12 v2-b 方向反轉——Sabine 目標 vs 幾何聲學參考 vs 產品合成路徑（Sonnet；只量不改；停滯期填充卡；不進關鍵路徑；前置＝T-56 ✅）
 - **狀態（Opus 驗證，2026-09-18；T-58＋修正輪 T-58-F1／T-58-F2 合併複驗；另起新行追加，下方 🟠 狀態欄為歷史 verdict、原字保留）**：✅ **工程已驗證**——Opus 5，審查 HEAD `1d5ca73`（工作樹乾淨、＝origin/main）。

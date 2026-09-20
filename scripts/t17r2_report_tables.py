@@ -14,9 +14,15 @@
 4. 手動尺寸來源依據（同 T-17 表 4，文字原文從 `t17_report_tables.MANUAL_DIMS_BASIS`
    搬過來，只換 run 名前綴，不重打內容）。
 5. **報告項 5**：13 張（5 held-out＋8 場地）逐張 gate 結果／forced／
-   `--override-dims` 導引有無／domain／「域外誤放」標記；每張**未 forced 通過**
-   的照片列六面材質表（材質 id／來源／GT／正誤，無來源面標「無」、GT 缺或
-   `unknown` 標「無法判」不進分子分母，分母固定 6）。
+   `--override-dims` 導引有無／domain／「域外誤放」標記／預設路徑 exit（讀
+   `runs/<run>.log` 末行 `exit=<整數>`；缺→「未記錄」；與「已擋下輸出」標記
+   不一致→⚠️）；每張**未 forced 通過**的照片列六面材質表（材質 id／來源／GT／
+   正誤；無來源面照列、照判）。**錯誤放行率口徑＝裁定 T-57-D**（T-17-R2 卡）：
+   每面三態 ✅／❌／「無法判」（只限 GT 缺或 GT `unknown`；GT `proxy: true` 照判）；
+   逐張一行「❌ x／可判 y／無法判 z（共 6）」；彙總行同列 N（被放行照片數）、
+   6N、可判面數、無法判面數，**主率＝❌÷可判面數**、**下界＝❌÷6N**、
+   **上界＝（❌＋無法判）÷6N**；可判面數＝0 → 主率印「—（無可判面）」，N＝0 →
+   印「錯誤放行率不適用（0 張放行）」，兩者都不得印 0%。
 """
 
 from __future__ import annotations
@@ -98,8 +104,9 @@ def build_item5(
     判定，不依賴 `<run>.log` 是否存在：`output/<run>/` 這個目錄存在本身就代表
     「最終有輸出」，唯一的問題只剩「是不是被擋過、靠 force 才輸出的」——這正是
     `forced_low_confidence` 要記的事。`<run>.log`（預設路徑那次的原始輸出）只用
-    來補「有沒有印出 --override-dims 導引」這個輔助細節，缺檔不影響判定，
-    避免「沒存到 log」把整張表判定弄壞。
+    來補輔助細節：「有沒有印出 --override-dims 導引」與表 5「預設路徑 exit」欄
+    （`default_exit`／`exit_marker_consistent`，T-57-F1 R5）；缺檔不影響判定，
+    避免「沒存到 log」把整張表判定弄壞。只讀 `<run>.log`，不讀 `<run>.forced.log`。
     """
     aj = _load_analysis(output_root, run_stem)
     gate = parse_gate_log(runs_log_dir / f"{run_stem}.log")
@@ -110,6 +117,8 @@ def build_item5(
         "gate_result": None,
         "forced": None,
         "override_dims_guidance": gate["override_dims_guidance"] if gate else None,
+        "default_exit": gate["default_exit"] if gate else None,
+        "exit_marker_consistent": gate["exit_marker_consistent"] if gate else None,
         "domain_leak": False,
         "faces": None,
         "status": "尚未產生" if aj is None else "已產生",
@@ -145,30 +154,47 @@ def build_item5(
     return item
 
 
+def _exit_cell(it: dict) -> str:
+    """表 5「預設路徑 exit」欄：整數（真實結束碼）或「未記錄」；與擋下標記不一致加 ⚠️。"""
+    code = it.get("default_exit")
+    if code is None:
+        return "未記錄"
+    if it.get("exit_marker_consistent") is False:
+        return f"{code} ⚠️（與「已擋下輸出」標記不一致）"
+    return str(code)
+
+
+def _ratio_text(numerator: int, denominator: int) -> str:
+    return f"{numerator}/{denominator}（{100.0 * numerator / denominator:.0f}%）"
+
+
 def render_item5_table(items: list[dict]) -> list[str]:
     L = []
-    L.append("| 照片 | domain | gate | forced | override-dims 導引 | 域外誤放？ |")
-    L.append("|---|---|---|---|---|---|")
+    L.append("| 照片 | domain | gate | forced | override-dims 導引 | 域外誤放？ | 預設路徑 exit |")
+    L.append("|---|---|---|---|---|---|---|")
     for it in items:
         if it["status"] == "尚未產生":
-            L.append(f"| {it['label']} | {it['domain']} | 尚未產生 | — | — | — |")
+            L.append(f"| {it['label']} | {it['domain']} | 尚未產生 | — | — | — | — |")
             continue
         L.append(
             f"| {it['label']} | {it['domain']} | {it['gate_result']} | "
             f"{'是' if it['forced'] else '否'} | "
             f"{'有' if it['override_dims_guidance'] else '無'} | "
-            f"{'⚠️ 是' if it['domain_leak'] else '否'} |"
+            f"{'⚠️ 是' if it['domain_leak'] else '否'} | "
+            f"{_exit_cell(it)} |"
         )
     L.append("")
 
     L.append("#### 未 forced 通過的照片：六面材質對照 GT\n")
-    any_faces = False
+    n_passed = 0  # N：被放行（未 forced 通過）的照片數
     total_wrong = 0
-    total_judged = 0
+    total_judged = 0  # 可判面數（✅＋❌）
+    total_unjudged = 0  # 無法判面數
     for it in items:
         if not it["faces"]:
             continue
-        any_faces = True
+        n_passed += 1
+        wrong = judged = unjudged = 0
         L.append(f"**{it['label']}**（`{it['run']}`）\n")
         L.append("| 面 | 材質 id | 來源 | GT | 正誤 |")
         L.append("|---|---|---|---|---|")
@@ -176,17 +202,43 @@ def render_item5_table(items: list[dict]) -> list[str]:
             f = it["faces"][face]
             L.append(f"| {face} | {f['material_id']} | {f['source']} | {f['gt'] or '缺'} | {f['verdict']} |")
             if f["verdict"] in ("✅", "❌"):
-                total_judged += 1
+                judged += 1
                 if f["verdict"] == "❌":
-                    total_wrong += 1
+                    wrong += 1
+            else:
+                unjudged += 1
         L.append("")
-    if not any_faces:
+        L.append(f"❌ {wrong}／可判 {judged}／無法判 {unjudged}（共 {len(SURFACE_NAMES)}）\n")
+        total_wrong += wrong
+        total_judged += judged
+        total_unjudged += unjudged
+
+    if n_passed == 0:
         L.append("（本次沒有任何照片是「未 forced 通過」——沒有可列的六面表）\n")
-    else:
-        rate = f"{100.0 * total_wrong / total_judged:.0f}%" if total_judged else "—"
+        L.append("**錯誤放行率彙總**：錯誤放行率不適用（0 張放行）\n")
+        return L
+
+    # 裁定 T-57-D：六面全列；主率＝❌÷可判面數；同列 6N 為分母的上下界。
+    total_faces = n_passed * len(SURFACE_NAMES)
+    counts = (
+        f"被放行照片數 N＝{n_passed}／總面數 6N＝{total_faces}／"
+        f"可判面數 {total_judged}／無法判面數 {total_unjudged}／❌ {total_wrong}"
+    )
+    if total_judged == 0:
+        # 無可判面：主率沒有意義；上下界只印分數、不換算百分比（避免印出「0%」被讀成量到零錯誤）。
         L.append(
-            f"**錯誤放行率彙總**：{total_wrong}/{total_judged}（{rate}）——分母固定 6／張，"
-            "GT 缺或 `unknown` 的面標「無法判」不進分子分母。\n"
+            f"**錯誤放行率彙總**：{counts}；"
+            "主率（❌÷可判面數）＝—（無可判面）；"
+            f"下界（❌÷6N）＝{total_wrong}/{total_faces}；"
+            f"上界（（❌＋無法判）÷6N）＝{total_wrong + total_unjudged}/{total_faces}"
+            "（無可判面，不換算百分比）\n"
+        )
+    else:
+        L.append(
+            f"**錯誤放行率彙總**：{counts}；"
+            f"主率（❌÷可判面數）＝{_ratio_text(total_wrong, total_judged)}；"
+            f"下界（❌÷6N，無法判全當對）＝{_ratio_text(total_wrong, total_faces)}；"
+            f"上界（（❌＋無法判）÷6N，無法判全當錯）＝{_ratio_text(total_wrong + total_unjudged, total_faces)}\n"
         )
     return L
 
@@ -381,6 +433,7 @@ def run(
                     "label": v["label"], "run": "（尚無自動路徑 run）",
                     "domain": "in" if v.get("in_domain") else "out",
                     "gate_result": None, "forced": None, "override_dims_guidance": None,
+                    "default_exit": None, "exit_marker_consistent": None,
                     "domain_leak": False, "faces": None, "status": "尚未產生",
                 }
             )

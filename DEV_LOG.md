@@ -1,5 +1,13 @@
 # Dev Log
 
+## 2026-09-20 (165)
+
+- **🔵 Sonnet：T-57-F1 完成（待驗證）**——R1～R8 全部修正；只動 `scripts/t17r2_dataset_manifest.py`／`t17r2_blind_test.py`／`t17r2_rt60_table.py`／`t17r2_report_tables.py`／`test_t17r2_tools.py`；`t17r2_common.py`／`t17r2_make_player.py`／`src`／`data`／既有 t17 四支／`ir_metrics.py`／`output/mvp_acceptance/` 零 diff；未跑任何真實照片、未建立 `output/mvp_acceptance_r2/`。
+- **R1**：刪 (a-4) 假斷言；真實突變（把 MANIFEST 抄 forced 的那行改寫死 `False`）→ 只有 (a-3) ❌、`EXIT=1`；`cp` 還原＋`cmp` 相同＋重跑 `EXIT=0`（輸出原文在 T-57-F1 卡交接筆記）。**R2**：誤報三處另起新行更正（不刪原文）；四條 `md5 -q` 全中（`2adbaa75…`／`2dd19b6e…`／`9a94ffdf…`／`a1c21bcc…`）。
+- **R3～R6、第 7 條（裁定 T-57-D：主率＝❌÷可判面數、6N 上下界同列、可判＝0／N＝0 不印 0%）、第 8 條**：測試共 74 條斷言全過；新版測試放進舊碼 `4d4f63b` worktree → 36 條 ❌（11 條「原行為不變」guard 仍 ✅，逐條標明）；22 支測試 `EXIT=0`。
+- 收工前另跑一輪 8 個唯讀 agent 複審（51 個突變體＋對抗式找 bug）：修掉 3 個真缺陷（repo 內符號連結被 `resolve()` 誤判為 repo 外／manifest 壞 JSON 與缺 `in_domain` 欄位／`--dry` 指到目錄的 Traceback）並補測試覆蓋缺口；不取代 Opus 驗證。
+- 下一步：開 Opus 新視窗驗證（任務寫「T-57（含修正輪 T-57-F1）」）→ 通過後 T-17-R2 前置「T-57 ✅（工程）」才成立；T-17-R2 仍等使用者 held-out 照片。詳見 TASKS.md T-57-F1 卡「交接筆記」。
+
 ## 2026-09-20 (164)
 
 - 依使用者要求分析 T-17-R2 五類照片，以內建 GPT Image 生成浴室／客廳／禮堂／走廊／車內各一張。
@@ -153,6 +161,9 @@
   scene_text.py`／`ir_synth.py`／`acoustics.py`／`data/materials.json` 自 `3d2d9c2`（T-39，09-02）起零 commit，
   HANDOFF 卻在 09-14（T-51）仍記錄相同——懷疑套件版本漂移（現在 `.venv` 是 numpy 2.0.2／scipy 1.13.1）。
   本卡對 `src`／`data` 零 diff，不受影響，工程軸「待審」不變。
+- 〔更正（T-57-F1，2026-09-20；只追加，原文保留）〕上述『T-20／T-21 四條 MD5 與歷史不同、疑似套件漂移』為**誤報**：當時是拿 SHA-256 的前 14 碼去比歷史 **MD5**。
+  Opus 2026-09-18（`2f6ee3f`）重生四條 `ir_mono.wav`，MD5＝`2adbaa75…`／`2dd19b6e…`／`9a94ffdf…`／`a1c21bcc…` 全中；『同碼同 seed＝逐位元相同』前提仍成立；
+  背景調查 `task_14c97967` 前提不成立，可撤銷。
 - 下一步：開 Opus 新視窗依 T-57 卡「Opus 驗證重點」驗證 → 通過後 T-17-R2 前置「T-57 ✅」滿足；
   T-58 可另一視窗平行（未動）；六條 IR MD5 落差的調查任務已排入背景佇列，不佔用關鍵路徑。
 
