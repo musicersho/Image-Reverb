@@ -1,0 +1,27 @@
+{
+  "tool": "built-in GPT Image / image_gen",
+  "date": "2026-09-20",
+  "new_images": [
+    {
+      "old_file": "stairwell_tiled.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: synthetic spatial-analysis development image for Image Reverb, not measured acoustic evidence. Primary request: An empty ordinary enclosed tiled apartment stairwell, seen from a landing with one coherent flight rising to the next landing, ceramic tile floor and stair treads, painted plaster walls with tiled lower wall, simple metal handrails, visible ceiling and two walls. Realistic safe stair geometry. Composition: horizontal 4:3, ordinary rectilinear perspective, clear floor, ceiling and side surfaces, detailed material texture, balanced exposure, no fisheye, no panorama. Photorealistic photography appearance. No captions, watermarks, logos, player UI, borders or collage. Generate one image only, preferably native 2048x1536.",
+      "source_path": "/Users/musicersho/.codex/generated_images/01a0bdd6-0e59-7440-b001-b2d744ece55f/exec-07186b7d-3e56-43e9-9b9e-7613ade908c1.png"
+    },
+    {
+      "old_file": "livehouse_riverside_ximen.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: synthetic spatial-analysis development image for Image Reverb, not measured acoustic evidence. Primary request: An empty generic medium-sized live music venue, viewed from the back toward a modest stage with drum kit and amplifiers, dark painted walls, some acoustic panels, scuffed wooden floor and exposed dark ceiling. No audience, no readable signs. Not a recreation of any named real venue. Composition: horizontal 4:3, ordinary rectilinear perspective, clear floor, ceiling and side surfaces, detailed material texture, balanced exposure, no fisheye, no panorama. Photorealistic photography appearance. No captions, watermarks, logos, player UI, borders or collage. Generate one image only, preferably native 2048x1536.",
+      "source_path": "/Users/musicersho/.codex/generated_images/01a0bdd6-0e59-7440-b001-b2d744ece55f/exec-1f0d9023-3388-4cdd-bc2c-5eb71b063b30.png"
+    },
+    {
+      "old_file": "cgi_cave_lab_sophy.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: synthetic spatial-analysis development image for Image Reverb, not measured acoustic evidence. Primary request: A fictional laboratory built inside a rough natural stone cavern, realistic architectural visualization with modest metal workbenches and equipment cabinets, concrete walkway across rock floor, visible irregular rock ceiling and both rock side walls. Wide spatial view, neutral work lighting. No people, no screens with text. Original design, no reference to an existing music video. Composition: horizontal 4:3, ordinary rectilinear perspective, clear floor, ceiling and side surfaces, detailed material texture, balanced exposure, no fisheye, no panorama. Photorealistic photography appearance. No captions, watermarks, logos, player UI, borders or collage. Generate one image only, preferably native 2048x1536.",
+      "source_path": "/Users/musicersho/.codex/generated_images/01a0bdd6-0e59-7440-b001-b2d744ece55f/exec-c82b5e4e-99c8-4fca-86e7-19c01e1432c7.png"
+    },
+    {
+      "old_file": "cgi_cavern_crowd_sophy.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: synthetic spatial-analysis development image for Image Reverb, not measured acoustic evidence. Primary request: A vast fictional underground rock cavern used as a gathering space, realistic architectural visualization. Wide view of rough rock floor, towering irregular stone side walls and high stone ceiling. A small distant group of naturally proportioned people gives scale, occupies less than ten percent of image, faces not discernible. Soft practical illumination reveals rock surfaces, no stage spectacle. Original design, not an existing music video. Composition: horizontal 4:3, ordinary rectilinear perspective, clear floor, ceiling and side surfaces, detailed material texture, balanced exposure, no fisheye, no panorama. Photorealistic photography appearance. No captions, watermarks, logos, player UI, borders or collage. Generate one image only, preferably native 2048x1536.",
+      "source_path": "/Users/musicersho/.codex/generated_images/01a0bdd6-0e59-7440-b001-b2d744ece55f/exec-f7a52e1f-dad2-44ee-bf1f-c4f69b32427e.png"
+    }
+  ],
+  "reused_prompt_file": "../t17r2_synthetic_candidates/PROMPTS.json"
+}

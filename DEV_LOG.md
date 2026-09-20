@@ -1,5 +1,12 @@
 # Dev Log
 
+## 2026-09-20 T-04 合成照片替換（Codex）
+
+- 2026-09-20 Codex：T-04 九張照片已替換；五類沿用 T-17-R2 合成候選，另四張由 GPT Image 新生成。现行 assets/photos/t04_gpt_*.png；舊圖本機備份 assets/photos_legacy_20260920/。詳見 assets/t04_refresh/README.md、PROMPTS.json、ASSET_MANIFEST.json。
+- 九張可解碼且皆 1448×1086；五張沿用來源 SHA-256 完全一致；九張舊圖備份指紋全部相符，已逐張目視檢查。
+- 採新檔名避免套用舊 GT；真實 IR 配對、凍結結果與程式未動，未執行模型／IR／R2 驗收。
+- 四軸：T-04 工程未結案，本輪素材自檢完成待審／實驗未執行／產品不適用／MVP 不適用；R2 解析度與正式素材資格仍待處理。
+
 ## 2026-09-20 (165)
 
 - **🔵 Sonnet：T-57-F1 完成（待驗證）**——R1～R8 全部修正；只動 `scripts/t17r2_dataset_manifest.py`／`t17r2_blind_test.py`／`t17r2_rt60_table.py`／`t17r2_report_tables.py`／`test_t17r2_tools.py`；`t17r2_common.py`／`t17r2_make_player.py`／`src`／`data`／既有 t17 四支／`ir_metrics.py`／`output/mvp_acceptance/` 零 diff；未跑任何真實照片、未建立 `output/mvp_acceptance_r2/`。

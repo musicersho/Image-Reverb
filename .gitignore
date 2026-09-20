@@ -38,3 +38,6 @@ assets/reference_irs/**/*.png
 
 # Logs
 *.log
+
+# T-04 replaced legacy photos: local reproducibility backup, not active inputs
+assets/photos_legacy_20260920/

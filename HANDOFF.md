@@ -1,5 +1,8 @@
 # 交接文件 — 給下一個視窗
 
+> **2026-09-20 Codex：T-04 九張照片已替換；五類沿用 T-17-R2 合成候選，另四張由 GPT Image 新生成。现行 assets/photos/t04_gpt_*.png；舊圖本機備份 assets/photos_legacy_20260920/。詳見 assets/t04_refresh/README.md、PROMPTS.json、ASSET_MANIFEST.json。**
+> T-04 工程未結案／本輪素材自檢完成待審；實驗未執行／產品不適用／MVP 不適用。新圖與舊 GT、baseline 不相容，歷史脚本用原版 checkout；R2 五張仍只有 1448px，且已成 T-04 共用開發素材，正式 held-out 資格需重查。
+
 > ## 🔵 2026-09-20 Sonnet：T-57-F1 完成（待驗證）——**現在該做的是：開 Opus 新視窗依 T-57-F1 卡「Opus 驗證重點」複驗**（任務寫「T-57（含修正輪 T-57-F1）」），結果 commit 見本次收工 commit
 >
 > - 四軸：工程：待審｜實驗：不適用（工具卡修正輪）｜產品：不適用｜MVP：不適用（T-17-R2 前置「T-57 ✅（工程）」要等本輪經 Opus 驗證通過才成立）。
