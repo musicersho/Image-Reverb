@@ -206,6 +206,69 @@
   - `verdict_under_original_criteria: 未達（自檢 2 項只完成 1 項）`。原「✅ 通過（素材部分）」的綠色總狀態依裁決 T-45-A **不再代表本卡結案**。
     結案條件維持裁決 E：補齊來源網址，或由使用者明確決定「維持未結案」並在 T-17-R2 REPORT 標明缺項——兩者擇一，不得以附註豁免。
   - **2026-09-16 使用者決定（Fable 記錄）**：「不需網址，本專案非商業發行作品，僅供內部使用」→ 走裁決 E 第二路徑（明確維持未結案＋R2 REPORT 標明缺項）；T-17-R2 前置「T-04」自此滿足；本卡工程軸維持「未結案」不變（不是結案）。使用者另述「軟體內部有相關空間或材質的參數即可，不需要真的將圖片變成選項」記為產品方向備註，見 T-17-R2 卡「🔮 Fable 落地」§0。
+- **🔮 裁定 T-04-R（Fable 2026-09-20；WORKFLOW §7 變更控制；T-04 結案路徑新增「(c) 替換素材」；屬「結果後」變更；方向核准＝使用者、條文起草＝Fable；自檢兩項原文一字不改）**：
+  **0. 事由（使用者 2026-09-20 訊息逐字；「／」為原訊息換行處，Fable 以「／」代替，非使用者所打）**：「以下幾點標準變更：／T-04：照片會重新提供，因為當時任意截圖並沒有記得網址來源／T-17-R2 照片解析度需求降低，僅需1280px以上即可」。
+  Fable 同日兩輪選擇題，問句與使用者所選選項原文——第一輪：
+  問「T-04『重新提供的照片』和 T-17-R2 要用的 held-out 五類照片，是同一批還是分開兩批？」→ 選「**同一批，一批兩用**」；
+  問「Codex 用 GPT Image 生成的那五張合成圖（1448×1086，降到 1280px 門檻後解析度已合格），您打算拿來當 T-17-R2 的正式 held-out 照片嗎？」→ 選「**是，用這五張合成圖**」。
+  第二輪（Fable 起草期間，Codex 已直接替換素材——上方兩則 Codex 紀錄，commit `ba1fcdb`／`f3e07b0`，依其紀錄為使用者授權——與 Fable 原草案「舊圖原地退役」衝突，故再問）：
+  問「舊 9 張照片被 Codex 移出 assets/photos/ 後，測試、材質 GT、基線腳本與 R2 降級路徑都會壞。要怎麼處理？」→ 選「**維持 Codex 的新配置，改程式去適應**」；
+  問「R2 的五張 held-out 合成圖已被放進開發素材、且分割／深度模型已跑過它們。R2 驗收要用哪一批圖？」→ 選「**沿用這五張，REPORT 如實揭露**」。
+  （後兩題 Fable 的建議分別是「舊圖放回原位、新圖另放新資料夾」與「重新生成五張全新的圖給 R2」，使用者未採納；照使用者的決定落地。）
+  **1. 時點、§7 適用、核准的分工（含一項如實記錄的順序問題）**：本卡已有判定（`verdict_under_original_criteria: 未達`）→ 依 WORKFLOW §7.1／§7.3／§7.4 屬**結果後**變更：建新版 `criteria_version: v2`、獨立 `criteria:` commit、舊判定永久保留。
+  **核准分工（§7.4：不能由同一角色自行更改後自行接受）**：**方向核准＝使用者**（§0 原話與四個選項：重新提供照片／一批兩用／用這五張／維持新配置／沿用並揭露）；**條文起草＝Fable**——§2 各點的具體條文使用者尚未逐條看過，
+  所以條文本身另需兩道核准，缺一不得寫 v2 判定：① 獨立審查者＝執行結案路徑 (c) 的 Opus，驗證第 0 步先審 v2 條文本身（特別是 §2 第 3 點五項是否足以稱為「來源連結」、第 4 點禁用令是否足以維持調參集與驗證集分離），不同意＝回 Fable，不得逕判；
+  ② 使用者貼出 WORKFLOW §2.2 驗證 Prompt、且任務編號寫成「T-04（v2；裁定 T-04-R）」＝對條文的核准（沿用 T-17-R2 程序 P1「貼 Prompt 即核准」先例），Opus 把含該字串的那一句抄進驗證紀錄；Prompt 內沒有「（v2；裁定 T-04-R）」字樣＝未核准，停。
+  **順序問題**：§7.1／§7.2 要求新版門檻的 criteria commit 早於結果；但素材替換連同 Codex 的自評（`ba1fcdb` 16:12、`f3e07b0` 16:19）**早於**本 v2 criteria commit，而且 §2 第 3 點的「AI 生成圖五項」是 Fable **看過** `assets/t04_refresh/` 既有紀錄之後才起草的，
+  起草時已知現況大致能滿足——字面上不符 §7.2，§7 沒有事後補救條款，**本裁定不宣稱已符合**。處置：(i) 兩個 commit 記為「先於 v2 條文的實作」，寫進 §8 `change_record`；(ii) v2 判定一律以本 criteria commit **之後**的獨立 Opus 驗證為準，Codex 的「素材自檢完成」不算 v2 判定；
+  (iii) v2 驗證者不得只核對五項「有沒有」，須另行判斷它們是否足以讓第三人追溯每張圖的來源；(iv) 通過時的標記必須帶出這個瑕疵（見 §2 第 5 點）。v2 沒有放寬任何自檢原文。
+  **2. v2 條文**（自檢 1「照片 ≥5 張、參照 IR ≥3 組」與自檢 2「SOURCES.md 每一項都有來源連結」**原文不變**；v2 只界定「對哪一批判」與「來源連結」的字面）：
+  1. **現行交付集**＝`assets/t04_refresh/ASSET_MANIFEST.json` 的 `images[].active_path` 所列（`assets/photos/t04_gpt_*.png`；截至 `f3e07b0` 共九張）＋既有 8 組對照 IR（`assets/reference_irs/`，不變）。自 v2 起，自檢 1／自檢 2 **對現行交付集判**。
+     v2 判定只對「驗證當下那一版 manifest」成立（Opus 回填其 sha256 與受驗 commit，見 §8）；其後該檔或交付集任何一張再變動＝須重驗，不得沿用舊判定。
+  2. **退役集**＝舊 9 張（`arena_ntsu_linkou`／`bathroom_tiled`／`bedroom_ai_generated`／`car_interior_suv`／`cgi_cave_lab_sophy`／`cgi_cavern_crowd_sophy`／`corridor_hotel_carpet`／`livehouse_riverside_ximen`／`stairwell_tiled`）。
+     實體位置：本機 `assets/photos_legacy_20260920/`（git 忽略）；git 歷史中 `14fc4ac` 仍是追蹤檔（復原單檔：`git show 14fc4ac:assets/photos/<檔名> > assets/photos_legacy_20260920/<檔名>`）。**任何角色不得刪除該備份目錄。**
+     該目錄另有一個 `t04_gpt_hall.png`（Codex `f3e07b0` 移入；與 R2 held-out `heldout_hall.png` 逐位元相同，適用第 4 點禁用令）。
+     依 §7.6「原域內失敗不得消失」：`assets/SOURCES.md` §2.1／§2.2 的「未記錄／待補」原文**永久保留**；任何文件列到舊 9 張，必須同時顯示「v1 未達（來源缺）／v2 退役」；**不得**寫成「已解決」「已補齊」。退役集可續用於內部回歸測試與重現歷史結果；**不得**對外發佈。
+     **已知後果（使用者 2026-09-20 知情後選擇「維持新配置、改程式去適應」）**：(i) `scripts/test_pipeline_dedup.py` 寫死舊路徑、`scripts/test_depth.py` 在新圖上觸發既有的格式化 bug → HEAD 上兩支 EXIT=1（Opus `875697e` 實測）→ 由 **T-62** 修；`test_segmentation.py` 掃目錄、換圖後照常跑。
+     (ii) t33～t48 歷史基線腳本、`t36_clip_accuracy.GATE_ITEMS` 的照片路徑、`data/material_ground_truth.json` 的舊五張條目——**只對退役集成立**，在 HEAD 無法直接重跑；重現方式＝`git worktree add <暫存目錄> 14fc4ac`。
+     這些腳本與資料**不改**（多數受各卡零 diff／凍結條款保護；R2 工具還用 `GATE_ITEMS` 的 name 當 GT 鍵）。(iii) `t17r2_*.py --legacy`（Prompt B 降級路徑）失效——處置見 T-17-R2 卡裁定 T-17-R2-S §3 第 6 點。
+     (iv) `output/depth/`、`output/seg/` 的非 md 產物會被新圖的冒煙測試覆寫；該兩目錄已進版控的 REPORT.md 描述的是退役集，屬歷史紀錄。
+  3. **「來源連結」的字面（依素材類型；缺任一項＝自檢 2 未達，不得以附註豁免）**：網路圖＝網址＋授權；使用者自攝＝拍攝者＋拍攝日；
+     **AI 生成圖＝① 生成工具名稱 ② 生成日 ③「依誰的要求生成」④ 完整提示詞檔的 repo 內路徑 ⑤ 逐張 sha256 清單的 repo 內路徑**（本批 ④⑤ 在 `assets/t04_refresh/` 與 `assets/t17r2_synthetic_candidates/`）。
+     先例：退役集的 `bedroom_ai_generated.png` 本來就是 AI 生成圖、當過 T-17 首驗素材、T-36 有使用者確認的 GT——AI 生成圖當測試素材不是新類別，新的只是「必須留下可追溯紀錄」。
+  4. **共用圖禁用令（一批兩用的代價；寫死）**：T-17-R2 held-out 五張**不論檔名**，截至 `f3e07b0` 共有三處逐位元複本：`assets/t17r2_synthetic_candidates/heldout_*.png`（T-60 後移到 `assets/photos_heldout/`）、
+     `assets/photos/t04_gpt_{bathroom,living,corridor,car}.png`（四張）、`assets/photos_legacy_20260920/t04_gpt_hall.png`（`ba1fcdb` 的 git 歷史中另有 `assets/photos/t04_gpt_hall.png` 的追蹤 blob）。
+     在下列「解除點」之前，這五張：**不得**用於調參／校準、**不得**標註進 `data/`、**不得**當新測試的夾具、**不得**以 `python -m src.image_reverb` 或任何分析／評測腳本處理。**例外只有三項**：① T-17-R2 卡自己的執行步驟（含步驟 11 的獨立複驗：複驗者為核對 R2 結果而做的重現，輸出一律導到 scratchpad，不得寫進 `output/`／`data/`）；② T-60 步驟 7 的 manifest 乾跑；
+     ③ 任務卡明文要求、或 WORKFLOW §5.4.1「完整測試套件 exit 0」所要求的**全套** `scripts/test_*.py` 例行執行（每張卡每次驗證至多一次；能引用同一 HEAD 程式碼上既有的全套紀錄時就不重跑）——其中 `test_depth.py`／`test_segmentation.py` 以**不帶任何引數**的預設掃目錄模式執行（只產視覺化與統計）。
+     **不算「處理」**（不受本令限制）：計算 sha256、以 PIL 只讀尺寸（不得 `save`）、T-60 步驟 2 那一次 `mv`、人或 Claude 以看圖工具目視、把圖檔呈現給使用者——這些不經任何深度／分割／CLIP 模型，也不產生可用於調參的數值。
+     **不屬例外**：單獨指定共用圖的任何模式（如 `test_depth.py --probe`）、單獨為這些圖跑冒煙測試、閱讀其輸出後調整任何參數／門檻／GT、把其輸出寫進 `data/`。
+     已發生的曝光（2026-09-20，見裁定 T-17-R2-S §1）與其後第 ③ 類曝光，一律依裁定 T-17-R2-S §4 強制句揭露，依使用者第二輪決定不構成失格。
+     **解除點**＝以下兩者皆成立：(i) T-17-R2 步驟 10 收工 commit 已 push；(ii) 步驟 11 的獨立複驗紀錄 commit 已 push **且判定為工程：已驗證**（退回＝未解除），或使用者明示略過步驟 11（原話記入 T-17-R2 卡）。
+     解除須由 Fable 在本卡另起新行寫「共用圖禁用令已於 〈commit〉 解除」才生效；沒有這一行＝仍在禁用期。解除後 held-out 檔**留在原路徑** `assets/photos_heldout/`（R2 的 DATASET_MANIFEST 與 provenance 記的是這個路徑）。
+     解除後這批**不再具 held-out 資格**：T-44-R1 前置（held-out ≥5 張）與 T-53「校準集與 held-out 不得同一批」屆時須另備新批次（兩卡目前 ⏸，本輪不動）。
+  5. **結案路徑（上方「結案條件維持裁決 E…兩者擇一」原文保留；自 v2 起為三者擇一）**：(a) 補齊舊 9 張來源網址；(b) 使用者明確維持未結案（2026-09-16 決定，**在 (c) 完成前持續有效**）；
+     **(c) 替換素材（本裁定）**＝T-62 經 Opus 驗證通過（全套測試恢復可跑）之後，由獨立 Opus 依 v2 逐條驗證現行交付集（任務寫「T-04（v2；裁定 T-04-R）」；對象＝驗證當下的 HEAD；先過 §1 的兩道條文核准）
+     → 通過才在 §8 另起新行寫 `verdict_under_current_criteria: 達成（v2；實作先於 criteria commit——§7.2 順序瑕疵，見 change_record）`，四軸工程軸改「已驗證（v2；實作先於條文；v1 未達永久保留）」——**不得**寫成不帶括號附註的「已驗證」；
+     有缺口 → 回 Fable 開修正卡。不必等 R2。**在那之前本卡四軸維持「工程：未結案」不變。**
+  **3. 對 T-17-R2 的影響（一字不放寬）**：不論 (c) 是否先於 R2 完成，R2 REPORT 第 6 項的既有強制句、`T-04 缺項` 附註規則**全部照舊**，另須加一句（全文見 T-17-R2 卡裁定 T-17-R2-S §5）。
+  理由：R2 受驗的 gate 是用退役集校準的（T-47／T-55），退役集的來源缺口對 R2 可追溯性的影響不因換圖而消失；`T-04 缺項` 這個附註字串自此專指「退役集來源缺」。
+  **4. 不做的事**：不重跑任何歷史結果；不以新圖重建 T-36 GT／T-47 校準（要不要重建＝R2 後 Fable 收尾複評議題）；不還原舊圖到 `assets/photos/`；`src`／`data`／`output`／SPEC／WORKFLOW 零改動（`scripts/` 的改動只在 T-62）。
+- **§8 不可變欄位（Fable 2026-09-20 回溯補建；本卡原不在 WORKFLOW §8 補建名單，因本次改版依 §7.1 補；欄位一經填寫不得刪改，只能另起新行追加）**：
+  ```text
+  criteria_version: v1（開卡原文：自檢兩項）→ v2（裁定 T-04-R：自檢原文不變；界定現行交付集／退役集、「來源連結」依素材類型的字面、共用圖禁用令、結案路徑 (c) 替換素材）
+  criteria_commit: v1＝026fa69（TASKS.md 首版，2026-08-16）；v2＝〈裁定 T-04-R 的獨立 `criteria:` commit；hash 由緊接的 docs commit 另起新行回填〉
+  criteria_locked_at: v1＝2026-08-16；v2＝2026-09-20
+  dataset_manifest_sha256: v1＝無（當時未建清單）；v2＝〈由 v2 驗證的 Opus 於驗證當下另起新行回填：`shasum -a 256 assets/t04_refresh/ASSET_MANIFEST.json` 的輸出＋受驗 commit hash〉；逐張 sha256 見該檔
+  implementation_commit: v1＝78a9813（T-04 素材＋`assets/SOURCES.md` 進版控的 commit，2026-08-16）；v2＝ba1fcdb＋f3e07b0（Codex；依其紀錄為使用者授權；**早於** v2 criteria commit——見裁定 T-04-R §1 順序問題）
+  result_commit: v1＝a9d2ee7（docs commit：寫入 Opus 2026-08-16 判定）；v2＝〈v2 驗證的 Opus 紀錄 commit〉
+  reviewer: v1＝Opus 2026-08-16（素材部分）＋裁決 T-45-A 回溯標記 2026-09-03；v2＝〈待獨立 Opus〉
+  verdict_under_original_criteria: 未達（自檢 2 項只完成 1 項）——永久保留
+  verdict_under_current_criteria: 〈待獨立 Opus 依 v2 判；在那之前＝未判〉
+  criteria_changed_after_first_result: yes
+  change_record: v1→v2（2026-09-20）；理由＝使用者決定重新提供照片（使用者原話：「當時任意截圖並沒有記得網址來源」；`assets/SOURCES.md` §2 記為 YouTube 截圖 5 張＋網路圖片 4 張，來源網址未記錄）；
+    方向核准＝使用者（原話見裁定 T-04-R §0）；條文起草＝Fable；條文核准＝〈待：獨立 Opus 審條文＋使用者貼驗證 Prompt；另起新行回填〉；獨立 `criteria:` commit；
+    順序瑕疵如實記錄：實作與自評（ba1fcdb／f3e07b0）先於 v2 條文、且「AI 生成圖五項」起草時已看過既有實作，字面不符 §7.2；v2 判定一律以 criteria commit 之後的獨立 Opus 驗證為準。
+  ```
 - **前置**：T-00
 - **對應 SPEC**：§7 驗收標準
 - **產出**：`assets/photos/` 內 5 類空間照片、`assets/reference_irs/` 內 ≥ 3 個 OpenAIR 真實 IR、`assets/SOURCES.md`
@@ -12069,6 +12132,8 @@ EOF
 ### T-17-R2 MVP 重新驗收（SPEC §7 四項；Opus 主導；裁決 T-45-A 執行卡 5/5）
 - **盤點補註（非驗收）**：2026-09-20 Codex 全專案完工差距盤點：見 `PROJECT_REVIEW_20260920.md`。核心 CLI 已完成，MVP 首驗 FAIL／R2 待重驗，Phase 2 外掛未開發。新發現 T-04 換圖後 legacy 五張預設路徑全部不存在（備份齊全），需在 R2 前整理；正式 held-out 尚缺、T-57-F1 待審。本次 R2 工具自測全部通過，不取代正式審查。 四軸原判定不變。
 - **2026-09-20 Codex 素材準備交接（使用者要求 GPT Image）**：五類合成候選圖已存 `assets/t17r2_synthetic_candidates/`；需求分析、完整提示詞與 SHA-256 已附。五張皆 1448×1086，浴室解析度重試亦同，未達 ≥1920px；不能標正式 held-out 已就位。未跑管線、未填使用者 GT、未改門檻。素材準備四軸：工程：待補（解析度）｜實驗：未執行｜產品：不適用｜MVP：待重驗；R2 原四軸不變。下一步先處理原生解析度與合成證據定位；T-57-F1 前置仍待驗證。
+  〔🔮 Fable 2026-09-20 補（另起新行；上一行原文保留）：上一行的「未達 ≥1920px；不能標正式 held-out 已就位」是**舊門檻下**的如實紀錄。使用者同日下達標準變更後，
+  解析度下限改為長邊 ≥1280px、並新增「路徑 S＝AI 合成圖」（見下方**裁定 T-17-R2-S**）；五張候選圖自此**可以**成為正式 held-out，但要等 **T-60**（素材就位＋使用者確認 GT）✅ 之後才算「已就位」。〕
 - **狀態**：⬜ **可開跑（Fable 2026-09-16 落地執行步驟＋程序 P1＋§8 前三欄；等使用者 held-out 照片就位後貼 Prompt A，或貼 Prompt B 走降級）**（原：⬜ 未開始）
 - **四軸狀態**：工程：未開始｜實驗：不適用｜產品：不適用｜MVP：**待重驗**（T-17 首驗 FAIL 永久保留）
 - **🔮 裁決 T-47-A 補註（Fable 2026-09-14；判準一字不改）**：前置「裁決 T-47-A」**自此滿足**；前置追加「T-52 結案（使用者選乙）或使用者選甲」
@@ -12140,6 +12205,8 @@ EOF
     | 畫面 | 無字幕、無播放器 UI、無黑邊；盡量無人（大空間要空場）；光線均勻不逆光 | SOURCES §2.1 已實測 UI／黑邊干擾；人是強吸音體 |
     | 檔案 | JPG／PNG／HEIC，長邊 ≥1920px，**原檔不裁切** | 裁切會改變透視與長寬比 |
     | 命名與位置 | `assets/photos_heldout/heldout_bathroom.*`、`heldout_living.*`、`heldout_hall.*`、`heldout_corridor.*`、`heldout_car.*` | 檔名不得與 `output/` 既有子目錄同名（CLI 以檔名 stem 當輸出目錄） |
+    - 〔🔮 裁定 T-17-R2-S（Fable 2026-09-20；另起新行；上表原文保留不刪）：上表「檔案」列的「長邊 ≥1920px」自 2026-09-20 起讀作「**長邊 ≥1280px**」；該列其餘文字不變，並補一句：
+      held-out 檔必須是來源原檔**逐位元**——不得縮放、插值放大、轉檔、重新存檔或去除中繼資料。另新增第四條素材路徑「**路徑 S＝AI 合成圖**」，與下方 H1／H2／H3 並列；全文見本卡**裁定 T-17-R2-S**。〕
   - **每張照片附一句話（貼在對話中即可，Opus 抄進 `assets/photos_heldout/ground_truth_heldout.json`，`confirmed_by: user`；放 `assets/` 而非
     `data/`，因 provenance 的 dirty 範圍是 `src`＋`data`）**：(a) 空間大約尺寸「長×寬×高 公尺」（估計即可；只用來判 ≤10m 域內／>10m 域外／
     車內非房間）；(b) 六面材質（地板／天花板／正面牆／左牆／右牆／背後牆，白話即可，如「磁磚」「油漆牆」「木地板」），Opus 對映到
@@ -12283,6 +12350,72 @@ EOF
   判準 1～6、不影響 MVP 判定式；(iii) 非 Fable 自提自批（T-38 拆卡教訓）：矛盾由獨立驗證者提出，落地後還要經 T-57-F1 的 Opus 驗證獨立核對
   「文字＝計算」；(iv) 方向是揭露更多（三個數字全印），不是放寬。**使用者保留否決權**：在 T-17-R2 步驟 1（資料集鎖定 commit）之前回 Fable 一句
   「分母改固定 6」即可，Fable 再走一次 §7；步驟 1 之後不得再改。
+- **🔮 裁定 T-17-R2-S（Fable 2026-09-20；WORKFLOW §7 變更控制；held-out 素材規格：解析度下限 1920→1280px＋新增「路徑 S＝AI 合成圖（與開發素材共用、曝光已揭露）」；判準 1～6 一字不改；結果前變更；方向核准＝使用者、條文起草＝Fable）**：
+  **0. 事由（使用者 2026-09-20 訊息逐字）**：「T-17-R2 照片解析度需求降低，僅需1280px以上即可」；同日兩輪選擇題所選選項原文，依序：「同一批，一批兩用」「是，用這五張合成圖」「維持 Codex 的新配置，改程式去適應」「沿用這五張，REPORT 如實揭露」
+  （四題問句全文與 Fable 未被採納的建議見 T-04 卡**裁定 T-04-R** §0）。背景：使用者先前請 Codex 以 GPT Image 生成五類圖（`aa13c55`），原檔 1448×1086，當時只卡在「長邊 ≥1920px」。
+  **1. 時點與已發生的事（Fable 2026-09-20 實查；如實記錄）**：R2 **零結果**——`output/mvp_acceptance_r2/`、`assets/photos_heldout/` 皆不存在；`output/` 下無 `heldout_*`、無 `t04_gpt_*` **目錄**（CLI 管線從未處理過這五張）；
+  五張 sha256 在 `data/` 與 `output/` 的 md／json 零命中。**但**：Codex `ba1fcdb`（16:12）把五張的逐位元複本放進 `assets/photos/`（`t04_gpt_{bathroom,living,hall,corridor,car}.png`；`f3e07b0` 再把 hall 移到 `assets/photos_legacy_20260920/`），
+  其後有視窗跑了掃該目錄的冒煙測試。現存產物（Fable 21:5x `ls -laT` 實查）：`output/seg/t04_gpt_*` 九個 stem（時間戳 16:16:01～16:16:11，**含五張 held-out 全部**）＋`output/seg/stats.json`（16:16:11，內含這些圖的逐類別像素統計）；
+  `output/depth/t04_gpt_{arena_concert,bathroom,car}_depth.png`（16:18:30～31，**其中 held-out 兩張**；Fable 16:16 首次實查時 bathroom／car 兩檔的時間戳為 16:14，其後被覆寫——更早的執行無從再查證）。
+  ＝**分割模型處理過五張全部、深度模型處理過至少兩張**；Opus `875697e` 另記錄其後在 main 跑過一次全套。沒有任何人據此改過參數（機械佐證見 §3 第 1 點）。使用者知情後決定「沿用這五張，REPORT 如實揭露」。
+  依 §7.2 本裁定以獨立 `criteria:` commit 落地，早於 R2 任何結果。**核准分工：方向核准＝使用者（§0 原話）；條文起草＝Fable；使用者保留否決權至步驟 1（資料集鎖定 commit）前；
+  使用者貼出 §4 的 Prompt 樣板（內含「held-out 為 AI 合成圖（路徑 S）」並指名讀本裁定）＝對本裁定條文的核准，Opus 步驟 0 抄進 REPORT §0。** 步驟 1 之後不得再改。
+  **2. 解析度**：拍攝規格表「檔案」列的「長邊 ≥1920px」自本裁定起讀作「**長邊 ≥1280px**」（適用 H1／H2／路徑 S 全部；該列其餘文字不變）。
+  - 技術事實（Fable 2026-09-20 唯讀查核；這是「為什麼無害」的說明，**不是**新門檻）：管線三個模型都先縮圖再推論——深度模型短邊 518px、分割 512×512、CLIP 224×224；
+    `src/image_reverb/` 內沒有任何以絕對像素為單位的門檻；FOV 只依寬高比（EXIF 現況不生效，一律預設 60°）。1448×1086 與 1920×1440 進模型的張量尺寸完全相同。
+    原 1920 沒有留下技術理由（規格表「為什麼」欄寫的是不裁切的理由）。已跑過管線的退役集素材本來就有長邊 <1920 者（970×964、950×1190、1280×1200、1584×1050、環景 960×480），查無任何因解析度出問題的紀錄。
+  - 誠實揭露：同一張圖縮放到不同尺寸，CLIP top-1 機率會非單調漂移（唯讀探針實測約 ±0.03～0.2），貼近 0.4 門檻的面可能換分支——這是重採樣敏感度，≥1920 的圖彼此之間同樣存在，不是 1280～1919 區間特有。
+    **所以補一條：held-out 檔必須是來源原檔逐位元——不得縮放、插值放大、轉檔、重新存檔或去除中繼資料。**
+  - 步驟 0(c) 追加程式化檢查（原規格表寫「違反者步驟 0 退回」卻沒列檢查式，本次補上）：PIL 讀每張尺寸，`max(w,h) ≥ 1280`；指令與輸出貼 REPORT §0。
+  **3. 路徑 S（AI 合成圖）——與 H1 自拍／H2 圖庫／H3 降級並列的第四條 held-out 路徑**（不叫 H4：避免與 T-58 的假設編號 H4 撞名）：
+  1. **資格**（WORKFLOW §5.4.2 原文：「調參集與驗證集分離；至少保留一組 held-out（13 張同時調參與驗收＝過擬合紅線）」；本卡複評 T-17-R2-pre §2 第 2 件與「🔮 Fable 落地」§1 將其具體化為「未曾用於任何調參、標註、校準」——沿用，不自創更寬的說法）：
+     依使用者要求、以影像生成模型新生成；**未曾用於調參、標註、校準**；另加本裁定新增的一條：CLI 管線未曾處理（`output/` 下無 `heldout_*`／`t04_gpt_*` 目錄）；符合拍攝規格表全部列。
+     **如實記錄**：一批兩用之後，其中四張與開發素材目錄實體並存，「分離」不是靠路徑隔離，而是靠 T-04 卡裁定 T-04-R §2 第 4 點的禁用令＋下一句的機械檢查來維持；這比實體隔離弱，已列入 §6 已知限制。
+     **本批不得宣稱「模型從未見過」**——§1 的冒煙測試曝光屬已知事實，以 §4 強制句揭露；其後依禁用令例外 ③ 的全套測試曝光同樣涵蓋在該強制句內，不另計。
+     「未曾調參」的機械佐證＝步驟 0 追加一條：`git diff b06f022..HEAD --stat -- src/ data/` 必須為空（`b06f022`＝五張候選圖最早進 repo 紀錄 `aa13c55` 的前一個 commit；Fable 2026-09-20 實跑為空）——涵蓋 `src/` 全目錄（含 materials／surfaces／gate），
+     不只步驟 0(d) 的五個量測檔；非空＝停、回 Fable。指令與輸出貼 REPORT §0。
+  2. **檔案同一性**：`assets/photos_heldout/` 內五張的 sha256 必須**等於** `assets/t17r2_synthetic_candidates/ASSET_MANIFEST.json` 所記（`aa13c55` 已進版控）；步驟 0(c) 追加此比對，任一不符＝停。
+     該 manifest 的 `minimum_1920px_met: false` 是舊門檻下的歷史紀錄，不改、不構成退回理由。
+  3. **步驟 0(c) 純度檢查的範圍釐清**：sha256 grep 維持原文所列（`output/.archive/`、`data/material_ground_truth.json`、任何 `output/**/*.md`／`output/**/MANIFEST.json`）**＋`data/` 全目錄**；
+     另加 `find output -maxdepth 1 -type d \( -name 'heldout_*' -o -name 't04_gpt_*' \)` 輸出必須為空（不要用 `ls -d …*`：zsh 下 glob 不匹配會整條指令中止、漏列已存在的目錄）。
+     `assets/` 下的來源紀錄（兩份 `ASSET_MANIFEST.json`、`SOURCES.md`、`ground_truth_heldout.json`）記有檔名或 sha256 是**應該的**，不算命中；`output/seg/`、`output/depth/` 下的 `t04_gpt_*` **檔案**，
+     以及 `output/seg/stats.json`／`output/depth/depth_stats.json` 內以 `t04_gpt_*` 為鍵的統計＝§1 已揭露的曝光，不算命中、不得刪、不得引用來調參。
+     「🔮 Fable 落地」§5 紅旗「sha256 出現在 R2 之前的任何產物或 GT」的「產物或 GT」＝`output/`＋`data/`。
+  4. **GT（沿用 T-36 先例：使用者看圖逐面確認；`bedroom_ai_generated` 即「AI 圖有使用者確認 GT」的先例）**：
+     - 六面材質：使用者**看圖**確認才可寫 `confirmed_by: user`；**畫面看不到的面（背後牆等）一律 `material_id: "unknown"`**——合成圖沒有真實空間可查，不得依提示詞推定
+       （依裁定 T-57-D：unknown＝「無法判」，不進主率分母、進 6N 上下界）。
+     - 尺寸 `dims_m`：**逐字**取 `assets/t17r2_synthetic_candidates/README.md`（`aa13c55` 版）「提示詞的設計尺寸」欄——bathroom 2.4×1.8×2.5、living 5×4×2.7、hall 24×16×8、corridor 8×1.8×2.6、car 2.6×1.5×1.2（長×寬×高，m）；起草者不得另估。
+       使用者只確認「量級合理」；使用者若認為任一張量級不合理 → T-60 停、回 Fable，不得現場改數字（改數字可能翻轉域內／域外分類）。據此，分類**自本裁定起即鎖定**：bathroom／living／corridor＝`in`；hall＝`out`；car＝`non_room`。
+       `dims_m` **只用於這個分類**，不得當真實尺寸引用、不得用於任何 RT60 誤差計算。每張另記 `dims_basis: "synthetic_design_user_confirmed"`、`source_type: "ai_synthetic"`（T-57 工具以 `.get()` 取值、忽略多餘欄位，schema 不變）。
+     - 使用者的確認必須留**原話**（記在 T-60 卡）；沒有原話＝不得寫 `confirmed_by: user`。
+  5. **就位由 T-60（Sonnet）執行、先於 R2**：照片＋`ground_truth_heldout.json`＋`assets/SOURCES.md` §4 由 T-60 commit。連帶釐清本卡一處既有字面衝突（程序，非門檻）：
+     步驟 0(a)「`git status --porcelain` 為空」與步驟 1「held-out 檔一起進這個 commit」不能同時成立（未追蹤的照片會讓 porcelain 非空）→ 自本裁定起：held-out 檔**由 T-60 先行 commit（更早鎖定，較嚴）**，
+     步驟 1 的 commit 只含 `DATASET_MANIFEST.json`＋§8 回填；DATASET_MANIFEST 記的 sha256 仍是資料集鎖定的唯一依據。「🔮 Fable 落地」§1「Opus 抄進 `ground_truth_heldout.json`」自此讀作「由 T-60 建檔；R2 的 Opus 不得建立或修改該檔，發現問題→停、回 Fable」。
+     **前置追加：T-60 ✅（工程）、T-62 ✅（工程；否則步驟 0(e) 全套測試過不了）。** 步驟 0(a) 追加程式化檢查：`git log --oneline --grep='T-60: 驗證通過'` 與 `git log --oneline --grep='T-62: 驗證通過'` 各須至少一行（與 T-57 同一查法）；
+     任一為空＝停、回報，不得以「檔案都在、測試都過」代替。指令與輸出貼 REPORT §0。
+     另：步驟 0(e)「21 支」是 2026-09-16 落地當時的實數；T-57 `4d4f63b` 新增 `test_t17r2_tools.py` 後為 22 支——自本裁定起以實際 `ls scripts/test_*.py` 支數為準（只增不減：少於 22＝停），全部須 EXIT=0。
+  6. **H3／Prompt B（沿用舊五張降級）自 `ba1fcdb` 起不可用**：`--legacy` 寫死 `assets/photos/` 下舊五個檔名，檔案已移出，使用者決定不還原。**不修 T-57 工具去救**，也不得把新圖改成舊檔名冒充（`--legacy` 的隔離 repo 測試不受影響）。
+     本卡條文（不論位於本裁定上方或下方）凡涉及 Prompt B／「沿用舊五張（降級）」／`--legacy`／H3 者——狀態欄舊字、複評 T-17-R2-pre §2 第 2 件 (b)、「🔮 Fable 落地」§1 的 H3 條目與 §1.4 末句、步驟 0(b) 後半、步驟 1 的「或 `--legacy`（降級路徑）」、
+     步驟 8 的「（或降級）」、以及下方「前置」行末句「若無法提供，§7-1 沿用舊五張但 REPORT 必須標…並降級證據力」——自此一律讀作「不可用；回 Fable」。
+     使用者 Prompt 若含「沿用舊五張（降級）」→ Opus 停在步驟 0(b)。路徑 S 若在步驟 0 不成立 → 停、回 Fable（原條文本來就禁止 Opus 自行降級）。
+  **4. 證據力標示（強制文字；缺任一＝REPORT 不合格）**：路徑 S **不降級判準**（≥4/5 照算），但**外推範圍受限**，必須明示：
+  - **Prompt 核准句**：步驟 0(b) 除「程序 P1 核准」「held-out 已就位」外，路徑 S 另須含「**held-out 為 AI 合成圖（路徑 S）**」；缺此句＝停在步驟 0。Opus 把三句都抄進 REPORT §0。
+    Prompt 樣板（使用者逐字貼給 Opus 新視窗；T-57、T-60、T-62 都 ✅ 之後才貼）：
+    > 你是驗證者，主導執行 TASKS.md 的 T-17-R2（MVP 重新驗收）。先讀 CLAUDE.md、HANDOFF.md 頂端、T-17-R2 卡全文（含裁定 T-57-D、裁定 T-17-R2-S）與 T-04 卡的裁定 T-04-R。
+    > 程序 P1 核准。held-out 已就位。held-out 為 AI 合成圖（路徑 S）。從步驟 0 開始；任一前置檢查不成立就停下回報，不得自行降級、不得改判準、不得現場改腳本。
+  - REPORT §0 與 §1 必須各有這兩句（逐字）：
+    「§7-1 held-out 五張為 AI 合成圖（GPT Image；使用者 2026-09-20 指定），非真實空間照片；本結果不能外推為『對真實照片有效』，真實照片的 held-out 驗證尚未做過。」
+    「這五張同時是 T-04 現行開發素材的來源（使用者 2026-09-20 決定一批兩用；其中四張以 `assets/photos/t04_gpt_*.png` 逐位元並存），且在 R2 開跑前已被 Phase 0 冒煙測試（`test_segmentation.py`／`test_depth.py`，只產視覺化與統計）以分割／深度模型處理過；
+    期間未用於任何調參、標註或校準（佐證：`git diff b06f022..HEAD --stat -- src/ data/` 為空——五張圖生成前的最後一個 commit 起，`src/`／`data/` 全目錄零 diff）。所以本批是『未用於調參的合成圖』，不是『模型從未見過的圖』。」
+  - 判準 1 的判定寫法：`達成（held-out＝AI 合成圖・共用開發素材）`／`未達`。MVP 軸可寫的值：`FAIL（R2）` 或 `PASS（R2；T-04 缺項；held-out＝AI 合成圖・共用開發素材）`——**不得**寫少任何一個附註的 PASS。
+  - REPORT §5（報告項 5）表前與 §4（§7-4 試聽清單）各加一句「held-out 五列全為 AI 合成圖」；表與播放頁仍由 T-57 工具產出，**不得**為了標示而手改表格或現場改腳本。
+  - Opus 步驟 0 另須貼 `ls -la output/seg/ output/depth/ | grep -E 't04_gpt|stats\.json'` 與 `grep -c t04_gpt output/seg/stats.json output/depth/depth_stats.json` 的原文進 REPORT §0，作為曝光範圍的紀錄（只列不刪）。
+  **5. T-04 連動（T-04 卡裁定 T-04-R §3）**：R2 REPORT 第 6 項除既有強制句「9 張照片來源網址缺、使用者 2026-09-16 決定內部使用不補」外，另加（逐字）：
+  「使用者 2026-09-20 決定以替換素材處理 T-04（裁定 T-04-R）：舊 9 張退役（來源缺永久保留）、現行素材改為 GPT Image 合成圖；R2 受驗的 gate 仍是以退役集校準的。held-out 五張的來源紀錄見 assets/SOURCES.md §4。」
+  **6. 為什麼這不是放寬判準**：(i) 4/5、<20%、判定式、in-domain 事前定義、程序 P1、裁定 T-57-D 分母口徑一字未動；(ii) 解析度是素材准入規格，管線實際輸入 ≤518px，1280 對量測無已知影響；
+  (iii) 路徑 S 是**多了強制揭露**（核准句＋強制句＋MVP 雙附註＋曝光清單），不是少了檢查；降級退路（Prompt B）反而被拿掉；(iv) 期望結果不變——§7-2 自動組分母最多 1，預期仍是 `MVP：FAIL（R2）`。
+  已知限制（如實記錄）：合成圖畫面乾淨、無雜物，分割／材質模型在其上的表現可能優於真實照片（**未驗證**）；held-out 與開發素材共用（靠禁用令而非實體隔離）、且被冒煙測試處理過，證據力弱於「全新、隔離的 held-out」——
+  Fable 曾建議重新生成五張全新的圖（成本低、最乾淨），使用者選擇沿用並揭露；所以 §7-1 即使達成，也只能說「對這五張、在已揭露條件下的合成圖達成」。
 - **前置（全部硬性，缺一不跑）**：**T-57 ✅（工程；R2 工具，Fable 2026-09-18 追加）**、T-42 ✅、T-43 ✅、T-46 ✅、裁決 T-47-A、T-48 ✅、
   T-44-R1 結案（PASS→以 `--role-aware` 試用；FAIL／未跑→預設 `role_aware=False`，REPORT 標明
   用哪一種）、T-04 來源網址補齊**或**使用者明確決定「維持未結案」（REPORT 標明缺項）、
@@ -12328,6 +12461,13 @@ EOF
     → 追加（Fable 2026-09-18；只追加）：
   change_record: **結果前**口徑釐清一次——裁定 T-57-D（報告項 5 錯誤放行率分母）；理由＝T-57 規格 4. 字面自相矛盾（Opus `2f6ee3f` 提出）；
     核准者＝Fable（使用者 2026-09-18 指派裁定；使用者保留否決權至步驟 1 前）；獨立 `criteria:` commit；`criteria_changed_after_first_result` 維持 no。
+    → 追加（Fable 2026-09-20；裁定 T-17-R2-S；只追加、另起新行）：
+  criteria_version: 同上＋held-out 素材規格變更（裁定 T-17-R2-S：長邊下限 1920→1280px；新增路徑 S＝AI 合成圖・與開發素材共用・冒煙測試曝光已揭露＋核准句／強制句／MVP 雙附註／曝光清單；`dims_m` 逐字取設計值、域內外分類即刻鎖定；
+    步驟 0 追加尺寸、sha256 同一性、`find` 目錄檢查、`src/`＋`data/` 全目錄零 diff（自 b06f022）與純度範圍釐清；held-out 檔與 GT 改由 T-60 先行 commit；前置追加 T-60／T-62（步驟 0(a) 以 `git log --grep` 機械檢查）；測試支數以實際為準（≥22）；H3／Prompt B 不可用；判準 1～6 未變；結果前變更）
+  criteria_commit: 同上＋〈裁定 T-17-R2-S 的獨立 `criteria:` commit；hash 由緊接的 docs commit 另起新行回填〉
+  criteria_locked_at: 同上／2026-09-20（早於 R2 任何量測；截至 2026-09-20 `output/mvp_acceptance_r2/`、`assets/photos_heldout/` 皆不存在）
+  change_record: **結果前**變更第二次——裁定 T-17-R2-S；理由＝使用者 2026-09-20 指示（解析度 1280px 以上即可；採用五張 GPT Image 合成圖；與 T-04 一批兩用；知悉冒煙測試曝光後仍沿用並要求如實揭露）；
+    方向核准＝使用者；條文起草＝Fable；條文核准＝使用者貼 §4 Prompt 樣板（保留否決權至步驟 1 前）；獨立 `criteria:` commit；`criteria_changed_after_first_result` 維持 no。
   ```
 - **Opus 驗證重點（四軸輸出）**：紅旗：任何素材 provenance 與 HEAD 不符仍納入；紅旗：重用
   `d958b3c` 盲測素材；紅旗：分組達標率被合併；紅旗：域外照片被算進自動組達標；紅旗：REPORT
