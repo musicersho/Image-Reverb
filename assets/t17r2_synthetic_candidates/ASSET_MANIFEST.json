@@ -1,0 +1,52 @@
+[
+  {
+    "file": "heldout_bathroom.png",
+    "width": 1448,
+    "height": 1086,
+    "sha256": "9697b659d104f71643f5083b166445a7381db147f52f4607412395bf8dec3a05",
+    "aspect_ratio_ok": true,
+    "minimum_1920px_met": false,
+    "synthetic": true,
+    "real_world_ground_truth": false
+  },
+  {
+    "file": "heldout_living.png",
+    "width": 1448,
+    "height": 1086,
+    "sha256": "0a731b514a7645143d26cc460e531aea2bc29a767c17b3cd402b3d8e30dd8a07",
+    "aspect_ratio_ok": true,
+    "minimum_1920px_met": false,
+    "synthetic": true,
+    "real_world_ground_truth": false
+  },
+  {
+    "file": "heldout_hall.png",
+    "width": 1448,
+    "height": 1086,
+    "sha256": "eb4f1d09b86c9c6b7658662820a7d419a0f4b243c4746353aae09f94c59adc59",
+    "aspect_ratio_ok": true,
+    "minimum_1920px_met": false,
+    "synthetic": true,
+    "real_world_ground_truth": false
+  },
+  {
+    "file": "heldout_corridor.png",
+    "width": 1448,
+    "height": 1086,
+    "sha256": "7a9f2b8595b6102d5c52bc0738923dd8a24192233565c7e3dd64bbf654d7044d",
+    "aspect_ratio_ok": true,
+    "minimum_1920px_met": false,
+    "synthetic": true,
+    "real_world_ground_truth": false
+  },
+  {
+    "file": "heldout_car.png",
+    "width": 1448,
+    "height": 1086,
+    "sha256": "7b345e6692bc0ca866c9516fe734dd9789f1b95b937345ac2de20bb7a08b457f",
+    "aspect_ratio_ok": true,
+    "minimum_1920px_met": false,
+    "synthetic": true,
+    "real_world_ground_truth": false
+  }
+]

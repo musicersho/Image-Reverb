@@ -1,5 +1,8 @@
 # To-Do
 
+- **2026-09-20 T-17-R2 素材準備**：GPT Image 五類候選已存 `assets/t17r2_synthetic_candidates/`；工程待補（1448px 未達 1920px）／實驗未執行／產品不適用／MVP 待重驗。待處理原生解析度與合成素材證據定位，尚非正式 held-out。
+
+
 > 執行用的任務卡在 [TASKS.md](TASKS.md)，協作規則在 [WORKFLOW.md](WORKFLOW.md)。
 > 本檔案只放高層狀態總覽。
 

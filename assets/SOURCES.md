@@ -182,3 +182,7 @@ Depth Anything V2 與 SegFormer 都是用一般透視影像訓練，
 - [ ] 補上 `assets/photos/` 全部 9 張的來源網址（T-04 自我檢查要求，目前不符合）
 - [ ] 補一張**真實的教堂／長殘響硬質大空間**照片（目前素材缺口）
 - [ ] 若要公開發佈：處理 `assets/photos/` 第三方影像的授權，或全部替換
+
+## 6. T-17-R2 合成候選圖（2026-09-20；非正式 held-out）
+
+五張由本次內建 GPT Image 生成，見 `assets/t17r2_synthetic_candidates/README.md`、`PROMPTS.json` 與 `ASSET_MANIFEST.json`。無外部來源照片；尺寸設計不是實測真值。原檔皆 1448×1086，未達任務卡 1920px 下限，§4 的正式素材缺口仍保留。PNG 僅本機留存，本輪只提交來源與需求文件。
