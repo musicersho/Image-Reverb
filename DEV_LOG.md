@@ -1,5 +1,21 @@
 # Dev Log
 
+## 2026-09-20 (166) T-57（含修正輪 T-57-F1）Opus 驗證通過（工程）
+
+- 審查對象 `14fc4ac`（基準 `aa13c55`、舊碼 `4d4f63b`）。四軸：**工程：已驗證｜實驗：不適用（工具卡修正輪）｜產品：不適用｜MVP：不適用**。
+- Opus 全部自己重跑，不採信交接筆記：範圍恰 5 個腳本檔（`src`／`data`／`t17r2_common.py`／`t17r2_make_player.py`／既有 t17 四支／`test_t17_provenance.py`／`ir_metrics.py`／`output/` 零 diff）；
+  鐵則 16(b) 行層級檢查通過（T-57 卡零刪除行；T-57-F1 卡只有「狀態」「四軸狀態」兩欄；T-17-R2／T-58 系列卡逐行相同；DEV_LOG／HANDOFF／TODO 零刪除行）。
+- **R1 突變 Opus 自己重做**：內容比對式改寫死 `False` → 只有 `(a-3)` ❌、`EXIT=1`；還原後 `cmp_exit=0`、74 條全 ✅、`EXIT=0`。`(a-4)` 與「突變」字樣已從測試檔清除。
+- **鐵則 5 第一類**：自建 `4d4f63b` worktree ＋新版測試檔 → **36 ❌／38 ✅／EXIT=1**，與交接筆記逐項相符；修正項第 3～8 條每一項都至少有一條在舊碼 ❌。
+- **口徑（裁定 T-57-D §3）Opus 自製 items 手算複核**：主率＝❌÷可判面數、6N 上下界同列、無來源面在表也在分母、GT `proxy:true` 照判、可判＝0 與 N＝0 皆不印「0%」、全案無「分母固定 6」。
+- **R5**：用 T-17-R2 步驟 2(e) 逐字樣板產 log，`Traceback＋exit=1 → default_exit=1`（舊碼給 0）；14 種攻擊變體全數合規；無字串推測、不讀 `.forced.log`。
+- **R4／R6／第 8 條**：缺／壞 manifest 8 種情況全部 exit 1 且不寫 `rt60_table.json`；正常路徑仍 rc=0；兩支 CLI `--legacy`＋`--photos-dir` exit 2；repo 外路徑 exit 1 無 Traceback；`<repo>-evil` 前綴攻擊與 `..` 逃逸皆被正確拒絕。
+- **六條交付 IR MD5 全中**（T-14 兩條由 `test_ir_synth.py` 內建；T-20／T-21 四條 Opus 以 `md5 -q` 重生比對）；22 支測試在 `14fc4ac` worktree 全 `EXIT=0`；`output/` 不變量（`ls`／41 檔 sha256／`git status`／`.archive` 14 目錄）全數成立。
+- **⚠️ 附帶發現（不屬 T-57）**：在當下 `main`（`f3e07b0`）跑，`test_depth.py` 與 `test_pipeline_dedup.py` `EXIT=1`，原因是 **T-04 替換了 `assets/photos/`**（缺 `bathroom_tiled.png` 等；新圖觸發 `test_depth.py` 的 `TypeError`）。**這是 T-04 的待辦**，與 T-57-F1 無關（本卡零 `src`／`data`／`assets` 改動）。
+- **🟡 Opus 建議（不擋本卡，交 Fable）**：(k) 段 fixture 只有 `clip`／`無` 兩種來源且全 in-domain，`source=="default"` 與 out-domain 的排除型突變能無聲通過（程式正確、卡片字面驗收亦達成，但性質未被斷言綁住）；
+  `t17r2_blind_test.run()` 預設 `photos_dir` 綁真實 `REPO_ROOT` 造成隔離 repo 呼叫時的誤導訊息；`_cli_outside()` 護欄在 R2 步驟 1 後會變恆真；建議輕量 §7 改寫「測試全在系統暫存目錄」為可機械驗證的性質。詳見 TASKS.md T-57-F1 卡末「✅ Opus 驗證紀錄」§15。
+- **T-17-R2 前置「T-57 ✅（工程）」自此成立**；R2 本身仍等使用者 held-out 照片（合成候選 1448×1086 未達 1920px、且已成 T-04 共用素材，不算 held-out）。
+
 ## 2026-09-20 全專案完工差距檢視
 
 - 2026-09-20 Codex 全專案完工差距盤點：見 `PROJECT_REVIEW_20260920.md`。核心 CLI 已完成，MVP 首驗 FAIL／R2 待重驗，Phase 2 外掛未開發。新發現 T-04 換圖後 legacy 五張預設路徑全部不存在（備份齊全），需在 R2 前整理；正式 held-out 尚缺、T-57-F1 待審。本次 R2 工具自測全部通過，不取代正式審查。

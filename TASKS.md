@@ -12367,7 +12367,8 @@ EOF
   (2) R5→**選項 (i)**（log 末行 `exit=<整數>`，T-17-R2 步驟 2(e) 已同步）；(3) 修正輪＝下一張卡 **T-57-F1**（Sonnet；R1～R5＋Fable 補列 R6＋兩個小問題＋
   分母文字）；(4) 背景調查 `task_14c97967` 前提為誤報→**可撤銷**（HANDOFF 已註明）。本卡四軸維持「工程：退回」，直到 T-57-F1 經 Opus 驗證通過才改
   「已驗證」；**T-17-R2 前置「T-57 ✅（工程）」在那之前不成立**。
-- **四軸狀態**：工程：退回｜實驗：不適用（工具卡）｜產品：不適用｜MVP：不適用（T-17-R2 前置；R2 前置「T-57 ✅」尚未成立）
+- **四軸狀態**：工程：已驗證（Opus 驗證，2026-09-20；對象 `14fc4ac`＝T-57 全部交付物在修正輪 T-57-F1 後的狀態；驗證紀錄在 T-57-F1 卡末）｜實驗：不適用（工具卡）｜產品：不適用｜MVP：不適用（T-17-R2 前置「T-57 ✅（工程）」自本次驗證起**成立**）
+  （原 Opus 2026-09-18 退回後的四軸，原字保留：工程：退回｜實驗：不適用（工具卡）｜產品：不適用｜MVP：不適用（T-17-R2 前置；R2 前置「T-57 ✅」尚未成立））
 - **為什麼**：T-17-R2 執行步驟 1 原本要 Opus 自己寫 5 支 R2 腳本，與 CLAUDE.md「Opus 只審不寫」衝突，而且驗收工具沒經過獨立驗證
   就直接拿去驗收。拆出來給 Sonnet 做、Opus 驗，R2 的 Opus 視窗只做 manifest＋跑流程。工具可在沒有 held-out 照片時先完成——
   所有測試用樁資料在 scratchpad 隔離 git repo 跑（沿用 `scripts/test_t17_provenance.py` 手法），不碰真實 `output/`。
@@ -12496,7 +12497,8 @@ EOF
 - **狀態**：🔵 **完成（待驗證）**（Sonnet 2026-09-20；R1～R8 全部修正，逐條證據與 commit 見交接筆記）
   （原 Fable 開卡狀態，原字保留：⬜ **可開跑**（Fable 2026-09-18 開卡；可與 T-58 平行——程式檔不相交，但 TASKS／DEV_LOG／HANDOFF／TODO 會同時被兩個視窗改：
   commit 前先 `git status`，**只 `git add` 本卡列名的檔案**，不得把 `output/rt60_basis_probe/` 等 T-58 產物帶進本卡 commit））
-- **四軸狀態**：工程：待審｜實驗：不適用（工具卡修正輪）｜產品：不適用｜MVP：不適用（T-17-R2 前置「T-57 ✅（工程）」要等本卡經 Opus 驗證通過才成立）
+- **四軸狀態**：工程：已驗證（Opus 驗證，2026-09-20；對象 `14fc4ac`）｜實驗：不適用（工具卡修正輪）｜產品：不適用｜MVP：不適用（T-17-R2 前置「T-57 ✅（工程）」**已成立**）
+  （原 Sonnet 收工四軸，原字保留：工程：待審｜實驗：不適用（工具卡修正輪）｜產品：不適用｜MVP：不適用（T-17-R2 前置「T-57 ✅（工程）」要等本卡經 Opus 驗證通過才成立））
   （原 Fable 開卡四軸，原字保留：工程：未開始｜實驗：不適用（工具卡修正輪）｜產品：不適用｜MVP：不適用（T-17-R2 前置「T-57 ✅（工程）」要等本卡經 Opus 驗證通過才成立））
 - **為什麼**：Opus 2026-09-18 驗證 T-57（對象 `4d4f63b`，紀錄 `2f6ee3f`）：主體成立，但 R1～R5 未達→工程退回。本卡逐條修、逐條附證據。
   兩個需要 Fable 先定的事已定：**分母口徑＝裁定 T-57-D**（T-17-R2 卡）、**R5＝選項 (i)**（T-17-R2 步驟 2(e)）。Sonnet **不得**重新解讀這兩項。
@@ -13311,6 +13313,203 @@ EOF
   - **背景調查 `task_14c97967`**：其前提（T-20／T-21 MD5 漂移）已由本卡 R2 再證為誤報。該 chip 是前一個 session 用 `spawn_task` 建立的，本視窗沒有它的控制權，**未在此撤銷**——使用者在 App 的背景任務清單直接關閉即可；若它已產出任何結論或 commit，一律不採用、回報 Fable。
   - **下一步**：開 Opus 新視窗，依本卡「Opus 驗證重點」複驗（任務寫「T-57（含修正輪 T-57-F1）」）：對象＝T-57 全部交付物在本次收工 commit 的狀態；重做一次 R1 突變對照（備份→內容比對式改寫死 `False`→跑→`cp` 還原→`cmp`）；輸出含隨機暫存目錄名，重做只能比對「哪些斷言 ❌／EXIT」。
     通過時 Opus 把 T-57 卡與本卡四軸同時改「工程：已驗證」，commit 訊息 `T-57: 驗證通過（工程）（含修正輪 T-57-F1）`（T-17-R2 步驟 0(a) 以此字樣查 `git log`）；再退回→Fable 開 T-57-F2。T-17-R2 仍等使用者 held-out 照片（另一視窗已生成 1448×1086 合成候選圖、未達 1920px，見 `assets/t17r2_synthetic_candidates/README.md`）。
+  - **✅ Opus 驗證紀錄（2026-09-20；對象 `14fc4ac`＝commit 訊息 `T-57-F1: 完成修正輪（待驗證）`；基準 `aa13c55`；舊碼 `4d4f63b`）**：
+    四軸判定：**工程：已驗證｜實驗：不適用（工具卡修正輪）｜產品：不適用｜MVP：不適用**。
+    下列每一項都由 Opus **自己重跑**取得，不採信交接筆記；全程 repo 唯讀（除下方 `git worktree add/remove` 與本次收工編輯），`output/` 一個 bit 未動。
+    ⚠️ **驗證期間 `main` 被另一視窗（Codex／T-04）推進到 `ba1fcdb`→`f3e07b0`→`3fd51c4`**，因此 22 支測試改在 `14fc4ac` 的 worktree 跑（見下）。
+
+    **1. 範圍與零 diff（鐵則 13）**：
+    ```
+    $ git diff --stat aa13c55 14fc4ac -- scripts src data
+    # BEGIN OPUS-T57-A-SCOPE
+     scripts/t17r2_blind_test.py       |  40 +-
+     scripts/t17r2_dataset_manifest.py |  82 +++-
+     scripts/t17r2_report_tables.py    |  89 ++++-
+     scripts/t17r2_rt60_table.py       |  76 +++-
+     scripts/test_t17r2_tools.py       | 812 +++++++++++++++++++++++++++++++++++++-
+     5 files changed, 1042 insertions(+), 57 deletions(-)
+    # END OPUS-T57-A-SCOPE
+    $ git diff --name-only aa13c55 14fc4ac
+    # BEGIN OPUS-T57-B-NAMES
+    DEV_LOG.md
+    HANDOFF.md
+    TASKS.md
+    TODO.md
+    scripts/t17r2_blind_test.py
+    scripts/t17r2_dataset_manifest.py
+    scripts/t17r2_report_tables.py
+    scripts/t17r2_rt60_table.py
+    scripts/test_t17r2_tools.py
+    # END OPUS-T57-B-NAMES
+    $ git diff --stat aa13c55 14fc4ac -- src data scripts/t17r2_common.py scripts/t17r2_make_player.py scripts/t17_blind_test.py scripts/t17_rt60_table.py scripts/t17_report_tables.py scripts/t17_make_player.py scripts/test_t17_provenance.py src/image_reverb/ir_metrics.py output; echo "exit=$?"
+    # BEGIN OPUS-T57-C-ZERODIFF
+    exit=0
+    # END OPUS-T57-C-ZERODIFF
+    ```
+    結論：`scripts src data` 恰好只有本卡「只得修改」的 5 個檔（+1042 −57）；整個 commit 只動這 5 個檔＋4 份文件；
+    `src`／`data`／`t17r2_common.py`／`t17r2_make_player.py`／既有 `t17_*.py` 四支／`test_t17_provenance.py`／`ir_metrics.py`／`output/` 全部零 diff（`exit=0`、無輸出）。
+
+    **2. 文件行層級檢查（鐵則 16(b)，基準 `aa13c55`，Opus 自跑）**：T-57 卡零刪除行（新增 3 行）；T-57-F1 卡的刪除／改寫恰為 `2,4c2,6`＝「狀態」2 行＋「四軸狀態」1 行，是 16(c) 明訂的唯二例外，舊值已留存；
+    T-17-R2 卡與 T-58／T-58-F1／T-58-F2 三卡 `diff` 全部 `exit=0`（逐行相同）；全檔僅 T-57 與 T-57-F1 兩張卡有差異（舊檔差異行號 12475、12488–12490、12578 全落在兩卡範圍內）；DEV_LOG／HANDOFF／TODO 零刪除行。
+
+    **3. 22 支測試（在 `14fc4ac` 的 worktree 自跑，全部 `EXIT=0`）**：
+    ```
+    $ git worktree add <scratchpad>/wt_14fc4ac 14fc4ac; cd <scratchpad>/wt_14fc4ac; for t in scripts/test_*.py; do "<repo>/.venv/bin/python" "$t" > /dev/null 2>&1; echo "$t EXIT=$?"; done
+    # BEGIN OPUS-T57-D-22TESTS
+    scripts/test_acoustics.py EXIT=0
+    scripts/test_confidence_axes.py EXIT=0
+    scripts/test_coupled.py EXIT=0
+    scripts/test_depth.py EXIT=0
+    scripts/test_eval_cache.py EXIT=0
+    scripts/test_furnishings.py EXIT=0
+    scripts/test_geometry_scope.py EXIT=0
+    scripts/test_ir_synth.py EXIT=0
+    scripts/test_material_fallback.py EXIT=0
+    scripts/test_output_gate.py EXIT=0
+    scripts/test_pipeline_dedup.py EXIT=0
+    scripts/test_preprocess.py EXIT=0
+    scripts/test_scene_text.py EXIT=0
+    scripts/test_segmentation.py EXIT=0
+    scripts/test_surface_trusted_scope.py EXIT=0
+    scripts/test_t17_provenance.py EXIT=0
+    scripts/test_t17r2_tools.py EXIT=0
+    scripts/test_t30_low_combined.py EXIT=0
+    scripts/test_t38_treatment_eval.py EXIT=0
+    scripts/test_t39_materials_invariant.py EXIT=0
+    scripts/test_t44_role_partition.py EXIT=0
+    scripts/test_t46_role_flag.py EXIT=0
+    # END OPUS-T57-D-22TESTS
+    ```
+    結論：22 支全部 `EXIT=0`（`ls scripts/test_*.py | wc -l` ＝ 22）；`test_t17r2_tools.py` 共 **74 條斷言、全 ✅、無 (a-4)**。
+    ⚠️ **同樣的 22 支在當下 `main`（`f3e07b0`）跑，`test_depth.py` 與 `test_pipeline_dedup.py` `EXIT=1`**——原因是 **T-04（`ba1fcdb`／`f3e07b0`，另一視窗，待驗證）替換了 `assets/photos/`**（`test_pipeline_dedup.py` 報「缺少 assets/photos/bathroom_tiled.png」等 6 項、`test_depth.py` 在新圖上 `TypeError`）。
+    **與 T-57-F1 無關**（本卡零 `src`／`data`／`assets` 改動），但**這是 T-04 的待辦，Opus 在此留存紀錄**。
+
+    **4. R1 真突變（Opus 自己重做一次，scratchpad 複本，內容比對式不用行號）**：
+    ```
+    $ diff "$SP/mut/blind.bak" "$SP/mut/scripts/t17r2_blind_test.py"   # 突變後（內容比對式 sed，不用行號）
+    # BEGIN OPUS-T57-E1-MUTDIFF
+    142c142
+    <                 "forced_low_confidence": meta.get("forced_low_confidence", False),
+    ---
+    >                 "forced_low_confidence": False,
+    # END OPUS-T57-E1-MUTDIFF
+    $ grep -cE "^  (✅|❌) \(" mutated.txt; grep -E "^  ❌ \(" mutated.txt; tail -1 mutated.txt   # 突變版跑測試（EXIT=1）
+    # BEGIN OPUS-T57-E2-MUTATED
+    74
+      ❌ (a-3) forced_low_confidence 逐筆等於樁 analysis.json：[('heldout_bathroom', False), ('heldout_living', False), ('heldout_hall', False), ('heldout_corridor', False), ('heldout_car', False)]
+    ❌ 1 項失敗：['(a-3) forced_low_confidence 逐筆等於樁 analysis.json']
+    # END OPUS-T57-E2-MUTATED
+    $ cmp mut/scripts/t17r2_blind_test.py <repo>/scripts/t17r2_blind_test.py; echo "cmp_exit=$?"; grep -cE "^  ✅ \(" restored.txt; grep -cE "^  ❌ \(" restored.txt; tail -1 restored.txt   # 還原後（EXIT=0）
+    # BEGIN OPUS-T57-E3-RESTORED
+    cmp_exit=0
+    74
+    0
+    ✅ 全部通過
+    # END OPUS-T57-E3-RESTORED
+    $ grep -n "a-4" scripts/test_t17r2_tools.py; echo "a4_exit=$?"; grep -n "突變" scripts/test_t17r2_tools.py; echo "mut_exit=$?"
+    # BEGIN OPUS-T57-E4-NOA4
+    a4_exit=1
+    mut_exit=1
+    # END OPUS-T57-E4-NOA4
+    ```
+    結論：與交接筆記「自我檢查 2」③⑤ 的判定**完全一致**——突變後只有 `(a-3)` 一條 ❌、`EXIT=1`；還原後 `cmp` 與 repo 原檔逐位元相同、74 條全 ✅、`EXIT=0`。
+    `grep -n "a-4" scripts/test_t17r2_tools.py` 與 `grep -n "突變" scripts/test_t17r2_tools.py` 皆為空（`grep_exit=1`）＝假斷言已刪、測試檔不再自稱有突變證明。repo 檔案全程未被改動（`git status --porcelain -- scripts` 為空）。
+
+    **5. 鐵則 5 第一類（Opus 自建 `4d4f63b` worktree ＋新版測試檔）**：
+    ```
+    $ grep -cE "^  ✅ \(" old_newtest.txt; grep -cE "^  ❌ \(" old_newtest.txt; grep -oE "^  ❌ \([a-z]-?[0-9]*\)" old_newtest.txt | sed "s/^  ❌ //" | tr "
+    " " "
+    # BEGIN OPUS-T57-F-OLDCODE
+    38
+    36
+    (g-1) (g-2) (h-1) (h-2) (h-3) (h-4) (h-5) (i-1) (i-2) (i-3) (i-4) (i-6) (i-7) (i-8) (i-9) (i-10) (j-1) (j-3) (j-4) (k-1) (k-2) (k-3) (k-8) (k-6) (k-7) (l-1) (l-2) (l-3) (l-4) (l-5) (l-6) (l-7) (l-8) (l-9) (l-12) (l-13)
+    # END OPUS-T57-F-OLDCODE
+    $ grep -oE "^  ✅ \([a-z]-?[0-9]*\)" old_newtest.txt | sed "s/^  ✅ //" | tr "
+    " " "   # 舊碼仍 ✅ 的 38 條（前 27 條是既有 (a)–(f)，其餘 11 條是新增 guard）
+    # BEGIN OPUS-T57-F2-OLDPASS
+    (a-1) (a-2) (a-3) (b-1) (b-2) (b-3) (b-4) (c) (d-1) (d-2) (d-3) (e-1) (e-2) (e-3) (e-4) (e-5) (f-1) (f-2) (f-3) (f-4) (f-5) (f-6) (f-7) (f-8) (f-9) (f-10) (f-11) (i-5) (i-11) (j-2) (k-4) (k-5) (l-10) (l-11) (m-1) (m-2) (m-3) (m-4)
+    # END OPUS-T57-F2-OLDPASS
+    ```
+    結論：與交接筆記「自我檢查 4」**逐項相符**（36 ❌／38 ✅／`EXIT=1`），11 條舊碼仍 ✅ 的「原行為不變」guard 清單也逐字相同。
+    第 3～8 條**每一項都至少有一條在舊碼 ❌**：R3→(g-1)(g-2)；R4→(h-1)…(h-5)；R5→(i-1)(i-2)(i-3)(i-4)(i-6)…(i-10)；R6→(j-1)(j-3)(j-4)；第 7 條→(k-1)(k-2)(k-3)(k-6)(k-7)(k-8)；第 8 條→(l-1)…(l-9)(l-12)(l-13)。
+
+    **6. 第 7 條（裁定 T-57-D §3）——Opus 自己設計 items、自己手算，不採信作者測試**：直接 import `render_item5_table()`／`build_item5()`，8 組自製情境逐一比對「手算 vs 程式輸出」，**全部逐字相符**：
+    (A) 3 張 18 面（❌5／✅9／無法判4）→ `N＝3／6N＝18／可判面數 14／無法判面數 4／❌ 5；主率＝5/14（36%）；下界＝5/18（28%）；上界＝9/18（50%）`；
+    (B) **無來源面**（`surfaces_sources` 缺該面、印「無」）且 GT 存在判 ❌ → 該面**照列**（六面全列＝6 列）且**同時進分子與可判面數**（`可判面數 6／❌ 1`）；
+    (C)(I) GT `proxy: true` **照判**（相符→✅、不符→❌，不是「無法判」）；GT `unknown` 與 GT 缺 → 「無法判」；
+    (D) 可判＝0 → `主率（❌÷可判面數）＝—（無可判面）`，Python `"0%" in line` 為 **False**；
+    (E) N＝0 → `錯誤放行率不適用（0 張放行）`，`"0%" in line` 為 **False**；
+    (F) 可判>0 且 ❌=0 → 照印 `0/6（0%）`（真的量到零錯誤，沒有被吞掉）；
+    (H) 三數兩兩不同（3/9＝33%／3/12＝25%／6/12＝50%）→ **標籤↔數值無錯位**。
+    `grep -rn "分母固定 6" scripts/` 只命中 `test_t17r2_tools.py` 的斷言字串本身（第 28／923／945 行），`t17r2_report_tables.py` 的 docstring、程式碼與 render 產出三者皆無。
+    Opus 另做突變：主率分母改成 6N → `(k-1)` ❌；排除 `source=="無"` 的面 → `(k-1)(k-3)(k-4)` ❌；無來源面照列但不計數 → `(k-1)(k-3)` ❌。**(k-4) 不是恆真斷言。**
+
+    **7. R5（用 T-17-R2 步驟 2(e) 的逐字樣板 `...; printf '\nexit=%d\n' $? >> "$LOG"` 實跑產 log）**：擋下＋`exit=3`→`default_exit=3`／`consistent=True`；**Traceback＋`exit=1`→`default_exit=1`（舊碼給 0）**；正常→0；擋下但 `exit=0`→`consistent=False`。
+    14 種攻擊變體：`exit=3` 後還有一行 → `None`（**沒有用字串推測填 3**）、中間 `exit=99` 不被採用、`exit= 3`／`exit=3 `／全形 `exit=３`／`Exit=3`／`\x0b` → 全 `None`、`exit=-1`→−1、CRLF→3、空檔／全空行不爆例外、缺檔→整個 dict `None`。
+    `default_exit` 在兩支檔案裡只有一個賦值點（`t17r2_rt60_table.py:83` 的 `EXIT_LINE_RE` 解析），舊碼 `git show 4d4f63b:` 為 `"default_exit": 3 if blocked else 0`（字串推測）已清除；
+    兩個生產呼叫端都是 `f"{run_stem}.log"`（`t17r2_rt60_table.py:196`、`t17r2_report_tables.py:112`），實測同目錄放 `x.log`(exit=0)＋`x.forced.log`(exit=3) → 取自 `x.log`，**不讀 `.forced.log`**。
+
+    **8. R4／R6／第 8 條（Opus 自跑）**：`t17r2_rt60_table.run()` 在「缺 manifest／壞 JSON／空檔／非 dict／`venues` 非清單／缺場地 key／缺 `in_domain` 欄位／`in_domain` 是字串」8 種情況全部 `rc=1`、**`rt60_table.json` 不存在**、無 Traceback；正常 manifest → `rc=0`、8 場地、只有 `mit_gym` `in_domain=True`（**加碼沒有破壞正常路徑**）。
+    `--dry`／`--photos-dir` 的 `main()` 接線以 `mock.patch` 攔 `run` 實證（給了→`Path(...)`，未給→`None`，兩支皆是）。
+    兩支 CLI `--legacy --photos-dir x` → **`rc=2`**＋`error: --legacy 固定使用 assets/photos/，不可與 --photos-dir 併用`、Traceback 0 行。
+    repo 外路徑（`run()` 層）→ `rc=1`＋「必須位於 repo 內：manifest 只記 repo 相對路徑」、無例外。
+    路徑攻擊：`<repo>-evil/x.png` → 兩支皆拒（實作用 `Path.relative_to()` 逐元件比對，**不是 `startswith`**，經典前綴漏洞不成立）；`..` 逃逸 → 兩支皆拒；repo 內 → 兩支皆收。
+
+    **9. 六條交付 IR MD5（鐵則 2）**：T-14 兩條由 `test_ir_synth.py`（`EXIT=0`）內建比對；T-20／T-21 四條由 Opus 用 `pipeline.OUTPUT_ROOT` 導到 scratchpad、經 `cli.main()` 重生，macOS `md5 -q`：
+    ```
+    $ for d in text_bathroom text_church neighbor_voices stadium_corridor; do printf "%s " "$d"; md5 -q "$SP/md5out/$d/ir_mono.wav"; done
+    # BEGIN OPUS-T57-G-MD5
+    text_bathroom 2adbaa75eb698772a8c9aa693179ec47
+    text_church 2dd19b6e6d351d713887636fe45cd67e
+    neighbor_voices 9a94ffdf5d8295aee7889729c39c9cd8
+    stadium_corridor a1c21bcc3fd9aa3480df203a89c8cd05
+    # END OPUS-T57-G-MD5
+    ```
+    結論：四條**完整 32 碼**與歷史記錄逐字相同（`2adbaa75…`／`2dd19b6e…`／`9a94ffdf…`／`a1c21bcc…`）；R2 的「誤報」更正屬實；repo 的 `output/` 全程未被寫入（`git status --porcelain -- output` 為空）。
+
+    **10. 不變量**：`ls output/` 頂層清單前後 `diff exit=0`；`output/mvp_acceptance/` 41 個檔的 sha256 清單前後 `diff exit=0`（清單檔本身 sha256 `9c514e87884f929f6fefc6bba09ad2cf9fd292d2348858c395598423da1c08ce`）；`git status --porcelain -- output` 為空；`output/.archive` 維持 14 個目錄（未動）；`output/mvp_acceptance_r2/` 不存在。
+
+    **11. 「不得回歸」12 項：逐項維持，無一退步**（1 零 diff／2 `SHUFFLE_SEED=20260916`／3 sample 逐位元＝`wet_preview.wav`／4 `--dry` 44.1k→48k 非靜音／5 拒絕覆寫／6 manifest 兩次逐位元相同且無時間戳／7 測試不碰真實 `output/`／8 三張對照表數字（`VENUE_KEY_TO_GT_NAME` 8 筆對 `GATE_ITEMS`＋`material_ground_truth.json`、`MANUAL_DIMS` 5 組對 `output/mvp_acceptance/tables.md` 表 4 逐筆相符）／9 `in_domain` 寫死僅 `mit_gym`／10 `config.GEOMETRY_SCOPE_MAX_M`／11 表 2 三組分列＋forced 不進自動組＋coverage 行／12 `ground_truth_heldout.json` schema）。
+    其中 2／8／9／10／12 由 `t17r2_common.py` 零 diff 直接成立，另以逐檔 blob sha256 交叉核對。
+
+    **12. 交接筆記的鐵則 16／17 合規**：30 組 `# BEGIN／# END` 全部配對、fenced block 圍欄 32 行（偶數）；每一句「結論」都緊接在輸出區塊**之後**（距離 1 行）；輸出為空處寫「（輸出為空）」；
+    會被自己貼上去的內容改變的指令（TASKS.md 的 `grep`／`diff`）一律改對固定 commit（`aa13c55`／`4d4f63b`）取快照——Opus 重跑「自我檢查 5」三段 `--stat` 與「文件行層級檢查」四段，**輸出與卡片貼的逐字相同**；四條 MD5 貼的是完整 32 碼且用 `md5 -q`（不是 `shasum`）；R2 三處更正皆為另起新行、原文零刪除。**沒有「無輸出區塊的結論句」。**
+
+    **13. 「Opus 驗證重點」紅旗逐項（全部「無」）**：(a-4) 仍在或被恆真斷言取代→**無**；突變輸出不存在／Opus 重做得不到相同判定→**無**（逐字相同）；新斷言在 `4d4f63b` 不 fail→**無**（36 條 ❌）；
+    `tables.md` 仍有「分母固定 6」→**無**；主率分母不是可判面數→**無**；缺 6N 上下界→**無**；可判＝0／N＝0 印 0%→**無**；無來源面被排除→**無**；缺 manifest 仍寫出 `rt60_table.json`→**無**；
+    仍用字串推測 `default_exit` 或把 `.forced.log` 當預設路徑→**無**；R2 更正刪原文／MD5 沒貼完整 32 碼／用的不是 `md5`→**無**；「不得回歸」任一項退步→**無**；動了「只得修改」以外的檔案或 T-17-R2 卡文字→**無**。
+
+    **14. 對「執行時的決定」1～8 與加碼項的裁量（Opus 逐項實測後的意見）**：
+    - **決定 1（可判＝0 時上下界只印分數）＝合理落實，不是實質改變口徑**。裁定 §3.4 要求的是「同列揭露上下界」、未規定表示法；`0/12`／`12/12` 是**精確揭露**（分數比百分比多了分子分母，資訊不減）。
+      而本卡驗收條文寫死「該彙總行不含『0%』」，`100%` 含該子字串——在兩條硬條文同時成立的前提下，不換算百分比是唯一解，方向是收緊不是放寬。Opus 實測可判＞0 時三個比率都照印「分數（百分比）」，資訊完整。
+      （附帶：主率剛好 100% 時彙總行確實含「0%」子字串，但 `(k-6)(k-7)` 是情境綁定的（可判＝0／N＝0 兩個不印百分比的分支），**不會誤判**——Opus 實測確認。）
+    - **決定 3（文字比對優先、兩支各一份同算法）＝合理落實**。兩支演算法本體逐字相同（差別只有回傳型別）；`t17r2_common.py` 零 diff 是卡片硬性要求，抽共用必然破壞它，**選重複實作的優先序正確**；(l-13) 以 8 種路徑同時斷言兩支結果相等且等於預期，Opus 以「把其中一支改成 resolve-only／改成 `startswith`」兩種突變實測，(l-13)（＋(l-6)）都抓得到。
+    - **決定 6（(l-1)(l-2)(l-7)(l-8)(l-9) 用 subprocess 對真實 repo 跑 CLI）＝字面張力屬實，實質安全，判合理落實，不構成退回**。T-57 原卡該條完整原文是「測試全在系統暫存目錄，`ls output/` 與 `output/mvp_acceptance/` 全目錄 sha256 快照前後相同」——**後半句是被保護的性質，前半句是手段**。
+      Opus 用同一方法獨立複驗（見第 10 點）：性質完全成立。且已讀碼確認路徑檢查／argparse 錯誤**先於任何 `mkdir`／寫檔**，並實測工作樹 dirty 時仍先報路徑錯（決定 4 的順序是這條安全性的必要條件）。Sonnet 主動揭露此張力是對的。
+    - **加碼三項（R4 對缺 `in_domain`／壞 JSON 等也 exit 1；`--dry` 指到目錄不 Traceback；`_repo_relative` 文字優先）＝未擴大範圍、不與卡片衝突、無回歸**。三項全在「只得修改」的 5 個檔內、未新增任何腳本或測試檔（`ls scripts/test_*.py | wc -l` 仍是 22）；
+      R4 加碼處理的是卡片明令禁止的同一個失效模式（「不得靜默當 `in_domain=False`」）的其他入口，解法相同（exit 1、不寫表、不 Traceback）；`isinstance(..., bool)` 比卡片字面更嚴，方向同向；Opus 實測正常路徑 `rc=0` 未受影響。
+    - **決定 8（自我檢查 5 改貼固定 commit 版）＝合理處置，不是規避**。Opus 實跑 `git diff --stat 4d4f63b..14fc4ac -- scripts/` 確為 6 檔（多出 `t58_rt60_basis_probe.py`），`git log --oneline 4d4f63b..14fc4ac -- scripts/t58_rt60_basis_probe.py` 顯示它由 `ee55cad`／`31233ed`（T-58）帶進來——**字面式在物理上不可能只出現五檔，是開卡瑕疵**。
+      改貼的固定 commit 版經 Opus 重跑逐字相符，且**驗到的性質比原式更準**（`git rev-parse 14fc4ac^ = aa13c55`，等同「本 commit 自己只動 5 個檔」）。依 WORKFLOW §5.4.1，這裡**沒有未完成項**（待驗性質完整達成、且執行者正面揭露改了指令），不是附註豁免；比照鐵則 16(d)「兩條指示互斥時以實質為準」。
+    - 決定 2／4／5／7 亦逐項查過，均為合理落實（決定 5 的「blind_test `--dry` 不設限」由 T-17-R2 步驟 1「乾聲檔必須放在 repo 內」與步驟 3 的 `dry.sha256` 交叉核對堵兩次，且卡片 R6 明訂該核對不在本卡）。
+
+    **15. 🟡 Opus 建議（不擋本卡、不是退回理由，交 Fable 排後續卡）**：
+    1. **(k) 段 fixture 的來源值只有 `clip` 與 `無`、照片全是 in-domain**，Opus 實測三個**真實可達**的突變能無聲通過全部 22 支測試：把 `source=="default"` 的面判成「無法判」、`source=="default"` 照列但不計數、`domain` 為 `out`／`non_room` 的照片不產六面表。
+       **程式本身正確**（Opus 以自製 items 與真 GT 端到端都證實 `default` 來源與 out-domain 照片確實照列照計），卡片第 7 條的**字面驗收方式也完整達成**（指定的 fixture 就是 12 面＝7✅+3❌+2無法判、含 1 面無來源判 ❌）；
+       但「不因管線側理由排除任何面」這個**性質**目前只被 `"無"` 這一個字面值綁住。修補成本極低（fixture 加一面 `source="default"`、加一張 `domain="out"` 的通過照片，(k-4) 改成「任何來源都不影響 verdict／計數」）。建議列入 Fable 待辦。
+    2. `t17r2_blind_test.run()` 的預設 `photos_dir` 取自 `common.LEGACY_PHOTOS_DIR`／`HELDOUT_PHOTOS_DIR`（綁**真實** `REPO_ROOT`），因此 `run(repo_root=<隔離 repo>)` 且不給 `photos_dir` 時，第 8(b) 的新守衛會回「`--photos-dir` 必須位於 repo 內」這句**誤導訊息**（使用者根本沒給該參數）。
+       生產路徑（CLI 一律 `repo_root=REPO_ROOT`）不受影響，測試也一律顯式帶 `photos_dir=`，故不擋本卡；一行可修（改成 `repo_root / "assets" / (...)`，與 `t17r2_dataset_manifest.py` 對齊）。
+    3. `test_t17r2_tools.py` 的 `_cli_outside()` 護欄是 `output/mvp_acceptance_r2` 這一層**目錄存不存在**；T-17-R2 步驟 1 之後該目錄會存在，護欄即變恆真。建議改成遞迴 sha256 前後比對，並讓 (l-7)(l-8) 帶 `--out <tmp>`。
+    4. 文件面：建議 Fable 走一次**輕量 §7** 把「測試全在系統暫存目錄」改寫成可機械驗證的性質（「測試不得寫入 repo；對真實 repo 只允許在任何讀寫之前即退出的 CLI 冒煙測試，並以 `output/` 全目錄 sha256 前後比對為證」），並在本卡驗收段補記一行「自我檢查 5 指令式已更正為固定 commit 版（理由＋Opus 已複核）」，避免下一輪再踩。
+    5. `t17r2_rt60_table.py` 的註解寫「比照 `t17r2_report_tables.py`」，但後者（`:269`／`:325`）其實仍是 `json.loads(...)` 無保護＋`manifest.get("venues", [])`，壞 manifest 會 Traceback 或靜默 `coverage = 0/0`。鏈路上 `rt60_table` 先跑先擋得住，但註解與事實不符，建議一併補。
+    6. `parse_gate_log()` 對「`<run>.log` 是目錄」會丟 `IsADirectoryError`（`Path.exists()` 對目錄為 True）。現實不會發生，但這是唯一會讓整支工具崩潰的輸入。
+
+    **16. 鐵則 15 清理（本輪 Opus 自建、逐條列出，全部已移除或在 scratchpad）**：`git worktree add` 兩個——`<scratchpad>/opus/wt_14fc4ac`（`14fc4ac`）與 `<scratchpad>/opus/wt_old_4d4f63b`（`4d4f63b`），兩者皆已 `git worktree remove --force`；
+    清理後 `git worktree list` 只剩主 repo 與**既有的** `.claude/worktrees/compassionate-boyd-1380a7`（`4d4f63b`，非本輪建立，**未動**）。其餘暫存（`mut/`、`md5out/`、`gatelog/`、`r4/`、`reports/`、`wf/`）全在 session scratchpad，不在 repo 內、不影響 `git status`。
+    **未刪除 `output/` 下任何路徑**，`output/.archive/**` 未動（鐵則 15(c)）。另一視窗（Codex）的未追蹤檔 `assets/t17r2_synthetic_candidates/heldout_*.png`（5 張）**未 add、未刪**。
+    背景調查 `task_14c97967`：前提已二度證實為誤報，Opus 無該 chip 控制權，**未在此撤銷**——請使用者在 App 背景任務清單關閉；若它已有任何結論或 commit，一律不採用。
+
+    **17. 後續**：T-17-R2 前置「**T-57 ✅（工程）**」自本次驗證起**成立**。T-17-R2 本身仍等使用者的 held-out 照片——Codex 已產出 1448×1086 的合成候選圖，**未達 ≥1920px、且已成為 T-04 共用開發素材，不算正式 held-out**。
+    另提醒 R2 步驟 0：`assets/photos_heldout/ground_truth_heldout.json` 目前不存在，以現況跑會讓 5 張 held-out 六面全「無法判」、domain 全 `unknown`（口徑沒錯，但表 5 資訊量取決於那份 GT 是否照 schema 填好），步驟 0 要擋。
 
 ### T-58 調查卡：T-12 v2-b 方向反轉——Sabine 目標 vs 幾何聲學參考 vs 產品合成路徑（Sonnet；只量不改；停滯期填充卡；不進關鍵路徑；前置＝T-56 ✅）
 - **狀態（Opus 驗證，2026-09-18；T-58＋修正輪 T-58-F1／T-58-F2 合併複驗；另起新行追加，下方 🟠 狀態欄為歷史 verdict、原字保留）**：✅ **工程已驗證**——Opus 5，審查 HEAD `1d5ca73`（工作樹乾淨、＝origin/main）。

@@ -1,5 +1,10 @@
 # To-Do
 
+- **2026-09-20 ✅ T-57（含修正輪 T-57-F1）Opus 驗證通過（工程）**：四軸＝工程：已驗證｜實驗：不適用｜產品：不適用｜MVP：不適用。**T-17-R2 前置「T-57 ✅（工程）」已成立**；R2 仍等使用者 held-out 照片（≥1920px，合成候選不算）。
+- **⚠️ 待辦（T-04，不是 T-57）**：在當下 `main` 跑，`scripts/test_depth.py` 與 `scripts/test_pipeline_dedup.py` **EXIT=1**，因 T-04 替換 `assets/photos/`（缺 `bathroom_tiled.png` 等）。在 `14fc4ac` 上 22 支全 `EXIT=0`。請 T-04 視窗／Fable 處理。
+- **⚠️ 待辦（使用者）**：背景調查 `task_14c97967` 前提為誤報，請在 App 背景任務清單關閉。
+- **🟡 待 Fable 排卡**：T-57-F1 卡末「✅ Opus 驗證紀錄」§15 的 6 項建議（(k) 段 fixture 補 `source=="default"` 與 out-domain／`blind_test.run()` 預設 `photos_dir`／`_cli_outside()` 護欄／輕量 §7 改寫「測試全在系統暫存目錄」／`t17r2_report_tables.py` 壞 manifest 靜默路徑／`parse_gate_log()` 目錄輸入）。
+
 - **完工差距盤點**：2026-09-20 Codex 全專案完工差距盤點：見 `PROJECT_REVIEW_20260920.md`。核心 CLI 已完成，MVP 首驗 FAIL／R2 待重驗，Phase 2 外掛未開發。新發現 T-04 換圖後 legacy 五張預設路徑全部不存在（備份齊全），需在 R2 前整理；正式 held-out 尚缺、T-57-F1 待審。本次 R2 工具自測全部通過，不取代正式審查。
 
 - 2026-09-20 後續更新：依使用者指定，大空間由禮堂改為大型演唱會巨蛋，現行檔 `assets/photos/t04_gpt_arena_concert.png`。穹頂／多層看台／滿場觀眾／大型舞台清楚可見；1448×1086 解碼與 SHA-256 檢查通過，禮堂版本已備份。現行九張＝四張沿用＋五張新生成；R2 原禮堂圖不變。 四軸沿用 TASKS T-04 本次紀錄。
