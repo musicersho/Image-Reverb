@@ -1,5 +1,36 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔮 2026-09-20 Fable：使用者兩項標準變更＋兩項後續決定已走 §7 落地——**現在該做的是（依序，一次只開一個視窗）：① Sonnet 跑 T-62 → ② Opus 驗 T-62 → ③ Sonnet 跑 T-60（中途它會把五張圖和一張材質表給您，請對著圖看過後回「GT 確認」或寫要改哪裡）→ ④ Opus 驗 T-60 → ⑤ 貼下方兩行 Prompt 開跑 T-17-R2**
+>
+> - **每一步怎麼貼**（上一步 push 完再開下一步）：
+>   ① 新 Sonnet 視窗，貼 WORKFLOW §2.1 標準 Prompt，`T-XX` 換成 `T-62`。
+>   ② 新 Opus 視窗，貼 WORKFLOW §2.2 標準 Prompt，`T-XX` 換成 `T-62`。
+>   ③ 新 Sonnet 視窗，貼 §2.1，`T-XX` 換成 `T-60`。
+>   ④ 新 Opus 視窗，貼 §2.2，`T-XX` 換成 `T-60`。
+>   ⑤ 新 Opus 視窗，**逐字**貼下面兩行（不要用 §2.2）：
+>   　你是驗證者，主導執行 TASKS.md 的 T-17-R2（MVP 重新驗收）。先讀 CLAUDE.md、HANDOFF.md 頂端、T-17-R2 卡全文（含裁定 T-57-D、裁定 T-17-R2-S）與 T-04 卡的裁定 T-04-R。
+>   　程序 P1 核准。held-out 已就位。held-out 為 AI 合成圖（路徑 S）。從步驟 0 開始；任一前置檢查不成立就停下回報，不得自行降級、不得改判準、不得現場改腳本。
+>   另：② 完成後可開新 Opus 視窗貼 §2.2，`T-XX` 換成 `T-04（v2；裁定 T-04-R）`——貼這句＝您核准 v2 條文；它不是 R2 前置，做不做都不擋 ⑤。**它可能要跑全套測試、也會產生 commit：請排在 ② 與 ③ 之間或 ④ 之後，不要與 ③（T-60）同時進行，也不要在 ⑤（T-17-R2）視窗執行期間進行。**
+> - **使用者原話**：「T-04：照片會重新提供，因為當時任意截圖並沒有記得網址來源」「T-17-R2 照片解析度需求降低，僅需1280px以上即可」；四題選擇題依序選「同一批，一批兩用」「是，用這五張合成圖」「維持 Codex 的新配置，改程式去適應」「沿用這五張，REPORT 如實揭露」
+>   （後兩題 Fable 的建議是「舊圖放回原位」與「重生五張全新的圖」，使用者未採納；照使用者決定落地）。
+> - **⚠️ 今天同時發生的事（務必知道）**：Fable 規劃期間，Codex 直接換了 T-04 照片（`ba1fcdb`／`f3e07b0`）：舊 9 張移到本機 `assets/photos_legacy_20260920/`（git 忽略；`14fc4ac` 歷史仍有），`assets/photos/` 改放 `t04_gpt_*.png`，
+>   其中**四張與 R2 held-out 逐位元相同**（bathroom／living／corridor／car；hall 的複本在 legacy 目錄）。隨後有視窗跑了掃目錄的冒煙測試 → **分割模型處理過五張 held-out 全部、深度模型至少兩張**（`output/seg|depth/t04_gpt_*`、`output/seg/stats.json`）。沒有人據此調參（`git diff b06f022..HEAD -- src/ data/` 為空）。
+>   後果：main 上 `test_pipeline_dedup.py`（寫死舊圖路徑）與 `test_depth.py`（既有 `None` 格式化 bug 被新圖觸發）EXIT=1（Opus `875697e` 實測）；t33～t48 歷史基線與 `--legacy`（Prompt B）在 HEAD 無法重跑（重現＝`git worktree add <dir> 14fc4ac`）。
+> - **裁定 T-04-R（T-04 卡；結果後變更；方向核准＝使用者、條文起草＝Fable，條文另需獨立 Opus 審＋使用者貼驗證 Prompt；v2）**：結案路徑新增「(c) 替換素材」；現行交付集＝`assets/t04_refresh/ASSET_MANIFEST.json` 所列；舊 9 張＝退役集，來源缺**永久列示**、備份不得刪；
+>   「來源連結」依素材類型定字面（AI 生成圖五項）。順序瑕疵（實作與自評先於 v2 條文、且條文起草時已看過實作）如實記在 §8，通過時只能標「已驗證（v2；實作先於條文；v1 未達永久保留）」。T-04 目前仍「工程：未結案」。
+> - **裁定 T-17-R2-S（T-17-R2 卡；結果前變更；方向核准＝使用者、條文起草＝Fable，貼 ⑤ 的 Prompt＝核准條文）**：held-out 長邊下限 1920→**1280px**（管線實際輸入 518／512／224px、無絕對像素門檻；補「原檔逐位元」）；新增「**路徑 S＝AI 合成圖**」：判準 1～6（4/5、<20%）一字未動；
+>   REPORT §0／§1 兩句強制句（不能外推到真實照片；與開發素材共用且被冒煙測試處理過、未用於調參）；MVP 軸 PASS 只能寫 `PASS（R2；T-04 缺項；held-out＝AI 合成圖・共用開發素材）`；看不到的面 GT 一律 `unknown`；
+>   `dims_m` 逐字取設計值、分類已鎖定（bathroom／living／corridor＝in、hall＝out、car＝non_room）；步驟 0 追加 `src/`＋`data/` 零 diff、`find` 目錄檢查、曝光清單；**Prompt B 降級路徑不可用**；前置追加 T-60／T-62。期望結果不變：`MVP：FAIL（R2）`。
+> - **T-62（新卡，Sonnet，最先做）**：新增 `scripts/legacy_photos.py`＋`test_pipeline_dedup.py` 改由退役集備份取圖（缺檔仍 fail、sha256 不符不進模型）＋`test_depth.py` 一行 `None` 保護；不得單獨對共用圖跑任何腳本。**T-60（新卡，Sonnet；前置＝T-62 驗畢）**：五張 PNG `mv` 到 `assets/photos_heldout/`、
+>   把圖送給使用者看並請回「GT 確認」、寫 `ground_truth_heldout.json`、填 `SOURCES.md` §4、commit；不得再增加曝光。T-61 取消（不存在）；後續新卡從 T-63 起編。
+> - **回應 Opus `875697e` 的「要處理 1」**（main 上兩支測試 EXIT=1）＝T-62。Opus 卡末 §15 的 6 項 T-57 工具建議：**不在 R2 前處理**（R2 前不再動 T-57 工具；R2 收工後的 Fable 收尾複評一併排）。「要處理 2」（關閉背景任務 `task_14c97967`）仍請使用者在 App 裡關掉。
+> - **回應 Codex `3fd51c4` 的完工差距盤點（`PROJECT_REVIEW_20260920.md`）**：它指出的「換圖後 legacy 五張路徑不存在、`--legacy` 降級方案不能執行」由裁定 T-17-R2-S §3 第 6 點處置（Prompt B 不可用、不修工具、不把新圖改舊名）；「解析度／合成證據定位／held-out 資格／未追蹤 PNG」由同裁定與 T-60 處置。
+> - 本輪 Fable 零改動 `src`／`scripts`／`data`／`output`／`assets` 圖檔／SPEC／WORKFLOW；`criteria:` commit `758eeba` 只含 TASKS.md 純新增行；docs commit 另在 `assets/photos/README.md`、`assets/t04_refresh/README.md` 檔尾各補一段禁用令註記；五張候選 PNG 仍未追蹤（留給 T-60）。詳見 DEV_LOG `2026-09-20 (167)`。
+> - **📌 給所有視窗（含 Codex）——共用圖禁用令（T-04 卡裁定 T-04-R §2 第 4 點；T-17-R2 收工並複驗、Fable 寫下解除紀錄前有效）**：R2 held-out 五張不論檔名，目前有三處逐位元複本：`assets/t17r2_synthetic_candidates/heldout_*.png`（T-60 後移到 `assets/photos_heldout/`）、
+>   `assets/photos/t04_gpt_{bathroom,living,corridor,car}.png`、`assets/photos_legacy_20260920/t04_gpt_hall.png`。**不得**對它們跑 `python -m src.image_reverb` 或任何指定單張的分析／評測腳本，不得調參／標註／寫進 `data/`／當新測試夾具；
+>   除 T-17-R2 卡自己的執行步驟、T-60 步驟 7 的 manifest 乾跑之外，唯一容忍的是任務卡或 WORKFLOW §5.4.1 要求的全套 `scripts/test_*.py` 例行執行（不帶引數、每次驗證至多一次；單獨跑 `test_depth.py`／`test_segmentation.py` 不算）。
+>   算 sha256、只讀尺寸、看圖不受限。不要刪 `assets/photos_legacy_20260920/`；除 T-60 步驟 2 那一次 `mv` 外，不要再搬動或替換 `assets/photos/` 與 held-out 圖。**之後每個在 HANDOFF 頂端加新段的視窗，請把本條原樣保留在新段最後，直到 Fable 寫下解除紀錄。**
+
 > ## ✅ 2026-09-20 Opus：T-57（含修正輪 T-57-F1）驗證通過（工程）——**現在該做的是：T-17-R2 等使用者提供 held-out 照片；另請處理下方兩件事**
 >
 > - 四軸：**工程：已驗證｜實驗：不適用（工具卡修正輪）｜產品：不適用｜MVP：不適用**。審查 HEAD `14fc4ac`（基準 `aa13c55`、舊碼 `4d4f63b`）。**T-17-R2 前置「T-57 ✅（工程）」自此成立。**
@@ -29,6 +60,7 @@
 > - **提醒**：卡片原式 `git diff --stat 4d4f63b..HEAD -- scripts/` 因 T-58 已帶進 `t58_rt60_basis_probe.py` 而不可能只出現五檔，本卡改貼固定 commit 版；工作樹的 `assets/t17r2_synthetic_candidates/*.png` 是另一視窗（Codex）的、未 add。T-17-R2 仍等使用者 held-out 照片；R2 步驟 2～3 之間不得有本卡 commit（未違反）。詳見 TASKS.md T-57-F1 卡「交接筆記」與 DEV_LOG `2026-09-20 (165)`。
 
 > **2026-09-20 Codex：T-17-R2 合成候選圖已生成，正式素材仍未就位。** 使用者要求 GPT Image 五類照片；成果與提示詞在 `assets/t17r2_synthetic_candidates/`。原檔均 1448×1086，重試未改善，不符合 ≥1920px。未跑 R2、未作 GT、未改門檻；素材工程待補／實驗未執行／產品不適用／MVP 待重驗。PNG 留本機，僅提交文件。T-57-F1 前置仍待驗證。
+> 〔🔮 Fable 2026-09-20 補（另起新行；Codex 各則紀錄原文保留）：本則的「不符合 ≥1920px」「正式素材仍未就位」，以及上方 Codex T-04 換圖那一則的「正式 held-out 資格需重查」，都已有裁定——見本檔最頂端的 2026-09-20 Fable 段（裁定 T-04-R／T-17-R2-S）。〕
 
 
 > ## ✅ 2026-09-18 Opus：T-58（含修正輪 T-58-F1／T-58-F2）驗證通過（工程）——**T-58 系列結案；現在該做的是：照原排程——T-57-F1（Sonnet）照常，T-17-R2 等使用者 held-out 照片**
