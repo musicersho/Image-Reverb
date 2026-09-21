@@ -1,0 +1,31 @@
+/Users/musicersho/Image Reverb/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/musicersho/Image Reverb/.venv/lib/python3.9/site-packages/transformers/image_processing_base.py:417: UserWarning: The following named arguments are not valid for `SegformerImageProcessor.__init__` and were ignored: 'feature_extractor_type', 'reduce_labels'
+  image_processor = cls(**image_processor_dict)
+Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+⚠️  已指定 --force-low-confidence：overall confidence 為 low（geometry=high, materials=low），仍強制輸出，結果可信度未知，請自行評估。
+=== 照片：/private/tmp/claude-501/-Users-musicersho-Image-Reverb/1660b925-c0b1-4ed2-95ae-ad47b3ac8f88/scratchpad/manual/t17r2_manual_restaurant.png ===
+環景判定：否
+--- T-12 逐表面材質辨識 ---
+  west     → gypsum_board    （來源：fallback）
+  east     → gypsum_board    （來源：fallback）
+  south    → gypsum_board    （來源：fallback）
+  north    → gypsum_board    （來源：fallback）
+  floor    → gypsum_board    （來源：-）
+  ceiling  → curtain_fabric  （來源：clip）
+--- T-11 幾何估計 ---
+（--override-dims 已指定，跳過深度模型）
+  房間尺寸：14.00×9.00×3.20 m（dims_source=manual）
+  confidence：geometry=high, materials=low, overall=low
+--- T-13 聲學參數 ---
+  Sabine 目標 RT60：[0.67, 0.9, 0.77, 0.63, 0.59, 0.57] s
+  陳設偵測（預設觀測模式，未套用；--furnishings 可啟用）：
+    seat       佔比  20.2%
+--- T-14 IR 合成 ---
+已輸出：ir_mono.wav、ir_stereo.wav、analysis.json → /Users/musicersho/Image Reverb/output/t17r2_manual_restaurant
+🎧 試聽檔：/Users/musicersho/Image Reverb/output/t17r2_manual_restaurant/wet_preview.wav（mix=0.6；數字合理 ≠ 聽起來對，請實聽）
+  ⚠️ wall：CLIP top-1 機率 0.35 低於門檻 0.4，改用 fallback 'gypsum_board'
+  ⚠️ 單張透視照看不到背後的牆，四面牆共用同一個材質判定值。若要四面各自判定，請用 360° 環景照片（T-10 會投影出六視角）。
+  ⚠️ 已指定 --force-low-confidence：overall confidence 為 low（geometry=high, materials=low），使用者強制輸出，結果可信度未知。
+
+exit=0

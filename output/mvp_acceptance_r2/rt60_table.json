@@ -1,0 +1,2220 @@
+{
+  "bands_hz": [
+    125,
+    250,
+    500,
+    1000,
+    2000,
+    4000
+  ],
+  "tolerance_pct": 20.0,
+  "venues": [
+    {
+      "key": "cathedral_room_shasta_lake_caverns",
+      "label": "Cathedral Room, Shasta Lake Caverns（石灰岩洞窟）",
+      "source": "EchoThief",
+      "photo": "cathedral_room_shasta_lake_caverns/CathedralRoom.jpg",
+      "in_domain": false,
+      "real": [
+        {
+          "file": "assets/reference_irs/cathedral_room_shasta_lake_caverns/CathedralRoom.wav",
+          "sample_rate": 44100,
+          "channels": 2,
+          "duration_s": 1.5288,
+          "bands": {
+            "125": 1.3533,
+            "250": 1.1426,
+            "500": 1.0714,
+            "1000": 1.0142,
+            "2000": 0.9713,
+            "4000": 0.7933
+          },
+          "low_combined": 1.165,
+          "per_channel": [
+            {
+              "bands": {
+                "125": 1.4139,
+                "250": 1.1387,
+                "500": 1.0791,
+                "1000": 1.0326,
+                "2000": 0.9933,
+                "4000": 0.7972
+              },
+              "low_combined": 1.18,
+              "diagnostics": {
+                "curve_min_db_125": -216.4,
+                "curve_min_db_250": -201.0,
+                "curve_min_db_500": -181.9,
+                "curve_min_db_1000": -172.6,
+                "curve_min_db_2000": -162.3,
+                "curve_min_db_4000": -162.7
+              }
+            },
+            {
+              "bands": {
+                "125": 1.2927,
+                "250": 1.1465,
+                "500": 1.0636,
+                "1000": 0.9958,
+                "2000": 0.9493,
+                "4000": 0.7894
+              },
+              "low_combined": 1.1501,
+              "diagnostics": {
+                "curve_min_db_125": -210.9,
+                "curve_min_db_250": -193.3,
+                "curve_min_db_500": -185.1,
+                "curve_min_db_1000": -178.5,
+                "curve_min_db_2000": -177.6,
+                "curve_min_db_4000": -188.7
+              }
+            }
+          ]
+        }
+      ],
+      "real_reference": {
+        "bands": {
+          "125": {
+            "value": 1.3533,
+            "min": 1.3533,
+            "max": 1.3533,
+            "n": 1
+          },
+          "250": {
+            "value": 1.1426,
+            "min": 1.1426,
+            "max": 1.1426,
+            "n": 1
+          },
+          "500": {
+            "value": 1.0714,
+            "min": 1.0714,
+            "max": 1.0714,
+            "n": 1
+          },
+          "1000": {
+            "value": 1.0142,
+            "min": 1.0142,
+            "max": 1.0142,
+            "n": 1
+          },
+          "2000": {
+            "value": 0.9713,
+            "min": 0.9713,
+            "max": 0.9713,
+            "n": 1
+          },
+          "4000": {
+            "value": 0.7933,
+            "min": 0.7933,
+            "max": 0.7933,
+            "n": 1
+          }
+        },
+        "low_combined": {
+          "value": 1.165,
+          "min": 1.165,
+          "max": 1.165,
+          "n": 1
+        },
+        "n_files": 1
+      },
+      "generated": [
+        {
+          "run": "CathedralRoom",
+          "dims_source": "equirect_multiview",
+          "confidence": "low",
+          "dims_m": {
+            "length": 8.415906548500061,
+            "width": 14.141227722167969,
+            "height": 4.974473591334324
+          },
+          "volume_m3": 592.02,
+          "override_dims_used": false,
+          "forced_low_confidence": true,
+          "group": "forced",
+          "in_domain": false,
+          "gate": {
+            "default_exit": 3,
+            "blocked": true,
+            "exit_marker_consistent": true,
+            "override_dims_guidance": true
+          },
+          "measured": {
+            "bands": {
+              "125": 1.9589,
+              "250": 3.327,
+              "500": 3.8846,
+              "1000": 4.6068,
+              "2000": 3.1431,
+              "4000": 2.1076
+            },
+            "low_combined": 3.3327
+          },
+          "errors": {
+            "125": {
+              "measured_s": 1.9589,
+              "reference_s": 1.3533,
+              "error_pct": 44.7,
+              "within_tolerance": false
+            },
+            "250": {
+              "measured_s": 3.327,
+              "reference_s": 1.1426,
+              "error_pct": 191.2,
+              "within_tolerance": false
+            },
+            "500": {
+              "measured_s": 3.8846,
+              "reference_s": 1.0714,
+              "error_pct": 262.6,
+              "within_tolerance": false
+            },
+            "1000": {
+              "measured_s": 4.6068,
+              "reference_s": 1.0142,
+              "error_pct": 354.2,
+              "within_tolerance": false
+            },
+            "2000": {
+              "measured_s": 3.1431,
+              "reference_s": 0.9713,
+              "error_pct": 223.6,
+              "within_tolerance": false
+            },
+            "4000": {
+              "measured_s": 2.1076,
+              "reference_s": 0.7933,
+              "error_pct": 165.7,
+              "within_tolerance": false
+            },
+            "low_combined": {
+              "measured_s": 3.3327,
+              "reference_s": 1.165,
+              "error_pct": 186.1,
+              "within_tolerance": false
+            }
+          },
+          "ladder_500_vs_low": {
+            "generated": 1.166,
+            "real": 0.92
+          }
+        }
+      ]
+    },
+    {
+      "key": "divorce_beach",
+      "label": "Divorce Beach（戶外沙灘岩礁）",
+      "source": "EchoThief",
+      "photo": "divorce_beach/DivorceBeach.jpg",
+      "in_domain": false,
+      "real": [
+        {
+          "file": "assets/reference_irs/divorce_beach/DivorceBeach.wav",
+          "sample_rate": 44100,
+          "channels": 2,
+          "duration_s": 0.9785,
+          "bands": {
+            "125": 0.7656,
+            "250": 0.7535,
+            "500": 0.8125,
+            "1000": 0.7306,
+            "2000": 0.6484,
+            "4000": 1.0263
+          },
+          "low_combined": 0.7188,
+          "per_channel": [
+            {
+              "bands": {
+                "125": 0.7363,
+                "250": 0.7932,
+                "500": 0.8713,
+                "1000": 0.7875,
+                "2000": 0.6558,
+                "4000": 1.0927
+              },
+              "low_combined": 0.7176,
+              "diagnostics": {
+                "curve_min_db_125": -219.5,
+                "curve_min_db_250": -217.5,
+                "curve_min_db_500": -197.9,
+                "curve_min_db_1000": -199.4,
+                "curve_min_db_2000": -213.2,
+                "curve_min_db_4000": -251.5
+              }
+            },
+            {
+              "bands": {
+                "125": 0.795,
+                "250": 0.7139,
+                "500": 0.7538,
+                "1000": 0.6736,
+                "2000": 0.6411,
+                "4000": 0.9598
+              },
+              "low_combined": 0.72,
+              "diagnostics": {
+                "curve_min_db_125": -211.4,
+                "curve_min_db_250": -202.0,
+                "curve_min_db_500": -214.8,
+                "curve_min_db_1000": -205.0,
+                "curve_min_db_2000": -215.4,
+                "curve_min_db_4000": -225.8
+              }
+            }
+          ]
+        }
+      ],
+      "real_reference": {
+        "bands": {
+          "125": {
+            "value": 0.7656,
+            "min": 0.7656,
+            "max": 0.7656,
+            "n": 1
+          },
+          "250": {
+            "value": 0.7535,
+            "min": 0.7535,
+            "max": 0.7535,
+            "n": 1
+          },
+          "500": {
+            "value": 0.8125,
+            "min": 0.8125,
+            "max": 0.8125,
+            "n": 1
+          },
+          "1000": {
+            "value": 0.7306,
+            "min": 0.7306,
+            "max": 0.7306,
+            "n": 1
+          },
+          "2000": {
+            "value": 0.6484,
+            "min": 0.6484,
+            "max": 0.6484,
+            "n": 1
+          },
+          "4000": {
+            "value": 1.0263,
+            "min": 1.0263,
+            "max": 1.0263,
+            "n": 1
+          }
+        },
+        "low_combined": {
+          "value": 0.7188,
+          "min": 0.7188,
+          "max": 0.7188,
+          "n": 1
+        },
+        "n_files": 1
+      },
+      "generated": [
+        {
+          "run": "DivorceBeach",
+          "dims_source": "equirect_multiview",
+          "confidence": "low",
+          "dims_m": {
+            "length": 16.792526960372925,
+            "width": 14.712636947631836,
+            "height": 8.831503489120767
+          },
+          "volume_m3": 2181.93,
+          "override_dims_used": false,
+          "forced_low_confidence": true,
+          "group": "forced",
+          "in_domain": false,
+          "gate": {
+            "default_exit": 3,
+            "blocked": true,
+            "exit_marker_consistent": true,
+            "override_dims_guidance": true
+          },
+          "measured": {
+            "bands": {
+              "125": 3.6243,
+              "250": 5.6569,
+              "500": 6.9164,
+              "1000": 7.7377,
+              "2000": 5.1933,
+              "4000": 3.6113
+            },
+            "low_combined": 5.5804
+          },
+          "errors": {
+            "125": {
+              "measured_s": 3.6243,
+              "reference_s": 0.7656,
+              "error_pct": 373.4,
+              "within_tolerance": false
+            },
+            "250": {
+              "measured_s": 5.6569,
+              "reference_s": 0.7535,
+              "error_pct": 650.7,
+              "within_tolerance": false
+            },
+            "500": {
+              "measured_s": 6.9164,
+              "reference_s": 0.8125,
+              "error_pct": 751.2,
+              "within_tolerance": false
+            },
+            "1000": {
+              "measured_s": 7.7377,
+              "reference_s": 0.7306,
+              "error_pct": 959.1,
+              "within_tolerance": false
+            },
+            "2000": {
+              "measured_s": 5.1933,
+              "reference_s": 0.6484,
+              "error_pct": 700.9,
+              "within_tolerance": false
+            },
+            "4000": {
+              "measured_s": 3.6113,
+              "reference_s": 1.0263,
+              "error_pct": 251.9,
+              "within_tolerance": false
+            },
+            "low_combined": {
+              "measured_s": 5.5804,
+              "reference_s": 0.7188,
+              "error_pct": 676.3,
+              "within_tolerance": false
+            }
+          },
+          "ladder_500_vs_low": {
+            "generated": 1.239,
+            "real": 1.13
+          }
+        }
+      ]
+    },
+    {
+      "key": "mit_department_store",
+      "label": "Department Store（MIT，百貨賣場）",
+      "source": "MIT Reverb Survey",
+      "photo": "mit_department_store/site_photo_department_store.png",
+      "in_domain": false,
+      "real": [
+        {
+          "file": "assets/reference_irs/mit_department_store/h160_DepartmentStore_1txts.wav",
+          "sample_rate": 32000,
+          "channels": 1,
+          "duration_s": 0.6544,
+          "bands": {
+            "125": 0.4641,
+            "250": 0.5412,
+            "500": 0.6835,
+            "1000": 0.8425,
+            "2000": 0.7285,
+            "4000": 0.5913
+          },
+          "low_combined": 0.5058,
+          "per_channel": [
+            {
+              "bands": {
+                "125": 0.4641,
+                "250": 0.5412,
+                "500": 0.6835,
+                "1000": 0.8425,
+                "2000": 0.7285,
+                "4000": 0.5913
+              },
+              "low_combined": 0.5058,
+              "diagnostics": {
+                "curve_min_db_125": -140.3,
+                "curve_min_db_250": -129.8,
+                "curve_min_db_500": -119.2,
+                "curve_min_db_1000": -106.2,
+                "curve_min_db_2000": -107.2,
+                "curve_min_db_4000": -108.2
+              }
+            }
+          ]
+        }
+      ],
+      "real_reference": {
+        "bands": {
+          "125": {
+            "value": 0.4641,
+            "min": 0.4641,
+            "max": 0.4641,
+            "n": 1
+          },
+          "250": {
+            "value": 0.5412,
+            "min": 0.5412,
+            "max": 0.5412,
+            "n": 1
+          },
+          "500": {
+            "value": 0.6835,
+            "min": 0.6835,
+            "max": 0.6835,
+            "n": 1
+          },
+          "1000": {
+            "value": 0.8425,
+            "min": 0.8425,
+            "max": 0.8425,
+            "n": 1
+          },
+          "2000": {
+            "value": 0.7285,
+            "min": 0.7285,
+            "max": 0.7285,
+            "n": 1
+          },
+          "4000": {
+            "value": 0.5913,
+            "min": 0.5913,
+            "max": 0.5913,
+            "n": 1
+          }
+        },
+        "low_combined": {
+          "value": 0.5058,
+          "min": 0.5058,
+          "max": 0.5058,
+          "n": 1
+        },
+        "n_files": 1
+      },
+      "generated": [
+        {
+          "run": "site_photo_department_store",
+          "dims_source": "metric_depth",
+          "confidence": "low",
+          "dims_m": {
+            "length": 6.037,
+            "width": 6.970927150195539,
+            "height": 3.9211465219849906
+          },
+          "volume_m3": 165.02,
+          "override_dims_used": false,
+          "forced_low_confidence": true,
+          "group": "forced",
+          "in_domain": false,
+          "gate": {
+            "default_exit": 3,
+            "blocked": true,
+            "exit_marker_consistent": true,
+            "override_dims_guidance": false
+          },
+          "measured": {
+            "bands": {
+              "125": 0.8219,
+              "250": 1.1517,
+              "500": 0.8576,
+              "1000": 0.6347,
+              "2000": 0.514,
+              "4000": 0.5198
+            },
+            "low_combined": 1.1165
+          },
+          "errors": {
+            "125": {
+              "measured_s": 0.8219,
+              "reference_s": 0.4641,
+              "error_pct": 77.1,
+              "within_tolerance": false
+            },
+            "250": {
+              "measured_s": 1.1517,
+              "reference_s": 0.5412,
+              "error_pct": 112.8,
+              "within_tolerance": false
+            },
+            "500": {
+              "measured_s": 0.8576,
+              "reference_s": 0.6835,
+              "error_pct": 25.5,
+              "within_tolerance": false
+            },
+            "1000": {
+              "measured_s": 0.6347,
+              "reference_s": 0.8425,
+              "error_pct": -24.7,
+              "within_tolerance": false
+            },
+            "2000": {
+              "measured_s": 0.514,
+              "reference_s": 0.7285,
+              "error_pct": -29.4,
+              "within_tolerance": false
+            },
+            "4000": {
+              "measured_s": 0.5198,
+              "reference_s": 0.5913,
+              "error_pct": -12.1,
+              "within_tolerance": true
+            },
+            "low_combined": {
+              "measured_s": 1.1165,
+              "reference_s": 0.5058,
+              "error_pct": 120.7,
+              "within_tolerance": false
+            }
+          },
+          "ladder_500_vs_low": {
+            "generated": 0.768,
+            "real": 1.351
+          }
+        },
+        {
+          "run": "t17r2_manual_department_store",
+          "dims_source": "manual",
+          "confidence": "low",
+          "dims_m": {
+            "length": 35.0,
+            "width": 25.0,
+            "height": 3.2
+          },
+          "volume_m3": 2800.0,
+          "override_dims_used": true,
+          "forced_low_confidence": true,
+          "group": "manual",
+          "in_domain": false,
+          "gate": {
+            "default_exit": 3,
+            "blocked": true,
+            "exit_marker_consistent": true,
+            "override_dims_guidance": true
+          },
+          "measured": {
+            "bands": {
+              "125": 1.0477,
+              "250": 1.3774,
+              "500": 1.0645,
+              "1000": 0.5993,
+              "2000": 0.4671,
+              "4000": 0.4879
+            },
+            "low_combined": 1.3225
+          },
+          "errors": {
+            "125": {
+              "measured_s": 1.0477,
+              "reference_s": 0.4641,
+              "error_pct": 125.7,
+              "within_tolerance": false
+            },
+            "250": {
+              "measured_s": 1.3774,
+              "reference_s": 0.5412,
+              "error_pct": 154.5,
+              "within_tolerance": false
+            },
+            "500": {
+              "measured_s": 1.0645,
+              "reference_s": 0.6835,
+              "error_pct": 55.7,
+              "within_tolerance": false
+            },
+            "1000": {
+              "measured_s": 0.5993,
+              "reference_s": 0.8425,
+              "error_pct": -28.9,
+              "within_tolerance": false
+            },
+            "2000": {
+              "measured_s": 0.4671,
+              "reference_s": 0.7285,
+              "error_pct": -35.9,
+              "within_tolerance": false
+            },
+            "4000": {
+              "measured_s": 0.4879,
+              "reference_s": 0.5913,
+              "error_pct": -17.5,
+              "within_tolerance": true
+            },
+            "low_combined": {
+              "measured_s": 1.3225,
+              "reference_s": 0.5058,
+              "error_pct": 161.5,
+              "within_tolerance": false
+            }
+          },
+          "ladder_500_vs_low": {
+            "generated": 0.805,
+            "real": 1.351
+          }
+        }
+      ]
+    },
+    {
+      "key": "mit_gym",
+      "label": "Gym（MIT，健身房／重訓室）",
+      "source": "MIT Reverb Survey",
+      "photo": "mit_gym/site_photo_gym.png",
+      "in_domain": true,
+      "real": [
+        {
+          "file": "assets/reference_irs/mit_gym/h026_Gym_8txts.wav",
+          "sample_rate": 32000,
+          "channels": 1,
+          "duration_s": 1.7764,
+          "bands": {
+            "125": 0.9083,
+            "250": 1.1579,
+            "500": 1.4216,
+            "1000": 1.7647,
+            "2000": 1.6201,
+            "4000": 1.088
+          },
+          "low_combined": 1.1634,
+          "per_channel": [
+            {
+              "bands": {
+                "125": 0.9083,
+                "250": 1.1579,
+                "500": 1.4216,
+                "1000": 1.7647,
+                "2000": 1.6201,
+                "4000": 1.088
+              },
+              "low_combined": 1.1634,
+              "diagnostics": {
+                "curve_min_db_125": -175.0,
+                "curve_min_db_250": -164.3,
+                "curve_min_db_500": -123.6,
+                "curve_min_db_1000": -126.5,
+                "curve_min_db_2000": -125.2,
+                "curve_min_db_4000": -141.5
+              }
+            }
+          ]
+        },
+        {
+          "file": "assets/reference_irs/mit_gym/h052_Gym_WeightRoom_3txts.wav",
+          "sample_rate": 32000,
+          "channels": 1,
+          "duration_s": 1.368,
+          "bands": {
+            "125": 0.8422,
+            "250": 1.4901,
+            "500": 1.2386,
+            "1000": 0.9034,
+            "2000": 0.7698,
+            "4000": 0.5865
+          },
+          "low_combined": 1.4692,
+          "per_channel": [
+            {
+              "bands": {
+                "125": 0.8422,
+                "250": 1.4901,
+                "500": 1.2386,
+                "1000": 0.9034,
+                "2000": 0.7698,
+                "4000": 0.5865
+              },
+              "low_combined": 1.4692,
+              "diagnostics": {
+                "curve_min_db_125": -152.1,
+                "curve_min_db_250": -119.6,
+                "curve_min_db_500": -161.3,
+                "curve_min_db_1000": -138.9,
+                "curve_min_db_2000": -145.3,
+                "curve_min_db_4000": -147.2
+              }
+            }
+          ]
+        },
+        {
+          "file": "assets/reference_irs/mit_gym/h120_Gym_WeightRoom_1txts.wav",
+          "sample_rate": 32000,
+          "channels": 1,
+          "duration_s": 0.433,
+          "bands": {
+            "125": 0.3958,
+            "250": 0.4693,
+            "500": 0.4101,
+            "1000": 0.3921,
+            "2000": 0.3813,
+            "4000": 0.3375
+          },
+          "low_combined": 0.4381,
+          "per_channel": [
+            {
+              "bands": {
+                "125": 0.3958,
+                "250": 0.4693,
+                "500": 0.4101,
+                "1000": 0.3921,
+                "2000": 0.3813,
+                "4000": 0.3375
+              },
+              "low_combined": 0.4381,
+              "diagnostics": {
+                "curve_min_db_125": -160.0,
+                "curve_min_db_250": -120.1,
+                "curve_min_db_500": -114.7,
+                "curve_min_db_1000": -112.8,
+                "curve_min_db_2000": -122.9,
+                "curve_min_db_4000": -131.6
+              }
+            }
+          ]
+        }
+      ],
+      "real_reference": {
+        "bands": {
+          "125": {
+            "value": 0.8422,
+            "min": 0.3958,
+            "max": 0.9083,
+            "n": 3
+          },
+          "250": {
+            "value": 1.1579,
+            "min": 0.4693,
+            "max": 1.4901,
+            "n": 3
+          },
+          "500": {
+            "value": 1.2386,
+            "min": 0.4101,
+            "max": 1.4216,
+            "n": 3
+          },
+          "1000": {
+            "value": 0.9034,
+            "min": 0.3921,
+            "max": 1.7647,
+            "n": 3
+          },
+          "2000": {
+            "value": 0.7698,
+            "min": 0.3813,
+            "max": 1.6201,
+            "n": 3
+          },
+          "4000": {
+            "value": 0.5865,
+            "min": 0.3375,
+            "max": 1.088,
+            "n": 3
+          }
+        },
+        "low_combined": {
+          "value": 1.1634,
+          "min": 0.4381,
+          "max": 1.4692,
+          "n": 3
+        },
+        "n_files": 3
+      },
+      "generated": [
+        {
+          "run": "site_photo_gym",
+          "dims_source": "metric_depth",
+          "confidence": "low",
+          "dims_m": {
+            "length": 5.015,
+            "width": 5.790823199971944,
+            "height": 3.257338049984219
+          },
+          "volume_m3": 94.6,
+          "override_dims_used": false,
+          "forced_low_confidence": true,
+          "group": "forced",
+          "in_domain": true,
+          "gate": {
+            "default_exit": 3,
+            "blocked": true,
+            "exit_marker_consistent": true,
+            "override_dims_guidance": true
+          },
+          "measured": {
+            "bands": {
+              "125": 0.6932,
+              "250": 0.9659,
+              "500": 0.7049,
+              "1000": 0.5187,
+              "2000": 0.4341,
+              "4000": 0.4259
+            },
+            "low_combined": 0.9358
+          },
+          "errors": {
+            "125": {
+              "measured_s": 0.6932,
+              "reference_s": 0.8422,
+              "error_pct": -17.7,
+              "within_tolerance": true,
+              "within_range": true,
+              "reference_range": [
+                0.3958,
+                0.9083
+              ]
+            },
+            "250": {
+              "measured_s": 0.9659,
+              "reference_s": 1.1579,
+              "error_pct": -16.6,
+              "within_tolerance": true,
+              "within_range": true,
+              "reference_range": [
+                0.4693,
+                1.4901
+              ]
+            },
+            "500": {
+              "measured_s": 0.7049,
+              "reference_s": 1.2386,
+              "error_pct": -43.1,
+              "within_tolerance": false,
+              "within_range": true,
+              "reference_range": [
+                0.4101,
+                1.4216
+              ]
+            },
+            "1000": {
+              "measured_s": 0.5187,
+              "reference_s": 0.9034,
+              "error_pct": -42.6,
+              "within_tolerance": false,
+              "within_range": true,
+              "reference_range": [
+                0.3921,
+                1.7647
+              ]
+            },
+            "2000": {
+              "measured_s": 0.4341,
+              "reference_s": 0.7698,
+              "error_pct": -43.6,
+              "within_tolerance": false,
+              "within_range": true,
+              "reference_range": [
+                0.3813,
+                1.6201
+              ]
+            },
+            "4000": {
+              "measured_s": 0.4259,
+              "reference_s": 0.5865,
+              "error_pct": -27.4,
+              "within_tolerance": false,
+              "within_range": true,
+              "reference_range": [
+                0.3375,
+                1.088
+              ]
+            },
+            "low_combined": {
+              "measured_s": 0.9358,
+              "reference_s": 1.1634,
+              "error_pct": -19.6,
+              "within_tolerance": true,
+              "within_range": true,
+              "reference_range": [
+                0.4381,
+                1.4692
+              ]
+            }
+          },
+          "ladder_500_vs_low": {
+            "generated": 0.753,
+            "real": 1.065
+          }
+        },
+        {
+          "run": "t17r2_manual_gym",
+          "dims_source": "manual",
+          "confidence": "low",
+          "dims_m": {
+            "length": 9.0,
+            "width": 6.0,
+            "height": 2.9
+          },
+          "volume_m3": 156.6,
+          "override_dims_used": true,
+          "forced_low_confidence": true,
+          "group": "manual",
+          "in_domain": true,
+          "gate": {
+            "default_exit": 3,
+            "blocked": true,
+            "exit_marker_consistent": true,
+            "override_dims_guidance": true
+          },
+          "measured": {
+            "bands": {
+              "125": 0.7263,
+              "250": 1.0053,
+              "500": 0.645,
+              "1000": 0.5515,
+              "2000": 0.4073,
+              "4000": 0.4003
+            },
+            "low_combined": 0.9647
+          },
+          "errors": {
+            "125": {
+              "measured_s": 0.7263,
+              "reference_s": 0.8422,
+              "error_pct": -13.8,
+              "within_tolerance": true,
+              "within_range": true,
+              "reference_range": [
+                0.3958,
+                0.9083
+              ]
+            },
+            "250": {
+              "measured_s": 1.0053,
+              "reference_s": 1.1579,
+              "error_pct": -13.2,
+              "within_tolerance": true,
+              "within_range": true,
+              "reference_range": [
+                0.4693,
+                1.4901
+              ]
+            },
+            "500": {
+              "measured_s": 0.645,
+              "reference_s": 1.2386,
+              "error_pct": -47.9,
+              "within_tolerance": false,
+              "within_range": true,
+              "reference_range": [
+                0.4101,
+                1.4216
+              ]
+            },
+            "1000": {
+              "measured_s": 0.5515,
+              "reference_s": 0.9034,
+              "error_pct": -39.0,
+              "within_tolerance": false,
+              "within_range": true,
+              "reference_range": [
+                0.3921,
+                1.7647
+              ]
+            },
+            "2000": {
+              "measured_s": 0.4073,
+              "reference_s": 0.7698,
+              "error_pct": -47.1,
+              "within_tolerance": false,
+              "within_range": true,
+              "reference_range": [
+                0.3813,
+                1.6201
+              ]
+            },
+            "4000": {
+              "measured_s": 0.4003,
+              "reference_s": 0.5865,
+              "error_pct": -31.7,
+              "within_tolerance": false,
+              "within_range": true,
+              "reference_range": [
+                0.3375,
+                1.088
+              ]
+            },
+            "low_combined": {
+              "measured_s": 0.9647,
+              "reference_s": 1.1634,
+              "error_pct": -17.1,
+              "within_tolerance": true,
+              "within_range": true,
+              "reference_range": [
+                0.4381,
+                1.4692
+              ]
+            }
+          },
+          "ladder_500_vs_low": {
+            "generated": 0.669,
+            "real": 1.065
+          }
+        }
+      ]
+    },
+    {
+      "key": "mit_restaurant",
+      "label": "Restaurant（MIT，餐廳用餐區）",
+      "source": "MIT Reverb Survey",
+      "photo": "mit_restaurant/site_photo_restaurant.png",
+      "in_domain": false,
+      "real": [
+        {
+          "file": "assets/reference_irs/mit_restaurant/h093_Restaurant_2txts.wav",
+          "sample_rate": 32000,
+          "channels": 1,
+          "duration_s": 0.5268,
+          "bands": {
+            "125": 0.4974,
+            "250": 0.4117,
+            "500": 0.2936,
+            "1000": 0.2568,
+            "2000": 0.1528,
+            "4000": 0.107
+          },
+          "low_combined": 0.4407,
+          "per_channel": [
+            {
+              "bands": {
+                "125": 0.4974,
+                "250": 0.4117,
+                "500": 0.2936,
+                "1000": 0.2568,
+                "2000": 0.1528,
+                "4000": 0.107
+              },
+              "low_combined": 0.4407,
+              "diagnostics": {
+                "curve_min_db_125": -161.6,
+                "curve_min_db_250": -150.2,
+                "curve_min_db_500": -143.7,
+                "curve_min_db_1000": -164.9,
+                "curve_min_db_2000": -145.7,
+                "curve_min_db_4000": -162.5
+              }
+            }
+          ]
+        },
+        {
+          "file": "assets/reference_irs/mit_restaurant/h114_Restaurant_txts.wav",
+          "sample_rate": 32000,
+          "channels": 1,
+          "duration_s": 0.3057,
+          "bands": {
+            "125": 0.5085,
+            "250": 0.579,
+            "500": 0.3743,
+            "1000": 0.2729,
+            "2000": 0.2664,
+            "4000": 0.2643
+          },
+          "low_combined": 0.5469,
+          "per_channel": [
+            {
+              "bands": {
+                "125": 0.5085,
+                "250": 0.579,
+                "500": 0.3743,
+                "1000": 0.2729,
+                "2000": 0.2664,
+                "4000": 0.2643
+              },
+              "low_combined": 0.5469,
+              "diagnostics": {
+                "curve_min_db_125": -152.6,
+                "curve_min_db_250": -136.5,
+                "curve_min_db_500": -111.5,
+                "curve_min_db_1000": -106.4,
+                "curve_min_db_2000": -113.4,
+                "curve_min_db_4000": -109.8
+              }
+            }
+          ]
+        },
+        {
+          "file": "assets/reference_irs/mit_restaurant/h130_Restaurant_1txs.wav",
+          "sample_rate": 32000,
+          "channels": 1,
+          "duration_s": 0.7868,
+          "bands": {
+            "125": 0.4111,
+            "250": 0.6352,
+            "500": 0.3558,
+            "1000": 0.308,
+            "2000": 0.2915,
+            "4000": 0.3128
+          },
+          "low_combined": 0.6033,
+          "per_channel": [
+            {
+              "bands": {
+                "125": 0.4111,
+                "250": 0.6352,
+                "500": 0.3558,
+                "1000": 0.308,
+                "2000": 0.2915,
+                "4000": 0.3128
+              },
+              "low_combined": 0.6033,
+              "diagnostics": {
+                "curve_min_db_125": -180.5,
+                "curve_min_db_250": -151.2,
+                "curve_min_db_500": -151.4,
+                "curve_min_db_1000": -154.0,
+                "curve_min_db_2000": -157.9,
+                "curve_min_db_4000": -158.7
+              }
+            }
+          ]
+        },
+        {
+          "file": "assets/reference_irs/mit_restaurant/h164_Restaurant_1txts.wav",
+          "sample_rate": 32000,
+          "channels": 1,
+          "duration_s": 0.2905,
+          "bands": {
+            "125": 0.4517,
+            "250": 0.1934,
+            "500": 0.6969,
+            "1000": 0.6229,
+            "2000": 0.5804,
+            "4000": 0.4754
+          },
+          "low_combined": 0.361,
+          "per_channel": [
+            {
+              "bands": {
+                "125": 0.4517,
+                "250": 0.1934,
+                "500": 0.6969,
+                "1000": 0.6229,
+                "2000": 0.5804,
+                "4000": 0.4754
+              },
+              "low_combined": 0.361,
+              "diagnostics": {
+                "curve_min_db_125": -136.9,
+                "curve_min_db_250": -128.0,
+                "curve_min_db_500": -121.7,
+                "curve_min_db_1000": -102.0,
+                "curve_min_db_2000": -91.0,
+                "curve_min_db_4000": -90.3
+              }
+            }
+          ]
+        }
+      ],
+      "real_reference": {
+        "bands": {
+          "125": {
+            "value": 0.4746,
+            "min": 0.4111,
+            "max": 0.5085,
+            "n": 4
+          },
+          "250": {
+            "value": 0.4953,
+            "min": 0.1934,
+            "max": 0.6352,
+            "n": 4
+          },
+          "500": {
+            "value": 0.365,
+            "min": 0.2936,
+            "max": 0.6969,
+            "n": 4
+          },
+          "1000": {
+            "value": 0.2904,
+            "min": 0.2568,
+            "max": 0.6229,
+            "n": 4
+          },
+          "2000": {
+            "value": 0.279,
+            "min": 0.1528,
+            "max": 0.5804,
+            "n": 4
+          },
+          "4000": {
+            "value": 0.2885,
+            "min": 0.107,
+            "max": 0.4754,
+            "n": 4
+          }
+        },
+        "low_combined": {
+          "value": 0.4938,
+          "min": 0.361,
+          "max": 0.6033,
+          "n": 4
+        },
+        "n_files": 4
+      },
+      "generated": [
+        {
+          "run": "site_photo_restaurant",
+          "dims_source": "metric_depth",
+          "confidence": "low",
+          "dims_m": {
+            "length": 2.773,
+            "width": 3.2019845929256636,
+            "height": 2.0
+          },
+          "volume_m3": 17.76,
+          "override_dims_used": false,
+          "forced_low_confidence": true,
+          "group": "forced",
+          "in_domain": false,
+          "gate": {
+            "default_exit": 3,
+            "blocked": true,
+            "exit_marker_consistent": true,
+            "override_dims_guidance": true
+          },
+          "measured": {
+            "bands": {
+              "125": 0.396,
+              "250": 0.4795,
+              "500": 0.4585,
+              "1000": 0.3569,
+              "2000": 0.3354,
+              "4000": 0.3166
+            },
+            "low_combined": 0.4753
+          },
+          "errors": {
+            "125": {
+              "measured_s": 0.396,
+              "reference_s": 0.4746,
+              "error_pct": -16.6,
+              "within_tolerance": true,
+              "within_range": false,
+              "reference_range": [
+                0.4111,
+                0.5085
+              ]
+            },
+            "250": {
+              "measured_s": 0.4795,
+              "reference_s": 0.4953,
+              "error_pct": -3.2,
+              "within_tolerance": true,
+              "within_range": true,
+              "reference_range": [
+                0.1934,
+                0.6352
+              ]
+            },
+            "500": {
+              "measured_s": 0.4585,
+              "reference_s": 0.365,
+              "error_pct": 25.6,
+              "within_tolerance": false,
+              "within_range": true,
+              "reference_range": [
+                0.2936,
+                0.6969
+              ]
+            },
+            "1000": {
+              "measured_s": 0.3569,
+              "reference_s": 0.2904,
+              "error_pct": 22.9,
+              "within_tolerance": false,
+              "within_range": true,
+              "reference_range": [
+                0.2568,
+                0.6229
+              ]
+            },
+            "2000": {
+              "measured_s": 0.3354,
+              "reference_s": 0.279,
+              "error_pct": 20.2,
+              "within_tolerance": false,
+              "within_range": true,
+              "reference_range": [
+                0.1528,
+                0.5804
+              ]
+            },
+            "4000": {
+              "measured_s": 0.3166,
+              "reference_s": 0.2885,
+              "error_pct": 9.7,
+              "within_tolerance": true,
+              "within_range": true,
+              "reference_range": [
+                0.107,
+                0.4754
+              ]
+            },
+            "low_combined": {
+              "measured_s": 0.4753,
+              "reference_s": 0.4938,
+              "error_pct": -3.7,
+              "within_tolerance": true,
+              "within_range": true,
+              "reference_range": [
+                0.361,
+                0.6033
+              ]
+            }
+          },
+          "ladder_500_vs_low": {
+            "generated": 0.965,
+            "real": 0.739
+          }
+        },
+        {
+          "run": "t17r2_manual_restaurant",
+          "dims_source": "manual",
+          "confidence": "low",
+          "dims_m": {
+            "length": 14.0,
+            "width": 9.0,
+            "height": 3.2
+          },
+          "volume_m3": 403.2,
+          "override_dims_used": true,
+          "forced_low_confidence": true,
+          "group": "manual",
+          "in_domain": false,
+          "gate": {
+            "default_exit": 3,
+            "blocked": true,
+            "exit_marker_consistent": true,
+            "override_dims_guidance": true
+          },
+          "measured": {
+            "bands": {
+              "125": 0.7294,
+              "250": 0.9832,
+              "500": 0.7769,
+              "1000": 0.6324,
+              "2000": 0.5686,
+              "4000": 0.5899
+            },
+            "low_combined": 0.8897
+          },
+          "errors": {
+            "125": {
+              "measured_s": 0.7294,
+              "reference_s": 0.4746,
+              "error_pct": 53.7,
+              "within_tolerance": false,
+              "within_range": false,
+              "reference_range": [
+                0.4111,
+                0.5085
+              ]
+            },
+            "250": {
+              "measured_s": 0.9832,
+              "reference_s": 0.4953,
+              "error_pct": 98.5,
+              "within_tolerance": false,
+              "within_range": false,
+              "reference_range": [
+                0.1934,
+                0.6352
+              ]
+            },
+            "500": {
+              "measured_s": 0.7769,
+              "reference_s": 0.365,
+              "error_pct": 112.8,
+              "within_tolerance": false,
+              "within_range": false,
+              "reference_range": [
+                0.2936,
+                0.6969
+              ]
+            },
+            "1000": {
+              "measured_s": 0.6324,
+              "reference_s": 0.2904,
+              "error_pct": 117.8,
+              "within_tolerance": false,
+              "within_range": false,
+              "reference_range": [
+                0.2568,
+                0.6229
+              ]
+            },
+            "2000": {
+              "measured_s": 0.5686,
+              "reference_s": 0.279,
+              "error_pct": 103.8,
+              "within_tolerance": false,
+              "within_range": true,
+              "reference_range": [
+                0.1528,
+                0.5804
+              ]
+            },
+            "4000": {
+              "measured_s": 0.5899,
+              "reference_s": 0.2885,
+              "error_pct": 104.5,
+              "within_tolerance": false,
+              "within_range": false,
+              "reference_range": [
+                0.107,
+                0.4754
+              ]
+            },
+            "low_combined": {
+              "measured_s": 0.8897,
+              "reference_s": 0.4938,
+              "error_pct": 80.2,
+              "within_tolerance": false,
+              "within_range": false,
+              "reference_range": [
+                0.361,
+                0.6033
+              ]
+            }
+          },
+          "ladder_500_vs_low": {
+            "generated": 0.873,
+            "real": 0.739
+          }
+        }
+      ]
+    },
+    {
+      "key": "racquetball_court_4",
+      "label": "Racquetball Court 4（壁球場，必測反例）",
+      "source": "EchoThief",
+      "photo": "racquetball_court_4/RacquetballCourt4.jpg",
+      "in_domain": false,
+      "real": [
+        {
+          "file": "assets/reference_irs/racquetball_court_4/RacquetballCourt4.wav",
+          "sample_rate": 44100,
+          "channels": 2,
+          "duration_s": 3.538,
+          "bands": {
+            "125": 3.0781,
+            "250": 2.6642,
+            "500": 3.0486,
+            "1000": 2.9261,
+            "2000": 3.0093,
+            "4000": 2.7546
+          },
+          "low_combined": 2.7554,
+          "per_channel": [
+            {
+              "bands": {
+                "125": 3.2629,
+                "250": 2.6903,
+                "500": 3.1153,
+                "1000": 2.9323,
+                "2000": 3.0285,
+                "4000": 2.7613
+              },
+              "low_combined": 2.8086,
+              "diagnostics": {
+                "curve_min_db_125": -345.2,
+                "curve_min_db_250": -481.7,
+                "curve_min_db_500": -745.7,
+                "curve_min_db_1000": -1316.7,
+                "curve_min_db_2000": -2477.5,
+                "curve_min_db_4000": -Infinity
+              }
+            },
+            {
+              "bands": {
+                "125": 2.8932,
+                "250": 2.638,
+                "500": 2.9819,
+                "1000": 2.92,
+                "2000": 2.9901,
+                "4000": 2.7479
+              },
+              "low_combined": 2.7022,
+              "diagnostics": {
+                "curve_min_db_125": -341.1,
+                "curve_min_db_250": -449.7,
+                "curve_min_db_500": -694.4,
+                "curve_min_db_1000": -1204.8,
+                "curve_min_db_2000": -2262.7,
+                "curve_min_db_4000": -Infinity
+              }
+            }
+          ]
+        }
+      ],
+      "real_reference": {
+        "bands": {
+          "125": {
+            "value": 3.0781,
+            "min": 3.0781,
+            "max": 3.0781,
+            "n": 1
+          },
+          "250": {
+            "value": 2.6642,
+            "min": 2.6642,
+            "max": 2.6642,
+            "n": 1
+          },
+          "500": {
+            "value": 3.0486,
+            "min": 3.0486,
+            "max": 3.0486,
+            "n": 1
+          },
+          "1000": {
+            "value": 2.9261,
+            "min": 2.9261,
+            "max": 2.9261,
+            "n": 1
+          },
+          "2000": {
+            "value": 3.0093,
+            "min": 3.0093,
+            "max": 3.0093,
+            "n": 1
+          },
+          "4000": {
+            "value": 2.7546,
+            "min": 2.7546,
+            "max": 2.7546,
+            "n": 1
+          }
+        },
+        "low_combined": {
+          "value": 2.7554,
+          "min": 2.7554,
+          "max": 2.7554,
+          "n": 1
+        },
+        "n_files": 1
+      },
+      "generated": [
+        {
+          "run": "RacquetballCourt4",
+          "dims_source": "equirect_multiview",
+          "confidence": "low",
+          "dims_m": {
+            "length": 16.104865312576294,
+            "width": 9.388063430786133,
+            "height": 5.545717730416185
+          },
+          "volume_m3": 838.48,
+          "override_dims_used": false,
+          "forced_low_confidence": true,
+          "group": "forced",
+          "in_domain": false,
+          "gate": {
+            "default_exit": 3,
+            "blocked": true,
+            "exit_marker_consistent": true,
+            "override_dims_guidance": true
+          },
+          "measured": {
+            "bands": {
+              "125": 0.9756,
+              "250": 1.4478,
+              "500": 1.5216,
+              "1000": 1.7394,
+              "2000": 1.6159,
+              "4000": 1.468
+            },
+            "low_combined": 1.3867
+          },
+          "errors": {
+            "125": {
+              "measured_s": 0.9756,
+              "reference_s": 3.0781,
+              "error_pct": -68.3,
+              "within_tolerance": false
+            },
+            "250": {
+              "measured_s": 1.4478,
+              "reference_s": 2.6642,
+              "error_pct": -45.7,
+              "within_tolerance": false
+            },
+            "500": {
+              "measured_s": 1.5216,
+              "reference_s": 3.0486,
+              "error_pct": -50.1,
+              "within_tolerance": false
+            },
+            "1000": {
+              "measured_s": 1.7394,
+              "reference_s": 2.9261,
+              "error_pct": -40.6,
+              "within_tolerance": false
+            },
+            "2000": {
+              "measured_s": 1.6159,
+              "reference_s": 3.0093,
+              "error_pct": -46.3,
+              "within_tolerance": false
+            },
+            "4000": {
+              "measured_s": 1.468,
+              "reference_s": 2.7546,
+              "error_pct": -46.7,
+              "within_tolerance": false
+            },
+            "low_combined": {
+              "measured_s": 1.3867,
+              "reference_s": 2.7554,
+              "error_pct": -49.7,
+              "within_tolerance": false
+            }
+          },
+          "ladder_500_vs_low": {
+            "generated": 1.097,
+            "real": 1.106
+          }
+        },
+        {
+          "run": "t17r2_manual_racquetball",
+          "dims_source": "manual",
+          "confidence": "low",
+          "dims_m": {
+            "length": 12.19,
+            "width": 6.1,
+            "height": 6.1
+          },
+          "volume_m3": 453.59,
+          "override_dims_used": true,
+          "forced_low_confidence": true,
+          "group": "manual",
+          "in_domain": false,
+          "gate": {
+            "default_exit": 3,
+            "blocked": true,
+            "exit_marker_consistent": true,
+            "override_dims_guidance": true
+          },
+          "measured": {
+            "bands": {
+              "125": 0.7406,
+              "250": 1.2722,
+              "500": 1.2278,
+              "1000": 1.4197,
+              "2000": 1.3332,
+              "4000": 1.2496
+            },
+            "low_combined": 1.0732
+          },
+          "errors": {
+            "125": {
+              "measured_s": 0.7406,
+              "reference_s": 3.0781,
+              "error_pct": -75.9,
+              "within_tolerance": false
+            },
+            "250": {
+              "measured_s": 1.2722,
+              "reference_s": 2.6642,
+              "error_pct": -52.2,
+              "within_tolerance": false
+            },
+            "500": {
+              "measured_s": 1.2278,
+              "reference_s": 3.0486,
+              "error_pct": -59.7,
+              "within_tolerance": false
+            },
+            "1000": {
+              "measured_s": 1.4197,
+              "reference_s": 2.9261,
+              "error_pct": -51.5,
+              "within_tolerance": false
+            },
+            "2000": {
+              "measured_s": 1.3332,
+              "reference_s": 3.0093,
+              "error_pct": -55.7,
+              "within_tolerance": false
+            },
+            "4000": {
+              "measured_s": 1.2496,
+              "reference_s": 2.7546,
+              "error_pct": -54.6,
+              "within_tolerance": false
+            },
+            "low_combined": {
+              "measured_s": 1.0732,
+              "reference_s": 2.7554,
+              "error_pct": -61.1,
+              "within_tolerance": false
+            }
+          },
+          "ladder_500_vs_low": {
+            "generated": 1.144,
+            "real": 1.106
+          }
+        }
+      ]
+    },
+    {
+      "key": "steinman_hall",
+      "label": "Steinman Hall（音樂廳）",
+      "source": "EchoThief",
+      "photo": "steinman_hall/SteinmanHall.jpg",
+      "in_domain": false,
+      "real": [
+        {
+          "file": "assets/reference_irs/steinman_hall/SteinmanHall.wav",
+          "sample_rate": 44100,
+          "channels": 2,
+          "duration_s": 1.1893,
+          "bands": {
+            "125": 1.2469,
+            "250": 1.0987,
+            "500": 1.0491,
+            "1000": 1.0029,
+            "2000": 0.9605,
+            "4000": 0.8507
+          },
+          "low_combined": 1.1957,
+          "per_channel": [
+            {
+              "bands": {
+                "125": 1.3465,
+                "250": 1.112,
+                "500": 1.0253,
+                "1000": 1.0036,
+                "2000": 0.983,
+                "4000": 0.8498
+              },
+              "low_combined": 1.2486,
+              "diagnostics": {
+                "curve_min_db_125": -229.8,
+                "curve_min_db_250": -210.9,
+                "curve_min_db_500": -195.5,
+                "curve_min_db_1000": -234.8,
+                "curve_min_db_2000": -278.0,
+                "curve_min_db_4000": -347.8
+              }
+            },
+            {
+              "bands": {
+                "125": 1.1472,
+                "250": 1.0855,
+                "500": 1.0728,
+                "1000": 1.0022,
+                "2000": 0.9379,
+                "4000": 0.8515
+              },
+              "low_combined": 1.1429,
+              "diagnostics": {
+                "curve_min_db_125": -218.1,
+                "curve_min_db_250": -204.4,
+                "curve_min_db_500": -200.6,
+                "curve_min_db_1000": -235.5,
+                "curve_min_db_2000": -275.3,
+                "curve_min_db_4000": -365.7
+              }
+            }
+          ]
+        }
+      ],
+      "real_reference": {
+        "bands": {
+          "125": {
+            "value": 1.2469,
+            "min": 1.2469,
+            "max": 1.2469,
+            "n": 1
+          },
+          "250": {
+            "value": 1.0987,
+            "min": 1.0987,
+            "max": 1.0987,
+            "n": 1
+          },
+          "500": {
+            "value": 1.0491,
+            "min": 1.0491,
+            "max": 1.0491,
+            "n": 1
+          },
+          "1000": {
+            "value": 1.0029,
+            "min": 1.0029,
+            "max": 1.0029,
+            "n": 1
+          },
+          "2000": {
+            "value": 0.9605,
+            "min": 0.9605,
+            "max": 0.9605,
+            "n": 1
+          },
+          "4000": {
+            "value": 0.8507,
+            "min": 0.8507,
+            "max": 0.8507,
+            "n": 1
+          }
+        },
+        "low_combined": {
+          "value": 1.1957,
+          "min": 1.1957,
+          "max": 1.1957,
+          "n": 1
+        },
+        "n_files": 1
+      },
+      "generated": [
+        {
+          "run": "SteinmanHall",
+          "dims_source": "equirect_multiview",
+          "confidence": "low",
+          "dims_m": {
+            "length": 17.453123807907104,
+            "width": 21.48338270187378,
+            "height": 6.894520226837343
+          },
+          "volume_m3": 2585.12,
+          "override_dims_used": false,
+          "forced_low_confidence": true,
+          "group": "forced",
+          "in_domain": false,
+          "gate": {
+            "default_exit": 3,
+            "blocked": true,
+            "exit_marker_consistent": true,
+            "override_dims_guidance": true
+          },
+          "measured": {
+            "bands": {
+              "125": 1.4601,
+              "250": 1.6123,
+              "500": 1.2159,
+              "1000": 1.0645,
+              "2000": 0.9336,
+              "4000": 0.9282
+            },
+            "low_combined": 1.5518
+          },
+          "errors": {
+            "125": {
+              "measured_s": 1.4601,
+              "reference_s": 1.2469,
+              "error_pct": 17.1,
+              "within_tolerance": true
+            },
+            "250": {
+              "measured_s": 1.6123,
+              "reference_s": 1.0987,
+              "error_pct": 46.7,
+              "within_tolerance": false
+            },
+            "500": {
+              "measured_s": 1.2159,
+              "reference_s": 1.0491,
+              "error_pct": 15.9,
+              "within_tolerance": true
+            },
+            "1000": {
+              "measured_s": 1.0645,
+              "reference_s": 1.0029,
+              "error_pct": 6.1,
+              "within_tolerance": true
+            },
+            "2000": {
+              "measured_s": 0.9336,
+              "reference_s": 0.9605,
+              "error_pct": -2.8,
+              "within_tolerance": true
+            },
+            "4000": {
+              "measured_s": 0.9282,
+              "reference_s": 0.8507,
+              "error_pct": 9.1,
+              "within_tolerance": true
+            },
+            "low_combined": {
+              "measured_s": 1.5518,
+              "reference_s": 1.1957,
+              "error_pct": 29.8,
+              "within_tolerance": false
+            }
+          },
+          "ladder_500_vs_low": {
+            "generated": 0.784,
+            "real": 0.877
+          }
+        },
+        {
+          "run": "t17r2_manual_steinman",
+          "dims_source": "manual",
+          "confidence": "low",
+          "dims_m": {
+            "length": 20.0,
+            "width": 18.0,
+            "height": 7.5
+          },
+          "volume_m3": 2700.0,
+          "override_dims_used": true,
+          "forced_low_confidence": true,
+          "group": "manual",
+          "in_domain": false,
+          "gate": {
+            "default_exit": 3,
+            "blocked": true,
+            "exit_marker_consistent": true,
+            "override_dims_guidance": true
+          },
+          "measured": {
+            "bands": {
+              "125": 1.5519,
+              "250": 1.7011,
+              "500": 1.3236,
+              "1000": 1.15,
+              "2000": 1.0264,
+              "4000": 0.9984
+            },
+            "low_combined": 1.6491
+          },
+          "errors": {
+            "125": {
+              "measured_s": 1.5519,
+              "reference_s": 1.2469,
+              "error_pct": 24.5,
+              "within_tolerance": false
+            },
+            "250": {
+              "measured_s": 1.7011,
+              "reference_s": 1.0987,
+              "error_pct": 54.8,
+              "within_tolerance": false
+            },
+            "500": {
+              "measured_s": 1.3236,
+              "reference_s": 1.0491,
+              "error_pct": 26.2,
+              "within_tolerance": false
+            },
+            "1000": {
+              "measured_s": 1.15,
+              "reference_s": 1.0029,
+              "error_pct": 14.7,
+              "within_tolerance": true
+            },
+            "2000": {
+              "measured_s": 1.0264,
+              "reference_s": 0.9605,
+              "error_pct": 6.9,
+              "within_tolerance": true
+            },
+            "4000": {
+              "measured_s": 0.9984,
+              "reference_s": 0.8507,
+              "error_pct": 17.4,
+              "within_tolerance": true
+            },
+            "low_combined": {
+              "measured_s": 1.6491,
+              "reference_s": 1.1957,
+              "error_pct": 37.9,
+              "within_tolerance": false
+            }
+          },
+          "ladder_500_vs_low": {
+            "generated": 0.803,
+            "real": 0.877
+          }
+        }
+      ]
+    },
+    {
+      "key": "tunnel_to_hell",
+      "label": "Tunnel to Hell（要塞地下混凝土隧道）",
+      "source": "EchoThief",
+      "photo": "tunnel_to_hell/TunnelToHell.jpg",
+      "in_domain": false,
+      "real": [
+        {
+          "file": "assets/reference_irs/tunnel_to_hell/TunnelToHell.wav",
+          "sample_rate": 44100,
+          "channels": 2,
+          "duration_s": 1.8321,
+          "bands": {
+            "125": 2.9561,
+            "250": 2.4628,
+            "500": 2.0827,
+            "1000": 1.5122,
+            "2000": 1.2086,
+            "4000": 0.8547
+          },
+          "low_combined": 2.564,
+          "per_channel": [
+            {
+              "bands": {
+                "125": 2.9942,
+                "250": 2.5137,
+                "500": 2.1106,
+                "1000": 1.5188,
+                "2000": 1.2237,
+                "4000": 0.8646
+              },
+              "low_combined": 2.5981,
+              "diagnostics": {
+                "curve_min_db_125": -178.3,
+                "curve_min_db_250": -189.6,
+                "curve_min_db_500": -165.1,
+                "curve_min_db_1000": -163.9,
+                "curve_min_db_2000": -174.4,
+                "curve_min_db_4000": -153.5
+              }
+            },
+            {
+              "bands": {
+                "125": 2.9179,
+                "250": 2.412,
+                "500": 2.0549,
+                "1000": 1.5057,
+                "2000": 1.1935,
+                "4000": 0.8448
+              },
+              "low_combined": 2.53,
+              "diagnostics": {
+                "curve_min_db_125": -177.8,
+                "curve_min_db_250": -175.4,
+                "curve_min_db_500": -171.4,
+                "curve_min_db_1000": -162.2,
+                "curve_min_db_2000": -166.1,
+                "curve_min_db_4000": -156.2
+              }
+            }
+          ]
+        }
+      ],
+      "real_reference": {
+        "bands": {
+          "125": {
+            "value": 2.9561,
+            "min": 2.9561,
+            "max": 2.9561,
+            "n": 1
+          },
+          "250": {
+            "value": 2.4628,
+            "min": 2.4628,
+            "max": 2.4628,
+            "n": 1
+          },
+          "500": {
+            "value": 2.0827,
+            "min": 2.0827,
+            "max": 2.0827,
+            "n": 1
+          },
+          "1000": {
+            "value": 1.5122,
+            "min": 1.5122,
+            "max": 1.5122,
+            "n": 1
+          },
+          "2000": {
+            "value": 1.2086,
+            "min": 1.2086,
+            "max": 1.2086,
+            "n": 1
+          },
+          "4000": {
+            "value": 0.8547,
+            "min": 0.8547,
+            "max": 0.8547,
+            "n": 1
+          }
+        },
+        "low_combined": {
+          "value": 2.564,
+          "min": 2.564,
+          "max": 2.564,
+          "n": 1
+        },
+        "n_files": 1
+      },
+      "generated": [
+        {
+          "run": "TunnelToHell",
+          "dims_source": "metric_depth",
+          "confidence": "low",
+          "dims_m": {
+            "length": 15.756,
+            "width": 18.193461682703482,
+            "height": 9.52675811748837
+          },
+          "volume_m3": 2730.9,
+          "override_dims_used": false,
+          "forced_low_confidence": true,
+          "group": "forced",
+          "in_domain": false,
+          "gate": {
+            "default_exit": 3,
+            "blocked": true,
+            "exit_marker_consistent": true,
+            "override_dims_guidance": true
+          },
+          "measured": {
+            "bands": {
+              "125": 3.0771,
+              "250": 5.4404,
+              "500": 6.5049,
+              "1000": 7.4529,
+              "2000": 5.4219,
+              "4000": 3.34
+            },
+            "low_combined": 5.3195
+          },
+          "errors": {
+            "125": {
+              "measured_s": 3.0771,
+              "reference_s": 2.9561,
+              "error_pct": 4.1,
+              "within_tolerance": true
+            },
+            "250": {
+              "measured_s": 5.4404,
+              "reference_s": 2.4628,
+              "error_pct": 120.9,
+              "within_tolerance": false
+            },
+            "500": {
+              "measured_s": 6.5049,
+              "reference_s": 2.0827,
+              "error_pct": 212.3,
+              "within_tolerance": false
+            },
+            "1000": {
+              "measured_s": 7.4529,
+              "reference_s": 1.5122,
+              "error_pct": 392.9,
+              "within_tolerance": false
+            },
+            "2000": {
+              "measured_s": 5.4219,
+              "reference_s": 1.2086,
+              "error_pct": 348.6,
+              "within_tolerance": false
+            },
+            "4000": {
+              "measured_s": 3.34,
+              "reference_s": 0.8547,
+              "error_pct": 290.8,
+              "within_tolerance": false
+            },
+            "low_combined": {
+              "measured_s": 5.3195,
+              "reference_s": 2.564,
+              "error_pct": 107.5,
+              "within_tolerance": false
+            }
+          },
+          "ladder_500_vs_low": {
+            "generated": 1.223,
+            "real": 0.812
+          }
+        }
+      ]
+    }
+  ]
+}

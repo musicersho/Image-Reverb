@@ -1,0 +1,43 @@
+/Users/musicersho/Image Reverb/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/musicersho/Image Reverb/.venv/lib/python3.9/site-packages/transformers/image_processing_base.py:417: UserWarning: The following named arguments are not valid for `SegformerImageProcessor.__init__` and were ignored: 'feature_extractor_type', 'reduce_labels'
+  image_processor = cls(**image_processor_dict)
+Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+Device set to use mps:0
+⚠️  已指定 --force-low-confidence：overall confidence 為 low（geometry=low, materials=low），仍強制輸出，結果可信度未知，請自行評估。
+=== 照片：assets/reference_irs/steinman_hall/SteinmanHall.jpg ===
+環景判定：是
+--- T-12 逐表面材質辨識 ---
+  west     → curtain_fabric  （來源：clip）
+  east     → gypsum_board    （來源：fallback）
+  south    → gypsum_board    （來源：fallback）
+  north    → gypsum_board    （來源：fallback）
+  floor    → gypsum_board    （來源：fallback）
+  ceiling  → curtain_fabric  （來源：clip）
+--- T-11 幾何估計 ---
+  房間尺寸：17.45×21.48×6.89 m（dims_source=equirect_multiview）
+  confidence：geometry=low, materials=low, overall=low
+--- T-13 聲學參數 ---
+  Sabine 目標 RT60：[1.41, 1.59, 1.25, 1.0, 0.95, 0.92] s
+  陳設偵測（預設觀測模式，未套用；--furnishings 可啟用）：
+    seat       佔比  32.8%
+    curtain    佔比   6.1%
+--- T-14 IR 合成 ---
+已輸出：ir_mono.wav、ir_stereo.wav、analysis.json → /Users/musicersho/Image Reverb/output/SteinmanHall
+🎧 試聽檔：/Users/musicersho/Image Reverb/output/SteinmanHall/wet_preview.wav（mix=0.6；數字合理 ≠ 聽起來對，請實聽）
+  ⚠️ 超出已驗證量程（適用範圍 ≤10m；az000_el00=12.2m、az090_el00=10.4m、az270_el00=11.1m、length_m=17.5m、width_m=21.5m）——metric depth 模型實證天花板約 20m，且量程壓縮在天花板之前就開始（走廊實際 30m 被壓成 12.8m），超過此門檻的估值無法區分「真的 10–20m」與「被壓縮的 30m+」，數字不可信 → confidence: low。建議用 --override-dims 指定實際尺寸，或改用 360° 環景照片輸入。
+  ⚠️ [az000_el00] floor：CLIP top-1 機率 0.25 低於門檻 0.4，改用 fallback 'gypsum_board'
+  ⚠️ [az000_el00] wall：CLIP top-1 機率 0.39 低於門檻 0.4，改用 fallback 'gypsum_board'
+  ⚠️ [az090_el00] floor：CLIP top-1 機率 0.23 低於門檻 0.4，改用 fallback 'gypsum_board'
+  ⚠️ [az090_el00] ceiling：CLIP top-1 機率 0.28 低於門檻 0.4，改用 fallback 'gypsum_board'
+  ⚠️ [az090_el00] wall：CLIP top-1 機率 0.36 低於門檻 0.4，改用 fallback 'gypsum_board'
+  ⚠️ [az180_el00] wall：CLIP top-1 機率 0.39 低於門檻 0.4，改用 fallback 'gypsum_board'
+  ⚠️ [az270_el00] floor：CLIP 認為這塊區域最像「person」（機率 0.54）而非任何建築材質——模型認不出這是建築表面，改用 fallback 'gypsum_board'。這個空間的材質判定不可信，請人工用 --materials 覆寫。
+  ⚠️ [az270_el00] ceiling：CLIP 認為這塊區域最像「person」（機率 0.22）而非任何建築材質——模型認不出這是建築表面，改用 fallback 'gypsum_board'。這個空間的材質判定不可信，請人工用 --materials 覆寫。
+  ⚠️ [el+45] wall：CLIP 認為這塊區域最像「person」（機率 0.54）而非任何建築材質——模型認不出這是建築表面，改用 fallback 'gypsum_board'。這個空間的材質判定不可信，請人工用 --materials 覆寫。
+  ⚠️ [el-45] floor：CLIP top-1 機率 0.21 低於門檻 0.4，改用 fallback 'gypsum_board'
+  ⚠️ [el-45] wall：CLIP top-1 機率 0.28 低於門檻 0.4，改用 fallback 'gypsum_board'
+  ⚠️ 已指定 --force-low-confidence：overall confidence 為 low（geometry=low, materials=low），使用者強制輸出，結果可信度未知。
+
+exit=0

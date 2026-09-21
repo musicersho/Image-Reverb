@@ -1,0 +1,39 @@
+/Users/musicersho/Image Reverb/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/musicersho/Image Reverb/.venv/lib/python3.9/site-packages/transformers/image_processing_base.py:417: UserWarning: The following named arguments are not valid for `SegformerImageProcessor.__init__` and were ignored: 'feature_extractor_type', 'reduce_labels'
+  image_processor = cls(**image_processor_dict)
+Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+Device set to use mps:0
+⚠️  已指定 --force-low-confidence：overall confidence 為 low（geometry=low, materials=low），仍強制輸出，結果可信度未知，請自行評估。
+=== 照片：assets/photos_heldout/heldout_car.png ===
+環景判定：否
+--- T-12 逐表面材質辨識 ---
+  west     → gypsum_board    （來源：out_of_domain）
+  east     → gypsum_board    （來源：out_of_domain）
+  south    → gypsum_board    （來源：out_of_domain）
+  north    → gypsum_board    （來源：out_of_domain）
+  floor    → gypsum_board    （來源：fallback）
+  ceiling  → gypsum_board    （來源：out_of_domain）
+--- T-11 幾何估計 ---
+  房間尺寸：9.16×10.58×7.93 m（dims_source=metric_depth）
+  confidence：geometry=low, materials=low, overall=low
+--- T-13 聲學參數 ---
+  Sabine 目標 RT60：[0.84, 2.4, 4.55, 5.3, 3.04, 2.13] s
+  陳設偵測（預設觀測模式，未套用；--furnishings 可啟用）：
+    seat       佔比  38.6%
+--- T-14 IR 合成 ---
+已輸出：ir_mono.wav、ir_stereo.wav、analysis.json → /Users/musicersho/Image Reverb/output/heldout_car
+🎧 試聽檔：/Users/musicersho/Image Reverb/output/heldout_car/wet_preview.wav（mix=0.6；數字合理 ≠ 聽起來對，請實聽）
+  ⚠️ 超出已驗證量程（適用範圍 ≤10m；width_m=10.6m）——metric depth 模型實證天花板約 20m，且量程壓縮在天花板之前就開始（走廊實際 30m 被壓成 12.8m），超過此門檻的估值無法區分「真的 10–20m」與「被壓縮的 30m+」，數字不可信 → confidence: low。建議用 --override-dims 指定實際尺寸，或改用 360° 環景照片輸入。
+  ⚠️ T-12 的材質分類判定這不是建築表面（vehicle_interior）——這不是一個可以用 ShoeBox 房間模型描述的空間，尺寸數字不可信 → confidence: low。
+  ⚠️ floor：CLIP top-1 機率 0.23 低於門檻 0.4，改用 fallback 'gypsum_board'
+  ⚠️ ceiling：CLIP 認為這塊區域最像「vehicle_interior」（機率 0.50）而非任何建築材質——模型認不出這是建築表面，改用 fallback 'gypsum_board'。這個空間的材質判定不可信，請人工用 --materials 覆寫。
+  ⚠️ wall：CLIP 認為這塊區域最像「vehicle_interior」（機率 0.67）而非任何建築材質——模型認不出這是建築表面，改用 fallback 'gypsum_board'。這個空間的材質判定不可信，請人工用 --materials 覆寫。
+  ⚠️ 單張透視照看不到背後的牆，四面牆共用同一個材質判定值。若要四面各自判定，請用 360° 環景照片（T-10 會投影出六視角）。
+  ⚠️ 六個面被判成同一種材質——這是約束 A 要避免的退化情況，請人工檢查／用 --materials 覆寫。
+  ⚠️ 125 Hz 量測 T30 2.366s 與目標 0.840s 誤差 +181.7%，超出 ±20%
+  ⚠️ 250 Hz 量測 T30 3.563s 與目標 2.397s 誤差 +48.6%，超出 ±20%
+  ⚠️ 已指定 --force-low-confidence：overall confidence 為 low（geometry=low, materials=low），使用者強制輸出，結果可信度未知。
+
+exit=0

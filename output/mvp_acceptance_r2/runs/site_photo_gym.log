@@ -1,0 +1,34 @@
+/Users/musicersho/Image Reverb/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/musicersho/Image Reverb/.venv/lib/python3.9/site-packages/transformers/image_processing_base.py:417: UserWarning: The following named arguments are not valid for `SegformerImageProcessor.__init__` and were ignored: 'feature_extractor_type', 'reduce_labels'
+  image_processor = cls(**image_processor_dict)
+Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+Device set to use mps:0
+錯誤：overall confidence 為 low，已擋下輸出（T-42：本次執行的暫存產物已清除，不會在 output/ 留下任何新的 WAV／JSON）。
+  原因：geometry=low, materials=low——幾何和/或材質推測很可能不可信，直接輸出容易讓使用者盲聽配錯空間。
+  低信心面：
+    west：目前推測 gypsum_board（來源：out_of_domain）
+    east：目前推測 gypsum_board（來源：out_of_domain）
+    south：目前推測 gypsum_board（來源：out_of_domain）
+    north：目前推測 gypsum_board（來源：out_of_domain）
+  怎麼繼續：
+    1) 幾何不可信 → 用 --override-dims 手動指定房間尺寸（公尺），例如 4x3x2.5
+    2) 材質不可信 → 人工確認上列面的實際材質後覆寫，例如：python -m src.image_reverb assets/reference_irs/mit_gym/site_photo_gym.png --override-material west=<材質id> --override-material east=<材質id> --override-material south=<材質id> --override-material north=<材質id>
+       <材質id> 請自行判斷並用 `python scripts/gen_ir_manual.py --list-materials` 查表填入——這是人工確認的出口，不要用另一層自動猜測取代 CLIP。
+       注意：覆寫後若六面材質變成完全相同，仍會落入退化規則（規則 2）判定為 low。
+    3) 仍要照樣輸出 → 加 --force-low-confidence（結果會標記 forced_low_confidence=true，不建議當常規路徑）
+=== 照片：assets/reference_irs/mit_gym/site_photo_gym.png ===
+環景判定：否
+--- T-12 逐表面材質辨識 ---
+  west     → gypsum_board    （來源：out_of_domain）
+  east     → gypsum_board    （來源：out_of_domain）
+  south    → gypsum_board    （來源：out_of_domain）
+  north    → gypsum_board    （來源：out_of_domain）
+  floor    → acoustic_panel  （來源：clip）
+  ceiling  → gypsum_board    （來源：-）
+--- T-11 幾何估計 ---
+  房間尺寸：5.01×5.79×3.26 m（dims_source=metric_depth）
+  confidence：geometry=low, materials=low, overall=low
+
+exit=3

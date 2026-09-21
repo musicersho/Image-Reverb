@@ -1,0 +1,150 @@
+{
+  "packaging_git_revision": {
+    "commit": "8ac0b643b387603458b9b26e005d1f60775f6f42",
+    "dirty": false
+  },
+  "shuffle_seed": 20260916,
+  "degraded": false,
+  "dry": {
+    "path": "assets/dry/clap_synth.wav",
+    "sha256": "9d89ddae83d1e4f41bbe9d6d9a9503d860c2a4228bb2b3a9f794adfcb5c8150c",
+    "note": "未給 --dry：沿用既有 wet_preview.wav（pipeline 內建以此乾聲、mix=0.6 生成，本次未重新卷積）"
+  },
+  "generated_from": [
+    {
+      "run": "heldout_bathroom",
+      "photo_sha256": "9697b659d104f71643f5083b166445a7381db147f52f4607412395bf8dec3a05",
+      "ir_sha256": "180bc1886a84848b5f493f886467fd43376c909a29b91400f3daacaeb0ba9e08",
+      "wet_sha256": "ddd37260c84efbde9850f9065c36291c2ae1366d5406e6bbcb1861e2c79d3d45",
+      "dims_source": "metric_depth",
+      "confidence": "medium",
+      "forced_low_confidence": false,
+      "source_provenance": {
+        "git_revision": {
+          "commit": "8ac0b643b387603458b9b26e005d1f60775f6f42",
+          "dirty": false
+        },
+        "input_sha256": "9697b659d104f71643f5083b166445a7381db147f52f4607412395bf8dec3a05",
+        "materials_json_sha256": "dddf5bd0a3680419e594a17de44e28269c64b038f7100cb7cf5faedf0acb1c3a",
+        "segmentation_model_id": "nvidia/segformer-b4-finetuned-ade-512-512",
+        "clip_model_id": "openai/clip-vit-base-patch32",
+        "clip_confidence_threshold": 0.4,
+        "cli_params": {
+          "override_dims": null,
+          "override_materials": [],
+          "force_low_confidence": false,
+          "furnishings_mode": "observe"
+        },
+        "generated_at": "2026-09-21T02:33:27Z"
+      }
+    },
+    {
+      "run": "heldout_living",
+      "photo_sha256": "0a731b514a7645143d26cc460e531aea2bc29a767c17b3cd402b3d8e30dd8a07",
+      "ir_sha256": "2f2bafc22fdb7456c6b3d5a9ef9e77ac7e259343e3a34c499fb80d97b3161848",
+      "wet_sha256": "c76f1ab3e7e30113988406fd5d36d21a0eb2395e18b50aa908841459b30cd324",
+      "dims_source": "metric_depth",
+      "confidence": "medium",
+      "forced_low_confidence": false,
+      "source_provenance": {
+        "git_revision": {
+          "commit": "8ac0b643b387603458b9b26e005d1f60775f6f42",
+          "dirty": false
+        },
+        "input_sha256": "0a731b514a7645143d26cc460e531aea2bc29a767c17b3cd402b3d8e30dd8a07",
+        "materials_json_sha256": "dddf5bd0a3680419e594a17de44e28269c64b038f7100cb7cf5faedf0acb1c3a",
+        "segmentation_model_id": "nvidia/segformer-b4-finetuned-ade-512-512",
+        "clip_model_id": "openai/clip-vit-base-patch32",
+        "clip_confidence_threshold": 0.4,
+        "cli_params": {
+          "override_dims": null,
+          "override_materials": [],
+          "force_low_confidence": false,
+          "furnishings_mode": "observe"
+        },
+        "generated_at": "2026-09-21T02:33:40Z"
+      }
+    },
+    {
+      "run": "heldout_hall",
+      "photo_sha256": "eb4f1d09b86c9c6b7658662820a7d419a0f4b243c4746353aae09f94c59adc59",
+      "ir_sha256": "f8f0133d25a00a178583af9632bedeb4dd497fd9f915081cb0bc8513277d6333",
+      "wet_sha256": "81e29b10563fb073b871d0fb1a3d061ad946fa75fcaafafe0d0bebef0f8c7472",
+      "dims_source": "metric_depth",
+      "confidence": "low",
+      "forced_low_confidence": true,
+      "source_provenance": {
+        "git_revision": {
+          "commit": "8ac0b643b387603458b9b26e005d1f60775f6f42",
+          "dirty": false
+        },
+        "input_sha256": "eb4f1d09b86c9c6b7658662820a7d419a0f4b243c4746353aae09f94c59adc59",
+        "materials_json_sha256": "dddf5bd0a3680419e594a17de44e28269c64b038f7100cb7cf5faedf0acb1c3a",
+        "segmentation_model_id": "nvidia/segformer-b4-finetuned-ade-512-512",
+        "clip_model_id": "openai/clip-vit-base-patch32",
+        "clip_confidence_threshold": 0.4,
+        "cli_params": {
+          "override_dims": null,
+          "override_materials": [],
+          "force_low_confidence": true,
+          "furnishings_mode": "observe"
+        },
+        "generated_at": "2026-09-21T02:34:06Z"
+      }
+    },
+    {
+      "run": "heldout_corridor",
+      "photo_sha256": "7a9f2b8595b6102d5c52bc0738923dd8a24192233565c7e3dd64bbf654d7044d",
+      "ir_sha256": "0dbb7a4d9d3625dbfb23649786ef227d73629dbfa4337eee88857d9bc03a56bb",
+      "wet_sha256": "dbb13c79f3e4f94cfaae705ed75622e5324fac471b92efc8561192946ff2e204",
+      "dims_source": "metric_depth",
+      "confidence": "low",
+      "forced_low_confidence": true,
+      "source_provenance": {
+        "git_revision": {
+          "commit": "8ac0b643b387603458b9b26e005d1f60775f6f42",
+          "dirty": false
+        },
+        "input_sha256": "7a9f2b8595b6102d5c52bc0738923dd8a24192233565c7e3dd64bbf654d7044d",
+        "materials_json_sha256": "dddf5bd0a3680419e594a17de44e28269c64b038f7100cb7cf5faedf0acb1c3a",
+        "segmentation_model_id": "nvidia/segformer-b4-finetuned-ade-512-512",
+        "clip_model_id": "openai/clip-vit-base-patch32",
+        "clip_confidence_threshold": 0.4,
+        "cli_params": {
+          "override_dims": null,
+          "override_materials": [],
+          "force_low_confidence": true,
+          "furnishings_mode": "observe"
+        },
+        "generated_at": "2026-09-21T02:34:33Z"
+      }
+    },
+    {
+      "run": "heldout_car",
+      "photo_sha256": "7b345e6692bc0ca866c9516fe734dd9789f1b95b937345ac2de20bb7a08b457f",
+      "ir_sha256": "eef227641a937ea83aef3f721c6216a3471c4b12c639f3dbde0e98f2919d1e0b",
+      "wet_sha256": "6fe3dceb155e29ffde298ec8cbcaccf075f7e15b57d57c1b6acd906006608066",
+      "dims_source": "metric_depth",
+      "confidence": "low",
+      "forced_low_confidence": true,
+      "source_provenance": {
+        "git_revision": {
+          "commit": "8ac0b643b387603458b9b26e005d1f60775f6f42",
+          "dirty": false
+        },
+        "input_sha256": "7b345e6692bc0ca866c9516fe734dd9789f1b95b937345ac2de20bb7a08b457f",
+        "materials_json_sha256": "dddf5bd0a3680419e594a17de44e28269c64b038f7100cb7cf5faedf0acb1c3a",
+        "segmentation_model_id": "nvidia/segformer-b4-finetuned-ade-512-512",
+        "clip_model_id": "openai/clip-vit-base-patch32",
+        "clip_confidence_threshold": 0.4,
+        "cli_params": {
+          "override_dims": null,
+          "override_materials": [],
+          "force_low_confidence": true,
+          "furnishings_mode": "observe"
+        },
+        "generated_at": "2026-09-21T02:35:00Z"
+      }
+    }
+  ]
+}

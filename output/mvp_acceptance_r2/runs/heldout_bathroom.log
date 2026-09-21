@@ -1,0 +1,30 @@
+/Users/musicersho/Image Reverb/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/musicersho/Image Reverb/.venv/lib/python3.9/site-packages/transformers/image_processing_base.py:417: UserWarning: The following named arguments are not valid for `SegformerImageProcessor.__init__` and were ignored: 'feature_extractor_type', 'reduce_labels'
+  image_processor = cls(**image_processor_dict)
+Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+Device set to use mps:0
+=== 照片：assets/photos_heldout/heldout_bathroom.png ===
+環景判定：否
+--- T-12 逐表面材質辨識 ---
+  west     → generic_wall    （來源：clip）
+  east     → generic_wall    （來源：clip）
+  south    → generic_wall    （來源：clip）
+  north    → generic_wall    （來源：clip）
+  floor    → carpet          （來源：clip）
+  ceiling  → generic_wall    （來源：clip）
+--- T-11 幾何估計 ---
+  房間尺寸：5.64×6.51×4.88 m（dims_source=metric_depth）
+  confidence：geometry=medium, materials=medium, overall=medium
+--- T-13 聲學參數 ---
+  Sabine 目標 RT60：[10.22, 6.08, 3.33, 1.52, 0.98, 0.84] s
+--- T-14 IR 合成 ---
+已輸出：ir_mono.wav、ir_stereo.wav、analysis.json → /Users/musicersho/Image Reverb/output/heldout_bathroom
+🎧 試聽檔：/Users/musicersho/Image Reverb/output/heldout_bathroom/wet_preview.wav（mix=0.6；數字合理 ≠ 聽起來對，請實聽）
+  ⚠️ 單張透視照看不到背後的牆，四面牆共用同一個材質判定值。若要四面各自判定，請用 360° 環景照片（T-10 會投影出六視角）。
+  ⚠️ 250 Hz 量測 T30 9.086s 與目標 6.080s 誤差 +49.4%，超出 ±20%
+  ⚠️ 500 Hz 量測 T30 4.276s 與目標 3.327s 誤差 +28.5%，超出 ±20%
+  ⚠️ 1000 Hz 量測 T30 2.979s 與目標 1.523s 誤差 +95.7%，超出 ±20%
+
+exit=0
