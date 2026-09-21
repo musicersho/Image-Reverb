@@ -1,5 +1,11 @@
 # Dev Log
 
+## 2026-09-21 (168) T-62 換圖後的測試相容修正（Sonnet；待驗證）
+
+- 新增 `scripts/legacy_photos.py`（`resolve_photo`／`restore_hint`／`expected_sha256`）；`test_pipeline_dedup.py` 改由退役集 `assets/photos_legacy_20260920/` 取舊圖（缺檔仍 fail＋還原指令、sha256 不符 early return 不進模型）；`test_depth.py` 一行 `core_p95/p5` 加 `None` 保護。範圍外零 diff。
+- 證據：原碼 `test_pipeline_dedup.py` `EXIT=1`（6 項缺檔）→ 修正後 `EXIT=0`（9 張透視照 scene_cues 新舊路全 bit-identical）；診斷力兩段（空備份目錄／同名假檔）與 `None` 格式化測試皆如預期；`output/seg|depth` 共用圖曝光清單前後逐行相同，`test_depth.py` 全程未執行。
+- 四軸：**工程：待審｜實驗：不適用｜產品：不適用｜MVP：不適用**。下一步：Opus 驗 T-62（通過才輪到 T-60）。
+
 ## 2026-09-20 (167)
 
 - **🔮 Fable：使用者兩項標準變更＋兩項後續決定，走 WORKFLOW §7 落地**。使用者原話：「T-04：照片會重新提供，因為當時任意截圖並沒有記得網址來源」「T-17-R2 照片解析度需求降低，僅需1280px以上即可」；

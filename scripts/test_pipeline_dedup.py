@@ -34,6 +34,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import shutil
 import sys
 import tempfile
@@ -49,6 +50,7 @@ from src.image_reverb import pipeline  # noqa: E402
 from src.image_reverb import surfaces as surfaces_mod  # noqa: E402
 from src.image_reverb.preprocess import preprocess_image  # noqa: E402
 
+import legacy_photos  # noqa: E402  （T-62：舊照片改由退役集備份目錄取圖）
 from t36_clip_accuracy import GATE_ITEMS  # noqa: E402  （唯讀引用，13 張清單）
 
 FAILURES: list[str] = []
@@ -60,6 +62,22 @@ def check(name: str, ok: bool, detail: str) -> None:
         FAILURES.append(name)
 
 
+def legacy_sha256_ok(label: str, photo_path: Path) -> bool:
+    """T-62：若該檔名在 ASSET_MANIFEST 有舊檔 sha256，取到的檔必須逐位元相符
+    （確保測的是歷史原檔，不是同名新圖）。manifest 沒有記載的檔（如參考 IR 場地照）不檢查。
+    不符時由呼叫端立即 return／continue，不得把該檔送進模型。"""
+    expected = legacy_photos.expected_sha256(photo_path.name)
+    if expected is None:
+        return True
+    actual = hashlib.sha256(photo_path.read_bytes()).hexdigest()
+    check(
+        f"{label}: 素材 sha256 與歷史原檔相符",
+        actual == expected,
+        "相符" if actual == expected else f"expected={expected} actual={actual}（{photo_path}）",
+    )
+    return actual == expected
+
+
 # ------------------------------------------------------------------
 # 部分 A：一張真實透視照走完 run_photo()，SegFormer 恰好載入 1 次
 # ------------------------------------------------------------------
@@ -67,9 +85,15 @@ def check(name: str, ok: bool, detail: str) -> None:
 def part_a_call_count() -> None:
     print("【A】一張真實透視照走完 run_photo()，斷言 _load_segmenter 恰好呼叫 1 次")
 
-    src_photo = REPO_ROOT / "assets" / "photos" / "bathroom_tiled.png"
+    src_photo = legacy_photos.resolve_photo("assets/photos/bathroom_tiled.png")
     if not src_photo.is_file():
-        check("找到測試素材", False, f"缺少 {src_photo}")
+        check(
+            "找到測試素材",
+            False,
+            f"缺少 {src_photo}；還原：{legacy_photos.restore_hint('bathroom_tiled.png')}",
+        )
+        return
+    if not legacy_sha256_ok("部分 A", src_photo):
         return
 
     call_count = {"n": 0}
@@ -144,9 +168,16 @@ def part_b_scene_cues_dual_path() -> None:
         tested = 0
         for item in GATE_ITEMS:
             name = item["name"]
-            photo_path = REPO_ROOT / item["photo"]
+            photo_path = legacy_photos.resolve_photo(item["photo"])
             if not photo_path.is_file():
-                check(f"{name}: 找到素材", False, f"缺少 {photo_path}")
+                hint = (
+                    f"；還原：{legacy_photos.restore_hint(photo_path.name)}"
+                    if photo_path.parent == legacy_photos.LEGACY_PHOTOS_DIR
+                    else ""
+                )
+                check(f"{name}: 找到素材", False, f"缺少 {photo_path}{hint}")
+                continue
+            if not legacy_sha256_ok(name, photo_path):
                 continue
 
             summary = preprocess_image(photo_path, output_dir=Path(tmp) / name)

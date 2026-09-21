@@ -261,10 +261,11 @@ def main():
                    "depth_shape": list(arr.shape), "infer_sec": round(dt, 2)})
         results.append(st)
         d = st["dyn_range_p99_over_p1"]
+        cd = st["core"]["p95_over_p5"]
         print(f"[{i}/{len(images)}] {name}  {dt:.2f}s  "
               f"min={st['min']:.2f} max={st['max']:.2f} median={st['median']:.2f} "
               f"p99/p1={f'{d:.1f}x' if d is not None else 'n/a'} "
-              f"core_p95/p5={st['core']['p95_over_p5']:.1f}x  -> {vis_path}")
+              f"core_p95/p5={f'{cd:.1f}x' if cd is not None else 'n/a'}  -> {vis_path}")
 
     if not results:
         die("沒有任何圖片成功處理。")

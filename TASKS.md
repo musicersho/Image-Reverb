@@ -14680,8 +14680,8 @@ EOF
 - **交接筆記**：
 
 ### T-62 T-04 換圖後的測試相容修正：`test_pipeline_dedup.py` 改由退役集備份路徑取圖＋`test_depth.py` 格式化 bug（Sonnet；`scripts/` only；**關鍵路徑、最先做**；前置＝`criteria:` `758eeba`）
-- **狀態**：⬜ **可開跑**（Fable 2026-09-20 開卡；T-17-R2 步驟 0(e)、T-60 前置、T-04 v2 驗證都要等本卡）
-- **四軸狀態**：工程：未開始｜實驗：不適用（測試修正卡）｜產品：不適用｜MVP：不適用
+- **狀態**：🔵 **待審**（Sonnet 2026-09-21 完成；步驟 0～5 與自我檢查全過，證據見卡末交接筆記；等 Opus 驗證。原：⬜ 可開跑〔Fable 2026-09-20 開卡；T-17-R2 步驟 0(e)、T-60 前置、T-04 v2 驗證都要等本卡〕）
+- **四軸狀態**：工程：待審｜實驗：不適用（測試修正卡）｜產品：不適用｜MVP：不適用
 - **為什麼**：Codex `ba1fcdb` 把舊 9 張照片移出 `assets/photos/`（搬到本機 `assets/photos_legacy_20260920/`，git 忽略；`14fc4ac` 的 git 歷史裡仍有）。使用者 2026-09-20 決定「維持 Codex 的新配置，改程式去適應」（T-04 卡裁定 T-04-R）。
   Opus `875697e` 紀錄：同樣的 22 支在當下 main（`f3e07b0`）跑，**`test_pipeline_dedup.py` 與 `test_depth.py` EXIT=1**（該紀錄未逐支列出其餘 20 支在 main 的結果；22 支在 `14fc4ac` worktree 全 EXIT=0）。Fable 靜態讀碼找到的原因：
   (A) `test_pipeline_dedup.py`：部分 A 寫死 `assets/photos/bathroom_tiled.png`；部分 B 走 `t36_clip_accuracy.GATE_ITEMS` 的 `item["photo"]`（其中五筆是 `assets/photos/<舊檔名>`）→ 缺檔 6 項。
@@ -14728,3 +14728,289 @@ EOF
 - **卡關規則**：同一步嘗試超過 3 次仍不過 → 停，狀態寫「🔴 卡關」＋原因，請使用者問 Fable。若發現**別的**測試也因換圖而壞，或 `test_depth.py` 的 `TypeError` 原因不是 (B) 那一行 → 不要自己擴大範圍去修，列出證據回 Fable。
 - **§8**：不適用（測試修正卡，無實驗結果）。
 - **交接筆記**：
+  - **🔵 2026-09-21 Sonnet 完成（待驗證）**（HEAD 起點 `816a750`；收工 commit 見 `git log --grep='T-62: 換圖後'`）。四軸：工程：待審｜實驗：不適用｜產品：不適用｜MVP：不適用。
+  - **做了什麼**：新增 `scripts/legacy_photos.py`（`resolve_photo`／`restore_hint`／`expected_sha256`，純函式、不 import `src`、不寫檔、呼叫當下才讀模組全域）；
+    `scripts/test_pipeline_dedup.py` 只改找圖路徑、缺檔訊息、sha256 check＋early return（新增 `import hashlib`／`import legacy_photos`、小函式 `legacy_sha256_ok()`）；`scripts/test_depth.py` 只改那一行列印的 `None` 保護（多一行 `cd = ...` 賦值）。
+    `GATE_ITEMS`、樁、斷言、比較邏輯、`override_dims`、清理段一字未動；`src`／`data`／`assets`／`output`／`.gitignore` 零 diff；未把任何舊圖放回 `assets/photos/`；未單獨對共用圖跑任何腳本（`test_depth.py` 全程未執行）。
+  - **下一步**：開 Opus 新視窗依本卡「Opus 驗證重點」驗證（任務寫 `T-62`）；通過後才輪到 T-60。
+  - **執行時的決定**：(1) sha256 檢查只在 `expected_sha256(檔名)` 非 `None` 時進行——manifest 的 `old_file` 只含舊 9 張，所以 8 個場地照（`assets/reference_irs/…`）不檢查，但**五張舊圖不論取自 `assets/photos/` 還是退役集都會檢查**（含同名新圖的情況）；
+    (2) 部分 B 缺檔時，只有取到的路徑落在退役集目錄才附 `restore_hint`（場地照缺檔沒有 git 還原指令可給）；(3) `test_depth.py` 比照同一行 `p99/p1` 用行內條件式（含新賦值行 `cd`），沒有另抽函式，步驟 4 因此照抄該運算式驗證。
+  - **坑／觀察**：背景執行 `python … ; echo "EXIT=$?"` 時，工具回報的「exit code 0」是 `echo` 的，真正的 `EXIT` 值以輸出檔最後一行為準（步驟 0 為 `EXIT=1`）。完整測試（步驟 2）約 4～5 分鐘。
+
+  **步驟 0 現況確認（原文）**
+  - `git status --porcelain -- src data scripts` → 空（起點）。`ls assets/photos_legacy_20260920/` → 10 個檔（舊 9 張＋`t04_gpt_hall.png`，後者未讀取／搬動／刪除）；九張舊圖 `test -f` 迴圈無 `MISSING` 輸出。
+  - 曝光清單（`ls -la output/seg/ output/depth/ | grep -E 't04_gpt|stats\.json'`，步驟 0 起點；收工前再取一次，`diff` 逐行相同、無輸出）：
+```
+-rw-r--r--   1 musicersho  staff     9982 Sep 20 15:53 depth_stats.json
+-rw-r--r--   1 musicersho  staff  1043959 Sep 20 16:18 t04_gpt_arena_concert_depth.png
+-rw-r--r--   1 musicersho  staff   688955 Sep 20 16:18 t04_gpt_bathroom_depth.png
+-rw-r--r--   1 musicersho  staff   785031 Sep 20 16:18 t04_gpt_car_depth.png
+-rw-r--r--   1 musicersho  staff    10679 Sep 20 16:16 stats.json
+-rw-r--r--   1 musicersho  staff  1572656 Sep 20 16:16 t04_gpt_bathroom_labelmap.npy
+-rw-r--r--   1 musicersho  staff  3854256 Sep 20 16:16 t04_gpt_bathroom_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 20 16:16 t04_gpt_car_labelmap.npy
+-rw-r--r--   1 musicersho  staff  4183304 Sep 20 16:16 t04_gpt_car_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 20 16:16 t04_gpt_cave_lab_labelmap.npy
+-rw-r--r--   1 musicersho  staff  4766623 Sep 20 16:16 t04_gpt_cave_lab_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 20 16:16 t04_gpt_cavern_crowd_labelmap.npy
+-rw-r--r--   1 musicersho  staff  4974210 Sep 20 16:16 t04_gpt_cavern_crowd_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 20 16:16 t04_gpt_corridor_labelmap.npy
+-rw-r--r--   1 musicersho  staff  3806063 Sep 20 16:16 t04_gpt_corridor_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 20 16:16 t04_gpt_hall_labelmap.npy
+-rw-r--r--   1 musicersho  staff  3455868 Sep 20 16:16 t04_gpt_hall_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 20 16:16 t04_gpt_livehouse_labelmap.npy
+-rw-r--r--   1 musicersho  staff  4455578 Sep 20 16:16 t04_gpt_livehouse_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 20 16:16 t04_gpt_living_labelmap.npy
+-rw-r--r--   1 musicersho  staff  4133100 Sep 20 16:16 t04_gpt_living_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 20 16:16 t04_gpt_stairwell_labelmap.npy
+-rw-r--r--   1 musicersho  staff  3940623 Sep 20 16:16 t04_gpt_stairwell_seg.png
+```
+  - `python scripts/test_pipeline_dedup.py; echo "EXIT=$?"`（HEAD `816a750` 原碼；已濾掉 urllib3／transformers 警告行）：
+```
+【A】一張真實透視照走完 run_photo()，斷言 _load_segmenter 恰好呼叫 1 次
+  ❌ 找到測試素材：缺少 /Users/musicersho/Image Reverb/assets/photos/bathroom_tiled.png
+
+【B】13 張基線集合裡的每一張透視照：新舊路 scene_cues 四鍵逐值比對
+  ❌ bathroom_tiled: 找到素材：缺少 /Users/musicersho/Image Reverb/assets/photos/bathroom_tiled.png
+  ❌ bedroom_ai_generated: 找到素材：缺少 /Users/musicersho/Image Reverb/assets/photos/bedroom_ai_generated.png
+  ❌ stairwell_tiled: 找到素材：缺少 /Users/musicersho/Image Reverb/assets/photos/stairwell_tiled.png
+  ❌ arena_ntsu_linkou: 找到素材：缺少 /Users/musicersho/Image Reverb/assets/photos/arena_ntsu_linkou.png
+  ❌ car_interior_suv: 找到素材：缺少 /Users/musicersho/Image Reverb/assets/photos/car_interior_suv.png
+  ✅ site_photo_department_store: class_ratios 全 dict 逐值 bit-identical：相同
+  ✅ site_photo_department_store: scene_cues.floor_pixel_ratio bit-identical：old=0.27244020061728397 new=0.27244020061728397
+  ✅ site_photo_department_store: scene_cues.person_pixel_ratio bit-identical：old=0.0022198109567901233 new=0.0022198109567901233
+  ✅ site_photo_department_store: scene_cues.out_of_domain bit-identical：old=False new=False
+  ✅ site_photo_department_store: scene_cues.out_of_domain_label bit-identical：old='' new=''
+  ✅ site_photo_gym: class_ratios 全 dict 逐值 bit-identical：相同
+  ✅ site_photo_gym: scene_cues.floor_pixel_ratio bit-identical：old=0.22778935185185184 new=0.22778935185185184
+  ✅ site_photo_gym: scene_cues.person_pixel_ratio bit-identical：old=0.0 new=0.0
+  ✅ site_photo_gym: scene_cues.out_of_domain bit-identical：old=True new=True
+  ✅ site_photo_gym: scene_cues.out_of_domain_label bit-identical：old='vehicle_interior' new='vehicle_interior'
+  ✅ site_photo_restaurant: class_ratios 全 dict 逐值 bit-identical：相同
+  ✅ site_photo_restaurant: scene_cues.floor_pixel_ratio bit-identical：old=0.0 new=0.0
+  ✅ site_photo_restaurant: scene_cues.person_pixel_ratio bit-identical：old=0.0 new=0.0
+  ✅ site_photo_restaurant: scene_cues.out_of_domain bit-identical：old=False new=False
+  ✅ site_photo_restaurant: scene_cues.out_of_domain_label bit-identical：old='' new=''
+  ✅ TunnelToHell: class_ratios 全 dict 逐值 bit-identical：相同
+  ✅ TunnelToHell: scene_cues.floor_pixel_ratio bit-identical：old=0.06379099638358898 new=0.06379099638358898
+  ✅ TunnelToHell: scene_cues.person_pixel_ratio bit-identical：old=0.0 new=0.0
+  ✅ TunnelToHell: scene_cues.out_of_domain bit-identical：old=True new=True
+  ✅ TunnelToHell: scene_cues.out_of_domain_label bit-identical：old='person' new='person'
+  ✅ 至少測到一張透視照（否則本部分是空驗證）：tested=4
+
+❌ 6 項失敗：找到測試素材、bathroom_tiled: 找到素材、bedroom_ai_generated: 找到素材、stairwell_tiled: 找到素材、arena_ntsu_linkou: 找到素材、car_interior_suv: 找到素材
+EXIT=1
+```
+
+  **步驟 2：`python scripts/test_pipeline_dedup.py; echo "EXIT=$?"` 全文（已濾掉 urllib3／transformers 警告行）**
+```
+⚠️  已指定 --force-low-confidence：overall confidence 為 low（geometry=high, materials=low），仍強制輸出，結果可信度未知，請自行評估。
+【A】一張真實透視照走完 run_photo()，斷言 _load_segmenter 恰好呼叫 1 次
+  ✅ 部分 A: 素材 sha256 與歷史原檔相符：相符
+=== 照片：/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpwoglhzwu/_test_t41_dedup_photo.png ===
+環景判定：否
+--- T-12 逐表面材質辨識 ---
+  west     → generic_wall    （來源：clip）
+  east     → generic_wall    （來源：clip）
+  south    → generic_wall    （來源：clip）
+  north    → generic_wall    （來源：clip）
+  floor    → gypsum_board    （來源：fallback）
+  ceiling  → gypsum_board    （來源：-）
+--- T-11 幾何估計 ---
+（--override-dims 已指定，跳過深度模型）
+  房間尺寸：4.00×3.00×2.50 m（dims_source=manual）
+  confidence：geometry=high, materials=low, overall=low
+--- T-13 聲學參數 ---
+  Sabine 目標 RT60：[0.65, 1.63, 2.45, 2.27, 1.47, 1.1] s
+--- T-14 IR 合成 ---
+已輸出：ir_mono.wav、ir_stereo.wav、analysis.json → /Users/musicersho/Image Reverb/output/_test_t41_dedup_photo
+🎧 試聽檔：/Users/musicersho/Image Reverb/output/_test_t41_dedup_photo/wet_preview.wav（mix=0.6；數字合理 ≠ 聽起來對，請實聽）
+  ⚠️ floor：CLIP top-1 機率 0.35 低於門檻 0.4，改用 fallback 'gypsum_board'
+  ⚠️ 單張透視照看不到背後的牆，四面牆共用同一個材質判定值。若要四面各自判定，請用 360° 環景照片（T-10 會投影出六視角）。
+  ⚠️ 125 Hz 量測 T30 1.527s 與目標 0.650s 誤差 +134.8%，超出 ±20%
+  ⚠️ 已指定 --force-low-confidence：overall confidence 為 low（geometry=high, materials=low），使用者強制輸出，結果可信度未知。
+  ✅ run_photo() 正常結束（exit 0）：rc=0
+  ✅ _load_segmenter 全程恰好呼叫 1 次（舊碼是 2 次：surfaces_from_preprocess 一次＋scene_cues 段重複一次）：count=1
+
+【B】13 張基線集合裡的每一張透視照：新舊路 scene_cues 四鍵逐值比對
+  ✅ bathroom_tiled: 素材 sha256 與歷史原檔相符：相符
+  ✅ bathroom_tiled: class_ratios 全 dict 逐值 bit-identical：相同
+  ✅ bathroom_tiled: scene_cues.floor_pixel_ratio bit-identical：old=0.06787547589511057 new=0.06787547589511057
+  ✅ bathroom_tiled: scene_cues.person_pixel_ratio bit-identical：old=0.0 new=0.0
+  ✅ bathroom_tiled: scene_cues.out_of_domain bit-identical：old=False new=False
+  ✅ bathroom_tiled: scene_cues.out_of_domain_label bit-identical：old='' new=''
+  ✅ bedroom_ai_generated: 素材 sha256 與歷史原檔相符：相符
+  ✅ bedroom_ai_generated: class_ratios 全 dict 逐值 bit-identical：相同
+  ✅ bedroom_ai_generated: scene_cues.floor_pixel_ratio bit-identical：old=0.16326836668519548 new=0.16326836668519548
+  ✅ bedroom_ai_generated: scene_cues.person_pixel_ratio bit-identical：old=0.03222353467976036 new=0.03222353467976036
+  ✅ bedroom_ai_generated: scene_cues.out_of_domain bit-identical：old=False new=False
+  ✅ bedroom_ai_generated: scene_cues.out_of_domain_label bit-identical：old='' new=''
+  ✅ stairwell_tiled: 素材 sha256 與歷史原檔相符：相符
+  ✅ stairwell_tiled: class_ratios 全 dict 逐值 bit-identical：相同
+  ✅ stairwell_tiled: scene_cues.floor_pixel_ratio bit-identical：old=0.03162140645731977 new=0.03162140645731977
+  ✅ stairwell_tiled: scene_cues.person_pixel_ratio bit-identical：old=0.0 new=0.0
+  ✅ stairwell_tiled: scene_cues.out_of_domain bit-identical：old=False new=False
+  ✅ stairwell_tiled: scene_cues.out_of_domain_label bit-identical：old='' new=''
+  ✅ arena_ntsu_linkou: 素材 sha256 與歷史原檔相符：相符
+  ✅ arena_ntsu_linkou: class_ratios 全 dict 逐值 bit-identical：相同
+  ✅ arena_ntsu_linkou: scene_cues.floor_pixel_ratio bit-identical：old=0.0 new=0.0
+  ✅ arena_ntsu_linkou: scene_cues.person_pixel_ratio bit-identical：old=0.09430258322524859 new=0.09430258322524859
+  ✅ arena_ntsu_linkou: scene_cues.out_of_domain bit-identical：old=False new=False
+  ✅ arena_ntsu_linkou: scene_cues.out_of_domain_label bit-identical：old='' new=''
+  ✅ car_interior_suv: 素材 sha256 與歷史原檔相符：相符
+  ✅ car_interior_suv: class_ratios 全 dict 逐值 bit-identical：相同
+  ✅ car_interior_suv: scene_cues.floor_pixel_ratio bit-identical：old=0.027243265993265993 new=0.027243265993265993
+  ✅ car_interior_suv: scene_cues.person_pixel_ratio bit-identical：old=0.0 new=0.0
+  ✅ car_interior_suv: scene_cues.out_of_domain bit-identical：old=True new=True
+  ✅ car_interior_suv: scene_cues.out_of_domain_label bit-identical：old='vehicle_interior' new='vehicle_interior'
+  ✅ site_photo_department_store: class_ratios 全 dict 逐值 bit-identical：相同
+  ✅ site_photo_department_store: scene_cues.floor_pixel_ratio bit-identical：old=0.27244020061728397 new=0.27244020061728397
+  ✅ site_photo_department_store: scene_cues.person_pixel_ratio bit-identical：old=0.0022198109567901233 new=0.0022198109567901233
+  ✅ site_photo_department_store: scene_cues.out_of_domain bit-identical：old=False new=False
+  ✅ site_photo_department_store: scene_cues.out_of_domain_label bit-identical：old='' new=''
+  ✅ site_photo_gym: class_ratios 全 dict 逐值 bit-identical：相同
+  ✅ site_photo_gym: scene_cues.floor_pixel_ratio bit-identical：old=0.22778935185185184 new=0.22778935185185184
+  ✅ site_photo_gym: scene_cues.person_pixel_ratio bit-identical：old=0.0 new=0.0
+  ✅ site_photo_gym: scene_cues.out_of_domain bit-identical：old=True new=True
+  ✅ site_photo_gym: scene_cues.out_of_domain_label bit-identical：old='vehicle_interior' new='vehicle_interior'
+  ✅ site_photo_restaurant: class_ratios 全 dict 逐值 bit-identical：相同
+  ✅ site_photo_restaurant: scene_cues.floor_pixel_ratio bit-identical：old=0.0 new=0.0
+  ✅ site_photo_restaurant: scene_cues.person_pixel_ratio bit-identical：old=0.0 new=0.0
+  ✅ site_photo_restaurant: scene_cues.out_of_domain bit-identical：old=False new=False
+  ✅ site_photo_restaurant: scene_cues.out_of_domain_label bit-identical：old='' new=''
+  ✅ TunnelToHell: class_ratios 全 dict 逐值 bit-identical：相同
+  ✅ TunnelToHell: scene_cues.floor_pixel_ratio bit-identical：old=0.06379099638358898 new=0.06379099638358898
+  ✅ TunnelToHell: scene_cues.person_pixel_ratio bit-identical：old=0.0 new=0.0
+  ✅ TunnelToHell: scene_cues.out_of_domain bit-identical：old=True new=True
+  ✅ TunnelToHell: scene_cues.out_of_domain_label bit-identical：old='person' new='person'
+  ✅ 至少測到一張透視照（否則本部分是空驗證）：tested=9
+
+✅ T-41 SegFormer 重複載入去重測試全部通過
+EXIT=0
+```
+
+  **步驟 3 診斷力（scratchpad 一次性腳本；備份目錄用暫存目錄，沒動真實備份；假檔只寫 `b"not the legacy photo"`）**
+  - 第二段輸出中**沒有**「run_photo() 正常結束」或任何 `run_photo` 走完的訊息，也沒有出現「T-12 逐表面材質辨識」等管線輸出＝沒進模型。
+```
+=== 第一段：空備份目錄 ===
+【A】一張真實透視照走完 run_photo()，斷言 _load_segmenter 恰好呼叫 1 次
+  ❌ 找到測試素材：缺少 /var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpkxitb99k/bathroom_tiled.png；還原：git show 14fc4ac:assets/photos/bathroom_tiled.png > assets/photos_legacy_20260920/bathroom_tiled.png
+FAILURES = ['找到測試素材']
+=== 第二段：同名假檔 ===
+【A】一張真實透視照走完 run_photo()，斷言 _load_segmenter 恰好呼叫 1 次
+  ❌ 部分 A: 素材 sha256 與歷史原檔相符：expected=1f7ced1531d50ff9ed839315ad85063d6bfc6a699cbd63467481b56a44e35d73 actual=094a1174b9ab36dc6f1d6b3668b128b200bce38f172af982fde502d1b9206c82（/var/folders/dj/6dzqlnp10_b94l8jwgstbs5r0000gn/T/tmpbzwfaaof/bathroom_tiled.png）
+FAILURES = ['部分 A: 素材 sha256 與歷史原檔相符']
+LEGACY_PHOTOS_DIR restored: True
+```
+
+  **步驟 4 `test_depth.py`（沒有執行 `python scripts/test_depth.py`；`import test_depth` 只載入函式、不執行 `main`）**
+```
+None -> core_p95/p5=n/a
+3.14159 -> core_p95/p5=3.1x
+舊寫法對 None：TypeError: unsupported format string passed to NoneType.__format__
+```
+
+  **步驟 5：`python -m py_compile …` → `exit=0`；`git diff --stat` 只有 `scripts/test_depth.py`（3 行）、`scripts/test_pipeline_dedup.py`（39 行）＋新檔 `scripts/legacy_photos.py`。`git diff -- scripts/test_pipeline_dedup.py scripts/test_depth.py` 全文：**
+```
+diff --git a/scripts/test_depth.py b/scripts/test_depth.py
+index 8b9b1c5..187bc90 100644
+--- a/scripts/test_depth.py
++++ b/scripts/test_depth.py
+@@ -261,10 +261,11 @@ def main():
+                    "depth_shape": list(arr.shape), "infer_sec": round(dt, 2)})
+         results.append(st)
+         d = st["dyn_range_p99_over_p1"]
++        cd = st["core"]["p95_over_p5"]
+         print(f"[{i}/{len(images)}] {name}  {dt:.2f}s  "
+               f"min={st['min']:.2f} max={st['max']:.2f} median={st['median']:.2f} "
+               f"p99/p1={f'{d:.1f}x' if d is not None else 'n/a'} "
+-              f"core_p95/p5={st['core']['p95_over_p5']:.1f}x  -> {vis_path}")
++              f"core_p95/p5={f'{cd:.1f}x' if cd is not None else 'n/a'}  -> {vis_path}")
+ 
+     if not results:
+         die("沒有任何圖片成功處理。")
+diff --git a/scripts/test_pipeline_dedup.py b/scripts/test_pipeline_dedup.py
+index 1e0d8ee..8f8c06a 100644
+--- a/scripts/test_pipeline_dedup.py
++++ b/scripts/test_pipeline_dedup.py
+@@ -34,6 +34,7 @@
+ 
+ from __future__ import annotations
+ 
++import hashlib
+ import shutil
+ import sys
+ import tempfile
+@@ -49,6 +50,7 @@ from src.image_reverb import pipeline  # noqa: E402
+ from src.image_reverb import surfaces as surfaces_mod  # noqa: E402
+ from src.image_reverb.preprocess import preprocess_image  # noqa: E402
+ 
++import legacy_photos  # noqa: E402  （T-62：舊照片改由退役集備份目錄取圖）
+ from t36_clip_accuracy import GATE_ITEMS  # noqa: E402  （唯讀引用，13 張清單）
+ 
+ FAILURES: list[str] = []
+@@ -60,6 +62,22 @@ def check(name: str, ok: bool, detail: str) -> None:
+         FAILURES.append(name)
+ 
+ 
++def legacy_sha256_ok(label: str, photo_path: Path) -> bool:
++    """T-62：若該檔名在 ASSET_MANIFEST 有舊檔 sha256，取到的檔必須逐位元相符
++    （確保測的是歷史原檔，不是同名新圖）。manifest 沒有記載的檔（如參考 IR 場地照）不檢查。
++    不符時由呼叫端立即 return／continue，不得把該檔送進模型。"""
++    expected = legacy_photos.expected_sha256(photo_path.name)
++    if expected is None:
++        return True
++    actual = hashlib.sha256(photo_path.read_bytes()).hexdigest()
++    check(
++        f"{label}: 素材 sha256 與歷史原檔相符",
++        actual == expected,
++        "相符" if actual == expected else f"expected={expected} actual={actual}（{photo_path}）",
++    )
++    return actual == expected
++
++
+ # ------------------------------------------------------------------
+ # 部分 A：一張真實透視照走完 run_photo()，SegFormer 恰好載入 1 次
+ # ------------------------------------------------------------------
+@@ -67,9 +85,15 @@ def check(name: str, ok: bool, detail: str) -> None:
+ def part_a_call_count() -> None:
+     print("【A】一張真實透視照走完 run_photo()，斷言 _load_segmenter 恰好呼叫 1 次")
+ 
+-    src_photo = REPO_ROOT / "assets" / "photos" / "bathroom_tiled.png"
++    src_photo = legacy_photos.resolve_photo("assets/photos/bathroom_tiled.png")
+     if not src_photo.is_file():
+-        check("找到測試素材", False, f"缺少 {src_photo}")
++        check(
++            "找到測試素材",
++            False,
++            f"缺少 {src_photo}；還原：{legacy_photos.restore_hint('bathroom_tiled.png')}",
++        )
++        return
++    if not legacy_sha256_ok("部分 A", src_photo):
+         return
+ 
+     call_count = {"n": 0}
+@@ -144,9 +168,16 @@ def part_b_scene_cues_dual_path() -> None:
+         tested = 0
+         for item in GATE_ITEMS:
+             name = item["name"]
+-            photo_path = REPO_ROOT / item["photo"]
++            photo_path = legacy_photos.resolve_photo(item["photo"])
+             if not photo_path.is_file():
+-                check(f"{name}: 找到素材", False, f"缺少 {photo_path}")
++                hint = (
++                    f"；還原：{legacy_photos.restore_hint(photo_path.name)}"
++                    if photo_path.parent == legacy_photos.LEGACY_PHOTOS_DIR
++                    else ""
++                )
++                check(f"{name}: 找到素材", False, f"缺少 {photo_path}{hint}")
++                continue
++            if not legacy_sha256_ok(name, photo_path):
+                 continue
+ 
+             summary = preprocess_image(photo_path, output_dir=Path(tmp) / name)
+```
+  hunk 歸屬：`test_depth.py` 唯一 hunk＝**None 保護**；`test_pipeline_dedup.py` 的 5 個 hunk＝(1) `import hashlib`、(2) `import legacy_photos`（兩者為 sha256 check／找圖路徑所需）、(3) `legacy_sha256_ok()` 新函式＝**sha256 check（early return 由呼叫端處理）**、
+  (4) 部分 A：`resolve_photo` 取圖＋缺檔訊息含 `restore_hint`＋sha256 不符 `return`＝**找圖路徑／缺檔訊息／sha256 check＋early return**、(5) 部分 B：`resolve_photo` 取圖＋缺檔訊息（僅退役集路徑附 hint）＋sha256 不符 `continue`＝**同上**。
+
+  **自我檢查逐項**：步驟 2 `EXIT=0` ✅｜步驟 3、4 如預期 ✅｜`git diff --stat -- src data assets output scripts/t36_clip_accuracy.py scripts/test_segmentation.py .gitignore` 為空 ✅｜`ls assets/photos/` 只有 README＋九張 `t04_gpt_*.png`、無舊檔名 ✅｜曝光清單前後 `diff` 相同（23 行）✅｜`output/` 無 `_test_t41_dedup_photo` 殘留 ✅。

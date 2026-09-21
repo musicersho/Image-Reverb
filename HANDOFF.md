@@ -1,5 +1,17 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🔵 2026-09-21 Sonnet：T-62 完成（待驗證）——**現在該做的是：開 Opus 新視窗貼 WORKFLOW §2.2 標準 Prompt，`T-XX` 換成 `T-62`（依序 ② ；T-60 要等它驗過）**
+>
+> - 四軸：**工程：待審｜實驗：不適用（測試修正卡）｜產品：不適用｜MVP：不適用**。起點 HEAD `816a750`。
+> - 新增 `scripts/legacy_photos.py`；`scripts/test_pipeline_dedup.py` 改由退役集備份目錄取舊圖（缺檔仍 fail＋附 `git show 14fc4ac:…` 還原指令；sha256 不符 early return、不進模型）；`scripts/test_depth.py` 一行 `core_p95/p5` 的 `None` 保護。其他零 diff（`src`／`data`／`assets`／`output`／`.gitignore`／`GATE_ITEMS`）。
+> - 證據：步驟 0 原碼 `EXIT=1`（6 項缺檔）；步驟 2 修正後 `EXIT=0`（部分 A 過、部分 B 測到 9 張透視照全 ✅）；步驟 3 診斷力兩段（空備份目錄→❌＋還原指令；同名假檔→sha256 ❌、未進模型）與步驟 4（`None`→`n/a`、`3.14159`→`3.1x`）皆如預期；曝光清單（`output/seg|depth/t04_gpt_*`、`stats.json`）前後 23 行逐行相同＝**本卡沒有增加共用圖曝光**。詳見 TASKS.md T-62 卡末交接筆記。
+> - **沒跑 `test_depth.py`**（禁用令；它的 `TypeError` 原因是靜態讀碼＋Opus `875697e` 實測推論，(B) 那一行的修正只以不跑模型的格式化測試驗證）。Opus 驗證時全套 22 支跑一次即可（禁用令例外 ③），不要單獨跑 `test_depth.py`、不要重複跑。
+> - 關鍵路徑不變：Opus 驗 T-62 → Sonnet 跑 T-60 → Opus 驗 T-60 → 使用者貼 T-17-R2 Prompt。詳見 DEV_LOG `2026-09-21 (168)`。
+> - **📌 給所有視窗（含 Codex）——共用圖禁用令（T-04 卡裁定 T-04-R §2 第 4 點；T-17-R2 收工並複驗、Fable 寫下解除紀錄前有效）**：R2 held-out 五張不論檔名，目前有三處逐位元複本：`assets/t17r2_synthetic_candidates/heldout_*.png`（T-60 後移到 `assets/photos_heldout/`）、
+>   `assets/photos/t04_gpt_{bathroom,living,corridor,car}.png`、`assets/photos_legacy_20260920/t04_gpt_hall.png`。**不得**對它們跑 `python -m src.image_reverb` 或任何指定單張的分析／評測腳本，不得調參／標註／寫進 `data/`／當新測試夾具；
+>   除 T-17-R2 卡自己的執行步驟、T-60 步驟 7 的 manifest 乾跑之外，唯一容忍的是任務卡或 WORKFLOW §5.4.1 要求的全套 `scripts/test_*.py` 例行執行（不帶引數、每次驗證至多一次；單獨跑 `test_depth.py`／`test_segmentation.py` 不算）。
+>   算 sha256、只讀尺寸、看圖不受限。不要刪 `assets/photos_legacy_20260920/`；除 T-60 步驟 2 那一次 `mv` 外，不要再搬動或替換 `assets/photos/` 與 held-out 圖。**之後每個在 HANDOFF 頂端加新段的視窗，請把本條原樣保留在新段最後，直到 Fable 寫下解除紀錄。**
+
 > ## 🔮 2026-09-20 Fable：使用者兩項標準變更＋兩項後續決定已走 §7 落地——**現在該做的是（依序，一次只開一個視窗）：① Sonnet 跑 T-62 → ② Opus 驗 T-62 → ③ Sonnet 跑 T-60（中途它會把五張圖和一張材質表給您，請對著圖看過後回「GT 確認」或寫要改哪裡）→ ④ Opus 驗 T-60 → ⑤ 貼下方兩行 Prompt 開跑 T-17-R2**
 >
 > - **每一步怎麼貼**（上一步 push 完再開下一步）：
