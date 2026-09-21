@@ -12553,6 +12553,8 @@ EOF
   - **驗證者操作揭露（如實；不影響判定）**：本視窗為查參數，對上述三支工具各下了一次 `--help`，因它們不解析引數而**直接執行**，覆寫了 `output/mvp_acceptance_r2/` 的 `rt60_table.json`、`tables.md`、`_play/`、`播放頁.html`（11:16）。這違反步驟 11「輸出一律導 scratchpad」的字面。影響核對：`git status --porcelain` 為空＝兩個進版控的檔與 commit 版**逐位元相同**；`_play/`、`播放頁.html` 在 git 忽略範圍、三支腳本無時間戳／亂數，是從同一批輸入確定性重生；三支都只讀既有 WAV（量測／16-bit 轉檔），**沒有跑任何模型、沒有處理任何共用圖**，`output/.archive`、`output/mvp_acceptance/` 不變。附帶效果：等於對表 1～5 做了一次原地重現，結果一致。
   - **共用圖曝光（本次驗證）**：零新增——未跑 `scripts/test_*.py`、未以 CLI 處理任何 held-out／`t04_gpt_*` 圖；唯一的 CLI 重現是非共用圖 `site_photo_gym`，輸出全在 scratchpad。
   - **下一步**：禁用令解除點 (i)(ii) 自本紀錄 push 起皆成立 → 交 **Fable**：寫共用圖禁用令解除紀錄＋R2 收尾複評（MINC/DMS／下一 Phase；輸入見 REPORT §8 與上方非阻擋發現）。
+  **🔮 Fable 2026-09-21（另起新行）**：兩件都已完成——① 共用圖禁用令已於 `121697a` 解除（紀錄在 T-04 卡裁定 T-04-R §2 第 4 點下方，commit `2b88d89`）；② R2 收尾複評＝**裁決 T-17-R2-A**（全文在檔尾「Phase 1.10」段）：產品方向改為參數為主、照片為輔（使用者 2026-09-21 決定）；
+  非阻擋發現 ①（「工程：已執行」非合法值）記錄在案、以已驗證為準；② 單一聽者限制帶進 T-63 草案；④→T-66；⑤→T-67；REPORT §8 第 1～3 點→T-63／T-68／T-69、第 4 點→T-66、第 5 點→T-59（H-d）、第 6 點→T-67。本卡四軸不變：工程：已驗證｜MVP：FAIL（R2）。
 
 ### T-57 T-17-R2 工具前置：R2 薄包裝腳本＋資料集 manifest 產生器（Sonnet；`scripts/` only；**關鍵路徑**；前置＝T-56 ✅）
 - **狀態**：🟠 **退回**（Opus 驗證，2026-09-18，對象 `4d4f63b`）——主體功能實測成立，但下列 R1～R5 未達，開 T-57 修正輪（Sonnet）逐條處理後再送驗：
@@ -14622,7 +14624,7 @@ EOF
   - **下一步**：T-58 系列結案（工程）。`IR_RT60_BASIS` 產品決定與 T-59 照 Fable 處置第 4／5 點留到 T-17-R2 之後；T-17-R2 仍等使用者 held-out 照片，T-57-F1 照常。
 
 ### T-59 ir_synth 鄰帶洩漏診斷：合成側 vs 量測側分離＋判準頻段發生率（保留號；T-58 Fable 處置第 5 點；**未開卡——開卡條件＝T-17-R2 收工後的 Fable 重新規劃輪**）
-- **狀態**：⏸ 保留號（Fable 2026-09-18）——現在不開跑；不在關鍵路徑；Sonnet 不要做。
+- **狀態**：⬜ **可開跑（Fable 2026-09-21 正式開卡；裁決 T-17-R2-A §1 第 7 點；改善軌、不在 R3 關鍵路徑；執行規格見下方「🔮 Fable 正式開卡」段）**（原：⏸ 保留號（Fable 2026-09-18）——現在不開跑；不在關鍵路徑；Sonnet 不要做。原字保留）
 - **四軸狀態**：工程：未開始｜實驗：待量測｜產品：不適用｜MVP：不適用
 - **起因（T-58 Part A／Part B 的附帶觀察；Opus 已確認不是 T-58 腳本的 bug，產品 WAV 逐位元重現）**：
   1. `control_carpet`（4×3×2.5m 六面地毯）：產品 `ir_synth` 的 T30 對自己的 Sabine 目標，250Hz +184.1%、**500Hz +395.6%**、1kHz +170.8%、2kHz +51.7%，只有 1/6 帶在 ±20% 內。
@@ -14649,6 +14651,33 @@ EOF
   事前登記假設（草稿）：H-a 判準頻段超差只發生在鄰帶目標比 ≥1.8 倍且慢帶在低頻側；H-b 極端階梯下合成側貢獻大於量測側；H-c 現實材質組合（非六面同材質）下合成側貢獻 <10%。
   若 H-b／H-c 的結果指向要改合成濾波器組，那是另一張 `src/` 卡，必須守六條交付 IR MD5 的零回歸或走 criteria 新版——屆時再議。
 - **§8 不可變欄位**：開卡時補（鐵則 14）。
+- **🔮 Fable 正式開卡（2026-09-21；另起新段；上方保留號時期的文字一字未動）**：
+  **開卡條件核對**：T-17-R2 收工（`d12b30d`，MVP：FAIL（R2））且步驟 11 複驗通過（`121697a`）✓；T-58 經 T-58-F1／F2 取得工程：已驗證（`b06f022`）✓；本輪＝R2 後的 Fable 重新規劃輪（裁決 T-17-R2-A）✓。「提前開卡的唯一例外」未觸發（R2 自動組 0/0，沒有任何 in-domain 場地進入 §7-2 判定）。
+  **執行者**：Sonnet → Opus 驗證。**只量不改**：`src/`／`data/` 零 diff；`scripts/` 只得新增 `t59_leakage_probe.py`；輸出寫 `output/synth_leakage/`（新目錄）。**R2 產物唯讀**（Phase 1.10 鐵則 19）：只讀 `output/<run>/analysis.json` 與 `ir_mono.wav`，不得重跑 R2 的任何 run。`assets/photos_real_heldout/` 不得碰（鐵則 18）。
+  **事前登記的假設（本段 commit 即鎖定；沿用上方草稿 H-a／H-b／H-c，新增 H-d）**：
+  H-a 判準頻段（500Hz–4kHz）`closed_loop` 超差 >20% 只發生在「相鄰頻帶目標 RT60 比 ≥1.8 且慢帶在低頻側」；H-b 極端階梯（control_carpet）下合成側貢獻 > 量測側；H-c 現實材質組合下合成側貢獻 <10%；
+  **H-d（R2 新增）**：`heldout_bathroom`（目標 125Hz 10.22 s／500Hz 3.33 s／1kHz 1.52 s）與 `heldout_living` 的輕微「鐵桶子聲」對應到 125–250Hz 目標遠長於中頻的陡峭階梯——檢驗方式＝兩者的 125Hz／1kHz 目標比是否落在本卡 Part A 全體分布的前 10%，且其 `closed_loop` 低頻帶超差是否高於中位數。H-d 只能得到「相符／不相符」，**不得**據此宣稱找到鐵桶子聲的成因（單一聽者、兩個樣本）。
+  **執行步驟**：
+  0. `git status --porcelain -- src data scripts` 空；填 §8 前四欄；`python scripts/t59_leakage_probe.py manifest` 由程式列出納入的 `analysis.json`（R2 本輪 18 個 run＋`output/t17_manual_department_store`＋T-58 三條件的產物路徑）與其 sha256 → `output/synth_leakage/DATASET_MANIFEST.json` → **獨立 commit，早於任何量測**。
+  1. Part A（發生率；不跑合成）：讀 manifest 內每份 `closed_loop`，按「相鄰頻帶目標比」分箱，統計判準頻段超差率；同一照片的重複產物不得重複計數（以 `input_sha256`＋`cli_params` 去重，R2 的 forced／非 forced 分列）。程式產表。
+  2. Part B（分離）：對 T-58 三條件＋`t17_manual_department_store`＋`heldout_bathroom`，依上方草稿的 ①②③ 三種量法拆「合成側／量測側」。自建陡峭 FIR 濾波器組的規格（階數、過渡帶）寫成腳本常數並印進 REPORT 檔頭。重新合成一律由 `analysis.json` 內已存的目標值出發、輸出寫 `output/synth_leakage/`，**不得呼叫照片管線**。
+  3. `output/synth_leakage/REPORT.md`：逐假設判「支持／不支持／不確定」＋表格（全部程式產出，地雷 #15）；**不得寫任何產品決定或修改建議以外的結論**；若 H-b／H-c 指向要改合成濾波器組，只寫「建議回 Fable 評估 `src/` 卡」。
+  **自我檢查**：全套 `scripts/test_*.py` exit 0；六條交付 IR MD5 零回歸；`git diff --stat -- src data` 空；R2 產物 `git status` 乾淨；manifest commit 早於結果 commit。
+  **Opus 驗證重點**：§8 前四欄與 manifest 的時序；去重口徑；Part B 三種量法自己抽一個條件重算；REPORT 文字與表格一致（WORKFLOW 紅旗 6）；無產品決定字樣。
+  **§8 不可變欄位**：
+  ```text
+  criteria_version: 無 pass/fail 門檻（量測卡）；假設 H-a～H-d 如上
+  criteria_commit: 〈本段的開卡 commit；Fable 緊接 docs commit 回填〉
+  criteria_locked_at: 2026-09-21
+  dataset_manifest_sha256: 〈執行者步驟 0 由程式產生後填〉
+  implementation_commit:
+  result_commit:
+  reviewer:
+  verdict_under_original_criteria:
+  verdict_under_current_criteria:
+  criteria_changed_after_first_result: no
+  change_record: 無
+  ```
 - **交接筆記**：
 
 ### T-60 T-17-R2 held-out 素材就位：五張 AI 合成圖（路徑 S）＋GT 使用者確認＋SOURCES §4（Sonnet；只動 `assets/`＋文件；**關鍵路徑**；前置＝裁定 T-17-R2-S `758eeba`＋T-62 經 Opus 驗證通過）
@@ -15676,3 +15705,203 @@ index 1e0d8ee..8f8c06a 100644
     ② `scripts/t33_material_round_tables.py`、`t36_clip_accuracy.py`（`GATE_ITEMS`）、`t41_rebaseline.py`、`t47_gate_calibration.py`、`t17_blind_test.py` 仍寫死 `assets/photos/<舊檔名>`；本卡明文禁止動它們，故**這些基線腳本若重跑仍會缺檔**——是已知且刻意的殘留，不是 T-62 的未完成項。
   - **未採信／未重做的項目（誠實揭露）**：步驟 0 的 `EXIT=1` 現況由 Sonnet 與 Opus `875697e` 提供，本次未再對舊碼重跑一次（會多一次共用圖曝光且無新資訊）；`test_depth.py` 未單獨執行（禁用令），只在全套中跑一次。
   - **WORKFLOW §7**：本卡驗收門檻無誤、無需變更；本次驗證未修改任何門檻文字，也未以附註豁免任何未達項。
+
+## Phase 1.10 — R2 收尾複評與「參數為主、照片為輔」轉向（Fable 規劃 2026-09-21；裁決 T-17-R2-A）
+
+**背景（一句話）**：T-17-R2 已收工並經步驟 11 獨立複驗（`121697a`）——四軸 **工程：已驗證｜實驗：不適用｜產品：不適用｜MVP：FAIL（R2）**。全自動照片路徑連兩次驗收未達（T-17、T-17-R2，兩個 FAIL 永久保留）。
+使用者 2026-09-21 在本輪回覆兩題選擇題（原話見下方 §0），產品方向改為**參數為主、照片為輔**。本 Phase 的工作＝把這個方向落成規格、素材、程式與新一輪驗收（T-17-R3）。
+
+**🔮 裁決 T-17-R2-A（Fable 2026-09-21；R2 收尾複評；輸入＝`output/mvp_acceptance_r2/REPORT.md` §8 六點＋T-17-R2 卡末「非阻擋發現」五點＋使用者聽感）**
+
+**0. 使用者本輪決定（2026-09-21；AskUserQuestion 兩題，選項文字逐字）**
+1. 問：9/16 那句「軟體內部有相關空間或材質的參數即可，不需要真的將圖片變成選項」比較接近哪個意思？→ 使用者選「**參數為主、照片為輔**」
+   （選項說明逐字：產品核心＝空間類型／尺寸／各面材質這些參數（可選 preset、可手調）；照片分析只負責「幫您先填好建議值」，由使用者確認或修改後才出 IR。我會起草 SPEC v0.5 與新的驗收判準草案（走 WORKFLOW §7，要您核准才生效），R3 改驗這條路。）
+   未選的兩項：「只是說測試照片不用上架」「兩者都要」。
+2. 問：願不願意提供「真實照片＋量過的大約尺寸」？→ 使用者選「**願意自拍＋量尺寸**」
+   （選項說明逐字：用手機拍 6–10 個您進得去的空間（浴室、客廳／臥室、走廊／樓梯間、車內、錄音室或教室等），每個空間附大約長寬高（捲尺或步距即可）與各面材質。一半當開發集、一半封存當 R3 的 held-out。我會開一張素材卡寫清楚怎麼拍、怎麼交。）
+→ 2026-09-16 的「產品方向備註」（T-17-R2 卡「🔮 Fable 落地」§0 第 1 點，當時寫「不改 SPEC，留待 R2 後 Fable 收尾複評處理」）**至此處理完畢**：SPEC 升 v0.5（定位、流程、F-09／F-18／F-23、§8 風險；**§7 判準本輪一字未動**），新判準走 T-63。
+
+**1. R2 的七個問題——逐項診斷與處置**
+
+| # | 問題（使用者列出） | Fable 診斷（證據） | 處置 |
+|---|---|---|---|
+| 1 | 判準 2 卡在 gate 擋下唯一域內場地（健身房） | `runs/site_photo_gym.log`：四面牆 `out_of_domain`、geometry=low；估 5.0×5.8×3.3 m（實際 9×6×2.9）。就算放行也不會過：forced 組 500Hz–4kHz −43%／−43%／−44%／−27%；手動尺寸組 1/5。**瓶頸不是 gate 太嚴，是上游估不準——gate 擋得對** | 不調 gate（裁決 T-47-A 維持）。改驗收路徑：T-63。另補 in-domain 真實對照（T-64 拍手錄音），現在只有 1 個 in-domain 場地，統計上什麼都說不了 |
+| 2 | 放行的兩張材質錯 8/10 | CLIP zero-shot 不只涵蓋率低（13/13 BLOCK 的天花板），**有信心時也錯**（浴室 marble→carpet／generic_wall）。T-38B／T-39／T-44 三輪治療皆負向 | **開材質模型可行性量測卡 T-68**（見 §2）。輔助路徑下材質由使用者確認，所以 T-68 是「建議品質」改善軌，不在 R3 關鍵路徑 |
+| 3 | 單張透視照尺寸偏大、比例固定 1.1547 | `geometry.py:305-314`：L＝p95 深度、W＝2·L·tan(hFOV/2)、H＝2·L·tan(vFOV/2)——**把「遠牆處的視錐截面」當成房間截面**。合成圖無 EXIF → hFOV 用預設 60° → W/L 恆＝2·tan30°＝1.1547；4:3 圖 H/L 恆＝0.866。一般室內照的遠牆只佔畫面一部分（側牆／地板／天花也入鏡），所以 W、H 系統性高估；`ROOM_HEIGHT_MAX_M=20` 使浴室 H=4.88 m 不被 clamp、confidence 還是 medium | 幾何 v2 登記保留號 **T-69**（點雲＋表面角色量寬高、EXIF FOV、住宅高度先驗）；**開卡條件＝T-64 真實照片開發集就位**（合成圖 `dims_m` 是提示詞設計值，不能當 GT）。輔助路徑下尺寸一律要使用者確認（T-65），所以 T-69 也是改善軌 |
+| 4 | 殘響普遍偏長、音樂廳太短 | held-out 偏長＝#3 尺寸偏大（Sabine RT∝V/S∝L）＋硬質 fallback 材質（#2）＋低頻（浴室 125Hz 目標 10.22 s）。洞窟／沙灘／隧道偏長＝域外（shoebox 模型無法表示開放／不規則空間），gate 9/9 擋下、forced 輸出本來就不該用。音樂廳「太短」：量測上 500Hz–4kHz +16%／+6%／−3%／+9%，貼近真實 IR（1kHz 真實 1.00 s）——是聽者預期與該廳實測的落差，不是缺陷 | 不另開「殘響長度」卡：根因在 #2／#3。輔助路徑的參數檔讓使用者直接改尺寸／材質（Phase 2 再加 Size／Decay 旋鈕）。浴室兩題輕微鐵桶子聲併入 **T-59**（陡峭頻段階梯案例，假設 H-d） |
+| 5 | 百貨賣場被擋時沒有「手動輸入尺寸」出口 | `runs/site_photo_department_store.log`：geometry=medium（估 6.0×7.0×3.9，實際約 35×25）→ 出口只列材質覆寫。照導引改完材質就以錯幾何放行（V5 同型）。R2 證據：透視照的 medium 幾何不可信 | **開 T-66**：尺寸是自動估的（`metric_depth`／`equirect_multiview`）且被擋時，出口**一律**列 `--override-dims` 並印出目前估值請使用者核對。gate 規則零改動，只改訊息 |
+| 6 | 三支 R2 工具不支援 `--help`，帶參數就執行並覆寫產物 | Opus 步驟 11 實際踩到（進版控檔逐位元相同，無害） | **開 T-67**：argparse（`--help` 無副作用、未知引數 exit 2）、目標檔已存在就拒寫（`--overwrite` 才覆寫）、`--out-dir`；順帶收 T-57-F1 Opus §15 第 1／2／3／5／6 點與「116 行」顯示 bug |
+| 7 | T-59 開卡條件已滿足 | R2 收工 ✓、T-58 系列已驗證（`b06f022`）✓、本輪＝R2 後 Fable 重新規劃輪 ✓ | **T-59 正式開卡**（見 T-59 卡「🔮 Fable 正式開卡」段） |
+
+**2. 三個被指名的決定**
+- **MINC/DMS 材質專用模型卡：開——但只開「可行性量測卡」T-68，不直接開整合卡。** 理由：(i) 先前兩次不開的理由（R2 前不得動 gate 上游、不得消耗 held-out）隨 R2 收工消失；(ii) R2 是第一次有 held-out 證據顯示 CLIP「有信心地錯」（8/10），三輪提示詞／候選集治療皆負向，繼續修 CLIP 沒有依據；
+  (iii) 但「換模型就會好」目前也是零證據，而且要下載第三方權重（T-07 先例：使用者未授權下載就不做）、授權待查、類別要對映到 `materials.json` 15 種——所以先量再說。T-68 零 `src/` 改動、對映表與判定門檻在看結果前 commit；正向才回 Fable 開整合卡（最高 🧪 feature flag，WORKFLOW §5.4.3）。
+- **陳設公式修正輪：本輪不做。** 理由：T-33 已負向；R2 的偏長可由尺寸偏大＋材質錯完全解釋，材質 8/10 錯的狀態下無法乾淨評估陳設公式（混淆）。**再議觸發條件（事前寫死）**：T-17-R3 的判準 2 在「使用者確認尺寸＋材質」的 run 上，若有陳設的住宅空間 500Hz–2kHz 系統性偏長 >20% 且無陳設空間不偏 → 回 Fable 開陳設卡；那時材質混淆已被使用者確認排除，才量得乾淨。
+- **`IR_RT60_BASIS`（T-58 留到 R2 後的產品決定）：維持 `sabine`；產品：不採用切換。** R2 forced 組誤差有正有負（音樂廳 +6%、餐廳 +23%、健身房 −43%、壁球場 −41%），不是 Sabine 的單向偏差；T-58 表 C 亦不支持換。等 R3 有「確認參數」的乾淨量測再議。
+
+**3. 下一個 Phase 的關鍵路徑**
+```text
+關鍵路徑（R3）：
+  T-63（🔮 MVP 判準 v2 草案）──→ 獨立 Opus 審條文 ──→ 使用者核准 ──→ criteria: commit ─┐
+  T-64（使用者自拍素材；使用者＋Sonnet→Opus）──────────────────────────────────────────┤
+  T-66（gate 出口補尺寸導引；Sonnet→Opus）→ T-65（建議→確認 兩段式 CLI；Sonnet→Opus）───┤
+  T-67（R2 工具防呆；Sonnet→Opus）───────────────────────────────────────────────────────┴→ Fable 落地 T-17-R3（保留號）→ R3
+改善軌（不擋 R3；一次一個視窗、排在關鍵路徑卡的空檔）：
+  T-59（ir_synth 鄰帶洩漏診斷；只量不改）
+  T-68（材質模型可行性；只量不改；步驟 0 要使用者授權下載）
+  T-69（幾何 v2；保留號，等 T-64 開發集）
+建議的開視窗順序（一次只開一個）：T-67 → T-66 → T-65 → T-59 → T-68；T-64 隨使用者拍好照片隨時插入；T-63 的 Opus 審條文可在任何空檔做。
+繼續 ⏸：T-44-R1、T-53（role_aware；新方向下優先度降低，不動）。T-04 v2 的 Opus 驗證仍是選做（裁定 T-04-R §2 第 5 點 (c)），不擋任何卡。
+```
+**誠實預告**：輔助路徑不保證 R3 會 PASS。T-58 表 C 顯示：手動尺寸下（材質仍多為管線判定）5 個場地的判準頻段誤差絕對值中位數約 47%（多為大空間／域外）；「尺寸＋材質都由使用者確認」這個條件**從來沒量過**，小型 in-domain 房間也**沒有任何資料**——這正是 T-64 要補的。R3 的價值＝第一次量到「參數引擎在使用者確認的參數下到底準不準」。
+
+**4. 本輪不做的事**：不動 `src`／`scripts`／`data`／`output`／WORKFLOW；SPEC §7 判準一字未動（新判準未經核准前不生效）；不調 gate；不重跑任何歷史結果；不以新圖重建 T-36 GT／T-47 校準（新方向下 gate 的角色變成「提醒使用者先看哪一格」，校準價值下降；R3 後再議）；
+T-57-F1 Opus §15 第 4 點（把「測試全在系統暫存目錄」改寫成可機械驗證的性質）不回頭改已結案的 T-57 卡，改為 R3 工具卡開卡時直接採用新寫法。
+
+**本輪共同鐵則**：Phase 1.9-R 鐵則 1～17 全部沿用，另加：
+18. **held-out 從出生就實體隔離**（R2「一批兩用」的教訓）：`assets/photos_real_heldout/` 內的檔，自 T-64 就位起到 T-17-R3 收工＋複驗、Fable 寫解除紀錄為止，任何視窗不得以任何模型或分析／評測腳本處理，**沒有例外三項**——全套 `scripts/test_*.py` 不得掃到該目錄（T-64 自我檢查要證明）；
+    只准算 sha256、讀尺寸／EXIF、人眼看圖。不得複製到其他目錄、不得一批兩用。
+19. **R2 產物唯讀**：`output/mvp_acceptance_r2/` 與 R2 本輪 18 個 `output/<run>/` 目錄（清單見 T-17-R2 交接筆記第 10 點）不得覆寫；任何重跑寫新目錄。
+
+### T-63 🔮 MVP 判準 v2 草案：輔助路徑（參數為主、照片為輔）（Fable 起草卡；Sonnet 不要做；**核准前不生效**）
+- **狀態**：🔮 草案已起草（Fable 2026-09-21）——**等兩道核准**：① 獨立 Opus 審條文（只審 WORKFLOW §7 合規與條文可機械驗證性，不審方向）；② 使用者核准。兩道都過 → Fable 開獨立 `criteria:` commit 把條文寫進 SPEC §7（v0.5.1）並落地 T-17-R3。
+- **四軸狀態**：工程：不適用（規格決策卡）｜實驗：不適用｜產品：待裁決｜MVP：不適用
+- **為什麼**：WORKFLOW §7.1／§7.4——R2 結果出來後改 MVP 受驗路徑屬「結果後變更」，須新 `criteria_version`、獨立 commit、使用者或獨立審查者核准；Fable 不得自改自批（T-38 拆卡教訓）。方向核准＝使用者（裁決 T-17-R2-A §0 第 1 題）；條文起草＝Fable。
+- **怎麼核准（使用者操作）**：開 Opus 新視窗貼「你是驗證者，只審查不修改。請審 TASKS.md T-63 卡的『判準 v2 草案』條文：是否符合 WORKFLOW §7（原 verdict 保留、原域內失敗不得消失、數字未在看過結果後放寬）、每條是否可機械驗證、有無漏洞；輸出逐條意見，不要改檔以外的東西，意見寫進 T-63 卡末。」
+  Opus 審完後，您回 Fable 一句「T-63 核准」（或寫要改哪裡）。沒有這兩步，SPEC §7 原文繼續有效。
+- **判準 v2 草案（受驗路徑＝`照片 → --suggest 參數檔 → 使用者確認／修改 → --params 出 IR`；門檻數字一個都沒放寬）**：
+  1. **§7-1 盲聽**：≥4/5 不變。held-out＝T-64 封存的真實照片，五類各一。參數由使用者本人依現場記憶與自己量的尺寸確認／修改。確認後仍被擋（exit 3）的樣本＝該題以答錯計（不得 forced 補樣）。新 `SHUFFLE_SEED`、新盲測編號；作答先 commit 再開答案鍵（R2 程序）。
+  2. **§7-2 RT60**：500Hz–4kHz 逐頻段＋88–354Hz 聯合帶皆 <20% 不變（裁決 B 口徑）。受驗 run＝輔助路徑、尺寸＝使用者實測、材質＝使用者確認。**in-domain 名單事前鎖定**＝`mit_gym`＋T-64 中「最大維 ≤10 m、有使用者現場錄音、且錄音通過品質檢查」的空間；
+     名單在 T-64 經 Opus 驗證時寫死，早於任何 R3 量測。判定式照 R2：名單內全部場地五項皆達才算達成；名單＜3 個場地 → 判準 2 記「未達（樣本不足）」，不得以 1 個場地過關。
+     〔待 Opus 審的開放問題 A：手機拍手／氣球錄音當「真實 IR」的量測效度——草案作法＝各判準頻段可用衰減範圍 ≥35 dB 才用 T20、否則該場地不入名單；品質檢查腳本屬 T-17-R3 工具卡，門檻在看任何錄音前 commit。〕
+  3. **§7-3、§7-4**：不變。
+  4. **判準 5（安全，門檻）**：(a) `--suggest` 不產生任何 WAV；(b) `--params` 在尺寸或任一面 `confirmed` 不是 `true` 時必須 exit 3 並列出未確認欄位；(c) 域外／非房間照片的參數檔必須把對應欄位標 `attention` 並附理由。三條全成立才達成（由 T-65 的測試＋R3 步驟 0 機械檢查）。
+     **報告項（不設門檻）**：held-out 逐張列建議值 vs 使用者確認值——尺寸各維是否在 ±30% 內、六面材質逐面正誤、使用者原樣接受的欄位比例。建議品質是改善軌（T-68／T-69），不是 MVP gate。
+  5. **判準 6（素材可追溯）**：held-out＝使用者自攝（拍攝者＋拍攝日）→ 可達。`T-04 缺項` 附註規則照舊（`--suggest` 的 attention 旗標仍來自以退役集校準的 gate）。
+  6. **永久揭露（§7.6：原域內失敗不得消失）**：R3 REPORT §0 必列「v0.4 全自動路徑：T-17 FAIL、T-17-R2 FAIL（永久保留）」；R3 另對同一批 held-out 與 8 場地跑一次全自動路徑當**報告項**（coverage、錯誤放行率，口徑＝裁定 T-57-D），不計入判定。
+  7. **MVP 軸合法字樣**：`PASS（R3；輔助路徑 v2；T-04 缺項）`／`FAIL（R3）`。不得寫無附註 PASS。
+  8. **Fable 不提議放寬 <20%**。使用者若要改這個數字，必須由使用者自己給數字、在任何 R3 量測前、走獨立 `criteria:` commit；Fable 只負責如實記錄「這是結果後、由使用者決定的門檻變更」。
+- **§8 不可變欄位**：核准後由 Fable 在 T-17-R3 卡建立（`criteria_changed_after_first_result: yes`；`verdict_under_original_criteria`＝T-17 FAIL／T-17-R2 FAIL）。
+- **交接筆記**：
+
+### T-64 真實空間素材：使用者自拍＋實測尺寸＋逐面材質（＋選配現場錄音）→ 開發集／held-out 封存（使用者＋Sonnet；只動 `assets/`＋文件；**關鍵路徑**）
+- **狀態**：⬜ 等使用者素材（Fable 2026-09-21 開卡）。拍攝說明與資料表樣板已放 `assets/incoming_real/README.md`、`assets/incoming_real/空間資料表.md`。
+- **四軸狀態**：工程：未開始｜實驗：不適用（素材卡）｜產品：不適用｜MVP：不適用
+- **為什麼**：(a) 專案到現在沒有任何「真實照片＋實測尺寸」的小房間資料，幾何 v2（T-69）無從評估；(b) in-domain 真實 IR 對照只有健身房 1 個；(c) R3 需要一批從出生就隔離的 held-out（鐵則 18）。
+- **使用者要交什麼**（細節見 `assets/incoming_real/README.md`）：至少 8 個空間、理想 10 個——五類（浴室／客廳或臥室／大空間〔教室、禮堂、教堂、體育館皆可〕／走廊或樓梯間／車內）**每類至少 1 個，能 2 個最好**，其餘補小房間。
+  每個空間：① 1–2 張手機主鏡頭（1x）橫拍原檔（保留 EXIF；用 AirDrop／傳輸線，不要經 LINE／Messenger）；② 大約長×寬×高（公尺）；③ 六面材質（照資料表的選單勾）；④（選配、強烈建議 ≤10 m 的房間做）現場拍手 3 下或刺破氣球的手機錄音原檔。
+  全部放進 `assets/incoming_real/<空間代號>/`，填好 `空間資料表.md`。
+- **範圍／禁止修改**：只得新增 `assets/photos_real_dev/`、`assets/photos_real_heldout/`、兩個目錄各自的 `ground_truth.json`＋`ASSET_MANIFEST.json`；修改 `assets/SOURCES.md`（新增 §5）、`.gitignore`（僅限步驟 4 使用者答「要」時）、TASKS／DEV_LOG／HANDOFF／TODO。`src`／`scripts`／`data`／`output` 零 diff。**全程不得用任何模型處理任何一張新照片**（連開發集也不跑——跑是後續卡的事）。
+- **執行步驟（Sonnet）**：
+  0. `git status --porcelain` 為空；`ls -R assets/incoming_real/`；逐空間核對資料表必填欄齊全（缺 → 列清單請使用者補，停）。
+  1. 每個檔算 sha256、用 PIL 只讀尺寸與 EXIF 焦距（不得 `save`）；長邊 <1280px 或經通訊軟體壓縮（無 EXIF 且檔案 <500 KB）→ 列出請使用者重傳。
+  2. **分組規則（事前寫死，不看圖）**：每一類把空間依「該空間第一張照片的 sha256」字典序排序，**最小者進 held-out，其餘進開發集**；某類只有 1 個空間 → 進 held-out。分組結果用一次性腳本產生並貼輸出；不得人工調整。
+  3. `mv` 到 `assets/photos_real_heldout/<代號>/`、`assets/photos_real_dev/<代號>/`；資料表的「正對鏡頭／左／右／背後」四面牆 → `north／west／east／south` 的對映，依 `assets/photos_heldout/ground_truth_heldout.json` 與 `src/image_reverb/surfaces.py` 的既有慣例（先讀檔確認並把依據貼進交接筆記；兩處不一致或看不出來 → 停，問 Fable）；寫兩份 `ground_truth.json`（schema 比照 `assets/photos_heldout/ground_truth_heldout.json`；`dims_m` 標 `source: "user_measured"`；看不到／不確定的面寫 `unknown`）；寫兩份 `ASSET_MANIFEST.json`（檔名、sha256、尺寸、EXIF 焦距、錄音檔 sha256）。
+  4. **隱私預設**：照片與錄音檔**不進 git**——`.gitignore` 的規則 Fable 已於開卡時加好（`assets/incoming_real/**`、`assets/photos_real_dev/**`、`assets/photos_real_heldout/**` 只放行 `.json`／`.md`），本步驟只需 `git status --short` 核對沒有任何影像／錄音被列為未追蹤；
+     問使用者一次「要不要讓照片也進版控（repo 會 push 到 GitHub）」，答要才改忽略規則。把原話記在交接筆記。
+  5. `assets/SOURCES.md` 新增 §5（拍攝者＝使用者、拍攝日、用途、分組規則、held-out 封存聲明）。在 `assets/photos_real_heldout/README.md` 寫鐵則 18 全文。
+  6. 證明全套測試掃不到 held-out：`grep -rn "photos_real_heldout" scripts/ src/` 為空；`grep -n "assets/photos\b\|glob\|iterdir" scripts/test_depth.py scripts/test_segmentation.py` 貼原文並說明掃的是哪個目錄。
+- **自我檢查**：分組輸出與目錄實況一致；held-out 五類齊（缺類 → 回報使用者補拍，不得拿開發集的補）；`git diff --stat -- src scripts data output` 空；`git status` 不含任何影像／錄音檔（除非使用者說要）；`output/` 下沒有任何新照片的產物。
+- **收工**：commit `T-64: 真實空間素材就位（開發集＋held-out 封存）（待驗證）`。
+- **Opus 驗證重點（只有工程軸）**：分組規則自己重算一次得到相同結果；held-out sha256 在 `output/`、`data/` 全目錄 grep 為 0；manifest 與檔案一致；GT 逐格對得上使用者資料表原文；沒有任何模型跑過新照片（`output/seg|depth` 檔名清單前後相同）；同時**寫死 T-63 判準 2 的 in-domain 名單候選**（≤10 m 且有錄音的 held-out 空間；錄音品質檢查留給 R3 工具卡）。
+- **卡關規則**：素材不齊就停、列缺項給使用者；不得自行生成／下載替代圖。
+- **§8**：不適用（素材卡）。
+- **交接筆記**：
+
+### T-65 「建議→確認」兩段式 CLI：`--suggest` 產參數檔、`--params` 由確認後的參數出 IR（SPEC v0.5 F-18；Sonnet；**關鍵路徑**；前置＝T-66 ✅）
+- **狀態**：⬜ 可開跑（前置 T-66 經 Opus 驗證通過後）
+- **四軸狀態**：工程：未開始｜實驗：不適用｜產品：待裁決（R3 前以新旗標存在、不改既有預設路徑）｜MVP：不適用
+- **為什麼**：裁決 T-17-R2-A——產品改為參數為主、照片為輔。現有 `--override-dims`／`--override-material` 要使用者自己拼一長串旗標，而且照片直通路徑在材質 low 時仍擋；需要一個「照片先填建議值 → 人確認 → 出 IR」的正式流程，參數檔同時是 Phase 2 plugin UI 的資料模型。
+- **範圍／禁止修改**（鐵則 13 句型）：`src/` 的 diff 限縮在 `cli.py`、`pipeline.py`、新增 `params_file.py`（必要時 `provenance.py` 加欄位）；`scripts/` 只得新增 `test_params_flow.py`。零 diff：`geometry.py`、`materials.py`、`surfaces.py`、`acoustics.py`、`ir_synth.py`、`ir_metrics.py`、`config.py` 的既有常數、`data/`、gate 規則與門檻、`output/mvp_acceptance*/`。
+  **照片直通路徑（不帶新旗標）的行為必須逐位元不變**。
+- **規格**：
+  1. `python -m src.image_reverb <photo> --suggest [--out-params PATH]`：跑既有分析（幾何＋材質＋陳設偵測），**不合成 IR、不寫任何 WAV／analysis.json**，寫 `output/<stem>/params.json`（或 PATH）。不論 confidence 高低一律 exit 0（輸入錯誤仍 exit 2）。與 `--override-*`／`--force-low-confidence`／`--text`／`--scene` 互斥。
+  2. 參數檔 schema `image_reverb.params/v1`（鍵名寫死）：`schema`；`photo{path,sha256}`；`provenance`（沿用 T-43 指紋欄位）；
+     `dims_m{length,width,height, suggested{length,width,height}, source, confidence, attention(bool), attention_reasons[], confirmed(bool)}`；
+     `surfaces{floor,ceiling,west,east,south,north}` 各 `{material, suggested, source, confidence, attention(bool), confirmed(bool)}`；`furnishings_detected[]`（僅資訊，`applied:false`）；`notes[]`；`how_to_confirm`（給人看的中文說明：改值、把 confirmed 改 true、可用材質 id 清單）。
+     **`confirmed` 初值一律 `false`**。`attention`＝既有 gate／信心邏輯認為 low 的欄位（**重用既有判斷，不新增任何門檻**）；單張透視照的 `dims_m.attention` 一律 `true`，理由寫「單張照片估尺寸系統性偏差（T-17-R2 REPORT §1.3）」。
+  3. `python -m src.image_reverb --params PATH`：**不載入任何模型**。驗證 schema、材質 id 存在於 `data/materials.json`、三維皆在 0.5–200 m；`dims_m.confirmed` 與六面 `confirmed` 任一不是 `true` → **exit 3**，訊息先列 `attention` 欄位再列其餘未確認欄位，並教怎麼改；`--force-low-confidence` 不得繞過「未確認」（未確認不是低信心，是沒人看過）。
+     全部確認 → 以既有「手動尺寸＋六面材質 → acoustics → ir_synth」路徑產出與照片路徑同格式的 `ir_mono.wav`／`analysis.json`；`dims_source: "params_confirmed"`，量程規則對它的處理比照 `manual`（**明寫分支，不得落入 `else` 保守降 low**）；退化規則 2（六面同材質）照舊適用。
+     `analysis.json` 追加 `params{file_sha256, fields_accepted[], fields_edited[]}`（由程式比對 `material` vs `suggested`、`dims` vs `suggested` 產生，不得手填）。
+  4. 既有三軸 confidence 的 enum 不得新增值；`--params` 路徑的三軸取值比照現行「`--override-dims`＋六面全覆寫」的實際輸出（步驟 0 先實跑記錄下來當規格）。
+- **執行步驟**：0 現況（`git status` 空；對 `assets/reference_irs/mit_gym/site_photo_gym.png` 跑一次「`--override-dims 9x6x2.9`＋六面覆寫」——六面用一組寫死的等價性測試值：`floor=rubber_flooring`、`ceiling=metal_roof_deck`、`west=east=concrete`、`south=north=gypsum_board`（**這是等價性測試用值，不是健身房的材質 GT**）——記錄三軸與 exit code；輸出導 scratchpad）→ 1 實作 → 2 `test_params_flow.py`（見下）→ 3 對健身房照片實跑 `--suggest` → 把參數檔改成與步驟 0 相同的尺寸與六面、`confirmed` 全設 `true` → `--params`，與步驟 0 的 IR `md5 -q` 比對（同參數應逐位元相同；不同就解釋或修）→ 4 全套測試＋六條交付 IR MD5。
+- **`test_params_flow.py` 必含**（不需模型的部分要能在 10 秒內跑完）：未確認 → exit 3 且無任何輸出檔；部分確認 → exit 3 且訊息列出剩餘欄位；`--force-low-confidence` 繞不過未確認；壞 schema／不存在的材質 id／尺寸越界 → exit 2；全確認 → exit 0、`dims_source=="params_confirmed"`、`fields_edited` 正確；
+  `--suggest` 後 `output/<stem>/` 內無 `.wav`（用 stub 取代模型，比照 `test_pipeline_dedup.py` 的樁作法）；`--suggest` 與 `--override-dims` 同給 → exit 2。**診斷力**：每條新斷言在「把對應守衛拿掉」的突變下必須 ❌（鐵則 5；貼突變輸出）。
+- **自我檢查**：全部 `scripts/test_*.py` exit 0；六條交付 IR MD5 零回歸；`git diff --stat` 只有允許的檔；對健身房照片不帶新旗標重跑，log 與 `output/mvp_acceptance_r2/runs/site_photo_gym.log` 除 T-66 新增的導引行外逐行相同（輸出導 scratchpad，鐵則 19）；held-out 真實照片（若已就位）一張都沒碰（鐵則 18）。
+- **收工**：commit `T-65: 建議→確認兩段式 CLI（--suggest／--params）（待驗證）`。完成後請使用者試一次：Sonnet 產生健身房的 `params.json`、把內容用白話唸給使用者、依使用者口述修改並確認，再出 IR——使用者覺得流程哪裡卡，原話記進交接筆記（給 Phase 2 UI 用）。
+- **Opus 驗證重點**：照片直通路徑零回歸（自己重跑比對）；「未確認不得出 IR」四種繞法都擋（force 旗標、刪掉 `confirmed` 鍵、`confirmed:"true"` 字串、只確認 dims）；`--params` 真的沒載入模型（`sys.modules` 無 `torch`／`transformers`，或計時 <5 秒）；`fields_edited` 由程式計算；enum 未新增；突變自己重做。
+- **卡關規則**：同一步 3 次不過 → 🔴 停。若發現「手動尺寸＋六面材質」的既有路徑無法不經模型呼叫 → 不要自己重構 `pipeline.py`，列出呼叫鏈回 Fable。
+- **§8**：不適用（功能卡）。
+- **交接筆記**：
+
+### T-66 gate 出口訊息：自動估的尺寸一律給 `--override-dims` 導引（R2 REPORT §5 第 3 點；Sonnet；`src/` 只改訊息；**最先做的 `src/` 卡**）
+- **狀態**：⬜ 可開跑
+- **四軸狀態**：工程：未開始｜實驗：不適用｜產品：不適用（訊息修正）｜MVP：不適用
+- **為什麼**：`site_photo_department_store`（實際約 35×25 m）被估成 6.04×6.97×3.92 m、geometry=medium，被擋時出口只列材質覆寫——使用者照做就以錯幾何放行（裁決 T-48-F V5 同型）。R2 §1.3 另證實透視照的 medium 幾何不可信。
+- **範圍**：`src/` 的 diff 限縮在產生「怎麼繼續」訊息的那個函式所在檔（步驟 0 先 `grep -rn "怎麼繼續" src/` 定位）；`scripts/` 只得修改 `test_output_gate.py`／`test_t30_low_combined.py`（補斷言）。**gate 規則、門檻、confidence 計算、exit code 零改動**；`geometry.py`／`materials.py` 零 diff。
+- **規格**：輸出被擋（exit 3）且 `dims_source ∈ {metric_depth, equirect_multiview}` 時，「怎麼繼續」**一律**含一項 `--override-dims`：geometry=low 時沿用現行文字；geometry≠low 時文字為
+  「尺寸是自動估計的（目前 〈L〉×〈W〉×〈H〉 m）——單張照片估尺寸常有明顯偏差，請先核對；不符就用 --override-dims 指定實際尺寸（公尺），例如 4x3x2.5」。`dims_source=="manual"` 時不列。項目編號順延，其餘文字一字不動。
+- **執行步驟**：0 現況（對百貨照片重跑，輸出導 scratchpad，確認 log 無 `--override-dims`）→ 1 實作 → 2 補測試（新斷言在舊碼上 ❌、新碼 ✅；貼兩邊輸出）→ 3 對百貨／健身房各重跑一次貼 log（百貨新增一項、健身房逐行不變）→ 4 全套測試＋六條 IR MD5。
+- **自我檢查**：同上；`git diff` 逐 hunk 標註只涉及訊息；R2 產物未被覆寫（`git status` 乾淨＋鐵則 19）。
+- **收工**：commit `T-66: gate 出口一律給尺寸導引（待驗證）`。
+- **Opus 驗證重點**：舊碼 fail／新碼 pass 自己重做；13 張＋8 場地的 gate 判定（PASS／BLOCK）與 R2 表 5 完全相同（只比判定，不覆寫 R2 產物）；manual 路徑不出現該項。
+- **§8**：不適用。
+- **交接筆記**：
+
+### T-67 R2 工具防呆：`--help` 無副作用、未知引數報錯、拒絕覆寫既有產物＋T-57-F1 Opus §15 收尾（Sonnet；`scripts/` only）
+- **狀態**：⬜ 可開跑
+- **四軸狀態**：工程：未開始｜實驗：不適用｜產品：不適用｜MVP：不適用
+- **為什麼**：Opus 步驟 11 對 `t17r2_rt60_table.py`／`t17r2_report_tables.py`／`t17r2_make_player.py` 下 `--help`，三支都不解析引數、直接執行並覆寫 `output/mvp_acceptance_r2/` 的產物。R3 會沿用這套工具，先把坑填掉。
+- **範圍**：只得修改 `scripts/t17r2_rt60_table.py`、`t17r2_report_tables.py`、`t17r2_make_player.py`、`t17r2_blind_test.py`、`test_t17r2_tools.py`。零 diff：`t17r2_common.py` 的常數、`t17r2_dataset_manifest.py`、`src/`、`data/`、`output/`。**測試不得寫入 repo 的 `output/`**（一律 `--out-dir <tmp>`；以 `git status --porcelain`＋`output/mvp_acceptance_r2/` 全目錄 sha256 前後比對為證）。
+- **規格**：(1) 三支工具改用 `argparse`：`--help` exit 0 且不讀寫任何檔；未知引數 exit 2；新增 `--out-dir`（預設維持現行路徑）。(2) **拒絕覆寫**：任一目標輸出檔已存在 → exit 1、訊息列出檔名，加 `--overwrite` 才覆寫。
+  (3) `t17r2_report_tables.py` 的「N 行」改印實際檔案行數；壞 manifest（非 JSON／缺 `venues`）→ exit 2＋明確訊息，不得靜默 `coverage = 0/0`（§15 第 5 點）。(4) `parse_gate_log()` 遇目錄 → 明確錯誤（§15 第 6 點）。
+  (5) `t17r2_blind_test.run()` 預設 `photos_dir` 改由 `repo_root` 推得（§15 第 2 點）。(6) `test_t17r2_tools.py`：(k) 段 fixture 加一面 `source="default"`、加一張 `domain="out"` 的通過照片，斷言「任何來源／domain 都照列照計」（§15 第 1 點）；`_cli_outside()` 護欄改成遞迴 sha256 前後比對（§15 第 3 點）。
+- **執行步驟**：0 現況（**在 scratchpad 的 `git worktree` 裡**重現 `--help` 會執行；不得在主 repo 重現）→ 1 實作 → 2 每條新斷言舊碼 ❌／新碼 ✅（貼輸出）→ 3 以 `--out-dir <tmp>` 重產表，`tables.md`／`rt60_table.json` 與 R2 commit 版逐位元相同 → 4 全套測試。
+- **自我檢查**：步驟 3 `cmp` 相同；R2 產物 sha256 前後相同；`git diff --stat` 只有五檔。
+- **收工**：commit `T-67: R2 工具防呆（--help／未知引數／拒絕覆寫）（待驗證）`。
+- **Opus 驗證重點**：自己對三支下 `--help`、亂給引數、不帶 `--overwrite` 直跑，確認主 repo `output/` 零變化；§15 第 1 點的三個突變現在會被測試抓到（自己重做）。
+- **§8**：不適用。
+- **交接筆記**：
+
+### T-68 材質模型可行性量測：DMS／MINC 類材質專用模型 vs 現行 CLIP（量測卡；只量不改；`src/`／`data/` 零 diff；改善軌；**步驟 0 需使用者授權下載**）
+- **狀態**：⬜ 可開跑（排在關鍵路徑卡的空檔）
+- **四軸狀態**：工程：未開始｜實驗：待量測｜產品：待裁決（本卡最高只會產生「值得開整合卡」的建議）｜MVP：不適用
+- **為什麼**：裁決 T-17-R2-A §2。SPEC §8 的對策欄自 v0.2 就寫「CLIP 不夠時評估 MINC/DMS 類材質專用模型」；R2 放行照片材質錯 8/10 是觸發證據。
+- **範圍**：`scripts/` 只得新增 `t68_material_model_probe.py`、`t68_label_map.json`（候選模型類別 → `materials.json` id 的對映表）；輸出寫 `output/material_model_probe/`。`src`／`data`／既有 `output/*` 零 diff。模型權重放 repo 外的快取目錄，不進 git。
+- **執行步驟**：
+  0. **調查並停下來問使用者**：列出至多 2 個候選（首選 Apple DMS 公開的預訓練分割模型；備選由 Sonnet 調查後提名 1 個），逐一寫明：下載網址、檔案大小、授權條款原文重點（本專案為內部非商業使用）、類別表、能不能在 Apple Silicon 上跑。**把這張表給使用者，等使用者回「可以下載〈哪一個〉」才繼續**；沒有可用權重或使用者不同意 → 實驗軸記「不確定（無法取得）」，收工回 Fable。
+  1. **事前登記（獨立 commit，早於任何模型輸出）**：`t68_label_map.json`（不得看結果後改；對不上的類別 → `null`＝該面記「候選模型無法判」）、§8 前四欄、資料集 manifest（程式產生）。
+     資料集＝(a) 退役集 9 張＋8 場地照（GT：`data/material_ground_truth.json`，T-36 使用者確認）；(b) 原 R2 held-out 五張（GT：`assets/photos_heldout/ground_truth_heldout.json`；禁用令已解除，現為開發素材）；(c) T-64 開發集（若已就位）。**`assets/photos_real_heldout/` 不得使用（鐵則 18）。**
+  2. 量測：對每張照片的每個可判面（GT≠`unknown`），以**現行管線切出的同一塊表面區域**分別取 CLIP 現行判定（由既有產物或重跑取得，寫新目錄）與候選模型在該區域的多數決類別 → 對映 → 對 GT。程式產表：逐面正誤、各面角色準確率、混淆矩陣、「候選無法判」比例。
+  3. **判定（事前寫死）**：主指標＝可判面準確率（分母＝GT 可判且兩模型都有輸出的面；另列全分母版本）。**正向**＝候選 ≥ CLIP＋20 個百分點，且在 (b) 五張上方向一致；**負向**＝候選 < CLIP＋5 個百分點；其餘＝不確定。不得挑子集報最好結果。
+- **自我檢查**：步驟 1 commit 早於首個模型輸出（`git log` 時間＋provenance）；REPORT 數字全由程式產表（地雷 #15）；全套測試 exit 0；`git diff --stat -- src data` 空。
+- **Opus 驗證重點**：§8 前四欄時序；對映表在結果後零改動（`git log -p`）；分母口徑；REPORT 無產品決定字樣；held-out 真實照片未被碰。
+- **§8 不可變欄位**：
+  ```text
+  criteria_version: v1（正向＝候選≥CLIP＋20pp 且 (b) 方向一致；負向＝<CLIP＋5pp；其餘不確定）
+  criteria_commit: 〈本卡開卡 commit；Fable 緊接 docs commit 回填〉
+  criteria_locked_at: 2026-09-21
+  dataset_manifest_sha256: 〈執行者步驟 1 由程式產生後填〉
+  implementation_commit:
+  result_commit:
+  reviewer:
+  verdict_under_original_criteria:
+  verdict_under_current_criteria:
+  criteria_changed_after_first_result: no
+  change_record: 無
+  ```
+- **交接筆記**：
+
+### T-69 幾何 v2：單張透視照的寬／高改由點雲＋表面角色量測（保留號；**未開卡——開卡條件＝T-64 開發集經 Opus 驗證就位**）
+- **狀態**：⏸ 保留號（Fable 2026-09-21）——Sonnet 不要做。
+- **四軸狀態**：工程：未開始｜實驗：待量測｜產品：不適用｜MVP：不適用
+- **起因**：裁決 T-17-R2-A §1 第 3 點。現行 `estimate_from_perspective()` 把遠牆處視錐截面當房間截面 → W／H 系統性高估、形狀比例固定；`ROOM_HEIGHT_MAX_M=20` 對住宅尺度形同無 clamp。
+- **規格草稿（給屆時的 Fable）**：先量後改兩張卡。量測卡（`src/` 零 diff）在 T-64 開發集（使用者實測尺寸）＋3 個 MIT 透視場地上比較：① 現行；② 深度圖反投影成點雲，用 `surfaces.py` 的地板／天花板／側牆角色取高度（天花板面 y − 地板面 y 的穩健分位數）與寬度（左右側牆 x 分位數差）；③ ①＋EXIF 實際 FOV；④ ②＋依空間類型的高度先驗。
+  指標＝各維與體積的相對誤差（SPEC F-02 的 ±30%）；事前登記假設與門檻；held-out 不得使用。量測正向才開 `src/` 修改卡（守六條 IR MD5、T-11 評測關卡不退步）。
+- **§8**：開卡時補（鐵則 14）。
+- **交接筆記**：
+
+### T-17-R3 MVP 第三次驗收：輔助路徑（保留號；**未開卡——開卡條件＝T-63 兩道核准＋`criteria:` commit、T-64 ✅、T-65 ✅、T-66 ✅、T-67 ✅**）
+- **狀態**：⏸ 保留號（Fable 2026-09-21）——條件齊備後由 Fable 落地執行步驟、R3 工具卡（參數確認流程的盲測打包、錄音品質檢查）與 §8。
+- **四軸狀態**：工程：未開始｜實驗：不適用｜產品：不適用｜MVP：**待重驗**（T-17 FAIL、T-17-R2 FAIL 永久保留）
+- **交接筆記**：

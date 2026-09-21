@@ -41,3 +41,18 @@ assets/reference_irs/**/*.png
 
 # T-04 replaced legacy photos: local reproducibility backup, not active inputs
 assets/photos_legacy_20260920/
+
+# 使用者自拍的真實空間素材（T-64；Fable 2026-09-21）：照片與錄音預設不進 git（隱私；repo 會 push 到遠端），
+# 只有 README／資料表／manifest／GT 進版控。使用者明確同意才由 T-64 拿掉對應規則。
+assets/incoming_real/**
+!assets/incoming_real/
+!assets/incoming_real/README.md
+!assets/incoming_real/空間資料表.md
+assets/photos_real_dev/**
+assets/photos_real_heldout/**
+!assets/photos_real_dev/**/
+!assets/photos_real_heldout/**/
+!assets/photos_real_dev/**/*.json
+!assets/photos_real_heldout/**/*.json
+!assets/photos_real_dev/**/*.md
+!assets/photos_real_heldout/**/*.md
