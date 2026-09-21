@@ -14668,6 +14668,8 @@ EOF
   ```text
   criteria_version: 無 pass/fail 門檻（量測卡）；假設 H-a～H-d 如上
   criteria_commit: 〈本段的開卡 commit；Fable 緊接 docs commit 回填〉
+    → 回填（Fable 2026-09-21；另起新行）：
+  criteria_commit: **`c8b95b8`**
   criteria_locked_at: 2026-09-21
   dataset_manifest_sha256: 〈執行者步驟 0 由程式產生後填〉
   implementation_commit:
@@ -15880,6 +15882,8 @@ T-57-F1 Opus §15 第 4 點（把「測試全在系統暫存目錄」改寫成�
   ```text
   criteria_version: v1（正向＝候選≥CLIP＋20pp 且 (b) 方向一致；負向＝<CLIP＋5pp；其餘不確定）
   criteria_commit: 〈本卡開卡 commit；Fable 緊接 docs commit 回填〉
+    → 回填（Fable 2026-09-21；另起新行）：
+  criteria_commit: **`c8b95b8`**
   criteria_locked_at: 2026-09-21
   dataset_manifest_sha256: 〈執行者步驟 1 由程式產生後填〉
   implementation_commit:
