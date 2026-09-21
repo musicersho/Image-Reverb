@@ -6,10 +6,6 @@
 > - 驗證者自行重做：資料集 manifest 在 `0a84f34` 重生逐位元＝`501eb6a7…`；18 個 run 的 provenance 時間全落在步驟 1～6 兩個 commit 之間；盲測樣本／IR sha256 對上 MANIFEST 與 `output/<run>/`、計分 5/5 成立；健身房預設路徑與手動組在 scratchpad 重跑**皆被擋（exit 3）**＝判準 2 未達獨立重現；表 1～5 重跑逐位元相同；強制句與 T-57-D 三數齊；`output/mvp_acceptance/` 未動。
 > - ⚠️ 驗證者自己的失手（已核對無害）：對三支 R2 工具下 `--help` 時它們直接執行、覆寫了 `output/mvp_acceptance_r2/` 的表格與播放頁——進版控的檔逐位元相同（git 乾淨），沒跑模型、沒碰共用圖。詳見卡末紀錄。
 > - 禁用令解除點 (i)(ii) 自本次 push 起都成立，但**解除紀錄要由 Fable 寫**；寫下之前禁用令照舊有效。交 Fable 的輸入：REPORT §8 六點＋卡末「非阻擋發現」五點（含工具不支援 `--help`、百貨賣場缺幾何出口）。
-> - **📌 給所有視窗（含 Codex）——共用圖禁用令（T-04 卡裁定 T-04-R §2 第 4 點；T-17-R2 收工並複驗、Fable 寫下解除紀錄前有效）**：R2 held-out 五張不論檔名，目前有三處逐位元複本：`assets/t17r2_synthetic_candidates/heldout_*.png`（T-60 後移到 `assets/photos_heldout/`）、
->   `assets/photos/t04_gpt_{bathroom,living,corridor,car}.png`、`assets/photos_legacy_20260920/t04_gpt_hall.png`。**不得**對它們跑 `python -m src.image_reverb` 或任何指定單張的分析／評測腳本，不得調參／標註／寫進 `data/`／當新測試夾具；
->   除 T-17-R2 卡自己的執行步驟、T-60 步驟 7 的 manifest 乾跑之外，唯一容忍的是任務卡或 WORKFLOW §5.4.1 要求的全套 `scripts/test_*.py` 例行執行（不帶引數、每次驗證至多一次；單獨跑 `test_depth.py`／`test_segmentation.py` 不算）。
->   算 sha256、只讀尺寸、看圖不受限。不要刪 `assets/photos_legacy_20260920/`；除 T-60 步驟 2 那一次 `mv` 外，不要再搬動或替換 `assets/photos/` 與 held-out 圖。**之後每個在 HANDOFF 頂端加新段的視窗，請把本條原樣保留在新段最後，直到 Fable 寫下解除紀錄。**
 
 > ## ✅ 2026-09-21 Opus：T-17-R2 執行完畢——**`MVP：FAIL（R2）`**。**現在該做的是：開 Opus 新視窗做步驟 11 獨立複驗**（貼 WORKFLOW §2.2 標準 Prompt，`T-XX` 換成 `T-17-R2（步驟 11 獨立複驗）`），通過後再交 Fable 做收尾複評與禁用令解除
 >
@@ -18,10 +14,6 @@
 > - 報告項 5：域外 9/9 擋下、域外誤放 0；放行的兩張 held-out（浴室、客廳）材質可判面錯 8/10（主率 80%、6N 下界 67%、上界 83%）。**5/5 不代表做對**：held-out 的估計尺寸與殘響絕對值偏大（車內估 9×11×8 m），和您「尾巴偏長」的聽感一致。
 > - 收工不變量：`output/mvp_acceptance/` 逐位元不變；`src`／`data`／`scripts` 零 diff；`.archive` 無新增。步驟 0～5 原始輸出在本機 `output/mvp_acceptance_r2/step0_evidence/`（git 忽略，複驗要用，**不要刪**）。明細在 TASKS.md T-17-R2 卡交接筆記第 1～10 點。
 > - 禁用令**尚未解除**：解除要等步驟 11 複驗通過（或您明示略過），再由 Fable 寫解除紀錄。
-> - **📌 給所有視窗（含 Codex）——共用圖禁用令（T-04 卡裁定 T-04-R §2 第 4 點；T-17-R2 收工並複驗、Fable 寫下解除紀錄前有效）**：R2 held-out 五張不論檔名，目前有三處逐位元複本：`assets/t17r2_synthetic_candidates/heldout_*.png`（T-60 後移到 `assets/photos_heldout/`）、
->   `assets/photos/t04_gpt_{bathroom,living,corridor,car}.png`、`assets/photos_legacy_20260920/t04_gpt_hall.png`。**不得**對它們跑 `python -m src.image_reverb` 或任何指定單張的分析／評測腳本，不得調參／標註／寫進 `data/`／當新測試夾具；
->   除 T-17-R2 卡自己的執行步驟、T-60 步驟 7 的 manifest 乾跑之外，唯一容忍的是任務卡或 WORKFLOW §5.4.1 要求的全套 `scripts/test_*.py` 例行執行（不帶引數、每次驗證至多一次；單獨跑 `test_depth.py`／`test_segmentation.py` 不算）。
->   算 sha256、只讀尺寸、看圖不受限。不要刪 `assets/photos_legacy_20260920/`；除 T-60 步驟 2 那一次 `mv` 外，不要再搬動或替換 `assets/photos/` 與 held-out 圖。**之後每個在 HANDOFF 頂端加新段的視窗，請把本條原樣保留在新段最後，直到 Fable 寫下解除紀錄。**
 
 > ## 🟡 2026-09-21 Opus：T-17-R2 執行中——步驟 0～6 完成，**現在該做的是：使用者做三件事（可跨日），做完回報給 Opus**
 >
@@ -32,10 +24,6 @@
 > - 四軸暫記：**工程：進行中｜實驗：不適用｜產品：不適用｜MVP：待重驗（REPORT 前不判）**。commit：步驟 1＝`8ac0b64`（DATASET_MANIFEST sha256 `501eb6a7…`）、步驟 6＝`001c8ed`（樣本／量測首跑）。**此後不得重生任何樣本**；使用者環節期間只允許 docs commit，禁止碰 `src`／`data`／`scripts`／`output/mvp_acceptance_r2/`。
 > - 步驟 0 全部前置通過（明細在 TASKS.md T-17-R2 卡交接筆記第 1 點；原始輸出在本機 `output/mvp_acceptance_r2/step0_evidence/`，git 忽略，寫 REPORT §0 要用、不要刪）。22 支測試全 `EXIT=0`（本卡唯一一次全套執行）、六條 IR MD5 全中。
 > - 已知結果（尚未判定）：只有 held-out 浴室、客廳兩張不加旗標就通過 gate，其餘 16 個 run 都被擋後以 forced 產出；§7-2 自動組 **0/0、coverage 0/1** → 判準 2 預期不成立，**期望結果仍是 `MVP：FAIL（R2）`**（Fable 早已預告）。
-> - **📌 給所有視窗（含 Codex）——共用圖禁用令（T-04 卡裁定 T-04-R §2 第 4 點；T-17-R2 收工並複驗、Fable 寫下解除紀錄前有效）**：R2 held-out 五張不論檔名，目前有三處逐位元複本：`assets/t17r2_synthetic_candidates/heldout_*.png`（T-60 後移到 `assets/photos_heldout/`）、
->   `assets/photos/t04_gpt_{bathroom,living,corridor,car}.png`、`assets/photos_legacy_20260920/t04_gpt_hall.png`。**不得**對它們跑 `python -m src.image_reverb` 或任何指定單張的分析／評測腳本，不得調參／標註／寫進 `data/`／當新測試夾具；
->   除 T-17-R2 卡自己的執行步驟、T-60 步驟 7 的 manifest 乾跑之外，唯一容忍的是任務卡或 WORKFLOW §5.4.1 要求的全套 `scripts/test_*.py` 例行執行（不帶引數、每次驗證至多一次；單獨跑 `test_depth.py`／`test_segmentation.py` 不算）。
->   算 sha256、只讀尺寸、看圖不受限。不要刪 `assets/photos_legacy_20260920/`；除 T-60 步驟 2 那一次 `mv` 外，不要再搬動或替換 `assets/photos/` 與 held-out 圖。**之後每個在 HANDOFF 頂端加新段的視窗，請把本條原樣保留在新段最後，直到 Fable 寫下解除紀錄。**
 
 > ## ✅ 2026-09-21 Opus：T-60 驗證通過（工程）——**現在該做的是：開 Opus 新視窗，逐字貼 TASKS.md T-17-R2 卡「裁定 T-17-R2-S §4」的 Prompt 樣板（兩行），開跑 T-17-R2（MVP 重新驗收）**
 >
@@ -43,10 +31,6 @@
 > - held-out 五張已在 `assets/photos_heldout/`：sha256 與 `ASSET_MANIFEST.json` 相同、尺寸 1448×1086 未變、候選目錄無殘留；`ground_truth_heldout.json` 的 `dims_m`＝裁定寫死值、六面材質＝使用者確認的定稿表（兩次原話在卡）；`SOURCES.md` §4 已填、來源連結五項可對到。
 > - 曝光：T-60 視窗前後曝光清單逐行相同（31 行）；**本次驗證未跑任何模型或腳本，零新增曝光**。R2 REPORT 仍須揭露 T-62 驗證時的 23→31 行（見下方 T-62 段）。
 > - §5.4.1 全套測試：`src`／`scripts`／`data` 自 `a65fc32` 起零 diff，依卡片引用 T-62 驗證的 22 支 `EXIT=0`。T-17-R2 的三項前置（T-57、T-60、T-62 ✅）至此全部成立。
-> - **📌 給所有視窗（含 Codex）——共用圖禁用令（T-04 卡裁定 T-04-R §2 第 4 點；T-17-R2 收工並複驗、Fable 寫下解除紀錄前有效）**：R2 held-out 五張不論檔名，目前有三處逐位元複本：`assets/t17r2_synthetic_candidates/heldout_*.png`（T-60 後移到 `assets/photos_heldout/`）、
->   `assets/photos/t04_gpt_{bathroom,living,corridor,car}.png`、`assets/photos_legacy_20260920/t04_gpt_hall.png`。**不得**對它們跑 `python -m src.image_reverb` 或任何指定單張的分析／評測腳本，不得調參／標註／寫進 `data/`／當新測試夾具；
->   除 T-17-R2 卡自己的執行步驟、T-60 步驟 7 的 manifest 乾跑之外，唯一容忍的是任務卡或 WORKFLOW §5.4.1 要求的全套 `scripts/test_*.py` 例行執行（不帶引數、每次驗證至多一次；單獨跑 `test_depth.py`／`test_segmentation.py` 不算）。
->   算 sha256、只讀尺寸、看圖不受限。不要刪 `assets/photos_legacy_20260920/`；除 T-60 步驟 2 那一次 `mv` 外，不要再搬動或替換 `assets/photos/` 與 held-out 圖。**之後每個在 HANDOFF 頂端加新段的視窗，請把本條原樣保留在新段最後，直到 Fable 寫下解除紀錄。**
 
 > ## 🔵 2026-09-21 Sonnet：T-60 完成（待驗證）——**現在該做的是：開 Opus 新視窗貼 WORKFLOW §2.2 標準 Prompt，`T-XX` 換成 `T-60`（依序 ④；通過後才輪到 ⑤：使用者貼 T-17-R2 的兩行 Prompt）**
 >
@@ -57,10 +41,6 @@
 > - **給 Opus**：`car／floor` 卡片預設標 `unknown`（座椅遮住腳踏區），使用者改判 `carpet`，已照改（不標 proxy）；`living／west` 畫面僅左緣窄條可見。WORKFLOW §5.4.1「完整測試套件」請先貼 `git diff a65fc32..HEAD --stat -- src scripts data`（本卡零程式改動，應為空），為空就引用 T-62 驗證紀錄的全套 22 支 `EXIT=0`，不必重跑（少一次共用圖曝光）。
 > - 步驟 7 manifest 乾跑（輸出寫 scratchpad、未建 `output/mvp_acceptance_r2/`）`exit=0`，五張 domain 為 `in／in／out／in／non_room`，與裁定鎖定值一致。**本卡沒有增加共用圖曝光**：未跑任何模型或 `scripts/test_*.py`，`output/seg|depth` 的 31 行清單前後逐行相同。
 > - 關鍵路徑：Opus 驗 T-60 → 使用者貼裁定 T-17-R2-S §4 的兩行 Prompt 開跑 T-17-R2。詳見 TASKS.md T-60 卡末交接筆記與 DEV_LOG `2026-09-21 (170)`。
-> - **📌 給所有視窗（含 Codex）——共用圖禁用令（T-04 卡裁定 T-04-R §2 第 4 點；T-17-R2 收工並複驗、Fable 寫下解除紀錄前有效）**：R2 held-out 五張不論檔名，目前有三處逐位元複本：`assets/t17r2_synthetic_candidates/heldout_*.png`（T-60 後移到 `assets/photos_heldout/`）、
->   `assets/photos/t04_gpt_{bathroom,living,corridor,car}.png`、`assets/photos_legacy_20260920/t04_gpt_hall.png`。**不得**對它們跑 `python -m src.image_reverb` 或任何指定單張的分析／評測腳本，不得調參／標註／寫進 `data/`／當新測試夾具；
->   除 T-17-R2 卡自己的執行步驟、T-60 步驟 7 的 manifest 乾跑之外，唯一容忍的是任務卡或 WORKFLOW §5.4.1 要求的全套 `scripts/test_*.py` 例行執行（不帶引數、每次驗證至多一次；單獨跑 `test_depth.py`／`test_segmentation.py` 不算）。
->   算 sha256、只讀尺寸、看圖不受限。不要刪 `assets/photos_legacy_20260920/`；除 T-60 步驟 2 那一次 `mv` 外，不要再搬動或替換 `assets/photos/` 與 held-out 圖。**之後每個在 HANDOFF 頂端加新段的視窗，請把本條原樣保留在新段最後，直到 Fable 寫下解除紀錄。**
 
 > ## ✅ 2026-09-21 Opus：T-62 驗證通過（工程）——**現在該做的是：開 Sonnet 新視窗跑 T-60（held-out 五張合成圖就位；中途它會把圖和材質表給您確認 GT）**
 >
@@ -69,10 +49,6 @@
 > - `test_depth.py` 的 bug 成因已由資料面確認：`depth_stats.json` 裡 `t04_gpt_car.png` 的 `core.p95_over_p5` 實際為 `None`，舊寫法實測 `TypeError`。範圍外零 diff、`GATE_ITEMS` 未動、`assets/photos/` 無舊檔名、退役集 10 檔完整。
 > - **⚠️ 必須帶進 T-17-R2 REPORT 的揭露**：這次全套測試讓 `output/seg|depth` 的共用圖產物由 23 行增為 31 行，其中 **`t04_gpt_corridor`、`t04_gpt_living`（R2 held-out 逐位元複本）首度產生深度圖**，`bathroom`／`car` 先前已曝光。屬禁用令例外 ③（驗證者一次性全套執行），但 held-out 曝光範圍確實擴大。
 > - **交給 Fable 的殘留風險（不擋 T-60）**：① manifest（`assets/t04_refresh/ASSET_MANIFEST.json`）若佚失，`expected_sha256()` 回 `None` ＝ sha256 守門靜默消失（此為 T-62 規格明文行為）；② `t33_material_round_tables.py`／`t36_clip_accuracy.py`／`t41_rebaseline.py`／`t47_gate_calibration.py`／`t17_blind_test.py` 仍寫死 `assets/photos/<舊檔名>`，重跑會缺檔——T-62 明文禁止動它們，是刻意殘留。
-> - **📌 給所有視窗（含 Codex）——共用圖禁用令（T-04 卡裁定 T-04-R §2 第 4 點；T-17-R2 收工並複驗、Fable 寫下解除紀錄前有效）**：R2 held-out 五張不論檔名，目前有三處逐位元複本：`assets/t17r2_synthetic_candidates/heldout_*.png`（T-60 後移到 `assets/photos_heldout/`）、
->   `assets/photos/t04_gpt_{bathroom,living,corridor,car}.png`、`assets/photos_legacy_20260920/t04_gpt_hall.png`。**不得**對它們跑 `python -m src.image_reverb` 或任何指定單張的分析／評測腳本，不得調參／標註／寫進 `data/`／當新測試夾具；
->   除 T-17-R2 卡自己的執行步驟、T-60 步驟 7 的 manifest 乾跑之外，唯一容忍的是任務卡或 WORKFLOW §5.4.1 要求的全套 `scripts/test_*.py` 例行執行（不帶引數、每次驗證至多一次；單獨跑 `test_depth.py`／`test_segmentation.py` 不算）。
->   算 sha256、只讀尺寸、看圖不受限。不要刪 `assets/photos_legacy_20260920/`；除 T-60 步驟 2 那一次 `mv` 外，不要再搬動或替換 `assets/photos/` 與 held-out 圖。**之後每個在 HANDOFF 頂端加新段的視窗，請把本條原樣保留在新段最後，直到 Fable 寫下解除紀錄。**
 
 > ## 🔵 2026-09-21 Sonnet：T-62 完成（待驗證）——**現在該做的是：開 Opus 新視窗貼 WORKFLOW §2.2 標準 Prompt，`T-XX` 換成 `T-62`（依序 ② ；T-60 要等它驗過）**
 >
@@ -81,10 +57,6 @@
 > - 證據：步驟 0 原碼 `EXIT=1`（6 項缺檔）；步驟 2 修正後 `EXIT=0`（部分 A 過、部分 B 測到 9 張透視照全 ✅）；步驟 3 診斷力兩段（空備份目錄→❌＋還原指令；同名假檔→sha256 ❌、未進模型）與步驟 4（`None`→`n/a`、`3.14159`→`3.1x`）皆如預期；曝光清單（`output/seg|depth/t04_gpt_*`、`stats.json`）前後 23 行逐行相同＝**本卡沒有增加共用圖曝光**。詳見 TASKS.md T-62 卡末交接筆記。
 > - **沒跑 `test_depth.py`**（禁用令；它的 `TypeError` 原因是靜態讀碼＋Opus `875697e` 實測推論，(B) 那一行的修正只以不跑模型的格式化測試驗證）。Opus 驗證時全套 22 支跑一次即可（禁用令例外 ③），不要單獨跑 `test_depth.py`、不要重複跑。
 > - 關鍵路徑不變：Opus 驗 T-62 → Sonnet 跑 T-60 → Opus 驗 T-60 → 使用者貼 T-17-R2 Prompt。詳見 DEV_LOG `2026-09-21 (168)`。
-> - **📌 給所有視窗（含 Codex）——共用圖禁用令（T-04 卡裁定 T-04-R §2 第 4 點；T-17-R2 收工並複驗、Fable 寫下解除紀錄前有效）**：R2 held-out 五張不論檔名，目前有三處逐位元複本：`assets/t17r2_synthetic_candidates/heldout_*.png`（T-60 後移到 `assets/photos_heldout/`）、
->   `assets/photos/t04_gpt_{bathroom,living,corridor,car}.png`、`assets/photos_legacy_20260920/t04_gpt_hall.png`。**不得**對它們跑 `python -m src.image_reverb` 或任何指定單張的分析／評測腳本，不得調參／標註／寫進 `data/`／當新測試夾具；
->   除 T-17-R2 卡自己的執行步驟、T-60 步驟 7 的 manifest 乾跑之外，唯一容忍的是任務卡或 WORKFLOW §5.4.1 要求的全套 `scripts/test_*.py` 例行執行（不帶引數、每次驗證至多一次；單獨跑 `test_depth.py`／`test_segmentation.py` 不算）。
->   算 sha256、只讀尺寸、看圖不受限。不要刪 `assets/photos_legacy_20260920/`；除 T-60 步驟 2 那一次 `mv` 外，不要再搬動或替換 `assets/photos/` 與 held-out 圖。**之後每個在 HANDOFF 頂端加新段的視窗，請把本條原樣保留在新段最後，直到 Fable 寫下解除紀錄。**
 
 > ## 🔮 2026-09-20 Fable：使用者兩項標準變更＋兩項後續決定已走 §7 落地——**現在該做的是（依序，一次只開一個視窗）：① Sonnet 跑 T-62 → ② Opus 驗 T-62 → ③ Sonnet 跑 T-60（中途它會把五張圖和一張材質表給您，請對著圖看過後回「GT 確認」或寫要改哪裡）→ ④ Opus 驗 T-60 → ⑤ 貼下方兩行 Prompt 開跑 T-17-R2**
 >
@@ -112,10 +84,6 @@
 > - **回應 Opus `875697e` 的「要處理 1」**（main 上兩支測試 EXIT=1）＝T-62。Opus 卡末 §15 的 6 項 T-57 工具建議：**不在 R2 前處理**（R2 前不再動 T-57 工具；R2 收工後的 Fable 收尾複評一併排）。「要處理 2」（關閉背景任務 `task_14c97967`）仍請使用者在 App 裡關掉。
 > - **回應 Codex `3fd51c4` 的完工差距盤點（`PROJECT_REVIEW_20260920.md`）**：它指出的「換圖後 legacy 五張路徑不存在、`--legacy` 降級方案不能執行」由裁定 T-17-R2-S §3 第 6 點處置（Prompt B 不可用、不修工具、不把新圖改舊名）；「解析度／合成證據定位／held-out 資格／未追蹤 PNG」由同裁定與 T-60 處置。
 > - 本輪 Fable 零改動 `src`／`scripts`／`data`／`output`／`assets` 圖檔／SPEC／WORKFLOW；`criteria:` commit `758eeba` 只含 TASKS.md 純新增行；docs commit 另在 `assets/photos/README.md`、`assets/t04_refresh/README.md` 檔尾各補一段禁用令註記；五張候選 PNG 仍未追蹤（留給 T-60）。詳見 DEV_LOG `2026-09-20 (167)`。
-> - **📌 給所有視窗（含 Codex）——共用圖禁用令（T-04 卡裁定 T-04-R §2 第 4 點；T-17-R2 收工並複驗、Fable 寫下解除紀錄前有效）**：R2 held-out 五張不論檔名，目前有三處逐位元複本：`assets/t17r2_synthetic_candidates/heldout_*.png`（T-60 後移到 `assets/photos_heldout/`）、
->   `assets/photos/t04_gpt_{bathroom,living,corridor,car}.png`、`assets/photos_legacy_20260920/t04_gpt_hall.png`。**不得**對它們跑 `python -m src.image_reverb` 或任何指定單張的分析／評測腳本，不得調參／標註／寫進 `data/`／當新測試夾具；
->   除 T-17-R2 卡自己的執行步驟、T-60 步驟 7 的 manifest 乾跑之外，唯一容忍的是任務卡或 WORKFLOW §5.4.1 要求的全套 `scripts/test_*.py` 例行執行（不帶引數、每次驗證至多一次；單獨跑 `test_depth.py`／`test_segmentation.py` 不算）。
->   算 sha256、只讀尺寸、看圖不受限。不要刪 `assets/photos_legacy_20260920/`；除 T-60 步驟 2 那一次 `mv` 外，不要再搬動或替換 `assets/photos/` 與 held-out 圖。**之後每個在 HANDOFF 頂端加新段的視窗，請把本條原樣保留在新段最後，直到 Fable 寫下解除紀錄。**
 
 > ## ✅ 2026-09-20 Opus：T-57（含修正輪 T-57-F1）驗證通過（工程）——**現在該做的是：T-17-R2 等使用者提供 held-out 照片；另請處理下方兩件事**
 >

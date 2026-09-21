@@ -246,6 +246,13 @@
      **解除點**＝以下兩者皆成立：(i) T-17-R2 步驟 10 收工 commit 已 push；(ii) 步驟 11 的獨立複驗紀錄 commit 已 push **且判定為工程：已驗證**（退回＝未解除），或使用者明示略過步驟 11（原話記入 T-17-R2 卡）。
      解除須由 Fable 在本卡另起新行寫「共用圖禁用令已於 〈commit〉 解除」才生效；沒有這一行＝仍在禁用期。解除後 held-out 檔**留在原路徑** `assets/photos_heldout/`（R2 的 DATASET_MANIFEST 與 provenance 記的是這個路徑）。
      解除後這批**不再具 held-out 資格**：T-44-R1 前置（held-out ≥5 張）與 T-53「校準集與 held-out 不得同一批」屆時須另備新批次（兩卡目前 ⏸，本輪不動）。
+     **🔮 共用圖禁用令解除紀錄（Fable 2026-09-21；另起新行；上方條文一字未動）：共用圖禁用令已於 `121697a` 解除**（本行所在 commit push 起生效）。
+     Fable 自行核對的證據（不是照抄 Opus 的「皆成立」）：解除點 (i)＝T-17-R2 步驟 10 收工 commit `d12b30d`（`T-17-R2: MVP 重新驗收結果（MVP：FAIL（R2））`）＋回填 `a9b8e6f`；解除點 (ii)＝步驟 11 獨立複驗紀錄 commit `121697a`（2026-09-21 11:19:44 +0800），
+     T-17-R2 卡末紀錄的四軸判定＝「工程：已驗證」（不是退回）。三個 commit 以 `git fetch` 後的 `git branch -r --contains <commit>` 逐一查詢皆回 `origin/main`；`git status -sb`＝`## main...origin/main`（無 ahead／behind）、工作樹乾淨。使用者未行使「略過步驟 11」，(ii) 走的是前半句。
+     **解除後的規則（寫死，供之後每個視窗查）**：① 五張 held-out 與其逐位元複本（`assets/photos/t04_gpt_{bathroom,living,corridor,car}.png`、`assets/photos_legacy_20260920/t04_gpt_hall.png`）自此是**一般開發素材**：可跑 CLI／分析腳本、可單獨跑 `test_depth.py`／`test_segmentation.py`、可當測試夾具、可標註。
+     ② **不再具 held-out 資格**（上一行條文）：之後任何驗收（T-17-R3、T-44-R1）、任何校準（T-53）都不得把這五張算成 held-out；R3 的 held-out 必須是**新批次**，且從就位那一刻起實體隔離（不得再與開發素材一批兩用——R2 的「一批兩用」是使用者一次性決定，不是先例）。
+     ③ **仍然不准的事（與禁用令無關、各有出處）**：held-out 檔不搬不改名（R2 DATASET_MANIFEST／provenance 記的是 `assets/photos_heldout/`）；`assets/photos_legacy_20260920/` 不刪（裁定 T-04-R §2 第 2 點，退役集備份）；`output/mvp_acceptance_r2/` 與 R2 本輪 18 個 `output/<run>/` 目錄自此**唯讀**（Phase 1.9-R 鐵則 11；重跑一律寫新目錄）；
+     `ground_truth_heldout.json` 的 `dims_m` 是**提示詞設計值、不是實測尺寸**，不得當幾何誤差的 GT（裁定 T-17-R2-S；這條不因解除而失效）。④ R2 期間的曝光紀錄（REPORT §0.3／§0.1 強制句）永久保留，不因解除而改寫。
   5. **結案路徑（上方「結案條件維持裁決 E…兩者擇一」原文保留；自 v2 起為三者擇一）**：(a) 補齊舊 9 張來源網址；(b) 使用者明確維持未結案（2026-09-16 決定，**在 (c) 完成前持續有效**）；
      **(c) 替換素材（本裁定）**＝T-62 經 Opus 驗證通過（全套測試恢復可跑）之後，由獨立 Opus 依 v2 逐條驗證現行交付集（任務寫「T-04（v2；裁定 T-04-R）」；對象＝驗證當下的 HEAD；先過 §1 的兩道條文核准）
      → 通過才在 §8 另起新行寫 `verdict_under_current_criteria: 達成（v2；實作先於 criteria commit——§7.2 順序瑕疵，見 change_record）`，四軸工程軸改「已驗證（v2；實作先於條文；v1 未達永久保留）」——**不得**寫成不帶括號附註的「已驗證」；

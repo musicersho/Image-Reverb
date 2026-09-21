@@ -210,3 +210,5 @@ Depth Anything V2 與 SegFormer 都是用一般透視影像訓練，
 
 > 📌 **2026-09-20 補（同日稍後；上段原文保留）**：使用者下達標準變更後，解析度下限改為長邊 ≥1280px（T-17-R2 卡裁定 T-17-R2-S），五張 1448×1086 自此**合格**，並由使用者指定為 T-17-R2 正式 held-out（路徑 S）。
 > 上段「未達 1920px 下限」「PNG 僅本機留存」是舊門檻下的如實紀錄；五張將由 **T-60** `mv` 到 `assets/photos_heldout/` 並進版控，來源紀錄填入 §4。
+
+> 🔓 **2026-09-21 Fable 補（另起新段；上文原文保留）**：共用圖禁用令已於 `121697a` 解除（TASKS.md T-04 卡裁定 T-04-R §2 第 4 點下方的解除紀錄）。§4 五張 held-out 自此是一般開發素材、**不再具 held-out 資格**；檔案留在 `assets/photos_heldout/` 不搬不改名（R2 DATASET_MANIFEST 記的是此路徑）；`ground_truth_heldout.json` 的 `dims_m` 是提示詞設計值、不是實測尺寸。

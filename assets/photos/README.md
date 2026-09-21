@@ -12,3 +12,6 @@
 > **不得**對這四張執行 `python -m src.image_reverb` 或任何指定單張的分析／評測腳本，也**不得**單獨執行會掃本目錄的 `scripts/test_depth.py`／`scripts/test_segmentation.py`（只有任務卡或 WORKFLOW §5.4.1 要求的全套 `scripts/test_*.py` 例行執行才容許），
 > 不得調參／標註／寫進 `data/`／當新測試夾具；上文「一般開發分析可直接指定本目錄的新 PNG」只適用其餘五張。
 > 上文「不是正式 T-17-R2 held-out 集」是裁定前的紀錄，現況見 TASKS.md T-17-R2 卡**裁定 T-17-R2-S**（五張候選圖經 T-60 就位後即為正式 held-out，路徑 S）。
+
+> 🔓 **2026-09-21 Fable 補（另起新段；上文原文保留）**：**共用圖禁用令已於 `121697a` 解除**（解除紀錄在 TASKS.md T-04 卡裁定 T-04-R §2 第 4 點下方）。上一段的「不得……」自此失效：本目錄九張全部是一般開發素材。
+> 但 `t04_gpt_{bathroom,living,corridor,car}.png`（＝R2 held-out 逐位元複本）**不再具 held-out 資格**，之後任何驗收／校準都不得把它們算成 held-out。
