@@ -1,0 +1,219 @@
+{
+  "source": "GPT Image via built-in image_gen",
+  "date": "2026-09-21",
+  "dimensions_source": "prompt_design_not_measured",
+  "materials_source": "prompt_design_not_user_confirmed",
+  "real_capture": false,
+  "scenes": [
+    {
+      "id": "bathroom_tile",
+      "category": "浴室",
+      "label": "磁磚浴室",
+      "dims": [
+        2.8,
+        2.1,
+        2.5
+      ],
+      "materials": [
+        "大理石或磁磚",
+        "石膏板或一般粉刷牆",
+        "大理石或磁磚",
+        "大理石或磁磚",
+        "大理石或磁磚",
+        "大理石或磁磚"
+      ],
+      "soft": "一條薄浴巾；無大型軟家具",
+      "scene": "A modest rectangular domestic bathroom, 2.8m deep, 2.1m wide, 2.5m high. Matte gray ceramic tile floor, pale ivory ceramic tiles on front, left, right walls; plain painted white plaster ceiling. Small sink on right, toilet against far wall, simple shower on left without an enclosing partition. A single thin bath towel. No rug, no large mirror, no window. The wall behind the camera is also tiled, design intent only.",
+      "prompt": "Use case: photorealistic-natural. Generate ONE standalone landscape 4:3 photograph, not collage. A realistic unretouched ordinary smartphone main camera 1x photograph (roughly 26mm equivalent), NOT ultrawide 0.5x, NOT panorama or fisheye, NOT portrait mode. Stand at one end near the wall looking down the longest room dimension, camera level with natural perspective; include floor at bottom, ceiling at top, left and right walls as much as main camera allows. For car use seated rear-seat viewpoint. Even neutral practical lighting, no dramatic effects, no people, no text overlay, border, watermark, diagram, measurement labels or UI. Natural small imperfections, realistic materials and proportions. This is a synthetic reference scene, not documentation of an existing real room. A modest rectangular domestic bathroom, 2.8m deep, 2.1m wide, 2.5m high. Matte gray ceramic tile floor, pale ivory ceramic tiles on front, left, right walls; plain painted white plaster ceiling. Small sink on right, toilet against far wall, simple shower on left without an enclosing partition. A single thin bath towel. No rug, no large mirror, no window. The wall behind the camera is also tiled, design intent only."
+    },
+    {
+      "id": "bathroom_stone",
+      "category": "浴室",
+      "label": "石材淋浴室",
+      "dims": [
+        3.2,
+        2.4,
+        2.6
+      ],
+      "materials": [
+        "大理石或磁磚",
+        "石膏板或一般粉刷牆",
+        "大理石或磁磚",
+        "大理石或磁磚",
+        "大理石或磁磚",
+        "大理石或磁磚"
+      ],
+      "soft": "無大型軟家具",
+      "scene": "A simple spacious residential shower bathroom, 3.2m deep x 2.4m wide x 2.6m high. Warm beige travertine-look stone tiles on floor and front, left and right walls. Plain white painted plaster ceiling. Minimal open walk-in shower at the back left with drain, compact white basin on right, practical plumbing, no bathtub, no window, no glass shower partition, no rug. Rear camera wall also tiled in design.",
+      "prompt": "Use case: photorealistic-natural. Generate ONE standalone landscape 4:3 photograph, not collage. A realistic unretouched ordinary smartphone main camera 1x photograph (roughly 26mm equivalent), NOT ultrawide 0.5x, NOT panorama or fisheye, NOT portrait mode. Stand at one end near the wall looking down the longest room dimension, camera level with natural perspective; include floor at bottom, ceiling at top, left and right walls as much as main camera allows. For car use seated rear-seat viewpoint. Even neutral practical lighting, no dramatic effects, no people, no text overlay, border, watermark, diagram, measurement labels or UI. Natural small imperfections, realistic materials and proportions. This is a synthetic reference scene, not documentation of an existing real room. A simple spacious residential shower bathroom, 3.2m deep x 2.4m wide x 2.6m high. Warm beige travertine-look stone tiles on floor and front, left and right walls. Plain white painted plaster ceiling. Minimal open walk-in shower at the back left with drain, compact white basin on right, practical plumbing, no bathtub, no window, no glass shower partition, no rug. Rear camera wall also tiled in design."
+    },
+    {
+      "id": "living_small",
+      "category": "客廳臥室",
+      "label": "小客廳",
+      "dims": [
+        5.2,
+        3.8,
+        2.7
+      ],
+      "materials": [
+        "木板",
+        "石膏板或一般粉刷牆",
+        "石膏板或一般粉刷牆",
+        "石膏板或一般粉刷牆",
+        "石膏板或一般粉刷牆",
+        "石膏板或一般粉刷牆"
+      ],
+      "soft": "雙人布沙發、小地毯",
+      "scene": "An ordinary small living room 5.2m deep x 3.8m wide x 2.7m high, pale oak plank floor, plain cream painted plaster walls on front and both sides, flat white plaster ceiling. A modest blue-gray two-seat fabric sofa along right wall, small wood coffee table, a small low-pile rug that covers less than a quarter of floor, low empty bookcase at far wall. No visible windows, illumination from practical ceiling lights. Wall behind camera is painted plaster in design. No elaborate staging.",
+      "prompt": "Use case: photorealistic-natural. Generate ONE standalone landscape 4:3 photograph, not collage. A realistic unretouched ordinary smartphone main camera 1x photograph (roughly 26mm equivalent), NOT ultrawide 0.5x, NOT panorama or fisheye, NOT portrait mode. Stand at one end near the wall looking down the longest room dimension, camera level with natural perspective; include floor at bottom, ceiling at top, left and right walls as much as main camera allows. For car use seated rear-seat viewpoint. Even neutral practical lighting, no dramatic effects, no people, no text overlay, border, watermark, diagram, measurement labels or UI. Natural small imperfections, realistic materials and proportions. This is a synthetic reference scene, not documentation of an existing real room. An ordinary small living room 5.2m deep x 3.8m wide x 2.7m high, pale oak plank floor, plain cream painted plaster walls on front and both sides, flat white plaster ceiling. A modest blue-gray two-seat fabric sofa along right wall, small wood coffee table, a small low-pile rug that covers less than a quarter of floor, low empty bookcase at far wall. No visible windows, illumination from practical ceiling lights. Wall behind camera is painted plaster in design. No elaborate staging."
+    },
+    {
+      "id": "bedroom_compact",
+      "category": "客廳臥室",
+      "label": "小臥室",
+      "dims": [
+        4.2,
+        3.3,
+        2.6
+      ],
+      "materials": [
+        "木板",
+        "石膏板或一般粉刷牆",
+        "石膏板或一般粉刷牆",
+        "石膏板或一般粉刷牆",
+        "石膏板或一般粉刷牆",
+        "石膏板或一般粉刷牆"
+      ],
+      "soft": "雙人床、棉被、兩個枕頭",
+      "scene": "A compact ordinary bedroom 4.2m deep x 3.3m wide x 2.6m high. Medium-tone wooden plank floor, pale cream plaster front wall and side walls, white flat painted ceiling. A double bed lengthwise along right side with headboard near far wall, simple cotton duvet and two pillows, small bedside table, narrow freestanding wooden wardrobe on left occupying a minority of wall. No rug or window in frame. Warm-neutral even practical ceiling light. Rear camera wall also plaster by design.",
+      "prompt": "Use case: photorealistic-natural. Generate ONE standalone landscape 4:3 photograph, not collage. A realistic unretouched ordinary smartphone main camera 1x photograph (roughly 26mm equivalent), NOT ultrawide 0.5x, NOT panorama or fisheye, NOT portrait mode. Stand at one end near the wall looking down the longest room dimension, camera level with natural perspective; include floor at bottom, ceiling at top, left and right walls as much as main camera allows. For car use seated rear-seat viewpoint. Even neutral practical lighting, no dramatic effects, no people, no text overlay, border, watermark, diagram, measurement labels or UI. Natural small imperfections, realistic materials and proportions. This is a synthetic reference scene, not documentation of an existing real room. A compact ordinary bedroom 4.2m deep x 3.3m wide x 2.6m high. Medium-tone wooden plank floor, pale cream plaster front wall and side walls, white flat painted ceiling. A double bed lengthwise along right side with headboard near far wall, simple cotton duvet and two pillows, small bedside table, narrow freestanding wooden wardrobe on left occupying a minority of wall. No rug or window in frame. Warm-neutral even practical ceiling light. Rear camera wall also plaster by design."
+    },
+    {
+      "id": "classroom_empty",
+      "category": "大空間",
+      "label": "空教室",
+      "dims": [
+        9,
+        7,
+        3.4
+      ],
+      "materials": [
+        "大理石或磁磚",
+        "吸音板",
+        "石膏板或一般粉刷牆",
+        "石膏板或一般粉刷牆",
+        "石膏板或一般粉刷牆",
+        "石膏板或一般粉刷牆"
+      ],
+      "soft": "無大型軟家具；少量木桌與硬椅",
+      "scene": "An empty school classroom 9m deep x 7m wide x 3.4m high. Light gray matte ceramic tile floor, off-white painted plaster walls, suspended ceiling of clearly visible mineral fiber acoustic tiles in a square grid with even lights. Blank small chalkboard on far plaster wall, a few wood desks and hard chairs at side edges leaving center largely empty. No windows in frame, no writing, no people. Plaster rear wall behind camera in design. Believable mundane school proportions.",
+      "prompt": "Use case: photorealistic-natural. Generate ONE standalone landscape 4:3 photograph, not collage. A realistic unretouched ordinary smartphone main camera 1x photograph (roughly 26mm equivalent), NOT ultrawide 0.5x, NOT panorama or fisheye, NOT portrait mode. Stand at one end near the wall looking down the longest room dimension, camera level with natural perspective; include floor at bottom, ceiling at top, left and right walls as much as main camera allows. For car use seated rear-seat viewpoint. Even neutral practical lighting, no dramatic effects, no people, no text overlay, border, watermark, diagram, measurement labels or UI. Natural small imperfections, realistic materials and proportions. This is a synthetic reference scene, not documentation of an existing real room. An empty school classroom 9m deep x 7m wide x 3.4m high. Light gray matte ceramic tile floor, off-white painted plaster walls, suspended ceiling of clearly visible mineral fiber acoustic tiles in a square grid with even lights. Blank small chalkboard on far plaster wall, a few wood desks and hard chairs at side edges leaving center largely empty. No windows in frame, no writing, no people. Plaster rear wall behind camera in design. Believable mundane school proportions."
+    },
+    {
+      "id": "hall_masonry",
+      "category": "大空間",
+      "label": "空社區禮堂",
+      "dims": [
+        18,
+        12,
+        6
+      ],
+      "materials": [
+        "木板",
+        "石膏板或一般粉刷牆",
+        "磚",
+        "磚",
+        "磚",
+        "磚"
+      ],
+      "soft": "無大型軟家具",
+      "scene": "A vacant community assembly hall 18m deep x 12m wide x 6m high. Worn honey wood plank flooring, front and both side walls of exposed red brick, high flat off-white painted plaster ceiling with practical hanging lights. Completely empty central floor, plain front brick wall with a single closed wood door much smaller than wall. No stage curtain, no seating, no banners, no windows in frame. Brick wall behind camera by design. Authentic large rectangular hall, not luxurious.",
+      "prompt": "Use case: photorealistic-natural. Generate ONE standalone landscape 4:3 photograph, not collage. A realistic unretouched ordinary smartphone main camera 1x photograph (roughly 26mm equivalent), NOT ultrawide 0.5x, NOT panorama or fisheye, NOT portrait mode. Stand at one end near the wall looking down the longest room dimension, camera level with natural perspective; include floor at bottom, ceiling at top, left and right walls as much as main camera allows. For car use seated rear-seat viewpoint. Even neutral practical lighting, no dramatic effects, no people, no text overlay, border, watermark, diagram, measurement labels or UI. Natural small imperfections, realistic materials and proportions. This is a synthetic reference scene, not documentation of an existing real room. A vacant community assembly hall 18m deep x 12m wide x 6m high. Worn honey wood plank flooring, front and both side walls of exposed red brick, high flat off-white painted plaster ceiling with practical hanging lights. Completely empty central floor, plain front brick wall with a single closed wood door much smaller than wall. No stage curtain, no seating, no banners, no windows in frame. Brick wall behind camera by design. Authentic large rectangular hall, not luxurious."
+    },
+    {
+      "id": "corridor_plaster",
+      "category": "走廊樓梯間",
+      "label": "粉刷牆走廊",
+      "dims": [
+        8.5,
+        2,
+        2.7
+      ],
+      "materials": [
+        "大理石或磁磚",
+        "石膏板或一般粉刷牆",
+        "石膏板或一般粉刷牆",
+        "石膏板或一般粉刷牆",
+        "石膏板或一般粉刷牆",
+        "石膏板或一般粉刷牆"
+      ],
+      "soft": "無大型軟家具",
+      "scene": "An empty enclosed apartment corridor 8.5m long x 2m wide x 2.7m high. Matte small pale stone floor tiles, plain white plaster ceiling and pale beige plaster front and side walls. A few closed plain wooden doors inset into the side walls, narrow simple skirting. Straight view toward a blank plaster end wall, ceiling lights evenly spaced. No plants, mats, windows or signs. Rear wall behind camera plaster by design.",
+      "prompt": "Use case: photorealistic-natural. Generate ONE standalone landscape 4:3 photograph, not collage. A realistic unretouched ordinary smartphone main camera 1x photograph (roughly 26mm equivalent), NOT ultrawide 0.5x, NOT panorama or fisheye, NOT portrait mode. Stand at one end near the wall looking down the longest room dimension, camera level with natural perspective; include floor at bottom, ceiling at top, left and right walls as much as main camera allows. For car use seated rear-seat viewpoint. Even neutral practical lighting, no dramatic effects, no people, no text overlay, border, watermark, diagram, measurement labels or UI. Natural small imperfections, realistic materials and proportions. This is a synthetic reference scene, not documentation of an existing real room. An empty enclosed apartment corridor 8.5m long x 2m wide x 2.7m high. Matte small pale stone floor tiles, plain white plaster ceiling and pale beige plaster front and side walls. A few closed plain wooden doors inset into the side walls, narrow simple skirting. Straight view toward a blank plaster end wall, ceiling lights evenly spaced. No plants, mats, windows or signs. Rear wall behind camera plaster by design."
+    },
+    {
+      "id": "corridor_concrete",
+      "category": "走廊樓梯間",
+      "label": "混凝土走廊",
+      "dims": [
+        9.5,
+        2.4,
+        3
+      ],
+      "materials": [
+        "混凝土",
+        "混凝土",
+        "混凝土",
+        "混凝土",
+        "混凝土",
+        "混凝土"
+      ],
+      "soft": "無大型軟家具",
+      "scene": "An empty utilitarian concrete corridor 9.5m long x 2.4m wide x 3m high. All six enclosing surfaces by design are bare cast-in-place concrete: sealed matte concrete floor, flat concrete ceiling, front concrete wall and both concrete side walls with subtle formwork seams. Simple linear ceiling-mounted utility lights and one modest closed gray metal service door on left, no windows or stair opening, no text or signs. Practical real building rather than cinematic bunker.",
+      "prompt": "Use case: photorealistic-natural. Generate ONE standalone landscape 4:3 photograph, not collage. A realistic unretouched ordinary smartphone main camera 1x photograph (roughly 26mm equivalent), NOT ultrawide 0.5x, NOT panorama or fisheye, NOT portrait mode. Stand at one end near the wall looking down the longest room dimension, camera level with natural perspective; include floor at bottom, ceiling at top, left and right walls as much as main camera allows. For car use seated rear-seat viewpoint. Even neutral practical lighting, no dramatic effects, no people, no text overlay, border, watermark, diagram, measurement labels or UI. Natural small imperfections, realistic materials and proportions. This is a synthetic reference scene, not documentation of an existing real room. An empty utilitarian concrete corridor 9.5m long x 2.4m wide x 3m high. All six enclosing surfaces by design are bare cast-in-place concrete: sealed matte concrete floor, flat concrete ceiling, front concrete wall and both concrete side walls with subtle formwork seams. Simple linear ceiling-mounted utility lights and one modest closed gray metal service door on left, no windows or stair opening, no text or signs. Practical real building rather than cinematic bunker."
+    },
+    {
+      "id": "car_fabric",
+      "category": "車內",
+      "label": "布椅轎車",
+      "dims": [
+        2.6,
+        1.5,
+        1.2
+      ],
+      "materials": [
+        "地毯",
+        "布幕窗簾",
+        "塑膠壁板",
+        "塑膠壁板",
+        "塑膠壁板",
+        "座椅或人群"
+      ],
+      "soft": "前後排布座椅、頂棚織布；無人",
+      "scene": "Inside a compact sedan, imagined cabin bounding box 2.6m long x 1.5m wide x 1.2m high (not a rectangular room). Camera at center rear bench looking forward. Dark cloth front seats, carpeted rear footwells clearly visible below seat backs, gray fabric roof headliner in upper third, hard dark plastic dashboard ahead and plastic door trims with glass windows on both sides. Rear seat back behind camera. Front seats moderately forward so footwells can be seen. Parked in diffuse daylight, no people, no badges, screens dark, no legible branding.",
+      "prompt": "Use case: photorealistic-natural. Generate ONE standalone landscape 4:3 photograph, not collage. A realistic unretouched ordinary smartphone main camera 1x photograph (roughly 26mm equivalent), NOT ultrawide 0.5x, NOT panorama or fisheye, NOT portrait mode. Stand at one end near the wall looking down the longest room dimension, camera level with natural perspective; include floor at bottom, ceiling at top, left and right walls as much as main camera allows. For car use seated rear-seat viewpoint. Even neutral practical lighting, no dramatic effects, no people, no text overlay, border, watermark, diagram, measurement labels or UI. Natural small imperfections, realistic materials and proportions. This is a synthetic reference scene, not documentation of an existing real room. Inside a compact sedan, imagined cabin bounding box 2.6m long x 1.5m wide x 1.2m high (not a rectangular room). Camera at center rear bench looking forward. Dark cloth front seats, carpeted rear footwells clearly visible below seat backs, gray fabric roof headliner in upper third, hard dark plastic dashboard ahead and plastic door trims with glass windows on both sides. Rear seat back behind camera. Front seats moderately forward so footwells can be seen. Parked in diffuse daylight, no people, no badges, screens dark, no legible branding."
+    },
+    {
+      "id": "car_van",
+      "category": "車內",
+      "label": "布椅小型廂車",
+      "dims": [
+        3.2,
+        1.7,
+        1.5
+      ],
+      "materials": [
+        "橡膠地墊",
+        "布幕窗簾",
+        "塑膠壁板",
+        "塑膠壁板",
+        "塑膠壁板",
+        "座椅或人群"
+      ],
+      "soft": "布座椅、頂棚織布；無人",
+      "scene": "Inside an ordinary small passenger van, imagined cabin bounding box 3.2m long x 1.7m wide x 1.5m high, not a rectangular room. Camera seated centrally on second row looking toward front. Two separate utilitarian gray cloth front seats with a gap, visible black ribbed rubber floor mat in central aisle and rear footwells, light gray fabric headliner above, dashboard of gray hard plastic in front, plastic door linings and glass windows on both sides. Bench seat back behind camera. Unoccupied parked vehicle with soft diffuse daylight. No brands or readable instruments.",
+      "prompt": "Use case: photorealistic-natural. Generate ONE standalone landscape 4:3 photograph, not collage. A realistic unretouched ordinary smartphone main camera 1x photograph (roughly 26mm equivalent), NOT ultrawide 0.5x, NOT panorama or fisheye, NOT portrait mode. Stand at one end near the wall looking down the longest room dimension, camera level with natural perspective; include floor at bottom, ceiling at top, left and right walls as much as main camera allows. For car use seated rear-seat viewpoint. Even neutral practical lighting, no dramatic effects, no people, no text overlay, border, watermark, diagram, measurement labels or UI. Natural small imperfections, realistic materials and proportions. This is a synthetic reference scene, not documentation of an existing real room. Inside an ordinary small passenger van, imagined cabin bounding box 3.2m long x 1.7m wide x 1.5m high, not a rectangular room. Camera seated centrally on second row looking toward front. Two separate utilitarian gray cloth front seats with a gap, visible black ribbed rubber floor mat in central aisle and rear footwells, light gray fabric headliner above, dashboard of gray hard plastic in front, plastic door linings and glass windows on both sides. Bench seat back behind camera. Unoccupied parked vehicle with soft diffuse daylight. No brands or readable instruments."
+    }
+  ]
+}

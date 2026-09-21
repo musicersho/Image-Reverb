@@ -212,3 +212,7 @@ Depth Anything V2 與 SegFormer 都是用一般透視影像訓練，
 > 上段「未達 1920px 下限」「PNG 僅本機留存」是舊門檻下的如實紀錄；五張將由 **T-60** `mv` 到 `assets/photos_heldout/` 並進版控，來源紀錄填入 §4。
 
 > 🔓 **2026-09-21 Fable 補（另起新段；上文原文保留）**：共用圖禁用令已於 `121697a` 解除（TASKS.md T-04 卡裁定 T-04-R §2 第 4 點下方的解除紀錄）。§4 五張 held-out 自此是一般開發素材、**不再具 held-out 資格**；檔案留在 `assets/photos_heldout/` 不搬不改名（R2 DATASET_MANIFEST 記的是此路徑）；`ground_truth_heldout.json` 的 `dims_m` 是提示詞設計值、不是實測尺寸。
+
+## 2026-09-21 新增：十個合成空間（非 T-64 真實素材）
+
+依使用者要求以內建 GPT Image 生成；共十張、五類各二。來源、完整提示詞與指紋見 [交付說明](incoming_synthetic_20260921/README.md)、[提示詞](incoming_synthetic_20260921/SCENE_SPECS.json)、[manifest](incoming_synthetic_20260921/ASSET_MANIFEST.json)。照片留本機、不上傳 GitHub；尺寸為提示詞設計，材質為設定與目視補註，非 user_measured 或使用者確認 GT。未參考／處理任何真實 held-out，未執行分析管線或 T-64 分組。

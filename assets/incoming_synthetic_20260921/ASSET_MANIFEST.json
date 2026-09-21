@@ -1,0 +1,322 @@
+[
+  {
+    "id": "bathroom_tile",
+    "category": "浴室",
+    "label": "磁磚浴室",
+    "photo": "bathroom_tile/photo.png",
+    "sha256": "fc13ae1bba3267d8542983a0bdd9f358cb86f59f4fc9c9fc5dc1349aa6c025be",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 1870483,
+    "focal_length_exif": null,
+    "focal_length_35mm_exif": null,
+    "synthetic": true,
+    "dimensions_m": [
+      2.8,
+      2.1,
+      2.5
+    ],
+    "dimensions_source": "prompt_design_not_measured",
+    "materials": {
+      "地板": "大理石或磁磚",
+      "天花板": "石膏板或一般粉刷牆",
+      "正對鏡頭的牆": "大理石或磁磚",
+      "左牆": "大理石或磁磚",
+      "右牆": "大理石或磁磚",
+      "背後的牆": "大理石或磁磚（畫面外，僅設計設定）"
+    },
+    "materials_source": "design_with_visual_notes_not_ground_truth",
+    "back_surface_observed": "unknown",
+    "visual_notes": "可見磁磚地面與牆面、粉刷頂；淋浴區出現凸牆，不能視為精確長方體。",
+    "real_audio": null,
+    "split": "unassigned_synthetic"
+  },
+  {
+    "id": "bathroom_stone",
+    "category": "浴室",
+    "label": "石材淋浴室",
+    "photo": "bathroom_stone/photo.png",
+    "sha256": "92734f57e1c5c2deeb4dfb66fe8c5a96ab01a1d3ced2fb8d82360449489970e2",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 2435587,
+    "focal_length_exif": null,
+    "focal_length_35mm_exif": null,
+    "synthetic": true,
+    "dimensions_m": [
+      3.2,
+      2.4,
+      2.6
+    ],
+    "dimensions_source": "prompt_design_not_measured",
+    "materials": {
+      "地板": "大理石或磁磚",
+      "天花板": "石膏板或一般粉刷牆",
+      "正對鏡頭的牆": "大理石或磁磚",
+      "左牆": "大理石或磁磚",
+      "右牆": "大理石或磁磚",
+      "背後的牆": "大理石或磁磚（畫面外，僅設計設定）"
+    },
+    "materials_source": "design_with_visual_notes_not_ground_truth",
+    "back_surface_observed": "unknown",
+    "visual_notes": "右牆另有大鏡面（玻璃）、左牆有浴巾；石材外觀無法證明是真石或仿石磁磚。",
+    "real_audio": null,
+    "split": "unassigned_synthetic"
+  },
+  {
+    "id": "living_small",
+    "category": "客廳臥室",
+    "label": "小客廳",
+    "photo": "living_small/photo.png",
+    "sha256": "5848f4d416d5bc4f263306bde1a4f9ff2e532094d63b16c4d70f532240a8837b",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 2408465,
+    "focal_length_exif": null,
+    "focal_length_35mm_exif": null,
+    "synthetic": true,
+    "dimensions_m": [
+      5.2,
+      3.8,
+      2.7
+    ],
+    "dimensions_source": "prompt_design_not_measured",
+    "materials": {
+      "地板": "木板",
+      "天花板": "石膏板或一般粉刷牆",
+      "正對鏡頭的牆": "石膏板或一般粉刷牆",
+      "左牆": "石膏板或一般粉刷牆",
+      "右牆": "石膏板或一般粉刷牆",
+      "背後的牆": "石膏板或一般粉刷牆（畫面外，僅設計設定）"
+    },
+    "materials_source": "design_with_visual_notes_not_ground_truth",
+    "back_surface_observed": "unknown",
+    "visual_notes": "木地板部分被地毯遮住；右牆被布沙發局部遮住，另有抱枕與薄毯；局部燈光偏暖。",
+    "real_audio": null,
+    "split": "unassigned_synthetic"
+  },
+  {
+    "id": "bedroom_compact",
+    "category": "客廳臥室",
+    "label": "小臥室",
+    "photo": "bedroom_compact/photo.png",
+    "sha256": "04782f4e660c6ac42a4f1e2a9b2e81e7a76a6243df2fc0f07b4e09cfe7fc0c20",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 1810320,
+    "focal_length_exif": null,
+    "focal_length_35mm_exif": null,
+    "synthetic": true,
+    "dimensions_m": [
+      4.2,
+      3.3,
+      2.6
+    ],
+    "dimensions_source": "prompt_design_not_measured",
+    "materials": {
+      "地板": "木板",
+      "天花板": "石膏板或一般粉刷牆",
+      "正對鏡頭的牆": "石膏板或一般粉刷牆",
+      "左牆": "石膏板或一般粉刷牆",
+      "右牆": "石膏板或一般粉刷牆",
+      "背後的牆": "石膏板或一般粉刷牆（畫面外，僅設計設定）"
+    },
+    "materials_source": "design_with_visual_notes_not_ground_truth",
+    "back_surface_observed": "unknown",
+    "visual_notes": "左牆被木衣櫃部分遮住，前牆被床頭遮住；可見牆面為粉刷外觀。",
+    "real_audio": null,
+    "split": "unassigned_synthetic"
+  },
+  {
+    "id": "classroom_empty",
+    "category": "大空間",
+    "label": "空教室",
+    "photo": "classroom_empty/photo.png",
+    "sha256": "fa5778ba36337bb5b9fcbe71411ad03efd47dd9b2696daf662dbd4917a3ec87d",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 1662998,
+    "focal_length_exif": null,
+    "focal_length_35mm_exif": null,
+    "synthetic": true,
+    "dimensions_m": [
+      9,
+      7,
+      3.4
+    ],
+    "dimensions_source": "prompt_design_not_measured",
+    "materials": {
+      "地板": "大理石或磁磚",
+      "天花板": "吸音板",
+      "正對鏡頭的牆": "石膏板或一般粉刷牆",
+      "左牆": "石膏板或一般粉刷牆",
+      "右牆": "石膏板或一般粉刷牆",
+      "背後的牆": "石膏板或一般粉刷牆（畫面外，僅設計設定）"
+    },
+    "materials_source": "design_with_visual_notes_not_ground_truth",
+    "back_surface_observed": "unknown",
+    "visual_notes": "天花板為格柵板材外觀；是否真有吸音性能無法由圖驗證，吸音板是設計設定；前牆另有黑板。",
+    "real_audio": null,
+    "split": "unassigned_synthetic"
+  },
+  {
+    "id": "hall_masonry",
+    "category": "大空間",
+    "label": "空社區禮堂",
+    "photo": "hall_masonry/photo.png",
+    "sha256": "443aef768f4c976dd9963de7cf5ebcfa6c8ad41c5b455ee393cb38b8bd24eb39",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 2566799,
+    "focal_length_exif": null,
+    "focal_length_35mm_exif": null,
+    "synthetic": true,
+    "dimensions_m": [
+      18,
+      12,
+      6
+    ],
+    "dimensions_source": "prompt_design_not_measured",
+    "materials": {
+      "地板": "木板",
+      "天花板": "石膏板或一般粉刷牆",
+      "正對鏡頭的牆": "磚",
+      "左牆": "磚",
+      "右牆": "磚",
+      "背後的牆": "磚（畫面外，僅設計設定）"
+    },
+    "materials_source": "design_with_visual_notes_not_ground_truth",
+    "back_surface_observed": "unknown",
+    "visual_notes": "三面紅磚牆可見，前牆有木門；大空間尺寸是提示詞設定，無量測證據。",
+    "real_audio": null,
+    "split": "unassigned_synthetic"
+  },
+  {
+    "id": "corridor_plaster",
+    "category": "走廊樓梯間",
+    "label": "粉刷牆走廊",
+    "photo": "corridor_plaster/photo.png",
+    "sha256": "b03c02ae889459dcc79b55e0f4e31e36140c17971aa9b4e255c20c3c3e2c8175",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 1657345,
+    "focal_length_exif": null,
+    "focal_length_35mm_exif": null,
+    "synthetic": true,
+    "dimensions_m": [
+      8.5,
+      2,
+      2.7
+    ],
+    "dimensions_source": "prompt_design_not_measured",
+    "materials": {
+      "地板": "大理石或磁磚",
+      "天花板": "石膏板或一般粉刷牆",
+      "正對鏡頭的牆": "石膏板或一般粉刷牆",
+      "左牆": "石膏板或一般粉刷牆",
+      "右牆": "石膏板或一般粉刷牆",
+      "背後的牆": "石膏板或一般粉刷牆（畫面外，僅設計設定）"
+    },
+    "materials_source": "design_with_visual_notes_not_ground_truth",
+    "back_surface_observed": "unknown",
+    "visual_notes": "前方與兩側粉刷牆；左右嵌木門；地面石材／磁磚外觀。",
+    "real_audio": null,
+    "split": "unassigned_synthetic"
+  },
+  {
+    "id": "corridor_concrete",
+    "category": "走廊樓梯間",
+    "label": "混凝土走廊",
+    "photo": "corridor_concrete/photo.png",
+    "sha256": "a643e1b6cc547afca0f6d852937fc0720982f9cb034f3e80059ff5def98ddde7",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 2223510,
+    "focal_length_exif": null,
+    "focal_length_35mm_exif": null,
+    "synthetic": true,
+    "dimensions_m": [
+      9.5,
+      2.4,
+      3
+    ],
+    "dimensions_source": "prompt_design_not_measured",
+    "materials": {
+      "地板": "混凝土",
+      "天花板": "混凝土",
+      "正對鏡頭的牆": "混凝土",
+      "左牆": "混凝土",
+      "右牆": "混凝土",
+      "背後的牆": "混凝土（畫面外，僅設計設定）"
+    },
+    "materials_source": "design_with_visual_notes_not_ground_truth",
+    "back_surface_observed": "unknown",
+    "visual_notes": "混凝土外觀清楚；左牆另有金屬門、頂部有燈具和管線。",
+    "real_audio": null,
+    "split": "unassigned_synthetic"
+  },
+  {
+    "id": "car_fabric",
+    "category": "車內",
+    "label": "布椅轎車",
+    "photo": "car_fabric/photo.png",
+    "sha256": "fd88c2ca52a24896b9735c60a00062185a39555128b97ae1cbb937cbbbe05336",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 2168309,
+    "focal_length_exif": null,
+    "focal_length_35mm_exif": null,
+    "synthetic": true,
+    "dimensions_m": [
+      2.6,
+      1.5,
+      1.2
+    ],
+    "dimensions_source": "prompt_design_not_measured",
+    "materials": {
+      "地板": "地毯",
+      "天花板": "布幕窗簾（近似分類；實際設定為頂棚織布）",
+      "正對鏡頭的牆": "塑膠壁板（儀表板主材設定；另有玻璃、布椅背）",
+      "左牆": "塑膠壁板（門板主材設定；另有玻璃）",
+      "右牆": "塑膠壁板（門板主材設定；另有玻璃）",
+      "背後的牆": "座椅或人群（後座椅背設定；無人；畫面外）"
+    },
+    "materials_source": "design_with_visual_notes_not_ground_truth",
+    "back_surface_observed": "unknown",
+    "visual_notes": "前方由布椅背、塑膠儀表板與玻璃擋風玻璃混合；左右為塑膠門板、織物與玻璃，不存在單一平面牆。",
+    "real_audio": null,
+    "split": "unassigned_synthetic"
+  },
+  {
+    "id": "car_van",
+    "category": "車內",
+    "label": "布椅小型廂車",
+    "photo": "car_van/photo.png",
+    "sha256": "bdbda60c3284eb4a8c1c50d0d1934b7bbca7fd650084a8a1fdb5a9828ee5eff8",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 2507334,
+    "focal_length_exif": null,
+    "focal_length_35mm_exif": null,
+    "synthetic": true,
+    "dimensions_m": [
+      3.2,
+      1.7,
+      1.5
+    ],
+    "dimensions_source": "prompt_design_not_measured",
+    "materials": {
+      "地板": "橡膠地墊",
+      "天花板": "布幕窗簾（近似分類；實際設定為頂棚織布）",
+      "正對鏡頭的牆": "塑膠壁板（儀表板主材設定；另有玻璃、布椅背）",
+      "左牆": "塑膠壁板（門板主材設定；另有玻璃）",
+      "右牆": "塑膠壁板（門板主材設定；另有玻璃）",
+      "背後的牆": "座椅或人群（後座椅背設定；無人；畫面外）"
+    },
+    "materials_source": "design_with_visual_notes_not_ground_truth",
+    "back_surface_observed": "unknown",
+    "visual_notes": "橡膠地墊可見；前方由布椅背、塑膠儀表板與玻璃混合；左右塑膠門板與玻璃混合。",
+    "real_audio": null,
+    "split": "unassigned_synthetic"
+  }
+]

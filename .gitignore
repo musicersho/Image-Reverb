@@ -56,3 +56,6 @@ assets/photos_real_heldout/**
 !assets/photos_real_heldout/**/*.json
 !assets/photos_real_dev/**/*.md
 !assets/photos_real_heldout/**/*.md
+
+# 2026-09-21 依使用者要求生成的合成候選：圖片留本機，資料表與提示詞進版控
+assets/incoming_synthetic_20260921/**/*.png
