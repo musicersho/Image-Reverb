@@ -12142,6 +12142,7 @@ EOF
 - **四軸狀態**：工程：未開始｜實驗：不適用｜產品：不適用｜MVP：**待重驗**（T-17 首驗 FAIL 永久保留）
   〔Opus 2026-09-21（另起新行；上兩行原文保留）：**🟡 進行中——步驟 0～6 完成，停在步驟 7 使用者環節**（§7-1 盲聽作答／§7-3 外部 convolution 載入／§7-4 播放頁試聽）；四軸暫記：工程：進行中｜實驗：不適用｜產品：不適用｜MVP：待重驗（REPORT 前不判）。commit：步驟 1＝`8ac0b64`、步驟 6＝`001c8ed`。〕
   〔Opus 2026-09-21 收工（另起新行）：**✅ 執行完畢——`MVP：FAIL（R2）`**（判準 1 `達成（held-out＝AI 合成圖・共用開發素材）` 5/5｜判準 2 未達：自動組 0/0、coverage 0/1｜判準 3 達成｜判準 4 達成）；四軸：**工程：已執行（待步驟 11 獨立複驗）｜實驗：不適用｜產品：不適用｜MVP：FAIL（R2）**。REPORT＝`output/mvp_acceptance_r2/REPORT.md`；結果 commit 見 `git log --grep='T-17-R2: MVP 重新驗收結果'`。〕
+  〔Opus 2026-09-21 步驟 11 獨立複驗（另起新行；上方各行原文保留）：**✅ 工程：已驗證**——四軸：**工程：已驗證｜實驗：不適用｜產品：不適用｜MVP：FAIL（R2）**（T-17 首驗 FAIL 永久保留）。對象 `d12b30d`＋`a9b8e6f`；驗證紀錄全文見卡末「Opus 步驟 11 獨立複驗紀錄」。〕
 - **🔮 裁決 T-47-A 補註（Fable 2026-09-14；判準一字不改）**：前置「裁決 T-47-A」**自此滿足**；前置追加「T-52 結案（使用者選乙）或使用者選甲」
   （驗收期間不得有 gate 程式碼變動）；T-44-R1 ⏸ 未跑 → 依本卡既有條文以預設 `role_aware=False` 重驗，REPORT 標明。報告項 5 追加
   （附帶發現 ⓐⓑ）：被放行照片的逐面正誤含無來源面（依 ground truth 判、獨立列出），錯誤放行率分母＝六面。
@@ -12519,6 +12520,32 @@ EOF
        **鐵則 15 清理清單（不刪，逐條列）**：本輪新建 `output/` 目錄 18 個——`heldout_{bathroom,living,hall,corridor,car}`、`CathedralRoom`、`DivorceBeach`、`site_photo_{department_store,gym,restaurant}`、`RacquetballCourt4`、`SteinmanHall`、`TunnelToHell`、`t17r2_manual_{department_store,gym,restaurant,racquetball,steinman}`＋`mvp_acceptance_r2`；
        `output/.archive/` 新增條目 **0**（前後皆 14 目錄／442 檔）。本機另有 `output/mvp_acceptance_r2/step0_evidence/`、`_play/`、`blind_test/*.wav`、`blind_test_ANSWERS.json`、`播放頁.html`（git 忽略，保留）。
        **下一步**：步驟 11——另開 Opus 新視窗依本卡「Opus 驗證重點」獨立複驗（輸出一律導 scratchpad）；通過後 Fable 寫共用圖禁用令解除紀錄＋R2 收尾複評。
+  **Opus 步驟 11 獨立複驗紀錄（2026-09-21；驗證者＝Opus 5，非 R2 執行視窗；對象 `d12b30d`＋`a9b8e6f`，起點 HEAD `a9b8e6f`＝origin/main）**
+  - **四軸判定**：**工程：已驗證｜實驗：不適用（驗收卡）｜產品：不適用｜MVP：FAIL（R2）**。
+  - **判定理由（每條皆驗證者實跑）**：
+    1. **程式／資料零 diff**：`git diff 0a84f34..HEAD --stat -- src data scripts` 空、`git diff b06f022..HEAD --stat -- src/ data/` 空（含 `ir_metrics.py`、既有 `scripts/t17_*.py`）。
+    2. **frozen 目錄**：`output/mvp_acceptance/` 41 檔 sha256 清單重算，與 `step0_evidence/mvp_acceptance_before.sha256` `diff` 相同，清單 sha256＝`9c514e87…`；`output/.archive` 仍 14 目錄／442 檔。
+    3. **資料集鎖定可重現**：以 `git worktree` 檢出 `0a84f34` 到 scratchpad 重跑 `t17r2_dataset_manifest.py --out <scratchpad>`，sha256＝`501eb6a7ec1f48febd8f51530d7c92cc232f74d16ca6d5395ca2a436ec705bd2`，與 §8 回填值逐位元相同（worktree 事後移除）。
+    4. **時序紅旗（步驟 2～3 間 commit／步驟 6 後重生）皆不成立**：18 個本輪 `output/<run>/analysis.json` 的 `provenance.generated_at` 全在 02:33:27Z～02:42:58Z，晚於 `8ac0b64`（02:32:23Z）、早於 `001c8ed`（02:43:46Z）；全部 `git_revision`＝`8ac0b64`、dirty false；兩 commit 之間無其他 commit。
+    5. **盲測素材**：五個 `sample_N.wav`／`sample_N_IR.wav` sha256 各對上 `blind_test/MANIFEST.json` 同一 run 的 `wet_sha256`／`ir_sha256`，IR 與 `output/<run>/ir_mono.wav` 逐位元相同；`photo_sha256` 與乾聲 sha256 皆＝DATASET_MANIFEST 且＝檔案實算；`shuffle_seed` 20260916（T-17 為 20260830），與 T-17 盲測 10 個 WAV sha256 交集 0（未重用 `d958b3c` 素材）；forced 旗標三處（MANIFEST／provenance `cli_params`／log）一致：hall／corridor／car forced、bathroom／living 未 forced。
+    6. **計分**：`作答表.md`（sha256 `68faaa1f…`＝交接筆記所記，`d2f3572` 後未再改）對 `blind_test_ANSWERS.json` 逐題 5/5 成立。
+    7. **音訊**：十檔皆 48 kHz／單聲道／PCM_24，IR 長 4.42～12.87 s，RMS 0.0037～0.031（非靜音）。
+    8. **log**：34 檔末行皆 `exit=<整數>`；16 個預設 log `exit=3` 且含「已擋下輸出」，`heldout_bathroom`／`heldout_living` `exit=0`、無擋下字樣；每個 exit 3 都有對應 `.forced.log`（`exit=0`）。場地照片 sha256 ↔ DATASET_MANIFEST venues ↔ `analysis.json` `input_sha256` 全對上；真實 IR sha256 在 `assets/reference_irs/` 全找得到；手動組尺寸＝T-17 表 4 逐字。
+    9. **判準 2 的決定性事實獨立重現**：在 scratchpad（`OUTPUT_ROOT`／`STAGING_ROOT`／`ARCHIVE_ROOT` 全導到 scratchpad）重跑 `site_photo_gym` 預設路徑與 `--override-dims 9x6x2.9` 手動組，**兩者皆 exit 3**，log 除照片路徑外與 `runs/site_photo_gym.log`／`runs/t17r2_manual_gym.log` 逐行相同；事後 `find output -newer <marker>` 為空。gym 不是共用圖，未增加禁用令範圍內的曝光。
+    10. **表由程式產出、REPORT 未手改**：`t17r2_rt60_table.py`＋`t17r2_report_tables.py` 重跑後 `rt60_table.json`、`tables.md` 與 commit 版逐位元相同（見下方「驗證者操作揭露」）；REPORT 內表 2、表 5 為 `tables.md` 原文子字串（程式比對 True）。自動組 0/0、coverage 0/1；in-domain 名單＝`mit_gym` 一個，與「🔮 Fable 落地」§3 相同；forced 組無任何一筆進自動組；域外 9/9 BLOCK、域外誤放 0。
+    11. **報告項 5 口徑（裁定 T-57-D）**：兩張放行照片六面全列（含 `south` unknown→無法判），N＝2、6N＝12、可判 10、無法判 2、❌ 8；主率 8/10、下界 8/12、上界 10/12 三數同列，REPORT §5 摘要三數一起引；`tables.md` 無「分母固定 6」字樣。
+    12. **強制文字（裁定 T-17-R2-S §4／§5）**：§0.1 兩句自卡片原文擷取後比對，REPORT 各出現 2 次（§0、§1）；§5 T-04-R 句 1 次；「9 張照片來源網址缺…」2 次；「held-out 五列全為 AI 合成圖」2 次（§4、§5）；判準 1 字樣＝`達成（held-out＝AI 合成圖・共用開發素材）`；全文無 `MVP：PASS` 字樣；MVP 寫 `FAIL（R2）`（合法值）。
+    13. **判定式**：判準 2 未達 → 依本卡「判定」只能 `MVP：FAIL（R2）`，REPORT 結論與四軸一致。判準 1／3／4 的「達成」理由在 REPORT 內有原話與限制說明（§1.2 五點不能說明的事、§4 單一聽者），未見用附註豁免未達條件。
+    14. **§5.4.1 全套測試**：未重跑（避免再增一次共用圖曝光）。證據＝步驟 0(e) 22 支全 `EXIT=0` 的逐支 log（`step0_evidence/tests/`，本機保存）；旁證：`output/seg|depth` 的 `t04_gpt_*` 檔 mtime 為 10:28～10:31，與「步驟 1 commit 10:32 前跑過全套」相符；此後 `src`／`scripts`／`data` 零 diff（第 1 點）。
+  - **非阻擋發現（交 Fable；不影響四軸）**：
+    ① 本卡狀態欄曾寫「工程：已執行」，不在 WORKFLOW §3.2 工程軸的合法值內（實質＝待審）；本紀錄起以「已驗證」為準。
+    ② `作答表.md` 是執行者依使用者對話代填（檔內已註明）；repo 只能證明「作答先 commit（`d2f3572`）、計分在後」，無法證明使用者作答前未開答案鍵（`blind_test_ANSWERS.json` 自 10:43 起就在本機）——屬單一聽者設計的固有限制，REPORT §1.2 已列單一聽者／刪去法的限制。
+    ③ REPORT §0.3 貼入執行者臨時核對碼的 `TypeError` traceback，已在同段說明並附改正後輸出；如實、不影響結論。
+    ④ `site_photo_department_store`（域外）出口訊息無幾何導引，REPORT §5 第 3 點已揭露（V5 同型）；報告項 5「出口訊息可操作」宜由 Fable 在 R2 收尾複評決定是否開卡。
+    ⑤ `t17r2_rt60_table.py`／`t17r2_report_tables.py`／`t17r2_make_player.py` 不支援 `--help`：帶任何引數都直接執行並覆寫 `output/mvp_acceptance_r2/` 下的產物（見下）。建議 R2 後工具清單加「未知引數應報錯」。
+  - **驗證者操作揭露（如實；不影響判定）**：本視窗為查參數，對上述三支工具各下了一次 `--help`，因它們不解析引數而**直接執行**，覆寫了 `output/mvp_acceptance_r2/` 的 `rt60_table.json`、`tables.md`、`_play/`、`播放頁.html`（11:16）。這違反步驟 11「輸出一律導 scratchpad」的字面。影響核對：`git status --porcelain` 為空＝兩個進版控的檔與 commit 版**逐位元相同**；`_play/`、`播放頁.html` 在 git 忽略範圍、三支腳本無時間戳／亂數，是從同一批輸入確定性重生；三支都只讀既有 WAV（量測／16-bit 轉檔），**沒有跑任何模型、沒有處理任何共用圖**，`output/.archive`、`output/mvp_acceptance/` 不變。附帶效果：等於對表 1～5 做了一次原地重現，結果一致。
+  - **共用圖曝光（本次驗證）**：零新增——未跑 `scripts/test_*.py`、未以 CLI 處理任何 held-out／`t04_gpt_*` 圖；唯一的 CLI 重現是非共用圖 `site_photo_gym`，輸出全在 scratchpad。
+  - **下一步**：禁用令解除點 (i)(ii) 自本紀錄 push 起皆成立 → 交 **Fable**：寫共用圖禁用令解除紀錄＋R2 收尾複評（MINC/DMS／下一 Phase；輸入見 REPORT §8 與上方非阻擋發現）。
 
 ### T-57 T-17-R2 工具前置：R2 薄包裝腳本＋資料集 manifest 產生器（Sonnet；`scripts/` only；**關鍵路徑**；前置＝T-56 ✅）
 - **狀態**：🟠 **退回**（Opus 驗證，2026-09-18，對象 `4d4f63b`）——主體功能實測成立，但下列 R1～R5 未達，開 T-57 修正輪（Sonnet）逐條處理後再送驗：

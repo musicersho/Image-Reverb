@@ -699,3 +699,4 @@
 - [x] 建立多視窗協作系統（CLAUDE.md / WORKFLOW.md / TASKS.md）
   → **2026-09-21 🟡 Opus：T-17-R2 執行中（步驟 0～6 完成，`8ac0b64`／`001c8ed`）**——等使用者 §7-1 盲聽作答（`output/mvp_acceptance_r2/blind_test/作答表.md`）、§7-3 外部 convolution 載入、§7-4 播放頁試聽；回報後 Opus 接步驟 8～10。自動組 0/0、coverage 0/1，期望 `MVP：FAIL（R2）`。
   → **2026-09-21 ✅ Opus：T-17-R2 執行完畢——`MVP：FAIL（R2）`**（§7-1 5/5 達成｜§7-2 自動組 0/0 未達｜§7-3、§7-4 達成）；REPORT `output/mvp_acceptance_r2/REPORT.md`。下一步：Opus 步驟 11 獨立複驗 → Fable 收尾複評（MINC/DMS／下一 Phase）＋共用圖禁用令解除。
+  → **2026-09-21 ✅ Opus：T-17-R2 步驟 11 獨立複驗通過（工程）**——四軸：工程：已驗證｜實驗：不適用｜產品：不適用｜MVP：FAIL（R2）。下一步：Fable 寫共用圖禁用令解除紀錄＋R2 收尾複評。

@@ -1,5 +1,16 @@
 # 交接文件 — 給下一個視窗
 
+> ## ✅ 2026-09-21 Opus：T-17-R2 步驟 11 獨立複驗通過（工程）——**現在該做的是：開 Fable 新視窗（貼 WORKFLOW §2.3 規劃 Prompt），請它寫「共用圖禁用令解除紀錄」＋R2 收尾複評**
+>
+> - 四軸：**工程：已驗證｜實驗：不適用｜產品：不適用｜MVP：FAIL（R2）**（T-17 首驗 FAIL 永久保留）。對象 `d12b30d`＋`a9b8e6f`；紀錄全文在 TASKS.md T-17-R2 卡末「Opus 步驟 11 獨立複驗紀錄」。
+> - 驗證者自行重做：資料集 manifest 在 `0a84f34` 重生逐位元＝`501eb6a7…`；18 個 run 的 provenance 時間全落在步驟 1～6 兩個 commit 之間；盲測樣本／IR sha256 對上 MANIFEST 與 `output/<run>/`、計分 5/5 成立；健身房預設路徑與手動組在 scratchpad 重跑**皆被擋（exit 3）**＝判準 2 未達獨立重現；表 1～5 重跑逐位元相同；強制句與 T-57-D 三數齊；`output/mvp_acceptance/` 未動。
+> - ⚠️ 驗證者自己的失手（已核對無害）：對三支 R2 工具下 `--help` 時它們直接執行、覆寫了 `output/mvp_acceptance_r2/` 的表格與播放頁——進版控的檔逐位元相同（git 乾淨），沒跑模型、沒碰共用圖。詳見卡末紀錄。
+> - 禁用令解除點 (i)(ii) 自本次 push 起都成立，但**解除紀錄要由 Fable 寫**；寫下之前禁用令照舊有效。交 Fable 的輸入：REPORT §8 六點＋卡末「非阻擋發現」五點（含工具不支援 `--help`、百貨賣場缺幾何出口）。
+> - **📌 給所有視窗（含 Codex）——共用圖禁用令（T-04 卡裁定 T-04-R §2 第 4 點；T-17-R2 收工並複驗、Fable 寫下解除紀錄前有效）**：R2 held-out 五張不論檔名，目前有三處逐位元複本：`assets/t17r2_synthetic_candidates/heldout_*.png`（T-60 後移到 `assets/photos_heldout/`）、
+>   `assets/photos/t04_gpt_{bathroom,living,corridor,car}.png`、`assets/photos_legacy_20260920/t04_gpt_hall.png`。**不得**對它們跑 `python -m src.image_reverb` 或任何指定單張的分析／評測腳本，不得調參／標註／寫進 `data/`／當新測試夾具；
+>   除 T-17-R2 卡自己的執行步驟、T-60 步驟 7 的 manifest 乾跑之外，唯一容忍的是任務卡或 WORKFLOW §5.4.1 要求的全套 `scripts/test_*.py` 例行執行（不帶引數、每次驗證至多一次；單獨跑 `test_depth.py`／`test_segmentation.py` 不算）。
+>   算 sha256、只讀尺寸、看圖不受限。不要刪 `assets/photos_legacy_20260920/`；除 T-60 步驟 2 那一次 `mv` 外，不要再搬動或替換 `assets/photos/` 與 held-out 圖。**之後每個在 HANDOFF 頂端加新段的視窗，請把本條原樣保留在新段最後，直到 Fable 寫下解除紀錄。**
+
 > ## ✅ 2026-09-21 Opus：T-17-R2 執行完畢——**`MVP：FAIL（R2）`**。**現在該做的是：開 Opus 新視窗做步驟 11 獨立複驗**（貼 WORKFLOW §2.2 標準 Prompt，`T-XX` 換成 `T-17-R2（步驟 11 獨立複驗）`），通過後再交 Fable 做收尾複評與禁用令解除
 >
 > - 四軸：**工程：已執行（待步驟 11 獨立複驗）｜實驗：不適用｜產品：不適用｜MVP：FAIL（R2）**（T-17 首驗 FAIL 永久保留）。報告：`output/mvp_acceptance_r2/REPORT.md`。
