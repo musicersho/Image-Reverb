@@ -1,5 +1,13 @@
 # Dev Log
 
+## 2026-09-21 (169) T-62 Opus 驗證通過（工程）
+
+- 四軸：**工程：已驗證｜實驗：不適用｜產品：不適用｜MVP：不適用**。對象 commit `1ad985b`。
+- 實跑全套 22 支 `scripts/test_*.py`（不帶引數、各一次）全 `EXIT=0`；驗證者自行重做步驟 3／4 診斷力，並**補驗 Sonnet 未驗的部分 B**（缺檔與 sha256 不符都 fail、都不進模型）。
+- `test_depth.py` 的 bug 成因由資料面確認：本次 `depth_stats.json` 中 `t04_gpt_car.png` 的 `core.p95_over_p5` 實際為 `None`，舊寫法實測 `TypeError`。範圍外零 diff、`GATE_ITEMS` 未動、`assets/photos/` 無舊檔名。
+- **揭露**：全套執行使共用圖產物由 23→31 行，`t04_gpt_corridor`／`t04_gpt_living`（R2 held-out 複本）首度產生深度圖——屬禁用令例外 ③，**T-17-R2 REPORT 須照實揭露**。
+- 殘留風險交 Fable：manifest 佚失時 sha256 守門會靜默跳過；t33／t36／t41／t47／t17_blind_test 仍寫死舊圖路徑（本卡明文禁止動）。下一步：T-60。
+
 ## 2026-09-21 (168) T-62 換圖後的測試相容修正（Sonnet；待驗證）
 
 - 新增 `scripts/legacy_photos.py`（`resolve_photo`／`restore_hint`／`expected_sha256`）；`test_pipeline_dedup.py` 改由退役集 `assets/photos_legacy_20260920/` 取舊圖（缺檔仍 fail＋還原指令、sha256 不符 early return 不進模型）；`test_depth.py` 一行 `core_p95/p5` 加 `None` 保護。範圍外零 diff。

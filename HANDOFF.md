@@ -1,5 +1,17 @@
 # 交接文件 — 給下一個視窗
 
+> ## ✅ 2026-09-21 Opus：T-62 驗證通過（工程）——**現在該做的是：開 Sonnet 新視窗跑 T-60（held-out 五張合成圖就位；中途它會把圖和材質表給您確認 GT）**
+>
+> - 四軸：**工程：已驗證｜實驗：不適用（測試修正卡）｜產品：不適用｜MVP：不適用**。對象 commit `1ad985b`。驗證紀錄全文在 TASKS.md T-62 卡末「Opus 驗證紀錄」。
+> - 驗證者實跑全套 22 支 `scripts/test_*.py`（不帶引數、各一次）**全 `EXIT=0`**；自行重做步驟 3／4 診斷力，並**補驗 Sonnet 未驗的部分 B**：缺檔與 sha256 不符都是 fail（不是 skip），且都不會把檔送進模型。
+> - `test_depth.py` 的 bug 成因已由資料面確認：`depth_stats.json` 裡 `t04_gpt_car.png` 的 `core.p95_over_p5` 實際為 `None`，舊寫法實測 `TypeError`。範圍外零 diff、`GATE_ITEMS` 未動、`assets/photos/` 無舊檔名、退役集 10 檔完整。
+> - **⚠️ 必須帶進 T-17-R2 REPORT 的揭露**：這次全套測試讓 `output/seg|depth` 的共用圖產物由 23 行增為 31 行，其中 **`t04_gpt_corridor`、`t04_gpt_living`（R2 held-out 逐位元複本）首度產生深度圖**，`bathroom`／`car` 先前已曝光。屬禁用令例外 ③（驗證者一次性全套執行），但 held-out 曝光範圍確實擴大。
+> - **交給 Fable 的殘留風險（不擋 T-60）**：① manifest（`assets/t04_refresh/ASSET_MANIFEST.json`）若佚失，`expected_sha256()` 回 `None` ＝ sha256 守門靜默消失（此為 T-62 規格明文行為）；② `t33_material_round_tables.py`／`t36_clip_accuracy.py`／`t41_rebaseline.py`／`t47_gate_calibration.py`／`t17_blind_test.py` 仍寫死 `assets/photos/<舊檔名>`，重跑會缺檔——T-62 明文禁止動它們，是刻意殘留。
+> - **📌 給所有視窗（含 Codex）——共用圖禁用令（T-04 卡裁定 T-04-R §2 第 4 點；T-17-R2 收工並複驗、Fable 寫下解除紀錄前有效）**：R2 held-out 五張不論檔名，目前有三處逐位元複本：`assets/t17r2_synthetic_candidates/heldout_*.png`（T-60 後移到 `assets/photos_heldout/`）、
+>   `assets/photos/t04_gpt_{bathroom,living,corridor,car}.png`、`assets/photos_legacy_20260920/t04_gpt_hall.png`。**不得**對它們跑 `python -m src.image_reverb` 或任何指定單張的分析／評測腳本，不得調參／標註／寫進 `data/`／當新測試夾具；
+>   除 T-17-R2 卡自己的執行步驟、T-60 步驟 7 的 manifest 乾跑之外，唯一容忍的是任務卡或 WORKFLOW §5.4.1 要求的全套 `scripts/test_*.py` 例行執行（不帶引數、每次驗證至多一次；單獨跑 `test_depth.py`／`test_segmentation.py` 不算）。
+>   算 sha256、只讀尺寸、看圖不受限。不要刪 `assets/photos_legacy_20260920/`；除 T-60 步驟 2 那一次 `mv` 外，不要再搬動或替換 `assets/photos/` 與 held-out 圖。**之後每個在 HANDOFF 頂端加新段的視窗，請把本條原樣保留在新段最後，直到 Fable 寫下解除紀錄。**
+
 > ## 🔵 2026-09-21 Sonnet：T-62 完成（待驗證）——**現在該做的是：開 Opus 新視窗貼 WORKFLOW §2.2 標準 Prompt，`T-XX` 換成 `T-62`（依序 ② ；T-60 要等它驗過）**
 >
 > - 四軸：**工程：待審｜實驗：不適用（測試修正卡）｜產品：不適用｜MVP：不適用**。起點 HEAD `816a750`。

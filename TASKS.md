@@ -14680,8 +14680,8 @@ EOF
 - **交接筆記**：
 
 ### T-62 T-04 換圖後的測試相容修正：`test_pipeline_dedup.py` 改由退役集備份路徑取圖＋`test_depth.py` 格式化 bug（Sonnet；`scripts/` only；**關鍵路徑、最先做**；前置＝`criteria:` `758eeba`）
-- **狀態**：🔵 **待審**（Sonnet 2026-09-21 完成；步驟 0～5 與自我檢查全過，證據見卡末交接筆記；等 Opus 驗證。原：⬜ 可開跑〔Fable 2026-09-20 開卡；T-17-R2 步驟 0(e)、T-60 前置、T-04 v2 驗證都要等本卡〕）
-- **四軸狀態**：工程：待審｜實驗：不適用（測試修正卡）｜產品：不適用｜MVP：不適用
+- **狀態**：✅ **已驗證（工程）**（Opus 2026-09-21 驗證；全套 22 支 `scripts/test_*.py` 全 `EXIT=0`、步驟 3／4 診斷力由驗證者自行重做、範圍外零 diff；驗證紀錄見卡末「Opus 驗證紀錄」。原：🔵 待審〔Sonnet 2026-09-21 完成；步驟 0～5 與自我檢查全過，證據見卡末交接筆記；等 Opus 驗證。原：⬜ 可開跑（Fable 2026-09-20 開卡；T-17-R2 步驟 0(e)、T-60 前置、T-04 v2 驗證都要等本卡）〕）
+- **四軸狀態**：工程：已驗證｜實驗：不適用（測試修正卡）｜產品：不適用｜MVP：不適用
 - **為什麼**：Codex `ba1fcdb` 把舊 9 張照片移出 `assets/photos/`（搬到本機 `assets/photos_legacy_20260920/`，git 忽略；`14fc4ac` 的 git 歷史裡仍有）。使用者 2026-09-20 決定「維持 Codex 的新配置，改程式去適應」（T-04 卡裁定 T-04-R）。
   Opus `875697e` 紀錄：同樣的 22 支在當下 main（`f3e07b0`）跑，**`test_pipeline_dedup.py` 與 `test_depth.py` EXIT=1**（該紀錄未逐支列出其餘 20 支在 main 的結果；22 支在 `14fc4ac` worktree 全 EXIT=0）。Fable 靜態讀碼找到的原因：
   (A) `test_pipeline_dedup.py`：部分 A 寫死 `assets/photos/bathroom_tiled.png`；部分 B 走 `t36_clip_accuracy.GATE_ITEMS` 的 `item["photo"]`（其中五筆是 `assets/photos/<舊檔名>`）→ 缺檔 6 項。
@@ -15014,3 +15014,19 @@ index 1e0d8ee..8f8c06a 100644
   (4) 部分 A：`resolve_photo` 取圖＋缺檔訊息含 `restore_hint`＋sha256 不符 `return`＝**找圖路徑／缺檔訊息／sha256 check＋early return**、(5) 部分 B：`resolve_photo` 取圖＋缺檔訊息（僅退役集路徑附 hint）＋sha256 不符 `continue`＝**同上**。
 
   **自我檢查逐項**：步驟 2 `EXIT=0` ✅｜步驟 3、4 如預期 ✅｜`git diff --stat -- src data assets output scripts/t36_clip_accuracy.py scripts/test_segmentation.py .gitignore` 為空 ✅｜`ls assets/photos/` 只有 README＋九張 `t04_gpt_*.png`、無舊檔名 ✅｜曝光清單前後 `diff` 相同（23 行）✅｜`output/` 無 `_test_t41_dedup_photo` 殘留 ✅。
+
+
+  **Opus 驗證紀錄（2026-09-21；驗證者＝Opus 5；對象 commit `1ad985b`，起點 `816a750`）**
+  - **四軸判定**：**工程：已驗證｜實驗：不適用（測試修正卡，無假設與指標）｜產品：不適用（不進產品路徑）｜MVP：不適用（MVP 軸只能由 T-17 系列寫）**。
+  - **全套 22 支 `scripts/test_*.py` 一次跑完（不帶引數）全 `EXIT=0`**（驗證者實跑，非引用 Sonnet 紀錄）：acoustics／confidence_axes／coupled／**depth**／eval_cache／furnishings／geometry_scope／ir_synth／material_fallback／output_gate／**pipeline_dedup**／preprocess／scene_text／segmentation／surface_trusted_scope／t17_provenance／t17r2_tools／t30_low_combined／t38_treatment_eval／t39_materials_invariant／t44_role_partition／t46_role_flag。
+  - **舊碼 fail／新碼 pass（WORKFLOW §5.4.1 第 2 點）**：(A) `test_pipeline_dedup.py` 舊碼 `EXIT=1`（6 項缺檔；Opus `875697e` 與 Sonnet 步驟 0 各一次實測）→ 新碼 `EXIT=0`，部分 B `tested=9`、五張舊圖 sha256 皆「相符」。
+    (B) `test_depth.py` 的 `TypeError` 成因**由本次驗證從資料面確認**（不再只是靜態研判）：本次 `output/depth/depth_stats.json` 中 `t04_gpt_car.png` 的 `core.p95_over_p5` 與 `dyn_range_p99_over_p1` **實際為 `None`**，log 對應行印出 `p99/p1=n/a core_p95/p5=n/a`；舊寫法對 `None` 套 `:.1f` 實測 `TypeError: unsupported format string passed to NoneType.__format__`。即：車內圖確實觸發、修正確實擋住該 crash。
+  - **診斷力自行重做（不採信 Sonnet 輸出）**：部分 A——空備份目錄→`❌ 找到測試素材` 並附 `git show 14fc4ac:…` 還原指令、`FAILURES` 非空；同名假檔（只寫 `b"not the legacy photo"`，未用任何現有圖檔當替身）→`❌ … sha256 與歷史原檔相符`，且輸出無 `run_photo()` 任何管線訊息＝未進模型。
+    **另補驗部分 B**（Sonnet 只驗了部分 A）：以 monkeypatch 把 `GATE_ITEMS` 暫時換成單筆（未改檔）→ 缺檔 `❌ 找到素材`＋`❌ 至少測到一張透視照 tested=0`；同名假檔 `❌ sha256`＋`tested=0`、未呼叫 `preprocess_image`。**缺檔與 sha256 不符都是 fail，不是 skip，且都不進模型**。
+  - **範圍**：`git diff 816a750..HEAD` 僅 `scripts/legacy_photos.py`（新增 63 行）、`scripts/test_pipeline_dedup.py`（+39/-7 的 5 個 hunk）、`scripts/test_depth.py`（1 hunk）＋四份文件；`git diff --stat 816a750..HEAD -- src data assets output scripts/t36_clip_accuracy.py scripts/test_segmentation.py .gitignore` **為空**；`GATE_ITEMS` 一字未改；`assets/photos/` 無任何舊檔名；退役集 10 檔完整、`t04_gpt_hall.png` 未被動過；TASKS.md 只動本卡（刪除行僅本卡舊狀態兩行，原字以「原：」保留）。逐 hunk 複核：斷言、樁、`override_dims`、比較邏輯、清理段零改動。
+  - **共用圖曝光揭露（禁用令例外 ③，必須寫進 T-17-R2 REPORT）**：本次全套執行後 `output/seg|depth` 的共用圖產物由 **23 行增為 31 行**——`test_depth.py` 新增 `t04_gpt_{cave_lab,cavern_crowd,corridor,livehouse,living,stairwell}_depth.png`、`test_segmentation.py` 新增 `t04_gpt_arena_concert_{seg.png,labelmap.npy}`，其餘既有檔重生（時間戳 2026-09-21 09:43／09:45）。
+    其中 **`t04_gpt_corridor`、`t04_gpt_living` 是 R2 held-out 逐位元複本，本次首度產生深度圖**；`bathroom`／`car` 先前已曝光。此為 WORKFLOW §5.4.1「完整測試套件 exit 0」與本卡指定的一次性例外，非新增調參／標註行為，但 **held-out 曝光範圍已擴大，R2 REPORT 須照實揭露**。
+  - **殘留風險（不影響本卡判定，交 Fable 收斂）**：① `legacy_photos.expected_sha256()` 在 manifest 讀不到時回 `None`＝**靜默跳過 sha256 守門**（此為本卡規格 1 明文要求的行為，非違規）；若 `assets/t04_refresh/ASSET_MANIFEST.json` 佚失或損壞，測試會改吃同名檔而不報警——建議日後由 Fable 決定是否改成「manifest 缺失＝fail」。
+    ② `scripts/t33_material_round_tables.py`、`t36_clip_accuracy.py`（`GATE_ITEMS`）、`t41_rebaseline.py`、`t47_gate_calibration.py`、`t17_blind_test.py` 仍寫死 `assets/photos/<舊檔名>`；本卡明文禁止動它們，故**這些基線腳本若重跑仍會缺檔**——是已知且刻意的殘留，不是 T-62 的未完成項。
+  - **未採信／未重做的項目（誠實揭露）**：步驟 0 的 `EXIT=1` 現況由 Sonnet 與 Opus `875697e` 提供，本次未再對舊碼重跑一次（會多一次共用圖曝光且無新資訊）；`test_depth.py` 未單獨執行（禁用令），只在全套中跑一次。
+  - **WORKFLOW §7**：本卡驗收門檻無誤、無需變更；本次驗證未修改任何門檻文字，也未以附註豁免任何未達項。
