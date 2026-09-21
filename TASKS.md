@@ -12484,6 +12484,8 @@ EOF
   verdict_under_original_criteria: MVP：FAIL（R2）——判準 1 達成（5/5；held-out＝AI 合成圖・共用開發素材）／判準 2 未達（自動組 0/0、coverage 0/1）／判準 3 達成／判準 4 達成；報告項 5：錯誤放行率主率 8/10、6N 下界 8/12、上界 10/12，域外 9/9 BLOCK；判準 6 T-04 缺項
   verdict_under_current_criteria: 同上（判準 1～6 未變；裁定 T-57-D／T-17-R2-S 皆結果前）
   criteria_changed_after_first_result: no
+    → 回填（Opus 2026-09-21；另起新行）：
+  result_commit: **`d12b30d`**（`T-17-R2: MVP 重新驗收結果（MVP：FAIL（R2））`）
   ```
 - **Opus 驗證重點（四軸輸出）**：紅旗：任何素材 provenance 與 HEAD 不符仍納入；紅旗：重用
   `d958b3c` 盲測素材；紅旗：分組達標率被合併；紅旗：域外照片被算進自動組達標；紅旗：REPORT
