@@ -12141,6 +12141,7 @@ EOF
 - **狀態**：⬜ **未開始——開跑前置尚缺兩項（Fable 2026-09-20）：① T-62 ✅（換圖後測試相容修正）；② T-60 ✅（held-out 五張 AI 合成圖就位，路徑 S）。T-57（含 T-57-F1）已於 2026-09-20 經 Opus 驗證通過（`875697e`）。兩項都完成後，使用者貼裁定 T-17-R2-S §4 的 Prompt 樣板；Prompt B 降級路徑自 `ba1fcdb` 起不可用（同裁定 §3 第 6 點）**（原：⬜ **可開跑（Fable 2026-09-16 落地執行步驟＋程序 P1＋§8 前三欄；等使用者 held-out 照片就位後貼 Prompt A，或貼 Prompt B 走降級）**（原：⬜ 未開始），原字保留）
 - **四軸狀態**：工程：未開始｜實驗：不適用｜產品：不適用｜MVP：**待重驗**（T-17 首驗 FAIL 永久保留）
   〔Opus 2026-09-21（另起新行；上兩行原文保留）：**🟡 進行中——步驟 0～6 完成，停在步驟 7 使用者環節**（§7-1 盲聽作答／§7-3 外部 convolution 載入／§7-4 播放頁試聽）；四軸暫記：工程：進行中｜實驗：不適用｜產品：不適用｜MVP：待重驗（REPORT 前不判）。commit：步驟 1＝`8ac0b64`、步驟 6＝`001c8ed`。〕
+  〔Opus 2026-09-21 收工（另起新行）：**✅ 執行完畢——`MVP：FAIL（R2）`**（判準 1 `達成（held-out＝AI 合成圖・共用開發素材）` 5/5｜判準 2 未達：自動組 0/0、coverage 0/1｜判準 3 達成｜判準 4 達成）；四軸：**工程：已執行（待步驟 11 獨立複驗）｜實驗：不適用｜產品：不適用｜MVP：FAIL（R2）**。REPORT＝`output/mvp_acceptance_r2/REPORT.md`；結果 commit 見 `git log --grep='T-17-R2: MVP 重新驗收結果'`。〕
 - **🔮 裁決 T-47-A 補註（Fable 2026-09-14；判準一字不改）**：前置「裁決 T-47-A」**自此滿足**；前置追加「T-52 結案（使用者選乙）或使用者選甲」
   （驗收期間不得有 gate 程式碼變動）；T-44-R1 ⏸ 未跑 → 依本卡既有條文以預設 `role_aware=False` 重驗，REPORT 標明。報告項 5 追加
   （附帶發現 ⓐⓑ）：被放行照片的逐面正誤含無來源面（依 ground truth 判、獨立列出），錯誤放行率分母＝六面。
@@ -12477,6 +12478,12 @@ EOF
   criteria_commit: 同上＋**`758eeba`**（裁定 T-17-R2-S，2026-09-20）
     → 回填（Opus 2026-09-21；T-17-R2 執行步驟 1；另起新行；上方各行原文不動）：
   dataset_manifest_sha256: **`501eb6a7ec1f48febd8f51530d7c92cc232f74d16ca6d5395ca2a436ec705bd2`**（`shasum -a 256 output/mvp_acceptance_r2/DATASET_MANIFEST.json`；manifest 內 head＝`0a84f34`、degraded＝false、held-out 5 張（路徑 S；domain in／in／out／in／non_room）、venues 8（in_domain 僅 `mit_gym`）、dry＝`assets/dry/clap_synth.wav` 合成拍手；步驟 0 全部前置檢查通過後產生，早於任何樣本）
+    → 回填（Opus 2026-09-21；T-17-R2 執行步驟 9；另起新行；上方各行原文不動）：
+  result_commit: 〈本收工 commit `T-17-R2: MVP 重新驗收結果（MVP：FAIL（R2））`；hash 由緊接的 docs commit 另起新行回填〉（中途：步驟 1 `8ac0b64`／步驟 6 `001c8ed`／作答鎖定 `d2f3572`）
+  reviewer: Opus 2026-09-21（R2 執行者；步驟 11 獨立複驗另開視窗）
+  verdict_under_original_criteria: MVP：FAIL（R2）——判準 1 達成（5/5；held-out＝AI 合成圖・共用開發素材）／判準 2 未達（自動組 0/0、coverage 0/1）／判準 3 達成／判準 4 達成；報告項 5：錯誤放行率主率 8/10、6N 下界 8/12、上界 10/12，域外 9/9 BLOCK；判準 6 T-04 缺項
+  verdict_under_current_criteria: 同上（判準 1～6 未變；裁定 T-57-D／T-17-R2-S 皆結果前）
+  criteria_changed_after_first_result: no
   ```
 - **Opus 驗證重點（四軸輸出）**：紅旗：任何素材 provenance 與 HEAD 不符仍納入；紅旗：重用
   `d958b3c` 盲測素材；紅旗：分組達標率被合併；紅旗：域外照片被算進自動組達標；紅旗：REPORT
@@ -12502,6 +12509,14 @@ EOF
        逐題：sample_1 答「客廳臥室」＝`heldout_living` ✅｜sample_2「教堂大空間」＝`heldout_hall` ✅（forced）｜sample_3「車內」＝`heldout_car` ✅（forced）｜sample_4「走廊樓梯間」＝`heldout_corridor` ✅（forced）｜sample_5「浴室」＝`heldout_bathroom` ✅。**5/5**。
        答案鍵獨立複核：五個 `sample_N.wav`／`sample_N_IR.wav` 的 sha256 對 `blind_test/MANIFEST.json` 的 `wet_sha256`／`ir_sha256` 與 `output/<run>/ir_mono.wav` 全部對上同一 run。
        使用者備註原文：sample_1「微微的鐵桶子聲，但可接受」、sample_3／sample_4「尾巴有點長，實際空間沒那麼大」、sample_5「有一點鐵桶子聲」——供 §7-4 與 REPORT §1 引用。判準 1 的判定字樣留到 REPORT（步驟 8）寫。仍等 §7-3、§7-4 回報。
+    10. **步驟 8～10（Opus 2026-09-21 收工；另起新行）**：使用者回報原文「§7-3：可載入」；§7-4「除了以下幾個之外，殘響尾巴都偏長。Department Store／Gym／Racquetball Court 4／Steinman Hall」＋補充「Steinman Hall（音樂廳）的殘響則是太短」「Divorce Beach…在戶外基本上應該聽不到什麼殘響，除非是山谷」（全文逐字在 REPORT §4）。
+       **判定 `MVP：FAIL（R2）`**：判準 2 未達（自動組 0/0、coverage 0/1）；判準 1／3／4 達成（判準 4 理由：§7-4 未報 artifact，殘響長短屬準確度、歸判準 2；§7-1 兩題輕微鐵桶子聲使用者自評輕微，不判重大——單一聽者主觀，REPORT §4 如實記錄）。
+       **REPORT 重點（交 Fable）**：① 5/5 靠相對排序——五張 held-out 估計尺寸與目標 RT60 絕對值偏大（車內估 9.2×10.6×7.9 m、浴室 500Hz 目標 3.33 s），與使用者「尾巴偏長」一致；② 所有 `metric_depth` run 寬／長比固定 1.1547、held-out 高／長比固定 0.866；③ 放行的兩張 held-out 材質可判面錯 8/10；④ 百貨賣場（域外）被估成 6.0×7.0×3.9 m、geometry medium，出口訊息缺幾何導引（V5 同型，未加跑）。
+       強制句核對：§0／§1 兩句逐字各 1 次（由程式自卡片原文擷取）；§4／§5 各有「held-out 五列全為 AI 合成圖」；表 2／表 5 由 `tables.md` 原文嵌入、未手改；全文無 PASS 判定字樣。
+       **收工不變量**：`output/mvp_acceptance/` 41 檔 sha256 清單前後 `diff exit=0`（清單 sha256 `9c514e87884f929f6fefc6bba09ad2cf9fd292d2348858c395598423da1c08ce`）；`git diff 0a84f34..HEAD --stat -- src data scripts` 空（含 `ir_metrics.py`、既有 `scripts/t17_*.py`）。
+       **鐵則 15 清理清單（不刪，逐條列）**：本輪新建 `output/` 目錄 18 個——`heldout_{bathroom,living,hall,corridor,car}`、`CathedralRoom`、`DivorceBeach`、`site_photo_{department_store,gym,restaurant}`、`RacquetballCourt4`、`SteinmanHall`、`TunnelToHell`、`t17r2_manual_{department_store,gym,restaurant,racquetball,steinman}`＋`mvp_acceptance_r2`；
+       `output/.archive/` 新增條目 **0**（前後皆 14 目錄／442 檔）。本機另有 `output/mvp_acceptance_r2/step0_evidence/`、`_play/`、`blind_test/*.wav`、`blind_test_ANSWERS.json`、`播放頁.html`（git 忽略，保留）。
+       **下一步**：步驟 11——另開 Opus 新視窗依本卡「Opus 驗證重點」獨立複驗（輸出一律導 scratchpad）；通過後 Fable 寫共用圖禁用令解除紀錄＋R2 收尾複評。
 
 ### T-57 T-17-R2 工具前置：R2 薄包裝腳本＋資料集 manifest 產生器（Sonnet；`scripts/` only；**關鍵路徑**；前置＝T-56 ✅）
 - **狀態**：🟠 **退回**（Opus 驗證，2026-09-18，對象 `4d4f63b`）——主體功能實測成立，但下列 R1～R5 未達，開 T-57 修正輪（Sonnet）逐條處理後再送驗：

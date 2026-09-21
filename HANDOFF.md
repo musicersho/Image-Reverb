@@ -1,5 +1,17 @@
 # 交接文件 — 給下一個視窗
 
+> ## ✅ 2026-09-21 Opus：T-17-R2 執行完畢——**`MVP：FAIL（R2）`**。**現在該做的是：開 Opus 新視窗做步驟 11 獨立複驗**（貼 WORKFLOW §2.2 標準 Prompt，`T-XX` 換成 `T-17-R2（步驟 11 獨立複驗）`），通過後再交 Fable 做收尾複評與禁用令解除
+>
+> - 四軸：**工程：已執行（待步驟 11 獨立複驗）｜實驗：不適用｜產品：不適用｜MVP：FAIL（R2）**（T-17 首驗 FAIL 永久保留）。報告：`output/mvp_acceptance_r2/REPORT.md`。
+> - 判準：① §7-1 盲聽 **5/5** `達成（held-out＝AI 合成圖・共用開發素材）`｜② §7-2 **未達**（in-domain 自動組 0/0、coverage 0/1——唯一 in-domain 場地健身房被 gate 擋下）｜③ §7-3 可載入，達成｜④ §7-4 無重大 artifact，達成（殘響普遍偏長另記）。
+> - 報告項 5：域外 9/9 擋下、域外誤放 0；放行的兩張 held-out（浴室、客廳）材質可判面錯 8/10（主率 80%、6N 下界 67%、上界 83%）。**5/5 不代表做對**：held-out 的估計尺寸與殘響絕對值偏大（車內估 9×11×8 m），和您「尾巴偏長」的聽感一致。
+> - 收工不變量：`output/mvp_acceptance/` 逐位元不變；`src`／`data`／`scripts` 零 diff；`.archive` 無新增。步驟 0～5 原始輸出在本機 `output/mvp_acceptance_r2/step0_evidence/`（git 忽略，複驗要用，**不要刪**）。明細在 TASKS.md T-17-R2 卡交接筆記第 1～10 點。
+> - 禁用令**尚未解除**：解除要等步驟 11 複驗通過（或您明示略過），再由 Fable 寫解除紀錄。
+> - **📌 給所有視窗（含 Codex）——共用圖禁用令（T-04 卡裁定 T-04-R §2 第 4 點；T-17-R2 收工並複驗、Fable 寫下解除紀錄前有效）**：R2 held-out 五張不論檔名，目前有三處逐位元複本：`assets/t17r2_synthetic_candidates/heldout_*.png`（T-60 後移到 `assets/photos_heldout/`）、
+>   `assets/photos/t04_gpt_{bathroom,living,corridor,car}.png`、`assets/photos_legacy_20260920/t04_gpt_hall.png`。**不得**對它們跑 `python -m src.image_reverb` 或任何指定單張的分析／評測腳本，不得調參／標註／寫進 `data/`／當新測試夾具；
+>   除 T-17-R2 卡自己的執行步驟、T-60 步驟 7 的 manifest 乾跑之外，唯一容忍的是任務卡或 WORKFLOW §5.4.1 要求的全套 `scripts/test_*.py` 例行執行（不帶引數、每次驗證至多一次；單獨跑 `test_depth.py`／`test_segmentation.py` 不算）。
+>   算 sha256、只讀尺寸、看圖不受限。不要刪 `assets/photos_legacy_20260920/`；除 T-60 步驟 2 那一次 `mv` 外，不要再搬動或替換 `assets/photos/` 與 held-out 圖。**之後每個在 HANDOFF 頂端加新段的視窗，請把本條原樣保留在新段最後，直到 Fable 寫下解除紀錄。**
+
 > ## 🟡 2026-09-21 Opus：T-17-R2 執行中——步驟 0～6 完成，**現在該做的是：使用者做三件事（可跨日），做完回報給 Opus**
 >
 > - ① **§7-1 盲聽**：依序聽 `output/mvp_acceptance_r2/blind_test/sample_1.wav`～`sample_5.wav`，在同目錄 `作答表.md` 填五選一（浴室／客廳臥室／教堂大空間／走廊樓梯間／車內，每類只用一次）。**作答完成前不要打開 `output/mvp_acceptance_r2/blind_test_ANSWERS.json`，也不要開 `blind_test/MANIFEST.json`。**
