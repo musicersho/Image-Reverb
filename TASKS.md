@@ -12498,6 +12498,10 @@ EOF
        §7-4 開 `output/mvp_acceptance_r2/播放頁.html` 試聽回報有無重大 artifact。期間只允許 docs commit，不得碰 `src`／`data`／`scripts`／`output/mvp_acceptance_r2/`。使用者回報後由 Opus（本視窗或新視窗）接步驟 8～10。
     8. **給寫 REPORT 的人（先記，不在此下判定）**：表 5 顯示兩張未 forced 放行的 held-out，錯誤放行率主率 8/10、6N 下界 8/12、上界 10/12；`heldout_bathroom` 六面中 5 面可判全錯（地板判成 carpet）；`site_photo_department_store` 預設路徑出口訊息「override-dims 導引：無」——判準 5「出口訊息可操作」須逐張核對 log 原文。
        `t17r2_report_tables.py` 印「116 行」而實際檔案 132 行（`len(L)` 計的是字串段數，含換行的段算一行），屬顯示字樣、不影響表內容，記給 Fable 的 R2 後工具清單。
+    9. **§7-1 計分（Opus 2026-09-21；另起新行）**：使用者作答原文逐字轉入 `作答表.md` 並**先 commit 鎖定**（`d2f3572`，檔案 sha256 `68faaa1ff69893652d6c5cf8eeda36159423c298142c51460cb390ae01d5613a`），之後才開答案鍵。
+       逐題：sample_1 答「客廳臥室」＝`heldout_living` ✅｜sample_2「教堂大空間」＝`heldout_hall` ✅（forced）｜sample_3「車內」＝`heldout_car` ✅（forced）｜sample_4「走廊樓梯間」＝`heldout_corridor` ✅（forced）｜sample_5「浴室」＝`heldout_bathroom` ✅。**5/5**。
+       答案鍵獨立複核：五個 `sample_N.wav`／`sample_N_IR.wav` 的 sha256 對 `blind_test/MANIFEST.json` 的 `wet_sha256`／`ir_sha256` 與 `output/<run>/ir_mono.wav` 全部對上同一 run。
+       使用者備註原文：sample_1「微微的鐵桶子聲，但可接受」、sample_3／sample_4「尾巴有點長，實際空間沒那麼大」、sample_5「有一點鐵桶子聲」——供 §7-4 與 REPORT §1 引用。判準 1 的判定字樣留到 REPORT（步驟 8）寫。仍等 §7-3、§7-4 回報。
 
 ### T-57 T-17-R2 工具前置：R2 薄包裝腳本＋資料集 manifest 產生器（Sonnet；`scripts/` only；**關鍵路徑**；前置＝T-56 ✅）
 - **狀態**：🟠 **退回**（Opus 驗證，2026-09-18，對象 `4d4f63b`）——主體功能實測成立，但下列 R1～R5 未達，開 T-57 修正輪（Sonnet）逐條處理後再送驗：
