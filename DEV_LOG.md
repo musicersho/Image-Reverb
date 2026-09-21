@@ -1,5 +1,12 @@
 # Dev Log
 
+## 2026-09-21 (170) T-60 held-out 五張合成圖就位＋GT＋SOURCES §4（Sonnet；待驗證）
+
+- 四軸：**工程：待審｜實驗：不適用（素材卡）｜產品：不適用｜MVP：不適用**。起點 HEAD `a65fc32`（T-62 已驗證）。步驟 0 前置檢查全過；五張 PNG 由 `assets/t17r2_synthetic_candidates/` `mv`（只一次）到 `assets/photos_heldout/`，搬移前後 sha256 皆等於 `ASSET_MANIFEST.json`、皆 1448×1086、候選目錄無殘留；**未跑任何模型／`scripts/test_*.py`**，共用圖曝光清單（`output/seg|depth` 31 行）前後逐行相同、`find` 目錄檢查無輸出。
+- GT：先以 SendUserFile 把五張圖送給使用者、貼材質草稿表並逐字提問；使用者回覆四項——「浴室 west 改 marble」「living／west 就是白牆，但有其他放置家具。」「hall／east 看不出來」「car／floor 腳踏曲為 carpet」——其餘格子解讀為接受草稿。`ground_truth_heldout.json` 五 stem×六面（`confirmed_by: user`）；`dims_m` 逐字取裁定設計值；`south` 五面與 hall／east 共 6 面 `unknown`、proxy 4 面（corridor 地板、car 車頂棚與左右車門）。
+- `assets/SOURCES.md` §4 五列填值＋T-60 註記（T-04 v2「來源連結」五項逐項對應）；候選目錄 README 檔尾追加一段。步驟 7 manifest 乾跑（輸出在 scratchpad）`exit=0`，domain 為 in／in／out／in／non_room，與裁定鎖定值相同；未建立 `output/mvp_acceptance_r2/`。`src`／`data`／`scripts`／`output` 零 diff。
+- 請 Opus 特別複核：① 使用者以「四項修改」而非「GT 確認」回覆，未提及格子視為接受草稿的解讀；② `car／floor` 卡片預設 `unknown`、使用者改判 `carpet`。下一步：Opus 驗 T-60，通過後由使用者貼 T-17-R2 Prompt。
+
 ## 2026-09-21 (169) T-62 Opus 驗證通過（工程）
 
 - 四軸：**工程：已驗證｜實驗：不適用｜產品：不適用｜MVP：不適用**。對象 commit `1ad985b`。

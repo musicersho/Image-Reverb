@@ -14579,8 +14579,8 @@ EOF
 
 ### T-60 T-17-R2 held-out 素材就位：五張 AI 合成圖（路徑 S）＋GT 使用者確認＋SOURCES §4（Sonnet；只動 `assets/`＋文件；**關鍵路徑**；前置＝裁定 T-17-R2-S `758eeba`＋T-62 經 Opus 驗證通過）
 - **編號說明**：T-61 是 Fable 2026-09-20 規劃期間的保留號，已取消、不開卡（原擬用途＝T-04 v2 素材卡；後因 Codex 已直接換圖，改由 Opus 直接驗現行交付集）。後續新卡請從 T-63 起編。執行順序：**T-62 先於 T-60**。
-- **狀態**：⬜ **可開跑（前置成立後）**（Fable 2026-09-20 開卡；**必須排在「T-62 經 Opus 驗證通過」之後**，且本卡進行期間不得有其他視窗跑 `scripts/test_*.py`——否則自我檢查 3 的曝光清單比對會被別人的動作弄亂）
-- **四軸狀態**：工程：未開始｜實驗：不適用（素材卡）｜產品：不適用｜MVP：不適用
+- **狀態**：🔵 **待審**（Sonnet 2026-09-21 完成；步驟 0～7 與自我檢查全過，證據見卡末交接筆記；等 Opus 驗證。原：⬜ **可開跑（前置成立後）**（Fable 2026-09-20 開卡；**必須排在「T-62 經 Opus 驗證通過」之後**，且本卡進行期間不得有其他視窗跑 `scripts/test_*.py`——否則自我檢查 3 的曝光清單比對會被別人的動作弄亂），原字保留）
+- **四軸狀態**：工程：待審｜實驗：不適用（素材卡）｜產品：不適用｜MVP：不適用（原：工程：未開始｜實驗：不適用（素材卡）｜產品：不適用｜MVP：不適用，原字保留）
 - **為什麼**：使用者 2026-09-20 決定用 Codex 以 GPT Image 生成的五張圖當 T-17-R2 正式 held-out（T-17-R2 卡**裁定 T-17-R2-S**），並與 T-04 新素材一批兩用（T-04 卡**裁定 T-04-R**）。
   T-17-R2 步驟 0 要求開跑時 HEAD 乾淨、`assets/photos_heldout/` 五類齊、`ground_truth_heldout.json` 存在且符合 schema、`assets/SOURCES.md` §4 有列——這些要有人先做好並 commit，就是本卡。**開工前先讀那兩段裁定全文。**
 - **⛔ 最重要的一條（不得再增加曝光）**：這五張（以及與它們逐位元相同的 `assets/photos/t04_gpt_{bathroom,living,corridor,car}.png`、`assets/photos_legacy_20260920/t04_gpt_hall.png`）受共用圖禁用令約束（裁定 T-04-R §2 第 4 點）；**本卡不得再增加任何曝光**——
@@ -14678,6 +14678,551 @@ EOF
 - **卡關規則**：同一步嘗試超過 3 次仍不過 → 停，狀態寫「🔴 卡關」＋原因，請使用者問 Fable。**不得**為了過關改動圖檔、改裁定條文、改尺寸或替使用者確認 GT。
 - **§8**：不適用（素材卡，無實驗結果；規格變更的 §7 紀錄在 T-17-R2 卡與 T-04 卡的 §8）。
 - **交接筆記**：
+  - **🔵 2026-09-21 Sonnet 完成（待驗證）**（起點 HEAD `a65fc32`；收工 commit 見 `git log --oneline --grep='T-60: held-out'`）。四軸：工程：待審｜實驗：不適用（素材卡）｜產品：不適用｜MVP：不適用。本視窗在步驟 3 曾暫停等使用者回覆（⏸），使用者在**同一視窗**回覆後續跑，沒有換視窗。
+  - **做了什麼**：五張 PNG 由 `assets/t17r2_synthetic_candidates/` `mv`（只做一次）到 `assets/photos_heldout/`；新增 `assets/photos_heldout/ground_truth_heldout.json`（五 stem×六面）；`assets/SOURCES.md` §4 表格五列填值＋T-60 註記；`assets/t17r2_synthetic_candidates/README.md` 檔尾追加一段；步驟 7 manifest 乾跑輸出只寫 scratchpad。改動的路徑：`assets/photos_heldout/`（新增 6 檔：5 張 PNG＋1 個 JSON）、`assets/SOURCES.md`、`assets/t17r2_synthetic_candidates/README.md`、TASKS.md（只有本卡）、DEV_LOG.md、HANDOFF.md、TODO.md。其餘（含 `src`／`data`／`scripts`／`output`／SPEC／ROADMAP／WORKFLOW／`assets/photos`／`assets/t04_refresh`／兩份 `ASSET_MANIFEST.json`／`PROMPTS.json`）的 diff 由自我檢查 2 的原文為證。本視窗未跑任何模型、`scripts/test_*.py`、`python -m src.image_reverb`；repo 內唯一執行過的 `scripts/*.py` 是步驟 7 指定的 `t17r2_dataset_manifest.py`。
+  - **下一步**：開 Opus 新視窗，貼 WORKFLOW §2.2 標準 Prompt（`T-XX`＝`T-60`），依本卡「Opus 驗證重點」驗證。WORKFLOW §5.4.1「完整測試套件」：本卡零程式改動，先貼 `git diff a65fc32..HEAD --stat -- src scripts data`（應為空），為空就引用 T-62 驗證紀錄裡的全套 22 支 `EXIT=0`，不必重跑（少一次共用圖曝光）。通過後才輪到 T-17-R2（使用者貼裁定 T-17-R2-S §4 的兩行 Prompt）。
+  - **執行時的決定（請 Opus 逐條複核）**：
+    1. **使用者回覆形式是「四項修改」而非「GT 確認」**：我的提問句寫「回『GT 確認』代表五張都看過且全部同意；材質要改就直接寫哪一張、哪一面改成什麼」。使用者採後者，逐項回了草稿表 ⚠ 清單中的四格（bathroom／west、living／west、hall／east、car／floor），沒有提 living／north 與 hall／ceiling（同為 ⚠ 格）。我解讀為「其餘接受草稿」，因此 JSON 內所有面都寫 `confirmed_by: user`、`date: 2026-09-21`。**這個解讀是我的判斷，卡片沒有明文**；若 Opus 認為不足以支撐 `confirmed_by: user`，請使用者補回「GT 確認」（不必改檔）。卡片步驟 3 要求「使用者改材質就照改、再貼一次定稿表」——定稿表在下方「步驟 3」段（由 JSON 產生），也已在收工回報中再貼給使用者；本卡沒有另外等第二輪回覆。
+    2. **car／floor**：草稿依卡片步驟 3 標 `unknown`（座椅遮住大部分腳踏區，卡片舉的例子就是這種情況）；使用者原話「car／floor 腳踏曲為 carpet」（「曲」我解讀為「區」的筆誤）→ 依卡片「使用者改材質就照改」寫 `carpet`；不標 proxy（`carpet` 是候選，T-36 車內地板先例也是 `carpet`）；note 記錄改判與原草稿。
+    3. **living／west**：使用者確認是白牆、牆前有其他家具 → 維持草稿的 `gypsum_board`；note 收錄使用者原話。此面畫面只有左緣一窄條可見，Opus 抽圖時可留意。**hall／east**：使用者「看不出來」→ 依卡片處理為 `unknown`。**bathroom／west**：使用者「改 marble」→ 寫 `marble`（草稿為 `glass`）。
+    4. **材質→候選 id 的對應是我起草**（白漆牆與天花板→`gypsum_board`；hall 牆→`generic_wall`；hall 天花板→`concrete`；磁磚→`marble`；水磨石→`marble`＋proxy），依據＝看圖＋`data/material_ground_truth.json` 既有慣例（白漆牆多標 `gypsum_board`）。hall 天花板只看得到白漆的梁與頂板，底下是混凝土或抹灰無法從圖確定，記 `concrete` 並在 note 寫明。這些都經使用者看圖後未提異議（見決定 1）。
+    5. **README 追加段標題**：卡片步驟 6 寫「2026-09-20 後續（T-60）」，實際執行日是 2026-09-21；標題照卡片字面，後面括號補「實際執行日 2026-09-21」。
+    6. **步驟 1 的 grep** 是用 Python `subprocess`（不經 shell）呼叫，所以印出的指令列 `--include` 引號寫成 `'--include=*.md'`，與卡片的 `--include='*.md'` 位置不同、語意相同。
+    7. **自我檢查 4 的第一版輸出 147 行**（每項斷言一行），超過鐵則 17 的 60 行上限，改寫為精簡版（每面一行、37 行）重跑；下方貼的是精簡版。scratchpad 腳本第一次以相對路徑呼叫丟 `ValueError` 的事見步驟 2。
+    8. 收工前，本卡交接筆記曾有一版「⏸ 等使用者確認 GT」的中途紀錄（未 commit）；收工時整段改寫為本版，該中途版從未進 commit。
+  - **坑／觀察**：`t17r2_dataset_manifest.py` 乾跑印出 `head=a65fc32…`（HEAD 起點，不是收工 commit）——它的 dirty 檢查只看 `src data scripts`，本卡有 assets／文件變動不影響，屬預期；R2 步驟 1 再產正式 manifest。zsh 下 `ls -d …*` 遇不到匹配會整條中止，所以目錄檢查用卡片給的 `find` 寫法。
+
+  **步驟 0 前置檢查（原文）**
+  - 第一組：兩條**搬移後已不能重跑**的指令，內容取自本視窗步驟 0 當時（搬移前）的工具輸出，先存成 scratchpad 檔再由腳本寫入本卡：
+```
+$ git status --porcelain
+?? assets/t17r2_synthetic_candidates/heldout_bathroom.png
+?? assets/t17r2_synthetic_candidates/heldout_car.png
+?? assets/t17r2_synthetic_candidates/heldout_corridor.png
+?? assets/t17r2_synthetic_candidates/heldout_hall.png
+?? assets/t17r2_synthetic_candidates/heldout_living.png
+$ ls assets/photos_heldout output/mvp_acceptance_r2 2>&1
+ls: assets/photos_heldout: No such file or directory
+ls: output/mvp_acceptance_r2: No such file or directory
+```
+  - 結論：起點 `git status --porcelain` 恰 5 行 `?? assets/t17r2_synthetic_candidates/heldout_*.png`、沒有別的；`assets/photos_heldout`、`output/mvp_acceptance_r2` 兩者都不存在——與預期相符。
+  - 第二組：四條可重跑指令（搬移不影響它們），步驟 0 之後立即重跑存檔，再由腳本寫入本卡：
+```
+$ git log --oneline --grep='T-62: 驗證通過' | head -1
+a65fc32 T-62: 驗證通過（工程）
+$ git log --oneline -1 758eeba
+758eeba criteria: T-04 v2（裁定 T-04-R：結案路徑 (c) 替換素材／退役集／共用圖禁用令）＋T-17-R2 v1（結果前變更）held-out 長邊下限 1920→1280px＋路徑 S＝AI 合成圖——裁定 T-17-R2-S
+$ find output -maxdepth 1 -type d \( -name 'heldout_*' -o -name 't04_gpt_*' \)
+（輸出為空）
+$ ls -la output/seg/ output/depth/ | grep -E 't04_gpt|stats\.json'
+-rw-r--r--   1 musicersho  staff     9892 Sep 21 09:43 depth_stats.json
+-rw-r--r--   1 musicersho  staff  1043959 Sep 21 09:43 t04_gpt_arena_concert_depth.png
+-rw-r--r--   1 musicersho  staff   688955 Sep 21 09:43 t04_gpt_bathroom_depth.png
+-rw-r--r--   1 musicersho  staff   785031 Sep 21 09:43 t04_gpt_car_depth.png
+-rw-r--r--   1 musicersho  staff   886864 Sep 21 09:43 t04_gpt_cave_lab_depth.png
+-rw-r--r--   1 musicersho  staff   890685 Sep 21 09:43 t04_gpt_cavern_crowd_depth.png
+-rw-r--r--   1 musicersho  staff   653981 Sep 21 09:43 t04_gpt_corridor_depth.png
+-rw-r--r--   1 musicersho  staff   779651 Sep 21 09:43 t04_gpt_livehouse_depth.png
+-rw-r--r--   1 musicersho  staff   767772 Sep 21 09:43 t04_gpt_living_depth.png
+-rw-r--r--   1 musicersho  staff   676113 Sep 21 09:43 t04_gpt_stairwell_depth.png
+-rw-r--r--   1 musicersho  staff    10520 Sep 21 09:45 stats.json
+-rw-r--r--   1 musicersho  staff  1572656 Sep 21 09:45 t04_gpt_arena_concert_labelmap.npy
+-rw-r--r--   1 musicersho  staff  5453357 Sep 21 09:45 t04_gpt_arena_concert_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 21 09:45 t04_gpt_bathroom_labelmap.npy
+-rw-r--r--   1 musicersho  staff  3854256 Sep 21 09:45 t04_gpt_bathroom_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 21 09:45 t04_gpt_car_labelmap.npy
+-rw-r--r--   1 musicersho  staff  4183304 Sep 21 09:45 t04_gpt_car_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 21 09:45 t04_gpt_cave_lab_labelmap.npy
+-rw-r--r--   1 musicersho  staff  4766623 Sep 21 09:45 t04_gpt_cave_lab_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 21 09:45 t04_gpt_cavern_crowd_labelmap.npy
+-rw-r--r--   1 musicersho  staff  4974210 Sep 21 09:45 t04_gpt_cavern_crowd_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 21 09:45 t04_gpt_corridor_labelmap.npy
+-rw-r--r--   1 musicersho  staff  3806063 Sep 21 09:45 t04_gpt_corridor_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 20 16:16 t04_gpt_hall_labelmap.npy
+-rw-r--r--   1 musicersho  staff  3455868 Sep 20 16:16 t04_gpt_hall_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 21 09:45 t04_gpt_livehouse_labelmap.npy
+-rw-r--r--   1 musicersho  staff  4455578 Sep 21 09:45 t04_gpt_livehouse_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 21 09:45 t04_gpt_living_labelmap.npy
+-rw-r--r--   1 musicersho  staff  4133100 Sep 21 09:45 t04_gpt_living_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 21 09:45 t04_gpt_stairwell_labelmap.npy
+-rw-r--r--   1 musicersho  staff  3940623 Sep 21 09:45 t04_gpt_stairwell_seg.png
+```
+  - 結論：T-62 已由 Opus 驗證通過（`a65fc32`）；`758eeba` 存在；`find` 無輸出＝CLI 管線沒處理過這些圖；`ls | grep` 共 31 行（`output/depth/` 10 行＋`output/seg/` 21 行）＝已揭露的冒煙測試曝光（與 HANDOFF 內 Opus T-62 驗證段「由 23 行增為 31 行」相符）；只列不刪，自我檢查 3 在收工前再取一次比對。
+
+  **步驟 1 同一性＋規格檢查（搬移前；原文）**
+  - 一次性腳本（scratchpad，未進 repo；只算 sha256、`Image.open(...).size` 只讀尺寸、`grep`；無引數＝檢查 `assets/t17r2_synthetic_candidates/`）原文如下（此為修正後版本；搬移前那次執行用的版本與它只差 `DIR = ` 那一行處理引數的寫法，無引數時完全等價）：
+```
+# T-60 步驟 1（一次性；scratchpad；只算 sha256、只讀尺寸，不 save、不跑任何模型）
+import hashlib, json, subprocess, sys
+from pathlib import Path
+from PIL import Image
+
+ROOT = Path("/Users/musicersho/Image Reverb")
+DIR = (ROOT / sys.argv[1]) if len(sys.argv) > 1 else ROOT / "assets/t17r2_synthetic_candidates"
+MAN = ROOT / "assets/t17r2_synthetic_candidates/ASSET_MANIFEST.json"
+
+def sha(p):
+    h = hashlib.sha256()
+    with open(p, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+manifest = {m["file"]: m for m in json.load(open(MAN))}
+stems = ["bathroom", "living", "hall", "corridor", "car"]
+files = [DIR / f"heldout_{s}.png" for s in stems]
+
+print(f"# 檢查目錄：{DIR.relative_to(ROOT)}")
+print("== (a) sha256 逐張 vs ASSET_MANIFEST.json ==")
+shas = {}
+ok_a = True
+for p in files:
+    got = sha(p)
+    shas[p.name] = got
+    want = manifest[p.name]["sha256"]
+    ok = got == want
+    ok_a &= ok
+    print(f"{p.name}  {got}  manifest={'相同' if ok else '不同 ' + want}")
+print(f"(a) 結果：{'五張全部相同' if ok_a else '有不符'}")
+
+print("== (b) PIL 只讀尺寸（不 save）==")
+ok_b = True
+for p in files:
+    with Image.open(p) as im:
+        w, h = im.size
+        fmt = im.format
+    ratio = w / h
+    ok = max(w, h) >= 1280 and not (1.9 <= ratio <= 2.1)
+    ok_b &= ok
+    print(f"{p.name}  {w}x{h}  {fmt}  max邊={max(w,h)}  w/h={ratio:.4f}  {'OK' if ok else 'FAIL'}")
+print(f"(b) 結果：{'五張全部 OK（長邊>=1280 且 w/h 不在 1.9~2.1）' if ok_b else '有不符'}")
+
+print("== (c) 每個 sha256 各跑兩條 grep，預期全空 ==")
+any_hit = False
+for name, s in shas.items():
+    for cmd in (["grep", "-rl", s, "data"],
+                ["grep", "-rl", s, "output", "--include=*.md", "--include=*.json"]):
+        r = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
+        out = r.stdout
+        any_hit |= bool(out.strip())
+        printable = " ".join(c if "*" not in c else f"'{c}'" for c in cmd)
+        print(f"$ {printable}   # {name}")
+        print(out if out.strip() else "（輸出為空）", end="" if out.strip() else "\n")
+        print(f"exit={r.returncode}")
+print(f"(c) 結果：{'有命中（不應發生）' if any_hit else '十條 grep 全空'}")
+
+print("== (d) 與 assets/photos/*.png、legacy t04_gpt_hall.png 逐位元相同者（只算 sha256、只記錄）==")
+cands = sorted((ROOT / "assets/photos").glob("*.png")) + [ROOT / "assets/photos_legacy_20260920/t04_gpt_hall.png"]
+by_sha = {v: k for k, v in shas.items()}
+n = 0
+for c in cands:
+    n += 1
+    s = sha(c)
+    if s in by_sha:
+        print(f"{c.relative_to(ROOT)}  == {by_sha[s]}")
+print(f"(d) 共比對 {n} 個檔")
+```
+  - 指令與輸出：
+```
+$ python "/private/tmp/claude-501/-Users-musicersho-Image-Reverb/100da6b8-44a2-437d-aa68-878a46fc1b52/scratchpad/t60_step1.py"; echo "exit=$?"
+# 檢查目錄：assets/t17r2_synthetic_candidates
+== (a) sha256 逐張 vs ASSET_MANIFEST.json ==
+heldout_bathroom.png  9697b659d104f71643f5083b166445a7381db147f52f4607412395bf8dec3a05  manifest=相同
+heldout_living.png  0a731b514a7645143d26cc460e531aea2bc29a767c17b3cd402b3d8e30dd8a07  manifest=相同
+heldout_hall.png  eb4f1d09b86c9c6b7658662820a7d419a0f4b243c4746353aae09f94c59adc59  manifest=相同
+heldout_corridor.png  7a9f2b8595b6102d5c52bc0738923dd8a24192233565c7e3dd64bbf654d7044d  manifest=相同
+heldout_car.png  7b345e6692bc0ca866c9516fe734dd9789f1b95b937345ac2de20bb7a08b457f  manifest=相同
+(a) 結果：五張全部相同
+== (b) PIL 只讀尺寸（不 save）==
+heldout_bathroom.png  1448x1086  PNG  max邊=1448  w/h=1.3333  OK
+heldout_living.png  1448x1086  PNG  max邊=1448  w/h=1.3333  OK
+heldout_hall.png  1448x1086  PNG  max邊=1448  w/h=1.3333  OK
+heldout_corridor.png  1448x1086  PNG  max邊=1448  w/h=1.3333  OK
+heldout_car.png  1448x1086  PNG  max邊=1448  w/h=1.3333  OK
+(b) 結果：五張全部 OK（長邊>=1280 且 w/h 不在 1.9~2.1）
+== (c) 每個 sha256 各跑兩條 grep，預期全空 ==
+$ grep -rl 9697b659d104f71643f5083b166445a7381db147f52f4607412395bf8dec3a05 data   # heldout_bathroom.png
+（輸出為空）
+exit=1
+$ grep -rl 9697b659d104f71643f5083b166445a7381db147f52f4607412395bf8dec3a05 output '--include=*.md' '--include=*.json'   # heldout_bathroom.png
+（輸出為空）
+exit=1
+$ grep -rl 0a731b514a7645143d26cc460e531aea2bc29a767c17b3cd402b3d8e30dd8a07 data   # heldout_living.png
+（輸出為空）
+exit=1
+$ grep -rl 0a731b514a7645143d26cc460e531aea2bc29a767c17b3cd402b3d8e30dd8a07 output '--include=*.md' '--include=*.json'   # heldout_living.png
+（輸出為空）
+exit=1
+$ grep -rl eb4f1d09b86c9c6b7658662820a7d419a0f4b243c4746353aae09f94c59adc59 data   # heldout_hall.png
+（輸出為空）
+exit=1
+$ grep -rl eb4f1d09b86c9c6b7658662820a7d419a0f4b243c4746353aae09f94c59adc59 output '--include=*.md' '--include=*.json'   # heldout_hall.png
+（輸出為空）
+exit=1
+$ grep -rl 7a9f2b8595b6102d5c52bc0738923dd8a24192233565c7e3dd64bbf654d7044d data   # heldout_corridor.png
+（輸出為空）
+exit=1
+$ grep -rl 7a9f2b8595b6102d5c52bc0738923dd8a24192233565c7e3dd64bbf654d7044d output '--include=*.md' '--include=*.json'   # heldout_corridor.png
+（輸出為空）
+exit=1
+$ grep -rl 7b345e6692bc0ca866c9516fe734dd9789f1b95b937345ac2de20bb7a08b457f data   # heldout_car.png
+（輸出為空）
+exit=1
+$ grep -rl 7b345e6692bc0ca866c9516fe734dd9789f1b95b937345ac2de20bb7a08b457f output '--include=*.md' '--include=*.json'   # heldout_car.png
+（輸出為空）
+exit=1
+(c) 結果：十條 grep 全空
+== (d) 與 assets/photos/*.png、legacy t04_gpt_hall.png 逐位元相同者（只算 sha256、只記錄）==
+assets/photos/t04_gpt_bathroom.png  == heldout_bathroom.png
+assets/photos/t04_gpt_car.png  == heldout_car.png
+assets/photos/t04_gpt_corridor.png  == heldout_corridor.png
+assets/photos/t04_gpt_living.png  == heldout_living.png
+assets/photos_legacy_20260920/t04_gpt_hall.png  == heldout_hall.png
+(d) 共比對 10 個檔
+exit=0
+```
+  - 結論：(a) 五張 sha256＝`assets/t17r2_synthetic_candidates/ASSET_MANIFEST.json`；(b) 五張皆 1448×1086、長邊 1448 ≥ 1280、w/h＝1.3333（不在 1.9～2.1）；(c) 十條 grep 全空；(d) 共用圖複本恰為 `assets/photos/t04_gpt_{bathroom,car,corridor,living}.png` 四張＋`assets/photos_legacy_20260920/t04_gpt_hall.png`——與卡片預期一致，只算 sha256、只記錄。
+
+  **步驟 2 搬移（只做了一次）與搬移後複驗（原文）**
+  - 指令與輸出（`mv` 一行的輸出取自該次工具輸出；其後三條是搬移後立即重取的靜態狀態）：
+```
+$ mkdir -p assets/photos_heldout && mv assets/t17r2_synthetic_candidates/heldout_*.png assets/photos_heldout/; echo "mv exit=$?"
+mv exit=0
+$ ls -la assets/photos_heldout
+total 21360
+drwxr-xr-x   7 musicersho  staff      224 Sep 21 09:52 .
+drwxr-xr-x  11 musicersho  staff      352 Sep 21 09:52 ..
+-rw-r--r--   1 musicersho  staff  2170166 Sep 20 15:05 heldout_bathroom.png
+-rw-r--r--   1 musicersho  staff  2342677 Sep 20 15:06 heldout_car.png
+-rw-r--r--   1 musicersho  staff  2149625 Sep 20 15:07 heldout_corridor.png
+-rw-r--r--   1 musicersho  staff  1943157 Sep 20 15:06 heldout_hall.png
+-rw-r--r--   1 musicersho  staff  2324171 Sep 20 15:05 heldout_living.png
+
+$ find assets/t17r2_synthetic_candidates -name '*.png'
+（輸出為空）
+
+$ git status --porcelain
+?? assets/photos_heldout/
+```
+  - 搬移後對新路徑重跑步驟 1(a)(b)。**第一次以相對路徑引數呼叫時，腳本在印標頭那行（`DIR.relative_to(ROOT)`）就丟 `ValueError`，尚未讀任何檔**（scratchpad 腳本的小 bug，與圖檔無關）；已把該行改為 `DIR = (ROOT / sys.argv[1]) …` 後重跑，下為重跑輸出（`sed` 只截到 (b) 結果行）：
+```
+$ python "/private/tmp/claude-501/-Users-musicersho-Image-Reverb/100da6b8-44a2-437d-aa68-878a46fc1b52/scratchpad/t60_step1.py" assets/photos_heldout | sed -n '1,/^(b) 結果/p'
+# 檢查目錄：assets/photos_heldout
+== (a) sha256 逐張 vs ASSET_MANIFEST.json ==
+heldout_bathroom.png  9697b659d104f71643f5083b166445a7381db147f52f4607412395bf8dec3a05  manifest=相同
+heldout_living.png  0a731b514a7645143d26cc460e531aea2bc29a767c17b3cd402b3d8e30dd8a07  manifest=相同
+heldout_hall.png  eb4f1d09b86c9c6b7658662820a7d419a0f4b243c4746353aae09f94c59adc59  manifest=相同
+heldout_corridor.png  7a9f2b8595b6102d5c52bc0738923dd8a24192233565c7e3dd64bbf654d7044d  manifest=相同
+heldout_car.png  7b345e6692bc0ca866c9516fe734dd9789f1b95b937345ac2de20bb7a08b457f  manifest=相同
+(a) 結果：五張全部相同
+== (b) PIL 只讀尺寸（不 save）==
+heldout_bathroom.png  1448x1086  PNG  max邊=1448  w/h=1.3333  OK
+heldout_living.png  1448x1086  PNG  max邊=1448  w/h=1.3333  OK
+heldout_hall.png  1448x1086  PNG  max邊=1448  w/h=1.3333  OK
+heldout_corridor.png  1448x1086  PNG  max邊=1448  w/h=1.3333  OK
+heldout_car.png  1448x1086  PNG  max邊=1448  w/h=1.3333  OK
+(b) 結果：五張全部 OK（長邊>=1280 且 w/h 不在 1.9~2.1）
+```
+  - 結論：搬移後五張 sha256 仍全部等於 `ASSET_MANIFEST.json`（未被改動）、尺寸仍為 1448×1086；`assets/t17r2_synthetic_candidates/` 下無殘留 PNG（是搬移不是複製）；`git status --porcelain` 當時只剩 `?? assets/photos_heldout/`。
+
+  **步驟 3 使用者確認 GT**
+  - **已把五張圖送給使用者（步驟 3 要求的紀錄）**：工具呼叫 `SendUserFile`（`display: render`、`status: normal`），檔案為 `/Users/musicersho/Image Reverb/assets/photos_heldout/heldout_{bathroom,living,hall,corridor,car}.png` 五個絕對路徑；工具回報「5 files delivered to user」。
+  - **草稿表（當時貼給使用者的版本；尺寸為裁定寫死的設計值）**：
+
+  | 檔名 | 設計尺寸 長×寬×高（m） | floor 地板 | ceiling 天花板 | north 鏡頭正對的牆 | west 左牆 | east 右牆 | south 鏡頭背後 |
+  |---|---|---|---|---|---|---|---|
+  | heldout_bathroom | 2.4×1.8×2.5 | 灰色地磚 → `marble` | 白漆平頂 → `gypsum_board` | 米色大片磁磚牆（馬桶後方）→ `marble` | 玻璃淋浴隔間 → `glass` ⚠ | 米色磁磚牆（含霧面窗、洗手台）→ `marble` | `unknown` |
+  | heldout_living | 5×4×2.7 | 橡木色木地板（中央鋪地毯）→ `wood_panel` | 白漆平頂 → `gypsum_board` | 落地窗＋薄紗＋厚布簾 → `curtain_fabric` ⚠ | 僅左緣一窄條白漆牆 → `gypsum_board` ⚠ | 白漆牆（掛畫、書櫃）→ `gypsum_board` | `unknown` |
+  | heldout_hall | 24×16×8 | 拋光木拼花地板 → `wood_panel` | 白漆的梁與頂板 → `concrete` ⚠ | 米白漆牆（正中舞台開口、深藍布幕）→ `generic_wall` | 一整排挑高玻璃窗 → `glass` | 僅右緣一窄條（挑高窗）→ `glass` ⚠ | `unknown` |
+  | heldout_corridor | 8×1.8×2.6 | 水磨石 → `marble`（proxy） | 白漆平頂 → `gypsum_board` | 走廊盡頭白漆牆 → `gypsum_board` | 白漆牆（含木門）→ `gypsum_board` | 白漆牆（含木門）→ `gypsum_board` | `unknown` |
+  | heldout_car | 2.6×1.5×1.2 | 被座椅擋住 → `unknown` ⚠ | 淺灰織布車頂棚 → `curtain_fabric`（proxy） | 前擋風玻璃區 → `glass` | 左車門內裝 → `acoustic_panel`（proxy） | 右車門內裝 → `acoustic_panel`（proxy） | 後擋風玻璃區在鏡頭後面 → `unknown` |
+
+  ⚠ 請特別看的幾格（我的判斷不確定）：
+  - bathroom／west：左邊是玻璃淋浴隔間，隔間後面的牆本身也是磁磚；我記畫面上看到的表面 `glass`。若您認為該面應記磁磚，回「浴室 west 改 marble」。
+  - living／north：窗簾（薄紗＋厚布簾）蓋住大部分，後面是玻璃窗，右段有一小塊白牆；我記 `curtain_fabric`。
+  - living／west：只有左緣一條窄縫看得到白牆，其餘被電視櫃、電視、盆栽擋住；看不清請回「看不出來」。
+  - hall／ceiling：看得到的是白漆的梁與頂板，底下是混凝土還是抹灰從圖上無法確定；我記 `concrete`（兩者聲學上都是硬質光滑面）。
+  - hall／east：只有右緣一窄條（挑高窗與喇叭）；看不清請回「看不出來」。
+  - car／floor：座椅擋住大部分腳踏區，只有座椅下緣露出一點黑色地毯；依規則標 `unknown`（您若覺得夠判斷，可改 `carpet`）。
+
+  proxy 說明：corridor 地板是水磨石，候選裡沒有，硬質光滑面 `marble` 聲學上最接近；car 的車頂棚與車門內裝沿用 T-36 先例（`curtain_fabric`／`acoustic_panel`，都標 proxy）。
+  `south` 五張一律 `unknown`（鏡頭背後看不到；車內＝後擋風玻璃區）。尺寸是設計值、不是實測，只用來分「10 公尺以內／超過 10 公尺／車內」。
+
+  - **已對使用者逐字提問**：「以上是五張合成圖的尺寸量級與六面材質草稿（圖已附上）。請**逐張對著圖**看：回『GT 確認』代表五張都看過且全部同意；材質要改就直接寫哪一張、哪一面改成什麼；看不出來的面請回『看不出來』，我會標 unknown。尺寸只用來分『10 公尺以內／超過 10 公尺／車內』，不需要精確；若您覺得哪一張的尺寸量級離譜，請直說，我會停下來回報規劃者（尺寸不能現場改）。」
+  - **使用者回覆（逐字；回覆日 2026-09-21；這是 `confirmed_by: user` 的依據）**：
+```
+浴室 west 改 marble
+living／west 就是白牆，但有其他放置家具。
+hall／east 看不出來
+car／floor 腳踏曲為 carpet
+```
+  - 使用者對尺寸量級沒有異議（回覆中未提尺寸）；未觸發「🔴 卡關：使用者對 dims 有異議」。對回覆的解讀見上方「執行時的決定」1～3。
+  - **定稿表**（由 `ground_truth_heldout.json` 以 scratchpad 腳本產生；`†`＝使用者本次回覆直接涉及的格子；`（proxy）`＝JSON 標 `proxy: true`）：
+
+  | 檔名 | 設計尺寸 長×寬×高（m） | floor | ceiling | north | west | east | south |
+  |---|---|---|---|---|---|---|---|
+  | heldout_bathroom | 2.4×1.8×2.5 | `marble` | `gypsum_board` | `marble` | `marble` † | `marble` | `unknown` |
+  | heldout_living | 5×4×2.7 | `wood_panel` | `gypsum_board` | `curtain_fabric` | `gypsum_board` † | `gypsum_board` | `unknown` |
+  | heldout_hall | 24×16×8 | `wood_panel` | `concrete` | `generic_wall` | `glass` | `unknown` † | `unknown` |
+  | heldout_corridor | 8×1.8×2.6 | `marble`（proxy） | `gypsum_board` | `gypsum_board` | `gypsum_board` | `gypsum_board` | `unknown` |
+  | heldout_car | 2.6×1.5×1.2 | `carpet` † | `curtain_fabric`（proxy） | `glass` | `acoustic_panel`（proxy） | `acoustic_panel`（proxy） | `unknown` |
+
+
+  **步驟 4 寫 `ground_truth_heldout.json`；自我檢查 4（原文）**
+  - 寫檔（一次性 scratchpad 腳本 `t60_step4_write_gt.py`，內容即最終 JSON 本身，故不另貼腳本原文；JSON 全文在 repo 的 `assets/photos_heldout/ground_truth_heldout.json`）：
+```
+$ python "/private/tmp/claude-501/-Users-musicersho-Image-Reverb/100da6b8-44a2-437d-aa68-878a46fc1b52/scratchpad/t60_step4_write_gt.py"
+wrote /Users/musicersho/Image Reverb/assets/photos_heldout/ground_truth_heldout.json 7491 bytes
+```
+  - 驗證腳本（scratchpad；**預期表獨立輸入＝貼給使用者的草稿表＋使用者四項修改，不從 JSON 生成**）原文：
+```
+# T-60 自我檢查 4（一次性；scratchpad）：驗 ground_truth_heldout.json（精簡輸出版：每面一行）
+# 預期表獨立輸入＝（貼給使用者的草稿表）＋（使用者 2026-09-21 回覆的四項修改）；不從 JSON 生成。
+import json
+from pathlib import Path
+R = Path("/Users/musicersho/Image Reverb")
+gt = json.load(open(R / "assets/photos_heldout/ground_truth_heldout.json", encoding="utf-8"))
+cands = set(json.load(open(R / "data/material_ground_truth.json", encoding="utf-8"))["candidate_material_ids"]) | {"unknown"}
+FACES = ["floor", "ceiling", "north", "west", "east", "south"]
+EXPECT_DIMS = {"heldout_bathroom": (2.4, 1.8, 2.5), "heldout_living": (5, 4, 2.7), "heldout_hall": (24, 16, 8),
+               "heldout_corridor": (8, 1.8, 2.6), "heldout_car": (2.6, 1.5, 1.2)}   # 裁定 T-17-R2-S §3 第 4 點（長×寬×高）
+#                     floor            ceiling          north           west             east             south
+EXPECT_MAT = {
+ "heldout_bathroom": ["marble",        "gypsum_board",  "marble",       "marble",        "marble",        "unknown"],  # west：使用者改 marble
+ "heldout_living":   ["wood_panel",    "gypsum_board",  "curtain_fabric","gypsum_board", "gypsum_board",  "unknown"],  # west：使用者確認白牆
+ "heldout_hall":     ["wood_panel",    "concrete",      "generic_wall", "glass",         "unknown",       "unknown"],  # east：使用者「看不出來」
+ "heldout_corridor": ["marble",        "gypsum_board",  "gypsum_board", "gypsum_board",  "gypsum_board",  "unknown"],
+ "heldout_car":      ["carpet",        "curtain_fabric","glass",        "acoustic_panel","acoustic_panel","unknown"], # floor：使用者改 carpet
+}
+EXPECT_PROXY = {("heldout_corridor", "floor"), ("heldout_car", "ceiling"), ("heldout_car", "west"), ("heldout_car", "east")}
+bad = []
+def line(ok, msg):
+    print(("OK   " if ok else "FAIL ") + msg)
+    if not ok: bad.append(msg)
+line(len(gt) == 5 and set(gt) == set(EXPECT_DIMS), f"頂層鍵恰為五個 stem（{len(gt)} 個）：{list(gt)}")
+for stem, dims in EXPECT_DIMS.items():
+    e = gt[stem]; d = e["dims_m"]; s = e["surfaces"]
+    line(e.get("source_type") == "ai_synthetic" and e.get("dims_basis") == "synthetic_design_user_confirmed"
+         and set(d) == {"length", "width", "height"} and (d["length"], d["width"], d["height"]) == dims and set(s) == set(FACES),
+         f"{stem}: source_type/dims_basis 正確；dims_m={d} == 設計值 {dims}；六面齊全")
+    for face, want in zip(FACES, EXPECT_MAT[stem]):
+        v = s[face]; proxy = (stem, face) in EXPECT_PROXY
+        ok = (v["material_id"] == want and v["material_id"] in cands and v.get("confirmed_by") == "user"
+              and v.get("date") == "2026-09-21" and bool(v.get("proxy")) == proxy
+              and (face != "south" or v["material_id"] == "unknown"))
+        line(ok, f"  {stem}.{face:<7} material_id={v['material_id']:<14} 預期={want:<14} confirmed_by={v.get('confirmed_by')} date={v.get('date')} proxy={bool(v.get('proxy'))}(預期 {proxy})")
+print("總結：", "全部通過" if not bad else f"{len(bad)} 項失敗")
+```
+  - 指令與輸出：
+```
+$ python "/private/tmp/claude-501/-Users-musicersho-Image-Reverb/100da6b8-44a2-437d-aa68-878a46fc1b52/scratchpad/t60_selfcheck4.py"; echo "exit=$?"
+OK   頂層鍵恰為五個 stem（5 個）：['heldout_bathroom', 'heldout_living', 'heldout_hall', 'heldout_corridor', 'heldout_car']
+OK   heldout_bathroom: source_type/dims_basis 正確；dims_m={'length': 2.4, 'width': 1.8, 'height': 2.5} == 設計值 (2.4, 1.8, 2.5)；六面齊全
+OK     heldout_bathroom.floor   material_id=marble         預期=marble         confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK     heldout_bathroom.ceiling material_id=gypsum_board   預期=gypsum_board   confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK     heldout_bathroom.north   material_id=marble         預期=marble         confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK     heldout_bathroom.west    material_id=marble         預期=marble         confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK     heldout_bathroom.east    material_id=marble         預期=marble         confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK     heldout_bathroom.south   material_id=unknown        預期=unknown        confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK   heldout_living: source_type/dims_basis 正確；dims_m={'length': 5, 'width': 4, 'height': 2.7} == 設計值 (5, 4, 2.7)；六面齊全
+OK     heldout_living.floor   material_id=wood_panel     預期=wood_panel     confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK     heldout_living.ceiling material_id=gypsum_board   預期=gypsum_board   confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK     heldout_living.north   material_id=curtain_fabric 預期=curtain_fabric confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK     heldout_living.west    material_id=gypsum_board   預期=gypsum_board   confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK     heldout_living.east    material_id=gypsum_board   預期=gypsum_board   confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK     heldout_living.south   material_id=unknown        預期=unknown        confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK   heldout_hall: source_type/dims_basis 正確；dims_m={'length': 24, 'width': 16, 'height': 8} == 設計值 (24, 16, 8)；六面齊全
+OK     heldout_hall.floor   material_id=wood_panel     預期=wood_panel     confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK     heldout_hall.ceiling material_id=concrete       預期=concrete       confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK     heldout_hall.north   material_id=generic_wall   預期=generic_wall   confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK     heldout_hall.west    material_id=glass          預期=glass          confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK     heldout_hall.east    material_id=unknown        預期=unknown        confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK     heldout_hall.south   material_id=unknown        預期=unknown        confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK   heldout_corridor: source_type/dims_basis 正確；dims_m={'length': 8, 'width': 1.8, 'height': 2.6} == 設計值 (8, 1.8, 2.6)；六面齊全
+OK     heldout_corridor.floor   material_id=marble         預期=marble         confirmed_by=user date=2026-09-21 proxy=True(預期 True)
+OK     heldout_corridor.ceiling material_id=gypsum_board   預期=gypsum_board   confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK     heldout_corridor.north   material_id=gypsum_board   預期=gypsum_board   confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK     heldout_corridor.west    material_id=gypsum_board   預期=gypsum_board   confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK     heldout_corridor.east    material_id=gypsum_board   預期=gypsum_board   confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK     heldout_corridor.south   material_id=unknown        預期=unknown        confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK   heldout_car: source_type/dims_basis 正確；dims_m={'length': 2.6, 'width': 1.5, 'height': 1.2} == 設計值 (2.6, 1.5, 1.2)；六面齊全
+OK     heldout_car.floor   material_id=carpet         預期=carpet         confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK     heldout_car.ceiling material_id=curtain_fabric 預期=curtain_fabric confirmed_by=user date=2026-09-21 proxy=True(預期 True)
+OK     heldout_car.north   material_id=glass          預期=glass          confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+OK     heldout_car.west    material_id=acoustic_panel 預期=acoustic_panel confirmed_by=user date=2026-09-21 proxy=True(預期 True)
+OK     heldout_car.east    material_id=acoustic_panel 預期=acoustic_panel confirmed_by=user date=2026-09-21 proxy=True(預期 True)
+OK     heldout_car.south   material_id=unknown        預期=unknown        confirmed_by=user date=2026-09-21 proxy=False(預期 False)
+總結： 全部通過
+exit=0
+```
+  - 結論：頂層恰為五個 stem；五張 `dims_m` 逐字＝裁定寫死的設計值；六面齊全；每面 `material_id` ∈ `candidate_material_ids` ∪ {`unknown`}；五張 `south` 全為 `unknown`；每面 `confirmed_by`＝`user`；proxy 面恰為 corridor 地板與 car 車頂棚／左右車門；逐面與「草稿表＋使用者四項修改」一致（上方定稿表由同一份 JSON 產生，與此輸出互為對照）。
+
+  **步驟 5（`assets/SOURCES.md` §4）、步驟 6（候選目錄 README 追加）的差異證據（原文）**
+```
+$ git diff --stat HEAD -- assets/SOURCES.md assets/t17r2_synthetic_candidates/README.md
+ assets/SOURCES.md                           | 16 +++++++++++-----
+ assets/t17r2_synthetic_candidates/README.md |  3 +++
+ 2 files changed, 14 insertions(+), 5 deletions(-)
+
+$ git diff -U0 HEAD -- assets/SOURCES.md | grep '^@@'
+@@ -180,5 +180,5 @@ Depth Anything V2 與 SegFormer 都是用一般透視影像訓練，
+@@ -189,0 +190,6 @@ Depth Anything V2 與 SegFormer 都是用一般透視影像訓練，
+
+$ git diff -U0 HEAD -- assets/t17r2_synthetic_candidates/README.md | grep '^@@'
+@@ -35,0 +36,3 @@ AI 圖可以是未經調參的全新合成素材，但不能自動等同任務
+```
+  - 結論：`SOURCES.md` 有兩個 hunk——`@@ -180,5 +180,5 @@`（§4 表格五列就地填值：5 行改寫）與 `@@ -189,0 +190,6 @@`（Fable 註記段之後、`---` 之前，空一行後另起新行的 T-60 註記：1 空行＋5 行）；README 只有 `@@ -35,0 +36,3 @@` 一個純新增 hunk（檔尾追加：1 空行＋2 行），無刪除行（自我檢查 5 的 `grep` 為證）。
+
+  **步驟 7 manifest 乾跑（唯一執行的 `scripts/*.py`；輸出寫 scratchpad；原文）**
+```
+$ git status --porcelain -- src data scripts
+（輸出為空）
+
+$ python scripts/t17r2_dataset_manifest.py --out "/private/tmp/claude-501/-Users-musicersho-Image-Reverb/100da6b8-44a2-437d-aa68-878a46fc1b52/scratchpad/t60_dry_manifest.json"; echo "exit=$?"
+✅ 已寫入 /private/tmp/claude-501/-Users-musicersho-Image-Reverb/100da6b8-44a2-437d-aa68-878a46fc1b52/scratchpad/t60_dry_manifest.json
+   head=a65fc3287714926cf9deb564e239efe7c3b66904　degraded=False
+   heldout_photos=5　venues=8
+exit=0
+
+$ python -c "import json,sys; m=json.load(open(sys.argv[1])); [print(p['stem'], p['domain'], p['sha256'][:16]) for p in m['heldout_photos']]" "/private/tmp/claude-501/-Users-musicersho-Image-Reverb/100da6b8-44a2-437d-aa68-878a46fc1b52/scratchpad/t60_dry_manifest.json"
+heldout_bathroom in 9697b659d104f716
+heldout_living in 0a731b514a764514
+heldout_hall out eb4f1d09b86c9c6b
+heldout_corridor in 7a9f2b8595b6102d
+heldout_car non_room 7b345e6692bc0ca8
+
+$ ls output/mvp_acceptance_r2 2>&1
+ls: output/mvp_acceptance_r2: No such file or directory
+```
+  - 結論：`git status --porcelain -- src data scripts` 為空、`exit=0`、五列 `domain` 恰為 `heldout_bathroom in`／`heldout_living in`／`heldout_hall out`／`heldout_corridor in`／`heldout_car non_room`（與裁定鎖定值逐列相同，GT 檔不需修正）；`output/mvp_acceptance_r2` 仍不存在。
+
+  **自我檢查 1、2（原文；DEV_LOG／HANDOFF／TODO 寫完之後取）**
+```
+$ git status --porcelain
+ M DEV_LOG.md
+ M HANDOFF.md
+ M TASKS.md
+ M TODO.md
+ M assets/SOURCES.md
+ M assets/t17r2_synthetic_candidates/README.md
+?? assets/photos_heldout/
+
+$ git diff --stat -- src data scripts output SPEC.md ROADMAP.md WORKFLOW.md assets/photos assets/t04_refresh assets/t17r2_synthetic_candidates/ASSET_MANIFEST.json assets/t17r2_synthetic_candidates/PROMPTS.json
+（輸出為空）
+```
+  - 結論：`git status --porcelain` 只出現 `?? assets/photos_heldout/`、` M assets/SOURCES.md`、` M assets/t17r2_synthetic_candidates/README.md`、` M TASKS.md`／`DEV_LOG.md`／`HANDOFF.md`／`TODO.md`；範圍外 `git diff --stat` 為空。
+
+  **自我檢查 3（原文；曝光清單與步驟 0 那份用 `diff` 比對）**
+```
+$ find output -maxdepth 1 -type d \( -name 'heldout_*' -o -name 't04_gpt_*' \)
+（輸出為空）
+
+$ python "/private/tmp/claude-501/-Users-musicersho-Image-Reverb/100da6b8-44a2-437d-aa68-878a46fc1b52/scratchpad/t60_step1.py" assets/photos_heldout    # (c) 十條 grep 對五個 sha256 再跑一次；(a)(b)(d) 一併重跑
+# 檢查目錄：assets/photos_heldout
+== (a) sha256 逐張 vs ASSET_MANIFEST.json ==
+heldout_bathroom.png  9697b659d104f71643f5083b166445a7381db147f52f4607412395bf8dec3a05  manifest=相同
+heldout_living.png  0a731b514a7645143d26cc460e531aea2bc29a767c17b3cd402b3d8e30dd8a07  manifest=相同
+heldout_hall.png  eb4f1d09b86c9c6b7658662820a7d419a0f4b243c4746353aae09f94c59adc59  manifest=相同
+heldout_corridor.png  7a9f2b8595b6102d5c52bc0738923dd8a24192233565c7e3dd64bbf654d7044d  manifest=相同
+heldout_car.png  7b345e6692bc0ca866c9516fe734dd9789f1b95b937345ac2de20bb7a08b457f  manifest=相同
+(a) 結果：五張全部相同
+== (b) PIL 只讀尺寸（不 save）==
+heldout_bathroom.png  1448x1086  PNG  max邊=1448  w/h=1.3333  OK
+heldout_living.png  1448x1086  PNG  max邊=1448  w/h=1.3333  OK
+heldout_hall.png  1448x1086  PNG  max邊=1448  w/h=1.3333  OK
+heldout_corridor.png  1448x1086  PNG  max邊=1448  w/h=1.3333  OK
+heldout_car.png  1448x1086  PNG  max邊=1448  w/h=1.3333  OK
+(b) 結果：五張全部 OK（長邊>=1280 且 w/h 不在 1.9~2.1）
+== (c) 每個 sha256 各跑兩條 grep，預期全空 ==
+$ grep -rl 9697b659d104f71643f5083b166445a7381db147f52f4607412395bf8dec3a05 data   # heldout_bathroom.png
+（輸出為空）
+exit=1
+$ grep -rl 9697b659d104f71643f5083b166445a7381db147f52f4607412395bf8dec3a05 output '--include=*.md' '--include=*.json'   # heldout_bathroom.png
+（輸出為空）
+exit=1
+$ grep -rl 0a731b514a7645143d26cc460e531aea2bc29a767c17b3cd402b3d8e30dd8a07 data   # heldout_living.png
+（輸出為空）
+exit=1
+$ grep -rl 0a731b514a7645143d26cc460e531aea2bc29a767c17b3cd402b3d8e30dd8a07 output '--include=*.md' '--include=*.json'   # heldout_living.png
+（輸出為空）
+exit=1
+$ grep -rl eb4f1d09b86c9c6b7658662820a7d419a0f4b243c4746353aae09f94c59adc59 data   # heldout_hall.png
+（輸出為空）
+exit=1
+$ grep -rl eb4f1d09b86c9c6b7658662820a7d419a0f4b243c4746353aae09f94c59adc59 output '--include=*.md' '--include=*.json'   # heldout_hall.png
+（輸出為空）
+exit=1
+$ grep -rl 7a9f2b8595b6102d5c52bc0738923dd8a24192233565c7e3dd64bbf654d7044d data   # heldout_corridor.png
+（輸出為空）
+exit=1
+$ grep -rl 7a9f2b8595b6102d5c52bc0738923dd8a24192233565c7e3dd64bbf654d7044d output '--include=*.md' '--include=*.json'   # heldout_corridor.png
+（輸出為空）
+exit=1
+$ grep -rl 7b345e6692bc0ca866c9516fe734dd9789f1b95b937345ac2de20bb7a08b457f data   # heldout_car.png
+（輸出為空）
+exit=1
+$ grep -rl 7b345e6692bc0ca866c9516fe734dd9789f1b95b937345ac2de20bb7a08b457f output '--include=*.md' '--include=*.json'   # heldout_car.png
+（輸出為空）
+exit=1
+(c) 結果：十條 grep 全空
+== (d) 與 assets/photos/*.png、legacy t04_gpt_hall.png 逐位元相同者（只算 sha256、只記錄）==
+assets/photos/t04_gpt_bathroom.png  == heldout_bathroom.png
+assets/photos/t04_gpt_car.png  == heldout_car.png
+assets/photos/t04_gpt_corridor.png  == heldout_corridor.png
+assets/photos/t04_gpt_living.png  == heldout_living.png
+assets/photos_legacy_20260920/t04_gpt_hall.png  == heldout_hall.png
+(d) 共比對 10 個檔
+
+$ ls -la output/seg/ output/depth/ | grep -E 't04_gpt|stats\.json'
+-rw-r--r--   1 musicersho  staff     9892 Sep 21 09:43 depth_stats.json
+-rw-r--r--   1 musicersho  staff  1043959 Sep 21 09:43 t04_gpt_arena_concert_depth.png
+-rw-r--r--   1 musicersho  staff   688955 Sep 21 09:43 t04_gpt_bathroom_depth.png
+-rw-r--r--   1 musicersho  staff   785031 Sep 21 09:43 t04_gpt_car_depth.png
+-rw-r--r--   1 musicersho  staff   886864 Sep 21 09:43 t04_gpt_cave_lab_depth.png
+-rw-r--r--   1 musicersho  staff   890685 Sep 21 09:43 t04_gpt_cavern_crowd_depth.png
+-rw-r--r--   1 musicersho  staff   653981 Sep 21 09:43 t04_gpt_corridor_depth.png
+-rw-r--r--   1 musicersho  staff   779651 Sep 21 09:43 t04_gpt_livehouse_depth.png
+-rw-r--r--   1 musicersho  staff   767772 Sep 21 09:43 t04_gpt_living_depth.png
+-rw-r--r--   1 musicersho  staff   676113 Sep 21 09:43 t04_gpt_stairwell_depth.png
+-rw-r--r--   1 musicersho  staff    10520 Sep 21 09:45 stats.json
+-rw-r--r--   1 musicersho  staff  1572656 Sep 21 09:45 t04_gpt_arena_concert_labelmap.npy
+-rw-r--r--   1 musicersho  staff  5453357 Sep 21 09:45 t04_gpt_arena_concert_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 21 09:45 t04_gpt_bathroom_labelmap.npy
+-rw-r--r--   1 musicersho  staff  3854256 Sep 21 09:45 t04_gpt_bathroom_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 21 09:45 t04_gpt_car_labelmap.npy
+-rw-r--r--   1 musicersho  staff  4183304 Sep 21 09:45 t04_gpt_car_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 21 09:45 t04_gpt_cave_lab_labelmap.npy
+-rw-r--r--   1 musicersho  staff  4766623 Sep 21 09:45 t04_gpt_cave_lab_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 21 09:45 t04_gpt_cavern_crowd_labelmap.npy
+-rw-r--r--   1 musicersho  staff  4974210 Sep 21 09:45 t04_gpt_cavern_crowd_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 21 09:45 t04_gpt_corridor_labelmap.npy
+-rw-r--r--   1 musicersho  staff  3806063 Sep 21 09:45 t04_gpt_corridor_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 20 16:16 t04_gpt_hall_labelmap.npy
+-rw-r--r--   1 musicersho  staff  3455868 Sep 20 16:16 t04_gpt_hall_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 21 09:45 t04_gpt_livehouse_labelmap.npy
+-rw-r--r--   1 musicersho  staff  4455578 Sep 21 09:45 t04_gpt_livehouse_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 21 09:45 t04_gpt_living_labelmap.npy
+-rw-r--r--   1 musicersho  staff  4133100 Sep 21 09:45 t04_gpt_living_seg.png
+-rw-r--r--   1 musicersho  staff  1572656 Sep 21 09:45 t04_gpt_stairwell_labelmap.npy
+-rw-r--r--   1 musicersho  staff  3940623 Sep 21 09:45 t04_gpt_stairwell_seg.png
+```
+  - 曝光清單前後比對（`t60_step0_exposure.txt` 為步驟 0 之後立即存檔的那份；`t60_step_end_exposure.txt` 為收工前重取）：
+```
+$ diff "/private/tmp/claude-501/-Users-musicersho-Image-Reverb/100da6b8-44a2-437d-aa68-878a46fc1b52/scratchpad/t60_step0_exposure.txt" "/private/tmp/claude-501/-Users-musicersho-Image-Reverb/100da6b8-44a2-437d-aa68-878a46fc1b52/scratchpad/t60_step_end_exposure.txt"; echo "diff exit=$?"
+diff exit=0
+```
+  - 結論：`find` 目錄檢查仍無輸出；步驟 1(c) 的十條 `grep` 對五個 sha256 仍全空（上方 `(c) 結果：十條 grep 全空`）；`output/seg`／`output/depth` 曝光清單與步驟 0 那份逐行相同（`diff` 無輸出、`exit=0`，兩份皆 31 行）——本卡沒有增加共用圖曝光。因為沒有差異，依卡片不需另列「本視窗執行過的全部指令清單」；本視窗全程沒有跑任何模型或測試。
+
+  **自我檢查 5（鐵則 16 行層級檢查；原文）**
+```
+$ for c in T-17-R2 T-04; do diff <(git show HEAD:TASKS.md | awk -v c=$c '/^### /{f=($2==c)} f') <(awk -v c=$c '/^### /{f=($2==c)} f' TASKS.md) | grep -cE '^[<>]'; done
+0
+0
+
+$ git diff HEAD -- assets/t17r2_synthetic_candidates/README.md | grep -E '^-[^-]'
+（輸出為空）
+```
+  - 結論：T-17-R2 卡與 T-04 卡對 HEAD 各為 `0` 個新增／刪除行；候選目錄 README 對 HEAD 無刪除行（只追加）。（自我檢查 4 見上方「步驟 4」段。）
 
 ### T-62 T-04 換圖後的測試相容修正：`test_pipeline_dedup.py` 改由退役集備份路徑取圖＋`test_depth.py` 格式化 bug（Sonnet；`scripts/` only；**關鍵路徑、最先做**；前置＝`criteria:` `758eeba`）
 - **狀態**：✅ **已驗證（工程）**（Opus 2026-09-21 驗證；全套 22 支 `scripts/test_*.py` 全 `EXIT=0`、步驟 3／4 診斷力由驗證者自行重做、範圍外零 diff；驗證紀錄見卡末「Opus 驗證紀錄」。原：🔵 待審〔Sonnet 2026-09-21 完成；步驟 0～5 與自我檢查全過，證據見卡末交接筆記；等 Opus 驗證。原：⬜ 可開跑（Fable 2026-09-20 開卡；T-17-R2 步驟 0(e)、T-60 前置、T-04 v2 驗證都要等本卡）〕）

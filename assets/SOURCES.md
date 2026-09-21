@@ -177,15 +177,21 @@ Depth Anything V2 與 SegFormer 都是用一般透視影像訓練，
 
 | 檔案 | 類別 | 來源 | 授權 | 拍攝日 | 大約尺寸（L×W×H m，使用者估） |
 |---|---|---|---|---|---|
-| `heldout_bathroom.*` | 浴室 | （待填：使用者自攝／圖庫網址） | （自攝＝專案自有；圖庫＝記授權） | | |
-| `heldout_living.*` | 居住空間 | | | | |
-| `heldout_hall.*` | 教堂／大空間 | | | | |
-| `heldout_corridor.*` | 樓梯間／走廊 | | | | |
-| `heldout_car.*` | 車內 | | | | |
+| `heldout_bathroom.png` | 浴室 | AI 生成：GPT Image（Codex 內建 image_gen），依使用者要求，2026-09-20；提示詞 assets/t17r2_synthetic_candidates/PROMPTS.json；sha256 assets/t17r2_synthetic_candidates/ASSET_MANIFEST.json | 無第三方影像輸入（純文字提示）；使用者委託生成；僅供專案內部使用 | （生成日）2026-09-20 | 2.4×1.8×2.5（設計值，非實測） |
+| `heldout_living.png` | 居住空間 | AI 生成：GPT Image（Codex 內建 image_gen），依使用者要求，2026-09-20；提示詞 assets/t17r2_synthetic_candidates/PROMPTS.json；sha256 assets/t17r2_synthetic_candidates/ASSET_MANIFEST.json | 無第三方影像輸入（純文字提示）；使用者委託生成；僅供專案內部使用 | （生成日）2026-09-20 | 5×4×2.7（設計值，非實測） |
+| `heldout_hall.png` | 教堂／大空間 | AI 生成：GPT Image（Codex 內建 image_gen），依使用者要求，2026-09-20；提示詞 assets/t17r2_synthetic_candidates/PROMPTS.json；sha256 assets/t17r2_synthetic_candidates/ASSET_MANIFEST.json | 無第三方影像輸入（純文字提示）；使用者委託生成；僅供專案內部使用 | （生成日）2026-09-20 | 24×16×8（設計值，非實測） |
+| `heldout_corridor.png` | 樓梯間／走廊 | AI 生成：GPT Image（Codex 內建 image_gen），依使用者要求，2026-09-20；提示詞 assets/t17r2_synthetic_candidates/PROMPTS.json；sha256 assets/t17r2_synthetic_candidates/ASSET_MANIFEST.json | 無第三方影像輸入（純文字提示）；使用者委託生成；僅供專案內部使用 | （生成日）2026-09-20 | 8×1.8×2.6（設計值，非實測） |
+| `heldout_car.png` | 車內 | AI 生成：GPT Image（Codex 內建 image_gen），依使用者要求，2026-09-20；提示詞 assets/t17r2_synthetic_candidates/PROMPTS.json；sha256 assets/t17r2_synthetic_candidates/ASSET_MANIFEST.json | 無第三方影像輸入（純文字提示）；使用者委託生成；僅供專案內部使用 | （生成日）2026-09-20 | 2.6×1.5×1.2（設計值，非實測） |
 
 > 📌 **2026-09-20（T-17-R2 卡裁定 T-17-R2-S）**：本節素材改走「**路徑 S＝AI 合成圖**」——使用者指定採用 §6 的五張 GPT Image 合成圖；解析度下限改為長邊 ≥1280px（五張皆 1448×1086）。
 > 上表由 **T-60** 就位時填寫（不是 T-17-R2 步驟 1）；「來源」欄依 T-04 卡裁定 T-04-R §2 第 3 點填 AI 生成圖的五項紀錄，「拍攝日」填生成日，「大約尺寸」填裁定寫死的設計值（僅供域內／域外分類，非實測）。
 > 已揭露事項：五張同時是 T-04 現行開發素材的來源，且在 R2 前被分割／深度冒煙測試處理過；未用於調參／標註／校準。
+
+> 📌 **2026-09-21（T-60）**：五張已就位於 `assets/photos_heldout/heldout_{bathroom,living,hall,corridor,car}.png`（自 `assets/t17r2_synthetic_candidates/` 以 `mv` 搬入；搬移前後 sha256 皆等於 `assets/t17r2_synthetic_candidates/ASSET_MANIFEST.json`）。
+> 逐面材質與設計尺寸＝`assets/photos_heldout/ground_truth_heldout.json`（`confirmed_by: user`；使用者 2026-09-21 逐張看圖確認，原話記於 TASKS.md T-60 卡交接筆記）；上表「大約尺寸」欄的數字是設計值、僅用於域內／域外分類，非實測。
+> 解析度：五張皆 1448×1086、4:3，長邊 1448 ≥ 1280（裁定 T-17-R2-S 的下限）。
+> 共用圖：`heldout_bathroom`／`heldout_living`／`heldout_corridor`／`heldout_car` 四張與 `assets/photos/t04_gpt_{bathroom,living,corridor,car}.png` 逐位元相同；`heldout_hall` 的複本在 `assets/photos_legacy_20260920/t04_gpt_hall.png`（本機、git 忽略）。共用圖禁用令（T-04 卡裁定 T-04-R §2 第 4 點）適用，解除前不得處理這些圖。
+> T-04 v2「來源連結」五項（裁定 T-04-R §2 第 3 點）對應：① 生成工具名稱＝上表「來源」欄「GPT Image（Codex 內建 image_gen）」；② 生成日＝「拍攝日」欄 2026-09-20；③ 依誰的要求生成＝「來源」欄「依使用者要求」；④ 完整提示詞檔的 repo 內路徑＝「來源」欄 `assets/t17r2_synthetic_candidates/PROMPTS.json`；⑤ 逐張 sha256 清單的 repo 內路徑＝「來源」欄 `assets/t17r2_synthetic_candidates/ASSET_MANIFEST.json`。
 
 ---
 

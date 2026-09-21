@@ -33,3 +33,6 @@ AI 圖可以是未經調參的全新合成素材，但不能自動等同任務�
 本次未執行任何分析／IR／gate／盲測管線，未建立 `ground_truth_heldout.json`，未鎖定 R2 資料集。後續若要納入正式 R2，須先解決原生解析度不足，並由規劃／驗收流程明確定義合成圖的證據地位，再做正式前置檢查；另有 T-57-F1 待驗證的前置。原門檻維持不變。
 
 素材準備四軸：工程：待補（解析度未達）｜實驗：未執行｜產品：不適用｜MVP：待重驗（沿用 T-17-R2，沒有本輪結論）。依 WORKFLOW §4 自檢未過只提交文件；五張 PNG 保留本機，不納入本次文件 commit。
+
+**2026-09-20 後續（T-60）**（實際執行日 2026-09-21）：五張 PNG 已 `mv` 到 `assets/photos_heldout/`，本目錄不再有圖檔。因此本檔上表內指向 `heldout_*.png` 的相對連結，以及 `assets/t04_refresh/ASSET_MANIFEST.json` 中四筆 `source_path`（bathroom／living／corridor／car）自此指向不存在的檔，屬預期；sha256 仍可對（本目錄的 `ASSET_MANIFEST.json` 與 `PROMPTS.json` 留在原處）。
+驗收門檻已由 T-17-R2 卡裁定 T-17-R2-S 改為長邊 ≥1280px，上文「未達 1920／不是正式 held-out」是舊門檻下的歷史紀錄；`ASSET_MANIFEST.json` 的 `minimum_1920px_met` 欄位同為歷史紀錄、不改。既有文字一字不動。

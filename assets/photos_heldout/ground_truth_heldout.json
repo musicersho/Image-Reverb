@@ -1,0 +1,241 @@
+{
+  "heldout_bathroom": {
+    "source_type": "ai_synthetic",
+    "dims_basis": "synthetic_design_user_confirmed",
+    "dims_m": {
+      "length": 2.4,
+      "width": 1.8,
+      "height": 2.5
+    },
+    "surfaces": {
+      "floor": {
+        "material_id": "marble",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "灰色地磚（淋浴間為小馬賽克磚）"
+      },
+      "ceiling": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "白漆平頂（含圓形吸頂燈）"
+      },
+      "west": {
+        "material_id": "marble",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "使用者 2026-09-21 改判（原話「浴室 west 改 marble」）：左側為玻璃淋浴隔間，其後牆面為磁磚，記 marble；草稿原為 glass"
+      },
+      "east": {
+        "material_id": "marble",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "米色磁磚牆（含霧面窗、洗手台）"
+      },
+      "north": {
+        "material_id": "marble",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "米色大片磁磚牆（馬桶後方）"
+      },
+      "south": {
+        "material_id": "unknown",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "合成圖畫面看不到鏡頭背後的牆"
+      }
+    }
+  },
+  "heldout_living": {
+    "source_type": "ai_synthetic",
+    "dims_basis": "synthetic_design_user_confirmed",
+    "dims_m": {
+      "length": 5,
+      "width": 4,
+      "height": 2.7
+    },
+    "surfaces": {
+      "floor": {
+        "material_id": "wood_panel",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "橡木色木地板（中央鋪編織地毯）"
+      },
+      "ceiling": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "白漆平頂"
+      },
+      "west": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "使用者 2026-09-21 確認（原話「living／west 就是白牆，但有其他放置家具。」）：白牆，牆前有電視櫃等其他家具；畫面僅左緣一窄條可見"
+      },
+      "east": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "白漆牆（掛畫、書櫃）"
+      },
+      "north": {
+        "material_id": "curtain_fabric",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "落地窗前有薄紗＋厚布簾遮住大部分；右段有一小塊白牆"
+      },
+      "south": {
+        "material_id": "unknown",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "合成圖畫面看不到鏡頭背後的牆"
+      }
+    }
+  },
+  "heldout_hall": {
+    "source_type": "ai_synthetic",
+    "dims_basis": "synthetic_design_user_confirmed",
+    "dims_m": {
+      "length": 24,
+      "width": 16,
+      "height": 8
+    },
+    "surfaces": {
+      "floor": {
+        "material_id": "wood_panel",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "拋光木拼花地板"
+      },
+      "ceiling": {
+        "material_id": "concrete",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "白漆的梁與頂板；底下是混凝土或抹灰無法從圖確定，記 concrete（兩者聲學上皆為硬質光滑面）"
+      },
+      "west": {
+        "material_id": "glass",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "一整排挑高玻璃窗（窗間為白漆牆柱）"
+      },
+      "east": {
+        "material_id": "unknown",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "使用者 2026-09-21 回覆「hall／east 看不出來」：畫面僅右緣一窄條，標 unknown"
+      },
+      "north": {
+        "material_id": "generic_wall",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "米白漆牆，正中為舞台開口（深藍布幕、灰色背板）"
+      },
+      "south": {
+        "material_id": "unknown",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "合成圖畫面看不到鏡頭背後的牆"
+      }
+    }
+  },
+  "heldout_corridor": {
+    "source_type": "ai_synthetic",
+    "dims_basis": "synthetic_design_user_confirmed",
+    "dims_m": {
+      "length": 8,
+      "width": 1.8,
+      "height": 2.6
+    },
+    "surfaces": {
+      "floor": {
+        "material_id": "marble",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "proxy": true,
+        "note": "水磨石（碎石粒嵌水泥、表面光亮）；候選無水磨石，硬質光滑面 marble 聲學上最接近"
+      },
+      "ceiling": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "白漆平頂（含圓形吸頂燈）"
+      },
+      "west": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "白漆牆（含多扇木門）"
+      },
+      "east": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "白漆牆（含多扇木門）"
+      },
+      "north": {
+        "material_id": "gypsum_board",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "走廊盡頭白漆牆（前有盆栽、下緣水磨石踢腳）"
+      },
+      "south": {
+        "material_id": "unknown",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "合成圖畫面看不到鏡頭背後的牆"
+      }
+    }
+  },
+  "heldout_car": {
+    "source_type": "ai_synthetic",
+    "dims_basis": "synthetic_design_user_confirmed",
+    "dims_m": {
+      "length": 2.6,
+      "width": 1.5,
+      "height": 1.2
+    },
+    "surfaces": {
+      "floor": {
+        "material_id": "carpet",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "使用者 2026-09-21 改判（原話「car／floor 腳踏曲為 carpet」）：腳踏區為地毯；座椅遮住大部分，僅座椅下緣露出黑色地毯；草稿原標 unknown"
+      },
+      "ceiling": {
+        "material_id": "curtain_fabric",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "proxy": true,
+        "note": "淺灰織布車頂棚；候選無車用內裝材質，沿用 T-36 先例以 curtain_fabric 近似"
+      },
+      "west": {
+        "material_id": "acoustic_panel",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "proxy": true,
+        "note": "左車門內裝；候選無車用門板，沿用 T-36 先例以 acoustic_panel 近似"
+      },
+      "east": {
+        "material_id": "acoustic_panel",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "proxy": true,
+        "note": "右車門內裝；同 west"
+      },
+      "north": {
+        "material_id": "glass",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "前擋風玻璃區（車內 north／south＝前／後擋風玻璃區，沿用 T-36 先例）"
+      },
+      "south": {
+        "material_id": "unknown",
+        "confirmed_by": "user",
+        "date": "2026-09-21",
+        "note": "後擋風玻璃區在鏡頭背後，畫面看不到"
+      }
+    }
+  }
+}
