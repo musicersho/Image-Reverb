@@ -12474,6 +12474,8 @@ EOF
     方向核准＝使用者；條文起草＝Fable；條文核准＝使用者貼 §4 Prompt 樣板（保留否決權至步驟 1 前）；獨立 `criteria:` commit；`criteria_changed_after_first_result` 維持 no。
     → 回填（Fable 2026-09-20；另起新行；上方各行原文不動）：
   criteria_commit: 同上＋**`758eeba`**（裁定 T-17-R2-S，2026-09-20）
+    → 回填（Opus 2026-09-21；T-17-R2 執行步驟 1；另起新行；上方各行原文不動）：
+  dataset_manifest_sha256: **`501eb6a7ec1f48febd8f51530d7c92cc232f74d16ca6d5395ca2a436ec705bd2`**（`shasum -a 256 output/mvp_acceptance_r2/DATASET_MANIFEST.json`；manifest 內 head＝`0a84f34`、degraded＝false、held-out 5 張（路徑 S；domain in／in／out／in／non_room）、venues 8（in_domain 僅 `mit_gym`）、dry＝`assets/dry/clap_synth.wav` 合成拍手；步驟 0 全部前置檢查通過後產生，早於任何樣本）
   ```
 - **Opus 驗證重點（四軸輸出）**：紅旗：任何素材 provenance 與 HEAD 不符仍納入；紅旗：重用
   `d958b3c` 盲測素材；紅旗：分組達標率被合併；紅旗：域外照片被算進自動組達標；紅旗：REPORT

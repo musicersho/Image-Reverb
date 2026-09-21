@@ -1,0 +1,151 @@
+{
+  "degraded": false,
+  "head": "0a84f3406419591c7fae3024687a621bcf7c465c",
+  "heldout_photos": [
+    {
+      "stem": "heldout_bathroom",
+      "category": "浴室",
+      "path": "assets/photos_heldout/heldout_bathroom.png",
+      "sha256": "9697b659d104f71643f5083b166445a7381db147f52f4607412395bf8dec3a05",
+      "domain": "in"
+    },
+    {
+      "stem": "heldout_living",
+      "category": "客廳／臥室（住宅尺度）",
+      "path": "assets/photos_heldout/heldout_living.png",
+      "sha256": "0a731b514a7645143d26cc460e531aea2bc29a767c17b3cd402b3d8e30dd8a07",
+      "domain": "in"
+    },
+    {
+      "stem": "heldout_hall",
+      "category": "教堂／大空間",
+      "path": "assets/photos_heldout/heldout_hall.png",
+      "sha256": "eb4f1d09b86c9c6b7658662820a7d419a0f4b243c4746353aae09f94c59adc59",
+      "domain": "out"
+    },
+    {
+      "stem": "heldout_corridor",
+      "category": "走廊／樓梯間",
+      "path": "assets/photos_heldout/heldout_corridor.png",
+      "sha256": "7a9f2b8595b6102d5c52bc0738923dd8a24192233565c7e3dd64bbf654d7044d",
+      "domain": "in"
+    },
+    {
+      "stem": "heldout_car",
+      "category": "車內",
+      "path": "assets/photos_heldout/heldout_car.png",
+      "sha256": "7b345e6692bc0ca866c9516fe734dd9789f1b95b937345ac2de20bb7a08b457f",
+      "domain": "non_room"
+    }
+  ],
+  "venues": [
+    {
+      "key": "cathedral_room_shasta_lake_caverns",
+      "label": "Cathedral Room, Shasta Lake Caverns（石灰岩洞窟）",
+      "photo_sha256": "d4dcaed7c3b590546aa26e006930b1dfc1050e509cca20e4d806a050773c9d48",
+      "real_ir_sha256": [
+        "a04dc65ab7521dce2c90782a5496f7daa599e4d3789a69efb34f4aefcec0107a"
+      ],
+      "in_domain": false
+    },
+    {
+      "key": "divorce_beach",
+      "label": "Divorce Beach（戶外沙灘岩礁）",
+      "photo_sha256": "746d0c7adfe71a30805ae41366d48e2195e42cd8f6094b79a2623fcd0c63928a",
+      "real_ir_sha256": [
+        "98480910e77905336772ca04a77d47d0bebdc48a0f0fdf610cdca331a6eedaa7"
+      ],
+      "in_domain": false
+    },
+    {
+      "key": "mit_department_store",
+      "label": "Department Store（MIT，百貨賣場）",
+      "photo_sha256": "a3aa38e1821829ce12e0f2a25294db35a32cf297172cc0a8376e34cf9c568a5c",
+      "real_ir_sha256": [
+        "4764b10749d9e625aa263bd9dc01851f72a927158d169c178250c65a4b5da9a7"
+      ],
+      "in_domain": false
+    },
+    {
+      "key": "mit_gym",
+      "label": "Gym（MIT，健身房／重訓室）",
+      "photo_sha256": "9ccc9c335ff8862a7f46f22548c1d1c90e9b4b79090cfaf9dd25f2346a96749e",
+      "real_ir_sha256": [
+        "e73b2eb6fb249099e408291d11a3ed5a16061c0f92fb8bc7625f3b127efff696",
+        "4054d9d1f49d888208709aa52c8476f0d9cce0bdc65b1214422be26357c97d55",
+        "2538c80b41e4beb9fa3afeed7be7e5f6bfeb16e806604a4cf0c1d4bd506df3dc"
+      ],
+      "in_domain": true
+    },
+    {
+      "key": "mit_restaurant",
+      "label": "Restaurant（MIT，餐廳用餐區）",
+      "photo_sha256": "a3576a3a2eb8993ca87b6c8df864f5e0b7421316a91880176d59c6f340d27214",
+      "real_ir_sha256": [
+        "c2ca8a07002943409d31a2c6d6d07ba826aa428fe6ef6cecf2c4ff33d7d4a8a8",
+        "cdaf44302cd30411ec12497e2acf57a67bee63dbef74761c7a69870c733f5876",
+        "3167bdb9513f0f8545bbd8c16a3ebb52a255344cef809e7d6b146ab311a3e0d8",
+        "4759a5e2b09196b8343747261b09c89d06ea7bbe4b08f7cc7bc9ce83edc05b84"
+      ],
+      "in_domain": false
+    },
+    {
+      "key": "racquetball_court_4",
+      "label": "Racquetball Court 4（壁球場，必測反例）",
+      "photo_sha256": "878ee129bf633cb4d4e6589d04743fd7ceae7325d2e9eee2d1e753f678a835d2",
+      "real_ir_sha256": [
+        "60f8495bcd0ca25d1d834882cbcf685a1d10b3181cbe5c2614634e2419bc6f95"
+      ],
+      "in_domain": false
+    },
+    {
+      "key": "steinman_hall",
+      "label": "Steinman Hall（音樂廳）",
+      "photo_sha256": "1d2e11433e4285c0453ffed64c916307c5b97b8e5ca35826650a263baa5d0696",
+      "real_ir_sha256": [
+        "4383a2b12b4d89035b9d5eed5f9257b7fcd09cbfa5743a2a3d01841cb6a9bb12"
+      ],
+      "in_domain": false
+    },
+    {
+      "key": "tunnel_to_hell",
+      "label": "Tunnel to Hell（要塞地下混凝土隧道）",
+      "photo_sha256": "51dde5694fca64df43ac466da52bbcb926cd048641d79c67763cbbfc42045e65",
+      "real_ir_sha256": [
+        "432376bd8306fb976aa4fecb374d0b900f75f3017d05e2650d01a02841c554b7"
+      ],
+      "in_domain": false
+    }
+  ],
+  "manual_dims": {
+    "department_store": {
+      "length": 35.0,
+      "width": 25.0,
+      "height": 3.2
+    },
+    "gym": {
+      "length": 9.0,
+      "width": 6.0,
+      "height": 2.9
+    },
+    "restaurant": {
+      "length": 14.0,
+      "width": 9.0,
+      "height": 3.2
+    },
+    "racquetball": {
+      "length": 12.19,
+      "width": 6.1,
+      "height": 6.1
+    },
+    "steinman": {
+      "length": 20.0,
+      "width": 18.0,
+      "height": 7.5
+    }
+  },
+  "dry": {
+    "path": "assets/dry/clap_synth.wav",
+    "sha256": "9d89ddae83d1e4f41bbe9d6d9a9503d860c2a4228bb2b3a9f794adfcb5c8150c"
+  }
+}
