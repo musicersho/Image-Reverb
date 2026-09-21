@@ -58,6 +58,7 @@
   → **2026-09-21 🔵 Sonnet：T-62 完成（待驗證）**——四軸：工程：待審｜實驗：不適用｜產品：不適用｜MVP：不適用。`legacy_photos.py` 新增、`test_pipeline_dedup.py` 改由退役集取舊圖（`EXIT=1`→`EXIT=0`）、`test_depth.py` 的 `None` 保護；範圍外零 diff、共用圖曝光清單前後相同。下一步：Opus 驗 T-62（通過後才輪到 T-60）。
   → **2026-09-21 ✅ Opus：T-62 驗證通過（工程）**——四軸：工程：已驗證｜實驗：不適用｜產品：不適用｜MVP：不適用。全套 22 支 `EXIT=0`、診斷力重做（含補驗部分 B）、範圍外零 diff。**揭露：全套測試使共用圖曝光 23→31 行，corridor／living 首度有深度圖，R2 REPORT 須揭露。** 下一步：Sonnet 跑 T-60。
   → **2026-09-21 🔵 Sonnet：T-60 完成（待驗證）**——四軸：工程：待審｜實驗：不適用（素材卡）｜產品：不適用｜MVP：不適用。五張 held-out 合成圖已就位 `assets/photos_heldout/`（sha256 不變）、`ground_truth_heldout.json`（使用者看圖確認：浴室 west→marble、living／west 白牆、hall／east 看不出來→unknown、car／floor→carpet；其餘接受草稿，請 Opus 複核此解讀）、`assets/SOURCES.md` §4 已填；manifest 乾跑 domain＝in／in／out／in／non_room；未增加共用圖曝光。下一步：Opus 驗 T-60（通過後由使用者貼 T-17-R2 Prompt）。
+  → 〔2026-09-21 補（另起新行）：使用者事後明示「前面沒有回覆的部分視爲認同判斷」——T-60 的 GT 解讀成立，Opus 驗證時不需再請使用者補回「GT 確認」；工程軸仍「待審」不變。〕
 - **T-44 role-aware**：工程 ✅ **已驗證**（Opus 第四輪複驗 2026-09-10：三處無限定
   「逐位元相同」已改為限定敘述、§5 wall 側 7→11 面正確、`src/`／`scripts/`／`data/`／
   `rounds/` 零 diff、19 支測試 EXIT=0；✅ 只代表工程交付，不代表產品採用。

@@ -14683,6 +14683,7 @@ EOF
   - **下一步**：開 Opus 新視窗，貼 WORKFLOW §2.2 標準 Prompt（`T-XX`＝`T-60`），依本卡「Opus 驗證重點」驗證。WORKFLOW §5.4.1「完整測試套件」：本卡零程式改動，先貼 `git diff a65fc32..HEAD --stat -- src scripts data`（應為空），為空就引用 T-62 驗證紀錄裡的全套 22 支 `EXIT=0`，不必重跑（少一次共用圖曝光）。通過後才輪到 T-17-R2（使用者貼裁定 T-17-R2-S §4 的兩行 Prompt）。
   - **執行時的決定（請 Opus 逐條複核）**：
     1. **使用者回覆形式是「四項修改」而非「GT 確認」**：我的提問句寫「回『GT 確認』代表五張都看過且全部同意；材質要改就直接寫哪一張、哪一面改成什麼」。使用者採後者，逐項回了草稿表 ⚠ 清單中的四格（bathroom／west、living／west、hall／east、car／floor），沒有提 living／north 與 hall／ceiling（同為 ⚠ 格）。我解讀為「其餘接受草稿」，因此 JSON 內所有面都寫 `confirmed_by: user`、`date: 2026-09-21`。**這個解讀是我的判斷，卡片沒有明文**；若 Opus 認為不足以支撐 `confirmed_by: user`，請使用者補回「GT 確認」（不必改檔）。卡片步驟 3 要求「使用者改材質就照改、再貼一次定稿表」——定稿表在下方「步驟 3」段（由 JSON 產生），也已在收工回報中再貼給使用者；本卡沒有另外等第二輪回覆。
+       〔2026-09-21 使用者事後補充（本卡 commit `8a7c68b` 之後；另起新行，上方原文一字未動）：使用者明示「前面沒有回覆的部分視爲認同判斷」，此解讀成立；原話逐字見下方「使用者第二次回覆」。Opus 不需再請使用者補回「GT 確認」。〕
     2. **car／floor**：草稿依卡片步驟 3 標 `unknown`（座椅遮住大部分腳踏區，卡片舉的例子就是這種情況）；使用者原話「car／floor 腳踏曲為 carpet」（「曲」我解讀為「區」的筆誤）→ 依卡片「使用者改材質就照改」寫 `carpet`；不標 proxy（`carpet` 是候選，T-36 車內地板先例也是 `carpet`）；note 記錄改判與原草稿。
     3. **living／west**：使用者確認是白牆、牆前有其他家具 → 維持草稿的 `gypsum_board`；note 收錄使用者原話。此面畫面只有左緣一窄條可見，Opus 抽圖時可留意。**hall／east**：使用者「看不出來」→ 依卡片處理為 `unknown`。**bathroom／west**：使用者「改 marble」→ 寫 `marble`（草稿為 `glass`）。
     4. **材質→候選 id 的對應是我起草**（白漆牆與天花板→`gypsum_board`；hall 牆→`generic_wall`；hall 天花板→`concrete`；磁磚→`marble`；水磨石→`marble`＋proxy），依據＝看圖＋`data/material_ground_truth.json` 既有慣例（白漆牆多標 `gypsum_board`）。hall 天花板只看得到白漆的梁與頂板，底下是混凝土或抹灰無法從圖確定，記 `concrete` 並在 note 寫明。這些都經使用者看圖後未提異議（見決定 1）。
@@ -14956,6 +14957,11 @@ living／west 就是白牆，但有其他放置家具。
 hall／east 看不出來
 car／floor 腳踏曲為 carpet
 ```
+  - **使用者第二次回覆（逐字；2026-09-21；在本卡 commit `8a7c68b` 之後、我回報收工並提出「未回覆格子視為接受草稿」的解讀後）**：
+```
+前面沒有回覆的部分視爲認同判斷
+```
+  - 結論：使用者明示上方決定 1 的解讀成立——未提及的格子（含 living／north、hall／ceiling 與各面草稿）視為使用者認同；`ground_truth_heldout.json` 內各面的 `confirmed_by: user` 以「第一次回覆四項修改＋此句原話」共同為依據。JSON 與其他檔案不需因此改動（`date` 同為 2026-09-21）；**Opus 不需再請使用者補回「GT 確認」**。
   - 使用者對尺寸量級沒有異議（回覆中未提尺寸）；未觸發「🔴 卡關：使用者對 dims 有異議」。對回覆的解讀見上方「執行時的決定」1～3。
   - **定稿表**（由 `ground_truth_heldout.json` 以 scratchpad 腳本產生；`†`＝使用者本次回覆直接涉及的格子；`（proxy）`＝JSON 標 `proxy: true`）：
 

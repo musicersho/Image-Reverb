@@ -5,6 +5,7 @@
 > - 四軸：**工程：待審｜實驗：不適用（素材卡）｜產品：不適用｜MVP：不適用**。起點 HEAD `a65fc32`（T-62 已驗證）；收工 commit 見 `git log --oneline --grep='T-60: held-out'`。
 > - 五張 held-out 合成圖已 `mv` 到 `assets/photos_heldout/`（sha256 搬移前後皆等於 `assets/t17r2_synthetic_candidates/ASSET_MANIFEST.json`；皆 1448×1086；候選目錄無殘留 PNG）。新增 `assets/photos_heldout/ground_truth_heldout.json`（五 stem×六面，使用者 2026-09-21 看圖確認；`dims_m` 逐字取裁定設計值；`south` 五面與 hall／east 共 6 面 `unknown`；proxy 4 面）；`assets/SOURCES.md` §4 五列填值＋T-60 註記（T-04 v2「來源連結」五項對應）；`assets/t17r2_synthetic_candidates/README.md` 檔尾追加一段。
 > - **使用者原話（GT 確認的依據；全文與草稿表在 TASKS.md T-60 卡交接筆記）**：「浴室 west 改 marble」「living／west 就是白牆，但有其他放置家具。」「hall／east 看不出來」「car／floor 腳踏曲為 carpet」。使用者沒有回「GT 確認」四個字，而是逐項回覆草稿表 ⚠ 的格子；我把未提及的格子解讀為接受草稿——**請 Opus 複核這個解讀**（若認為不足以支撐 `confirmed_by: user`，請使用者補回「GT 確認」，不必改檔）。
+>   〔2026-09-21 補（另起新行；上一條原文不動）：使用者事後明示「前面沒有回覆的部分視爲認同判斷」——上述解讀成立，Opus **不需**再請使用者補回「GT 確認」；JSON 不需改動。原話逐字在 TASKS.md T-60 卡交接筆記「使用者第二次回覆」。〕
 > - **給 Opus**：`car／floor` 卡片預設標 `unknown`（座椅遮住腳踏區），使用者改判 `carpet`，已照改（不標 proxy）；`living／west` 畫面僅左緣窄條可見。WORKFLOW §5.4.1「完整測試套件」請先貼 `git diff a65fc32..HEAD --stat -- src scripts data`（本卡零程式改動，應為空），為空就引用 T-62 驗證紀錄的全套 22 支 `EXIT=0`，不必重跑（少一次共用圖曝光）。
 > - 步驟 7 manifest 乾跑（輸出寫 scratchpad、未建 `output/mvp_acceptance_r2/`）`exit=0`，五張 domain 為 `in／in／out／in／non_room`，與裁定鎖定值一致。**本卡沒有增加共用圖曝光**：未跑任何模型或 `scripts/test_*.py`，`output/seg|depth` 的 31 行清單前後逐行相同。
 > - 關鍵路徑：Opus 驗 T-60 → 使用者貼裁定 T-17-R2-S §4 的兩行 Prompt 開跑 T-17-R2。詳見 TASKS.md T-60 卡末交接筆記與 DEV_LOG `2026-09-21 (170)`。
