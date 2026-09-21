@@ -1,5 +1,19 @@
 # 交接文件 — 給下一個視窗
 
+> ## 🟡 2026-09-21 Opus：T-17-R2 執行中——步驟 0～6 完成，**現在該做的是：使用者做三件事（可跨日），做完回報給 Opus**
+>
+> - ① **§7-1 盲聽**：依序聽 `output/mvp_acceptance_r2/blind_test/sample_1.wav`～`sample_5.wav`，在同目錄 `作答表.md` 填五選一（浴室／客廳臥室／教堂大空間／走廊樓梯間／車內，每類只用一次）。**作答完成前不要打開 `output/mvp_acceptance_r2/blind_test_ANSWERS.json`，也不要開 `blind_test/MANIFEST.json`。**
+>   ② **§7-3**：把任一 `sample_N_IR.wav`（48 kHz／單聲道／24-bit WAV）載入您慣用的外部 convolution reverb 外掛，回報「能不能載入、聽起來有沒有正常作用」。
+>   ③ **§7-4**：用瀏覽器開 `output/mvp_acceptance_r2/播放頁.html` 試聽，回報有沒有重大 artifact（爆音、金屬聲、斷裂、明顯假的迴音等）。
+>   做完後開 Opus 視窗（本視窗或新視窗）貼：「你是驗證者，接續 T-17-R2 步驟 8～10。先讀 CLAUDE.md、HANDOFF.md 頂端、T-17-R2 卡交接筆記。以下是我的 §7-1 作答／§7-3／§7-4 回報：……」。
+> - 四軸暫記：**工程：進行中｜實驗：不適用｜產品：不適用｜MVP：待重驗（REPORT 前不判）**。commit：步驟 1＝`8ac0b64`（DATASET_MANIFEST sha256 `501eb6a7…`）、步驟 6＝`001c8ed`（樣本／量測首跑）。**此後不得重生任何樣本**；使用者環節期間只允許 docs commit，禁止碰 `src`／`data`／`scripts`／`output/mvp_acceptance_r2/`。
+> - 步驟 0 全部前置通過（明細在 TASKS.md T-17-R2 卡交接筆記第 1 點；原始輸出在本機 `output/mvp_acceptance_r2/step0_evidence/`，git 忽略，寫 REPORT §0 要用、不要刪）。22 支測試全 `EXIT=0`（本卡唯一一次全套執行）、六條 IR MD5 全中。
+> - 已知結果（尚未判定）：只有 held-out 浴室、客廳兩張不加旗標就通過 gate，其餘 16 個 run 都被擋後以 forced 產出；§7-2 自動組 **0/0、coverage 0/1** → 判準 2 預期不成立，**期望結果仍是 `MVP：FAIL（R2）`**（Fable 早已預告）。
+> - **📌 給所有視窗（含 Codex）——共用圖禁用令（T-04 卡裁定 T-04-R §2 第 4 點；T-17-R2 收工並複驗、Fable 寫下解除紀錄前有效）**：R2 held-out 五張不論檔名，目前有三處逐位元複本：`assets/t17r2_synthetic_candidates/heldout_*.png`（T-60 後移到 `assets/photos_heldout/`）、
+>   `assets/photos/t04_gpt_{bathroom,living,corridor,car}.png`、`assets/photos_legacy_20260920/t04_gpt_hall.png`。**不得**對它們跑 `python -m src.image_reverb` 或任何指定單張的分析／評測腳本，不得調參／標註／寫進 `data/`／當新測試夾具；
+>   除 T-17-R2 卡自己的執行步驟、T-60 步驟 7 的 manifest 乾跑之外，唯一容忍的是任務卡或 WORKFLOW §5.4.1 要求的全套 `scripts/test_*.py` 例行執行（不帶引數、每次驗證至多一次；單獨跑 `test_depth.py`／`test_segmentation.py` 不算）。
+>   算 sha256、只讀尺寸、看圖不受限。不要刪 `assets/photos_legacy_20260920/`；除 T-60 步驟 2 那一次 `mv` 外，不要再搬動或替換 `assets/photos/` 與 held-out 圖。**之後每個在 HANDOFF 頂端加新段的視窗，請把本條原樣保留在新段最後，直到 Fable 寫下解除紀錄。**
+
 > ## ✅ 2026-09-21 Opus：T-60 驗證通過（工程）——**現在該做的是：開 Opus 新視窗，逐字貼 TASKS.md T-17-R2 卡「裁定 T-17-R2-S §4」的 Prompt 樣板（兩行），開跑 T-17-R2（MVP 重新驗收）**
 >
 > - 四軸：**工程：已驗證｜實驗：不適用（素材卡）｜產品：不適用｜MVP：不適用**。對象 commit `8a7c68b`＋`4d4aced`。驗證紀錄全文在 TASKS.md T-60 卡末「Opus 驗證紀錄」。

@@ -1,5 +1,11 @@
 # Dev Log
 
+## 2026-09-21 (172) T-17-R2 MVP 重新驗收：步驟 0～6 完成（Opus；停在使用者環節）
+
+- 使用者 Prompt＝裁定 T-17-R2-S §4 樣板逐字（程序 P1 核准／held-out 已就位／路徑 S）。步驟 0 全部前置通過：前置 commit 齊、`src/`＋`data/` 自 `b06f022` 零 diff、五張尺寸／sha256／純度／`find` 皆符、(d) 兩段如預期、22 支測試全 `EXIT=0`（本卡唯一一次全套）、六條 IR MD5 全中、`output/mvp_acceptance/` 快照 `9c514e87…`。
+- 步驟 1 `8ac0b64`：DATASET_MANIFEST sha256 `501eb6a7…`（合成拍手乾聲）。步驟 2：18 個預設 run 只有 held-out 浴室／客廳通過 gate，16 個 exit 3 → forced 重跑全 exit 0。步驟 3 provenance 全為 `8ac0b64` clean、sha256 集合相符。步驟 4／5 表與播放頁產出；自動組 0/0、coverage 0/1。步驟 6 `001c8ed`。
+- 四軸暫記：工程：進行中｜實驗：不適用｜產品：不適用｜MVP：待重驗。下一步：使用者 §7-1 作答、§7-3 載入、§7-4 試聽 → Opus 步驟 8～10（REPORT＋四軸）。
+
 ## 2026-09-21 (171) T-60 Opus 驗證通過（工程）
 
 - 四軸：**工程：已驗證｜實驗：不適用（素材卡）｜產品：不適用｜MVP：不適用**。對象 commit `8a7c68b`＋`4d4aced`。

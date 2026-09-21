@@ -697,3 +697,4 @@
 - [x] 確立專案願景：照片/影片 → AI 空間與材質分析 → IR 生成 → Convolution Reverb
 - [x] SPEC v0.1、RESEARCH 調查、ROADMAP Phase 0–3
 - [x] 建立多視窗協作系統（CLAUDE.md / WORKFLOW.md / TASKS.md）
+  → **2026-09-21 🟡 Opus：T-17-R2 執行中（步驟 0～6 完成，`8ac0b64`／`001c8ed`）**——等使用者 §7-1 盲聽作答（`output/mvp_acceptance_r2/blind_test/作答表.md`）、§7-3 外部 convolution 載入、§7-4 播放頁試聽；回報後 Opus 接步驟 8～10。自動組 0/0、coverage 0/1，期望 `MVP：FAIL（R2）`。

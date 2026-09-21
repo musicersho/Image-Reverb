@@ -12140,6 +12140,7 @@ EOF
   解析度下限改為長邊 ≥1280px、並新增「路徑 S＝AI 合成圖」（見下方**裁定 T-17-R2-S**）；五張候選圖自此**可以**成為正式 held-out，但要等 **T-60**（素材就位＋使用者確認 GT）✅ 之後才算「已就位」。〕
 - **狀態**：⬜ **未開始——開跑前置尚缺兩項（Fable 2026-09-20）：① T-62 ✅（換圖後測試相容修正）；② T-60 ✅（held-out 五張 AI 合成圖就位，路徑 S）。T-57（含 T-57-F1）已於 2026-09-20 經 Opus 驗證通過（`875697e`）。兩項都完成後，使用者貼裁定 T-17-R2-S §4 的 Prompt 樣板；Prompt B 降級路徑自 `ba1fcdb` 起不可用（同裁定 §3 第 6 點）**（原：⬜ **可開跑（Fable 2026-09-16 落地執行步驟＋程序 P1＋§8 前三欄；等使用者 held-out 照片就位後貼 Prompt A，或貼 Prompt B 走降級）**（原：⬜ 未開始），原字保留）
 - **四軸狀態**：工程：未開始｜實驗：不適用｜產品：不適用｜MVP：**待重驗**（T-17 首驗 FAIL 永久保留）
+  〔Opus 2026-09-21（另起新行；上兩行原文保留）：**🟡 進行中——步驟 0～6 完成，停在步驟 7 使用者環節**（§7-1 盲聽作答／§7-3 外部 convolution 載入／§7-4 播放頁試聽）；四軸暫記：工程：進行中｜實驗：不適用｜產品：不適用｜MVP：待重驗（REPORT 前不判）。commit：步驟 1＝`8ac0b64`、步驟 6＝`001c8ed`。〕
 - **🔮 裁決 T-47-A 補註（Fable 2026-09-14；判準一字不改）**：前置「裁決 T-47-A」**自此滿足**；前置追加「T-52 結案（使用者選乙）或使用者選甲」
   （驗收期間不得有 gate 程式碼變動）；T-44-R1 ⏸ 未跑 → 依本卡既有條文以預設 `role_aware=False` 重驗，REPORT 標明。報告項 5 追加
   （附帶發現 ⓐⓑ）：被放行照片的逐面正誤含無來源面（依 ground truth 判、獨立列出），錯誤放行率分母＝六面。
@@ -12481,6 +12482,22 @@ EOF
   `d958b3c` 盲測素材；紅旗：分組達標率被合併；紅旗：域外照片被算進自動組達標；紅旗：REPORT
   寫「通過」但四項有任一未達；紅旗：動了 `output/mvp_acceptance/`。
 - **交接筆記**：
+  - **Opus 2026-09-21（R2 執行視窗；步驟 0～6；使用者 Prompt＝裁定 T-17-R2-S §4 樣板逐字，含「程序 P1 核准」「held-out 已就位」「held-out 為 AI 合成圖（路徑 S）」三句，無「P2」、無「沿用舊五張（降級）」）**：
+    1. **步驟 0 全部通過**（原始輸出存本機 `output/mvp_acceptance_r2/step0_evidence/`（git 忽略），REPORT §0 逐段貼）：(a) porcelain 空、HEAD `0a84f34`＝origin；`c1b3f63`／`875697e`（T-57）／`0a84f34`（T-60）／`a65fc32`（T-62）各 1 行；T-58 已結案（`b06f022`）；
+       `git diff b06f022..HEAD --stat -- src/ data/` 空。(c) 五張皆 1448×1086（4:3，非 2:1、長邊 ≥1280）、sha256 五張＝`ASSET_MANIFEST.json`；五 sha256 對 `output/.archive/`（442 檔）、`data/` 全目錄、`output/**/*.md`＋`MANIFEST.json` grep 全 0；
+       `find output -maxdepth 1 -type d \( -name 'heldout_*' -o -name 't04_gpt_*' \)` 空；GT JSON 五 stem×六面、schema 符合 T-57 交接筆記第 1 點、材質 id 皆在 `data/materials.json`；SOURCES §4 五列齊。
+       (d) 第一段 `geometry.py | 15`、第二段空。(e) `ls scripts/test_*.py`＝22 支，**本卡唯一一次全套執行**（禁用令例外 ③；理由：`assets/photos_heldout/` 自 T-62 驗證後才出現，`test_t17r2_tools.py` 有相對路徑 `assets/photos_heldout`，不宜只引用舊紀錄）→ 22 支全 `EXIT=0`；
+       六條 IR MD5：T-14 兩條由 `test_ir_synth.py` 內建比對 ✅，T-20／T-21 四條 scratchpad 重生 `md5 -q` 與歷史完整 32 碼逐字相同。執行前後 `output/` 頂層清單、目錄清單、曝光檔名清單（31 行）逐行相同。
+       (f) `output/mvp_acceptance/` 41 檔 sha256 清單的 sha256＝`9c514e87884f929f6fefc6bba09ad2cf9fd292d2348858c395598423da1c08ce`（與 T-57-F1 驗證紀錄相同）。
+    2. **步驟 1**：`t17r2_dataset_manifest.py`（無自錄乾聲，預設 `assets/dry/clap_synth.wav`）→ domain in／in／out／in／non_room、in_domain 僅 `mit_gym`；sha256 `501eb6a7ec1f48febd8f51530d7c92cc232f74d16ca6d5395ca2a436ec705bd2` 回填 §8；commit `8ac0b64`。
+    3. **步驟 2**（10:33～10:42 +0800，HEAD `8ac0b64`，指令樣板逐字、`$?` 緊接 CLI）：18 個預設 run——**只有 `heldout_bathroom`、`heldout_living` exit 0（未 forced 通過 gate）**；其餘 16 個（held-out hall／corridor／car、8 場地、手動 5）全 exit 3 → 各加 `--force-low-confidence` 另存 `.forced.log`，全 exit 0。無 exit 2。
+    4. **步驟 3**：`t17r2_blind_test.py` exit 0；五筆 provenance `git_revision`＝`8ac0b64` clean、`packaging_git_revision` 同、`shuffle_seed` 20260916；`photo_sha256` 集合與 `dry.sha256` 皆＝DATASET_MANIFEST（為免洩題，只比集合、未印對應）。步驟 2～3 之間無 commit。
+    5. **步驟 4／5**：`t17r2_rt60_table.py`、`t17r2_report_tables.py`、`t17r2_make_player.py` 全 exit 0；`git diff -- src/image_reverb/ir_metrics.py` 空。表 2 自動組 **0/0、coverage 0/1**（`site_photo_gym` 被擋）→ 判準 2 預期不成立，與預告一致。
+    6. **步驟 6**：commit `001c8ed`（`blind_test/MANIFEST.json`、`rt60_table.json`、`tables.md`、`runs/*.log` 34 檔）。**此後不得重生任何樣本。** `blind_test/作答表.md` 未進版控（待使用者填寫後隨 REPORT 一起 commit）。
+    7. **下一步＝使用者環節（可跨日）**：§7-1 聽 `output/mvp_acceptance_r2/blind_test/sample_1..5.wav` 填 `作答表.md`（作答前不得開 `blind_test_ANSWERS.json`）；§7-3 把任一 `sample_N_IR.wav`（已驗：48 kHz／單聲道／PCM_24 WAV）載入外部 convolution reverb 回報能否載入；
+       §7-4 開 `output/mvp_acceptance_r2/播放頁.html` 試聽回報有無重大 artifact。期間只允許 docs commit，不得碰 `src`／`data`／`scripts`／`output/mvp_acceptance_r2/`。使用者回報後由 Opus（本視窗或新視窗）接步驟 8～10。
+    8. **給寫 REPORT 的人（先記，不在此下判定）**：表 5 顯示兩張未 forced 放行的 held-out，錯誤放行率主率 8/10、6N 下界 8/12、上界 10/12；`heldout_bathroom` 六面中 5 面可判全錯（地板判成 carpet）；`site_photo_department_store` 預設路徑出口訊息「override-dims 導引：無」——判準 5「出口訊息可操作」須逐張核對 log 原文。
+       `t17r2_report_tables.py` 印「116 行」而實際檔案 132 行（`len(L)` 計的是字串段數，含換行的段算一行），屬顯示字樣、不影響表內容，記給 Fable 的 R2 後工具清單。
 
 ### T-57 T-17-R2 工具前置：R2 薄包裝腳本＋資料集 manifest 產生器（Sonnet；`scripts/` only；**關鍵路徑**；前置＝T-56 ✅）
 - **狀態**：🟠 **退回**（Opus 驗證，2026-09-18，對象 `4d4f63b`）——主體功能實測成立，但下列 R1～R5 未達，開 T-57 修正輪（Sonnet）逐條處理後再送驗：
