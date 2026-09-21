@@ -1,5 +1,16 @@
 # Dev Log
 
+## 2026-09-21 (177) 🔮 Fable：T-63 判準 v2 草案 修訂版（r1）＋使用者 U1～U4 決定＋T-64 改路徑 S＋T-65 規格追加＋鐵則 18-a＋新卡 T-70
+
+- **使用者決定（AskUserQuestion 兩輪）**：U1 原話「目前無法實際到各個場地做此動作，請提供替代方案」→ 追問後選「**改用公開量測資料集**」；追問 T-64 可行範圍 → 「**都沒辦法，想用合成圖**」（裁決 T-17-R2-A §0 第 2 題「願意自拍」由使用者本人同日改變，原紀錄保留）；U2「留在名單，參數事前寫死」；U3「報告項，強制揭露」；U4「小房間全進 held-out」。
+- **T-63 r1**（另起段 R1-0～R1-5，原草案與 Opus 意見原字保留；四軸不變；未核准不生效；SPEC §7／WORKFLOW 零改動）：新增**程序 P 參數鎖定**（先 commit 參數檔再出 IR、只認鎖定版 sha256、改檔或 exit≠0 即作廢）；V2-1 held-out＝合成圖＋強制句；
+  V2-2 名單＝`mit_gym`（尺寸寫死、材質只看照片確認）＋T-70 封存的公開房間（五條件、全數入名單不得挑）、兩側同用 `ir_metrics.py` T30（手機錄音不入名單 → 原開放問題 A／T20 撤回）、名單兩段鎖定、racquetball＝強制揭露的報告項、8 場地逐列表、尺寸來源雙欄；
+  V2-5 改成可機械驗證（`output/` sha256 前後相同、JSON 布林 `true`、外部標籤受測集＋逐面規則）；V2-W 合法字樣帶「held-out＝AI 合成圖」與「門檻於 R2 後由使用者變更」變體；R1-1 編號對映表；R1-4 逐點回應表。**門檻數字一個都沒動。**
+- **不採納／部分採納**：②-8(a)～(f) 手機錄音效度條款不寫入（前提消失）；①-3(b)「7 場地跑輔助路徑」改 4 個（洞窟／隧道／海灘在 T-17 表 4 沒有尺寸可沿用）。**Fable 自查補列 F-1～F-5** 請 Opus 一併審：WORKFLOW §5.4.4 須在 `criteria:` commit 同步加註；held-out 改合成圖是否滿足 §7；Fable 把「在家錄音可加入」收窄為報告項；T-70 符合房間 <2 個則判準 2 必樣本不足；T-69 繼續 ⏸。
+- **接縫**：T-64 追加「路徑 S 修訂」（Codex 十張合成圖；S0 曝光檢查；U4 分組規則＋不屬五類的歸類；盲測代表＝各類 sha256 最小；名單候選不再由 T-64 負責）；T-65 追加 r1-1～r1-5（既有目標拒寫＋`--out-dir`、本卡實跑一律導 scratchpad 以免寫進 R2 唯讀的 `output/site_photo_gym/`；`surfaces.<面>.attention_reasons[]`；`test_params_flow.py` 補 V2-5(a)(b)(c)）；
+  Phase 1.10 鐵則段追加 **18-a**（範圍擴到 `photos_synth_heldout/`、`reference_rooms_heldout/`；R3 受驗 run 是唯一授權、限三種程式各一次、寫 `output/mvp_acceptance_r3/`；審過前從嚴無授權）；**新卡 T-70**（公開小房間 IR 資料集：調查→使用者授權下載→封存；禁止記錄任何 RT60 數值）；T-68 資料集 (c) 不納入、T-69／T-17-R3 開卡條件補註。
+- 本輪只動 TASKS／DEV_LOG／TODO／HANDOFF／ROADMAP／`assets/incoming_real/README.md`（頂端加一行擱置註記）；TASKS.md 為純新增行（`git diff` 零刪除行）。下一步＝獨立 Opus 審 r1 diff（Prompt 在 HANDOFF 頂端）。
+
 ## 2026-09-21 (176) Codex：十個合成空間照片＋尺寸與六面材質
 
 - 使用者明確要求依 `assets/incoming_real/README.md` 生成照片；以內建 GPT Image 產十張，五類各二，並非執行 T-64 真實素材卡。
