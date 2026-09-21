@@ -1,5 +1,16 @@
 # 交接文件 — 給下一個視窗
 
+> ## ✅ 2026-09-21 Opus：T-60 驗證通過（工程）——**現在該做的是：開 Opus 新視窗，逐字貼 TASKS.md T-17-R2 卡「裁定 T-17-R2-S §4」的 Prompt 樣板（兩行），開跑 T-17-R2（MVP 重新驗收）**
+>
+> - 四軸：**工程：已驗證｜實驗：不適用（素材卡）｜產品：不適用｜MVP：不適用**。對象 commit `8a7c68b`＋`4d4aced`。驗證紀錄全文在 TASKS.md T-60 卡末「Opus 驗證紀錄」。
+> - held-out 五張已在 `assets/photos_heldout/`：sha256 與 `ASSET_MANIFEST.json` 相同、尺寸 1448×1086 未變、候選目錄無殘留；`ground_truth_heldout.json` 的 `dims_m`＝裁定寫死值、六面材質＝使用者確認的定稿表（兩次原話在卡）；`SOURCES.md` §4 已填、來源連結五項可對到。
+> - 曝光：T-60 視窗前後曝光清單逐行相同（31 行）；**本次驗證未跑任何模型或腳本，零新增曝光**。R2 REPORT 仍須揭露 T-62 驗證時的 23→31 行（見下方 T-62 段）。
+> - §5.4.1 全套測試：`src`／`scripts`／`data` 自 `a65fc32` 起零 diff，依卡片引用 T-62 驗證的 22 支 `EXIT=0`。T-17-R2 的三項前置（T-57、T-60、T-62 ✅）至此全部成立。
+> - **📌 給所有視窗（含 Codex）——共用圖禁用令（T-04 卡裁定 T-04-R §2 第 4 點；T-17-R2 收工並複驗、Fable 寫下解除紀錄前有效）**：R2 held-out 五張不論檔名，目前有三處逐位元複本：`assets/t17r2_synthetic_candidates/heldout_*.png`（T-60 後移到 `assets/photos_heldout/`）、
+>   `assets/photos/t04_gpt_{bathroom,living,corridor,car}.png`、`assets/photos_legacy_20260920/t04_gpt_hall.png`。**不得**對它們跑 `python -m src.image_reverb` 或任何指定單張的分析／評測腳本，不得調參／標註／寫進 `data/`／當新測試夾具；
+>   除 T-17-R2 卡自己的執行步驟、T-60 步驟 7 的 manifest 乾跑之外，唯一容忍的是任務卡或 WORKFLOW §5.4.1 要求的全套 `scripts/test_*.py` 例行執行（不帶引數、每次驗證至多一次；單獨跑 `test_depth.py`／`test_segmentation.py` 不算）。
+>   算 sha256、只讀尺寸、看圖不受限。不要刪 `assets/photos_legacy_20260920/`；除 T-60 步驟 2 那一次 `mv` 外，不要再搬動或替換 `assets/photos/` 與 held-out 圖。**之後每個在 HANDOFF 頂端加新段的視窗，請把本條原樣保留在新段最後，直到 Fable 寫下解除紀錄。**
+
 > ## 🔵 2026-09-21 Sonnet：T-60 完成（待驗證）——**現在該做的是：開 Opus 新視窗貼 WORKFLOW §2.2 標準 Prompt，`T-XX` 換成 `T-60`（依序 ④；通過後才輪到 ⑤：使用者貼 T-17-R2 的兩行 Prompt）**
 >
 > - 四軸：**工程：待審｜實驗：不適用（素材卡）｜產品：不適用｜MVP：不適用**。起點 HEAD `a65fc32`（T-62 已驗證）；收工 commit 見 `git log --oneline --grep='T-60: held-out'`。

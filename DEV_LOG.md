@@ -1,5 +1,12 @@
 # Dev Log
 
+## 2026-09-21 (171) T-60 Opus 驗證通過（工程）
+
+- 四軸：**工程：已驗證｜實驗：不適用（素材卡）｜產品：不適用｜MVP：不適用**。對象 commit `8a7c68b`＋`4d4aced`。
+- 驗證者自行重算：五張 sha256＝`ASSET_MANIFEST.json`、尺寸皆 1448×1086、十條 sha256 grep 全空、`find` 無輸出、候選目錄無殘留 PNG；曝光清單（步驟 0 vs 自我檢查 3 兩份原文）各 31 行逐行相同。**本次驗證未跑任何模型或腳本＝零新增曝光。**
+- GT JSON：五 stem、`dims_m` 逐字＝裁定 T-17-R2-S、六面齊、`south` 全 unknown、逐面＝定稿表；使用者兩次原話在卡（含「前面沒有回覆的部分視爲認同判斷」）；看圖抽查 living／car 相符。SOURCES §4 五列非空、T-04 v2 來源連結五項可對到。範圍外零 diff。
+- §5.4.1 全套測試：`git diff a65fc32..HEAD -- src scripts data` 為空 → 依卡片引用 T-62 驗證的 22 支 `EXIT=0`，不重跑。下一步：使用者貼裁定 T-17-R2-S §4 的 Prompt 開跑 T-17-R2。
+
 ## 2026-09-21 (170) T-60 held-out 五張合成圖就位＋GT＋SOURCES §4（Sonnet；待驗證）
 
 - 四軸：**工程：待審｜實驗：不適用（素材卡）｜產品：不適用｜MVP：不適用**。起點 HEAD `a65fc32`（T-62 已驗證）。步驟 0 前置檢查全過；五張 PNG 由 `assets/t17r2_synthetic_candidates/` `mv`（只一次）到 `assets/photos_heldout/`，搬移前後 sha256 皆等於 `ASSET_MANIFEST.json`、皆 1448×1086、候選目錄無殘留；**未跑任何模型／`scripts/test_*.py`**，共用圖曝光清單（`output/seg|depth` 31 行）前後逐行相同、`find` 目錄檢查無輸出。

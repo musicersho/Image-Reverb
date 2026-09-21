@@ -14579,8 +14579,8 @@ EOF
 
 ### T-60 T-17-R2 held-out 素材就位：五張 AI 合成圖（路徑 S）＋GT 使用者確認＋SOURCES §4（Sonnet；只動 `assets/`＋文件；**關鍵路徑**；前置＝裁定 T-17-R2-S `758eeba`＋T-62 經 Opus 驗證通過）
 - **編號說明**：T-61 是 Fable 2026-09-20 規劃期間的保留號，已取消、不開卡（原擬用途＝T-04 v2 素材卡；後因 Codex 已直接換圖，改由 Opus 直接驗現行交付集）。後續新卡請從 T-63 起編。執行順序：**T-62 先於 T-60**。
-- **狀態**：🔵 **待審**（Sonnet 2026-09-21 完成；步驟 0～7 與自我檢查全過，證據見卡末交接筆記；等 Opus 驗證。原：⬜ **可開跑（前置成立後）**（Fable 2026-09-20 開卡；**必須排在「T-62 經 Opus 驗證通過」之後**，且本卡進行期間不得有其他視窗跑 `scripts/test_*.py`——否則自我檢查 3 的曝光清單比對會被別人的動作弄亂），原字保留）
-- **四軸狀態**：工程：待審｜實驗：不適用（素材卡）｜產品：不適用｜MVP：不適用（原：工程：未開始｜實驗：不適用（素材卡）｜產品：不適用｜MVP：不適用，原字保留）
+- **狀態**：✅ **已驗證（工程）**（Opus 2026-09-21 驗證；sha256／尺寸／grep／find 由驗證者自行重算、曝光清單兩份原文逐行相同、使用者原話在卡、JSON 逐面＝定稿表、看圖抽查 living／car、範圍外零 diff；驗證紀錄見卡末「Opus 驗證紀錄」。原：🔵 **待審**（Sonnet 2026-09-21 完成；步驟 0～7 與自我檢查全過，證據見卡末交接筆記；等 Opus 驗證。原：⬜ **可開跑（前置成立後）**（Fable 2026-09-20 開卡；**必須排在「T-62 經 Opus 驗證通過」之後**，且本卡進行期間不得有其他視窗跑 `scripts/test_*.py`——否則自我檢查 3 的曝光清單比對會被別人的動作弄亂），原字保留））
+- **四軸狀態**：工程：已驗證｜實驗：不適用（素材卡）｜產品：不適用｜MVP：不適用（原：工程：待審｜實驗：不適用（素材卡）｜產品：不適用｜MVP：不適用（原：工程：未開始｜實驗：不適用（素材卡）｜產品：不適用｜MVP：不適用，原字保留））
 - **為什麼**：使用者 2026-09-20 決定用 Codex 以 GPT Image 生成的五張圖當 T-17-R2 正式 held-out（T-17-R2 卡**裁定 T-17-R2-S**），並與 T-04 新素材一批兩用（T-04 卡**裁定 T-04-R**）。
   T-17-R2 步驟 0 要求開跑時 HEAD 乾淨、`assets/photos_heldout/` 五類齊、`ground_truth_heldout.json` 存在且符合 schema、`assets/SOURCES.md` §4 有列——這些要有人先做好並 commit，就是本卡。**開工前先讀那兩段裁定全文。**
 - **⛔ 最重要的一條（不得再增加曝光）**：這五張（以及與它們逐位元相同的 `assets/photos/t04_gpt_{bathroom,living,corridor,car}.png`、`assets/photos_legacy_20260920/t04_gpt_hall.png`）受共用圖禁用令約束（裁定 T-04-R §2 第 4 點）；**本卡不得再增加任何曝光**——
@@ -15229,6 +15229,27 @@ $ git diff HEAD -- assets/t17r2_synthetic_candidates/README.md | grep -E '^-[^-]
 （輸出為空）
 ```
   - 結論：T-17-R2 卡與 T-04 卡對 HEAD 各為 `0` 個新增／刪除行；候選目錄 README 對 HEAD 無刪除行（只追加）。（自我檢查 4 見上方「步驟 4」段。）
+
+  **Opus 驗證紀錄（2026-09-21；驗證者＝Opus 5；只審不改碼；審查 HEAD `4d4aced`〔工作樹乾淨、＝origin/main〕；對象 commit `8a7c68b`＋`4d4aced`，起點 `a65fc32`；另起新行追加，上文原字保留）**
+  - **四軸判定**：工程：**已驗證**｜實驗：不適用（素材卡）｜產品：不適用｜MVP：不適用（MVP 軸只能由 T-17 系列寫）。
+  - **驗證者自己重做的（非引用 Sonnet）**——只算 sha256、PIL 只讀尺寸、grep、find、git、目視；**未跑任何模型、未跑任何 `scripts/*.py`、未跑 `python -m src.image_reverb`＝本次驗證零新增曝光**：
+    1. 五張 `assets/photos_heldout/heldout_*.png` sha256 逐張＝`assets/t17r2_synthetic_candidates/ASSET_MANIFEST.json`（9697b659…／0a731b51…／eb4f1d09…／7a9f2b85…／7b345e65…）；尺寸五張皆 `(1448, 1086)`——未被重新存檔或縮放。
+    2. 十條 sha256 grep（`data` 全目錄、`output --include=*.md --include=*.json`）全空；`find output -maxdepth 1 -type d \( -name 'heldout_*' -o -name 't04_gpt_*' \)` 無輸出；`output/mvp_acceptance_r2` 不存在。
+    3. `find assets/t17r2_synthetic_candidates -name '*.png'` 無輸出（目錄只剩 `ASSET_MANIFEST.json`／`PROMPTS.json`／`README.md`）＝是搬移不是複製。
+    4. **曝光比對（照卡片：比交接筆記兩份原文，不拿驗證當下目錄比）**：以 awk 從本卡抽出步驟 0 與自我檢查 3 兩份 `ls -la output/seg/ output/depth/ | grep …` 原文區塊，各 31 行，`diff` 無輸出＝本卡視窗未增加曝光；另參考：驗證當下重取同一清單亦與兩份逐行相同。
+    5. **範圍**：`git diff a65fc32..HEAD --stat` 只有 12 檔——DEV_LOG／HANDOFF／TASKS／TODO、`assets/SOURCES.md`、`assets/photos_heldout/`（5 PNG＋GT JSON）、候選目錄 README；`src`／`data`／`scripts`／`output`／SPEC／ROADMAP／WORKFLOW／`assets/photos`／`assets/t04_refresh`／兩份 manifest／PROMPTS.json 零 diff。
+       TASKS.md 對 `a65fc32`：hunk 只有 `@@ -14582,2 +14582,2 @@`（本卡狀態＋四軸兩行）與 `@@ -14680,0 +14681,551 @@`（本卡交接筆記純新增）；T-60 以外所有卡與檔頭對 `a65fc32` 行層級 diff＝`0`；README 對 `a65fc32` 無刪除行；`4d4aced` 無任何刪除行（純補記）。
+    6. **GT JSON**（驗證者自己的一次性腳本讀檔）：頂層恰五個 stem；`dims_m` 五組逐字＝裁定 T-17-R2-S §3 第 4 點（亦＝`aa13c55` 版 README「提示詞的設計尺寸」欄）；每 stem 有 `source_type: ai_synthetic`、`dims_basis: synthetic_design_user_confirmed`；六面齊全、`material_id` 全屬候選 ∪ {unknown}、`confirmed_by` 全為 `user`、五張 `south` 全 `unknown`；逐面與交接筆記定稿表一致（含 proxy 恰四面：corridor.floor、car.ceiling／west／east）。
+       domain 鎖定值（in／in／out／in／non_room）由 Sonnet 步驟 7 乾跑原文為證；本次**未重跑**該腳本（它會讀五張圖，重跑不增資訊）——`dims_m` 與裁定逐字相同，分類不可能改變。
+    7. **使用者原話**：第一次回覆四行（浴室 west／living west／hall east／car floor）與第二次「前面沒有回覆的部分視爲認同判斷」皆逐字在卡；四項修改逐項反映在 JSON 的值與 note。**「已把五張圖送給使用者」有紀錄**（SendUserFile、五個絕對路徑、工具回報 delivered）。
+       Sonnet 決定 1（未提及格子＝接受草稿）已由使用者第二次原話明示成立，`confirmed_by: user` 有依據；不需再請使用者補「GT 確認」。
+    8. **看圖抽查 2 張（living、car；選判斷最多的兩張）**：living——地板橡木（中央地毯）、白頂、north 落地窗被薄紗＋厚簾覆蓋、east 白牆掛畫書櫃、west 白牆（左緣，掛畫框、前有電視櫃，可見範圍其實比草稿說的「一窄條」寬，但材質判斷不受影響）；south 看不到→`unknown` 正確。
+       car（後座向前）——頂棚淺灰織布、前擋風玻璃、左右車門內裝可見；前座下方可見黑色地毯腳踏區，使用者改 `carpet` 與畫面相符；後擋風玻璃在鏡頭後→`unknown` 正確。兩張皆無「看不到卻有材質」或「看得到卻與畫面不符」的面。
+    9. **`SOURCES.md` §4**：五列六欄全非空；T-60 註記位於 Fable 註記段之後、`---` 之前、空一行另起；T-04 v2「來源連結」五項（① 工具 GPT Image／Codex image_gen ② 生成日 2026-09-20 ③ 依使用者要求 ④ `PROMPTS.json` 路徑 ⑤ `ASSET_MANIFEST.json` 路徑）逐項可對到表格欄位，且 ④⑤ 路徑檔案確實存在。hall 複本 `assets/photos_legacy_20260920/t04_gpt_hall.png` 由 `.gitignore:43` 忽略，註記「本機、git 忽略」屬實。
+    10. **WORKFLOW §5.4.1 完整測試套件**：`git diff a65fc32..HEAD --stat -- src scripts data` **為空**（驗證者實跑）→ 依本卡「Opus 驗證重點」引用 T-62 Opus 驗證紀錄（本檔 T-62 卡末，對象 `1ad985b`、審查於 `a65fc32` 前）之「全套 22 支 `scripts/test_*.py`（不帶引數、各一次）全 `EXIT=0`」為本項證據，**不重跑**（避免再增一次共用圖曝光）。此為卡片事前寫明的證據路徑，不是附註豁免。
+  - **自我檢查 1～5 與步驟 0～7**：原文俱在交接筆記；其中可重做的項目（上列 1～6、9、10）驗證者已重做且結果一致，無未完成項。
+  - **非阻擋觀察（交 Fable 知悉；不影響本卡工程判定）**：① hall 天花板記 `concrete` 屬起草者推定（note 已寫明無法確定），使用者未異議；R2 若該面判錯，理解上屬 GT 本身的不確定。② living.west 可見範圍描述偏窄，僅文字描述、材質值無誤。③ `t17r2_dataset_manifest.py` 乾跑 `head=` 記的是起點 `a65fc32`，R2 步驟 1 會以當時 HEAD 重產正式 manifest，屬預期。
+  - **下一步**：T-57、T-60、T-62 三張皆 ✅（工程）→ 使用者可開 Opus 新視窗，逐字貼裁定 T-17-R2-S §4 的 Prompt 樣板（本檔 T-17-R2 卡內「Prompt 樣板」兩行）開跑 T-17-R2。
 
 ### T-62 T-04 換圖後的測試相容修正：`test_pipeline_dedup.py` 改由退役集備份路徑取圖＋`test_depth.py` 格式化 bug（Sonnet；`scripts/` only；**關鍵路徑、最先做**；前置＝`criteria:` `758eeba`）
 - **狀態**：✅ **已驗證（工程）**（Opus 2026-09-21 驗證；全套 22 支 `scripts/test_*.py` 全 `EXIT=0`、步驟 3／4 診斷力由驗證者自行重做、範圍外零 diff；驗證紀錄見卡末「Opus 驗證紀錄」。原：🔵 待審〔Sonnet 2026-09-21 完成；步驟 0～5 與自我檢查全過，證據見卡末交接筆記；等 Opus 驗證。原：⬜ 可開跑（Fable 2026-09-20 開卡；T-17-R2 步驟 0(e)、T-60 前置、T-04 v2 驗證都要等本卡）〕）

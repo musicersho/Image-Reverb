@@ -59,6 +59,7 @@
   → **2026-09-21 ✅ Opus：T-62 驗證通過（工程）**——四軸：工程：已驗證｜實驗：不適用｜產品：不適用｜MVP：不適用。全套 22 支 `EXIT=0`、診斷力重做（含補驗部分 B）、範圍外零 diff。**揭露：全套測試使共用圖曝光 23→31 行，corridor／living 首度有深度圖，R2 REPORT 須揭露。** 下一步：Sonnet 跑 T-60。
   → **2026-09-21 🔵 Sonnet：T-60 完成（待驗證）**——四軸：工程：待審｜實驗：不適用（素材卡）｜產品：不適用｜MVP：不適用。五張 held-out 合成圖已就位 `assets/photos_heldout/`（sha256 不變）、`ground_truth_heldout.json`（使用者看圖確認：浴室 west→marble、living／west 白牆、hall／east 看不出來→unknown、car／floor→carpet；其餘接受草稿，請 Opus 複核此解讀）、`assets/SOURCES.md` §4 已填；manifest 乾跑 domain＝in／in／out／in／non_room；未增加共用圖曝光。下一步：Opus 驗 T-60（通過後由使用者貼 T-17-R2 Prompt）。
   → 〔2026-09-21 補（另起新行）：使用者事後明示「前面沒有回覆的部分視爲認同判斷」——T-60 的 GT 解讀成立，Opus 驗證時不需再請使用者補回「GT 確認」；工程軸仍「待審」不變。〕
+  → **2026-09-21 ✅ Opus：T-60 驗證通過（工程）**——四軸：工程：已驗證｜實驗：不適用｜產品：不適用｜MVP：不適用。sha256／尺寸／grep 自行重算、曝光清單前後相同、GT 逐面＝定稿表且使用者原話在卡、看圖抽查相符、範圍外零 diff；本次驗證零新增曝光。下一步：使用者貼裁定 T-17-R2-S §4 的 Prompt 開跑 T-17-R2。
 - **T-44 role-aware**：工程 ✅ **已驗證**（Opus 第四輪複驗 2026-09-10：三處無限定
   「逐位元相同」已改為限定敘述、§5 wall 側 7→11 面正確、`src/`／`scripts/`／`data/`／
   `rounds/` 零 diff、19 支測試 EXIT=0；✅ 只代表工程交付，不代表產品採用。
