@@ -1,5 +1,14 @@
 # Dev Log
 
+## 2026-09-22 (186) 🔮 Fable：T-63 判準 v2 修訂版（r5）——回應 Opus r4 I-1〔擋〕＋I-2～I-9＋第 16／18／22 點；T-65 r4／T-70 r5／T-17-R3 r5 追加
+
+- **T-63 r5**（另起 R5-0～R5-5 追加在卡末；原草案、五輪 Opus 意見、r1～r4 原字保留；四軸不變；未核准不生效；SPEC §7／WORKFLOW 零改動）：R5-2＝完整合併條文——由程式自 r4 R4-2（`f72fa82` 第 16434–16523 行、90 行）逐字複製，改寫 13 行條文＋4 行結構行、無新增行、無搬移，其餘 73 行經程式斷言逐字相同（每個改寫行以「唯一子字串取代」產生）；R5-2b 十行與 R4-2b 逐字相同（`difflib` 對齊為 equal）。R5-2 在 TASKS.md 第 16606–16695 行。
+- **〔擋〕I-1** → 18-a(r5)(1) 末句補「PIL `Image.open` 只讀 `.mode`／`.size`（不 `load()`、不解碼像素、不 `save`、不 `show`），用於 V2-2(a)(iii)①(A)②；開啟失敗即記排除、不得裝或註冊額外解碼器」。
+- **〔改〕全數併入**：I-2 (a)(iii)①(A) 改 (一)(二)(三)——刪 `.heic`、PIL 打不開即排除、非英文字母切詞整詞比對（關鍵字加 `spectrogram`）、目錄名限房間目錄以下各層、每一張候選都交 Opus 人眼判定；I-3 比較式加「引擎側拋錯」（RR-2 類別走定義 RR、其餘該場地該頻段記未達）；I-4 (e) 程式判斷式 `isinstance(e, MemoryError)`／`OSError` 且 `errno` ∈{5,12,28}、不得攔截、原樣 `raise`、全部算完才一次寫檔＋RR-2(B) 改 (B-1)(B-2) 類別名 `awk` 取法；I-5 如實註明改「估計式拋出例外的支與頻段（主要是三種 `ValueError`…另含 `ndim ≠ 1` 與 `scipy`）」；I-6 gym 重算＝`import` 呼叫 `measure_file`／`real_reference`（照 `main()` 用法）、輸出 `reference_metrics/mit_gym_recheck.json`、不得跑兩支腳本主程式、鍵路徑 `.value`；I-7 (d)① M＝1 不設聲道軸、所有「停」走 (d)⑤（I-7(iii) 秒數核對 → T-70 r5-2(iii)）；I-8 (d)③ 比較方式＝Python 三元組預設排序；I-9 P-5 取法「`params` 為非 `null` 物件」＋P-1 漏鎖段末「參數檔照片指紋核對」；第 16 點 `-iname`、第 18 點「警告不得升級為例外」併入條文。**唯一不採納＝第 20 點**（只影響顯示給使用者的材質文字，理由在 R5-4）。
+- **Fable 在 `.venv` 實測**（R5-3 F-16）：`awk` 類別名取法四種輸入結果正確；`sys.warnoptions` 為 `[]`；`sorted([(10,),(2,),()])`；PIL 11.3.0 無 `.heic`。沒有跑模型、沒有碰封存目錄、沒有讀任何真實 IR 的樣本或數值（只列 `rt60_table.json` 鍵結構）。
+- **其他卡**：T-63 追加 r5 指標行｜Phase 1.10 追加「18-a（r5 指標）」｜T-65 追加「規格追加 r4」r4-1（照片路徑 `params` 缺鍵或 `null`）、r4-2（`photo` 區塊唯讀；`photo.sha256`＝現算值）｜T-70 追加 r5 補行＋「修訂 r5」r5-0～r5-4｜T-17-R3 追加 r5 補。
+- 本輪只動 TASKS／DEV_LOG／TODO／HANDOFF；TASKS.md 純新增行（`git diff --numstat` 152 0）；SPEC／WORKFLOW／ROADMAP／src／scripts／data／output／assets 零 diff；門檻數字一個都沒動；鐵則 18-a 繼續從嚴。下一步＝Opus 審 r5 diff（Prompt 在 HANDOFF 頂端）→ Opus 寫「可送使用者核准」後使用者再核准 → `criteria:` commit。T-70 3a 可先跑。
+
 ## 2026-09-22 (185) 🔍 Opus：T-63 r4 條文審查——「需 Fable 再修（r5）」
 
 - 審查意見追加在 T-63 卡末「🔍 Opus 審查 r4」段（I-1～I-11，逐條 22 點＋總結）。自行核對：R3-2→R4-2 逐行集合比對＋`difflib`（改寫 16 行條文＋4 行結構行、無新增行，與 diff 索引相符；R4-2b 十行逐字相同）；`.venv` 合成 IR 驗證逐頻段 `band_t30` 與四頻段一次呼叫 `tobytes()` 逐位元相同；P-1 錨定指令以暫存 repo 驗證；gym 照片 sha256 核對；numpy 記憶體例外的 traceback 最後一行實測。
