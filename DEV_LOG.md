@@ -1,5 +1,13 @@
 # Dev Log
 
+## 2026-09-22 (184) 🔮 Fable：使用者回「T-63 r3 核准」（不生效，r3 已被 Opus 退回）＋T-63 判準 v2 修訂版（r4）＋T-65 r3／T-70 r4 追加
+
+- **使用者原話「T-63 r3 核准」**（在 Opus r3 審查 `13dea35` 之後）記入 T-63 卡 R4-0 第 1 點：不生效、未開 `criteria:` commit（核准對象必須是 Opus 結論「可送使用者核准」的版本；連同 r2 那次已兩度）。本視窗（Fable）依 HANDOFF 指示直接接手修 r4。
+- **T-63 r4**（另起 R4-0～R4-5；原草案、四輪 Opus 意見、r1～r3 原字保留；四軸不變；未核准不生效）：R4-2＝完整合併條文（未標「〔r4：」的行由程式自 r3 逐字複製並核對；r3 90 行中改寫 16 行條文＋4 行結構行、無新增行；R4-2b 十行與 R3-2b 逐字相同）。唯一〔擋〕H-1 → T-65 r3-1（`--params` 的 `analysis.json` 必記 `params.photo_sha256`＝參數檔 `photo.sha256` 逐字值；缺欄 exit 2）＋P-5「照片 sha256 取法」（有 `params` 鍵讀它、無則 `provenance.input_sha256`、皆無＝半寫入）。
+- **其餘全數併入、無不採納項**：H-2 P-1 `grep -E '^[0-9a-f]{40} docs: …'` 錨定、刪「相似」；H-3 例外加 gym 照片 sha256（寫死 `9ccc9c33…`）；H-4 複驗 ④ 目標位置＝宣告的 scratchpad 子目錄、與 ③ 分開計次；第 11 點 `python -VV` 入環境指紋；H-5 (e) 拋錯＝任何例外、RR-2 類別走定義 RR；H-6 逐頻段 `band_t30(ir, fs, [f])`；H-7 gym 參考值取 R2 `rt60_table.json` 原值（重算只核對）、引擎側一律 float64 原值；H-8 (A) 限相機實拍 RGB（副檔名＋PIL mode＋檔名關鍵字，疑似者交 Opus 人眼）；H-9／H-14 (d)① 通用位置軸規則（樣本軸＝最長、聲道軸＝麥克風數、其餘 >1 軸＝位置）＋(d)③ 排序鍵加位置索引，F-9 改寫；H-10 空房關鍵字七個、對象擴到房間目錄 `*.txt`、記 sha256；H-11 gym `--suggest` 輸出 `params_suggested/mit_gym.json`；H-12 18-a(2)② 刪 R2 `photos_heldout/` 五張；H-13 T-70 r4-1 略過行；第 30 點護欄寫進讀法（3a 後只准補「怎麼讀」）。
+- **F-4**：數字不變（最多 7、確定 1、待查 6）；依 Opus 第 7 點在 HANDOFF 白話明講 G-17／H-8 縮窄可能使 BUT 房間變少、名單更接近下限（事前規定、非放寬）。
+- 本輪只動 TASKS／DEV_LOG／TODO／HANDOFF；TASKS.md 純新增行（零刪除行）；SPEC／WORKFLOW／src／scripts／data／output／assets 零 diff；門檻數字未動；鐵則 18-a 繼續從嚴。下一步＝Opus 審 r4 diff（Prompt 在 HANDOFF 頂端）→ Opus 寫「可送使用者核准」後使用者再核准 → `criteria:` commit。T-70 3a 可先跑。
+
 ## 2026-09-22 (183) 🔍 Opus：T-63 r3 條文審查——「需 Fable 再修（r4）」
 
 - 審查意見追加在 T-63 卡末「🔍 Opus 審查 r3」段（H-1～H-14，逐條 30 點＋總結）。自行核對：R2-2→R3-2 逐行 `grep -qxF`＋`difflib` 對齊（改寫 20 行＋標題 2 行＋新增 1 行，與 diff 索引相符）；讀 `t17_rt60_table.py`／`ir_metrics.py`；gym R2 參考值無 `None`（只查有無）；合成脈衝測 (k)①；`pip freeze` 雜湊穩定。
