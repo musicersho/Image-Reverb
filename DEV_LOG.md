@@ -1,5 +1,12 @@
 # Dev Log
 
+## 2026-09-22 (183) 🔍 Opus：T-63 r3 條文審查——「需 Fable 再修（r4）」
+
+- 審查意見追加在 T-63 卡末「🔍 Opus 審查 r3」段（H-1～H-14，逐條 30 點＋總結）。自行核對：R2-2→R3-2 逐行 `grep -qxF`＋`difflib` 對齊（改寫 20 行＋標題 2 行＋新增 1 行，與 diff 索引相符）；讀 `t17_rt60_table.py`／`ir_metrics.py`；gym R2 參考值無 `None`（只查有無）；合成脈衝測 (k)①；`pip freeze` 雜湊穩定。
+- 合規面成立：門檻數字未動、兩個 FAIL 保留、「比較式」是收緊、Fable 四個二擇一沒有放寬；上一輪兩處〔擋〕（G-2、G-10）已落實。
+- **必修〔擋〕一處 H-1**：P-5 逐筆判定只認 `provenance.input_sha256`，對 `--params` 產物可能失效（r2 的「或參數」被刪）——T-65 須記 `params.photo_sha256`、P-5 改讀它。其餘〔改〕：P-1 grep 未錨定、(e) 拋錯列舉與逐頻段呼叫、gym 重算不一致時的處置與引擎側小數、(iii)① 限 RGB 實拍、(d)③ 排序鍵缺位置、空房關鍵字擴充、F-9 預告改寫等。
+- 本視窗只追加 T-63 卡末、DEV_LOG、TODO、HANDOFF；T-63 四軸不變；SPEC／WORKFLOW／src／scripts／data／output／assets 零 diff。本審查不構成「r3 審過」，鐵則 18-a 繼續從嚴。
+
 ## 2026-09-22 (182) 🔮 Fable：使用者回「T-63 r2 核准」——不生效（r2 已被 Opus 退回，現行送審版本為 r3）
 
 - 使用者原話「T-63 r2 核准」記入 T-63 卡狀態區（r3 指標下一行）。未開 `criteria:` commit：r2 於 `548d209` 被 Opus 退回、r3（`3dcda55`）尚未經 Opus 審；核准對象必須是 Opus 結論「可送使用者核准」的版本（WORKFLOW §7.4）。
