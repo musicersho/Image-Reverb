@@ -1,5 +1,10 @@
 # Dev Log
 
+## 2026-09-22 (182) 🔮 Fable：使用者回「T-63 r2 核准」——不生效（r2 已被 Opus 退回，現行送審版本為 r3）
+
+- 使用者原話「T-63 r2 核准」記入 T-63 卡狀態區（r3 指標下一行）。未開 `criteria:` commit：r2 於 `548d209` 被 Opus 退回、r3（`3dcda55`）尚未經 Opus 審；核准對象必須是 Opus 結論「可送使用者核准」的版本（WORKFLOW §7.4）。
+- 本輪只動 TASKS／DEV_LOG；SPEC／WORKFLOW／src／scripts／data／output 零 diff；T-63 四軸不變；鐵則 18-a 繼續從嚴。下一步不變＝Opus 審 r3 diff（Prompt 在 HANDOFF 頂端）→ 使用者核准 r3 → `criteria:` commit。
+
 ## 2026-09-22 (182) 🔮 Fable：T-63 判準 v2 修訂版（r3）——回應 Opus r2 G-1～G-33＋T-64／T-70／T-17-R3 r3 追加
 
 - **T-63 r3**（另起 R3-0～R3-5 追加在卡末；原草案、三輪 Opus 意見、r1、r2 原字保留；四軸不變；未核准不生效；SPEC §7／WORKFLOW 零改動）：R3-2＝**完整合併條文**——由程式自 r2 R2-2（`548d209` 第 16038–16125 行、88 行）逐字複製，改寫 20 行條文＋2 行段落標題、新增 1 行（「比較式」），其餘 66 行經 `grep -F -x` 核對與 r2 完全相同。
