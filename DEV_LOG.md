@@ -1,5 +1,12 @@
 # Dev Log
 
+## 2026-09-22 (185) 🔍 Opus：T-63 r4 條文審查——「需 Fable 再修（r5）」
+
+- 審查意見追加在 T-63 卡末「🔍 Opus 審查 r4」段（I-1～I-11，逐條 22 點＋總結）。自行核對：R3-2→R4-2 逐行集合比對＋`difflib`（改寫 16 行條文＋4 行結構行、無新增行，與 diff 索引相符；R4-2b 十行逐字相同）；`.venv` 合成 IR 驗證逐頻段 `band_t30` 與四頻段一次呼叫 `tobytes()` 逐位元相同；P-1 錨定指令以暫存 repo 驗證；gym 照片 sha256 核對；numpy 記憶體例外的 traceback 最後一行實測。
+- 合規面成立：門檻數字未動、兩個 FAIL 保留、Fable 自行決定的五處沒有放寬；上一輪〔擋〕H-1 已落實，H-2～H-14 全部在條文找得到。
+- **必修〔擋〕一處 I-1**：(a)(iii)①(A) 要讀 PIL `mode`，18-a(r4)(1)「只准」清單沒列——同一核准包內矛盾，補一句即可。其餘〔改〕：I-3 引擎側估計式拋錯未定處置（建議＝未達）、I-4 RR-2 分流改程式判斷（numpy `MemoryError` 子類別不以 `MemoryError` 開頭）、I-5「如實註明」仍寫三種、I-6 gym 重算不得跑腳本主程式（會覆寫不受版控的 `output/mvp_acceptance/rt60_table.json`）＋鍵路徑、I-2 照片判定（HEIC、子字串誤觸、目錄範圍、每張送 Opus）、I-7／I-8 位置軸與排序細節、I-9 `params` 非 null＋參數檔 `photo.sha256` 核對。
+- 本視窗只追加 T-63 卡末、DEV_LOG、TODO、HANDOFF；T-63 四軸不變；SPEC／WORKFLOW／src／scripts／data／output／assets 零 diff。本審查不構成「r4 審過」，鐵則 18-a 繼續從嚴。
+
 ## 2026-09-22 (184) 🔮 Fable：使用者回「T-63 r3 核准」（不生效，r3 已被 Opus 退回）＋T-63 判準 v2 修訂版（r4）＋T-65 r3／T-70 r4 追加
 
 - **使用者原話「T-63 r3 核准」**（在 Opus r3 審查 `13dea35` 之後）記入 T-63 卡 R4-0 第 1 點：不生效、未開 `criteria:` commit（核准對象必須是 Opus 結論「可送使用者核准」的版本；連同 r2 那次已兩度）。本視窗（Fable）依 HANDOFF 指示直接接手修 r4。
