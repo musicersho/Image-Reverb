@@ -1,5 +1,13 @@
 # Dev Log
 
+## 2026-09-23 (189) 🔮 Fable：T-63 判準 v2.1 草案（R6-0～R6-5）——補 Opus r5 J-1～J-6＋第 12 點；T-70 r6／T-17-R3 v2.1 追加
+
+- **T-63 v2.1**（依 V2-2(d)⑤ 補充規則程序另起 R6 段追加在卡末；原草案、六輪 Opus 意見、r1～r5 原字保留；四軸不變＝產品：已裁決（v2 生效；v2.1 補訂中）；未核准不生效；SPEC §7／WORKFLOW 零改動）：R6-2＝v2.1 對 SPEC §7-v2 的**逐行差異**——改寫 8 行（210 J-6、216 J-2、217 J-2、230 J-4、231 J-1、233 J-6、242 J-5 兩處、247 J-3），每行貼原行＋新行、新行內以 `〔v2.1：J-N〕` 標記；由程式以「唯一子字串取代」產生並斷言未取代部分逐字相同、門檻類數字集合不變；無新增行、無刪除行、無搬移（§7-v2 仍 72 行；取代前後 sha256 記在 R6-4）。R6-2c＝18-a(r5)(1)「①(A)②」→「①(A)(二) 與 ②」（Opus 第 12 點），commit 時才改。
+- **逐條處置**：J-1 比較式句首加「引擎側與 (e) 相同，逐判準頻段各呼叫一次」；J-2 RR-1 列舉加「引擎側量測工具的輸出目錄（由 T-17-R3 卡事前指定）」＋RR-2 末加「所有依本款須原樣重新拋出的 R3 工具都須算完才一次寫出」；J-3 (e) gym 重算句加「沿用 R2 函式內部例外處理、不受不得攔截之限、`None` 頻段照列」；J-4 偵測改為工具在程式開頭、任何其他 `import` 之前 `print(sys.warnoptions)`／`print(warnings.filters)` 入紀錄＋原始碼 `grep -n 'simplefilter\|filterwarnings'` 為 0（刪舊 `echo "${PYTHONWARNINGS:-unset}"` 檢查）；J-5 (d)①(乙) 加「官方文件未載麥克風數 → 停」並併入「停」列舉；J-6 (a)(iii) 末句改「相對路徑依 (d)③ 同一比較方式最小者」（根＝房間目錄，(A)(B) 同一根）＋T-70 3b 記 `rooms.json.suggest_photo`（路徑＋sha256）＋P-1 改指該欄位。
+- **Fable 三處決定（R6-0 第 2 點；核准前可改）**：`engine_metrics/` 名稱放 T-17-R3 卡；刪舊 `PYTHONWARNINGS` 檢查＋加「任何其他 `import` 之前」；J-6 根寫死為房間目錄。**Fable 在 `.venv` 實測（R6-3 F-20）**：三種啟動方式下程式開頭 `warnings.filters` 逐字相同；`-W error`／`PYTHONWARNINGS=error` 都反映在 `sys.warnoptions`；`import numpy` 加 4 項、`scipy.signal` 加 2 項過濾（所以必須在 import 前記錄）；`grep -rn 'simplefilter\|filterwarnings' src scripts` 為 0。沒有跑模型、沒有碰封存目錄、沒有讀任何真實 IR。
+- **接縫追加（只追加）**：Phase 1.10「18-a（v2.1 指標）」；T-70 狀態補行＋「修訂 r6（v2.1）」r6-0～r6-4（3b 前置改 `criteria: T-63 v2.1`；M 未載 → 停；`suggest_photo` 選定規則、欄位與 Opus 驗證重點）；T-17-R3「開卡條件補（Fable v2.1）」（J-1～J-4、J-6 的工具卡要求、`engine_metrics/`）；T-65 不需同步（理由 R6-4 末）。
+- 本輪只動 TASKS（純新增行）／HANDOFF／DEV_LOG／TODO；SPEC／WORKFLOW／src／scripts／data／output／assets 零 diff。下一步＝Opus 審 v2.1 diff（Prompt 在 HANDOFF 頂端）→ 使用者核准 → `criteria: T-63 v2.1` commit（改 SPEC §7-v2 那 8 行＋18-a 一處字樣＋SPEC 版本 v0.5.2）。T-70 3a、T-64 路徑 S、T-65～T-67 可排 Sonnet；3b 等 v2.1。
+
 ## 2026-09-23 (188) ✅ Fable：T-63 r5 核准生效——`criteria: T-63 v2` commit（`7da4ca1`）＋v2.1（J-1～J-6）待補
 
 - 使用者原話「T-63 r5 核准」落在 Opus r5 審查結論「可送使用者核准」（`ad340cb`）之後——**生效**（前兩次 r2、r3 核准都不生效，本次是第一次生效）。
