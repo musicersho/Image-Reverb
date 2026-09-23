@@ -1,5 +1,13 @@
 # Dev Log
 
+## 2026-09-23 (188) ✅ Fable：T-63 r5 核准生效——`criteria: T-63 v2` commit（`7da4ca1`）＋v2.1（J-1～J-6）待補
+
+- 使用者原話「T-63 r5 核准」落在 Opus r5 審查結論「可送使用者核准」（`ad340cb`）之後——**生效**（前兩次 r2、r3 核准都不生效，本次是第一次生效）。
+- **`criteria: T-63 v2`（`7da4ca1`）同一 commit 寫入三處**：SPEC §7 新增「### §7-v2」＝R5-2 條文 70 行（不含結構行「讀法」）、版本 v0.5 → v0.5.1、§7 加 v0.5.1 註（v1 條文 1～4 原字保留、T-17／T-17-R2 FAIL 永久有效）；WORKFLOW §5.4.4 十個列點之後追加 R5-2b 十行；TASKS.md Phase 1.10 r1 版 18-a 之後追加 18-a（r5）＝R5-2c 七行、r1 版標「由 r5 版取代」（原字保留）、「18-a（r5 生效）」指標行；T-63 卡追加核准生效紀錄行與四軸更新行（產品：已裁決）。
+- **機械轉換（Fable 以程式做並斷言）**：只刪修訂標籤 `〔r2：…〕`～`〔r5：…〕`、`〔回應…〕`（regex；條文內反引號引用、內容恰為「…」的字面標籤屬條文本文、保留）與各段共同行首縮排；共刪 105 個標籤；三處寫入後與 R5-2／R5-2b／R5-2c 逐行比對相同；門檻數字未動。Opus 可用 `git show 7da4ca1` 與 T-63 卡 R5-2 重做。
+- **未完**：Opus r5 的〔改〕J-1～J-6 依 V2-2(d)⑤ 以 `criteria: T-63 v2.1` 補（下一個 Fable 視窗起草 R6 段 → Opus 審 diff → 使用者核准 → commit）；**J-5／J-6 須早於 T-70 3b**，全部早於任何 R3 量測。18-a 自此以 r5 版為準，授權仍只有 T-17-R3 受驗 run。
+- 本輪動 SPEC／WORKFLOW／TASKS（criteria commit）＋HANDOFF／DEV_LOG／TODO（本 docs commit）；src／scripts／data／output／assets 零 diff。push 一併送出另一視窗的本地 commit `6a54f3a`（Codex 文件盤點）。下一步＝Fable v2.1（Prompt 在 HANDOFF 頂端）；T-70 3a、T-64 路徑 S、T-65～T-67 可排 Sonnet。
+
 ## 2026-09-23 Codex：待審核與修正工作盤點
 
 - 依 HANDOFF 最新段、TASKS 後續裁決、WORKFLOW 與 ROADMAP 核對目前狀態；基準 HEAD `ad340cb`。
