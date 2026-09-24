@@ -1,5 +1,12 @@
 # Dev Log
 
+## 2026-09-24 (198) 🟡 Sonnet：T-70 步驟 3a 完成（下載＋sha256＋目錄結構摘要＋`ASSET_MANIFEST.json` v1）；3b 未開始
+
+- 先改 `.gitignore`（`assets/reference_rooms_heldout/**` 忽略、只放行頂層 `*.json`／`*.md`；`git check-ignore` 驗證）再下載。BUT tgz 9,308,593,693 位元組（sha256 `d0d14cdd…f5b5`；官方無校驗碼）只解出 L207／L212／R112（`Hotel_SkalskyDvur_Room112`）／C236 四房目錄（檔數與 tar 清單逐項相同）。SoundCam 兩房間合計遠超 10 GB（官方只有整包、`*_preprocessed` 合計約 262.8 GB）→ 依卡停下問使用者，使用者選「兩房間 preprocessed 整包照卡下載」；兩包位元組數、md5、sha1 皆等於 Stanford PURL 官方值（傳輸改用 scratchpad 內的並行 Range 下載，單連線約 1.2 MB/s 要 2.5 天；工具不在 repo）。
+- **解出範圍偏離一處**：Conference 整包解出（65.3 GB）；Treated 只解出官方 `Empty/`（114.2 GB；全解 272.0 GB 會讓可用空間降到約 58 GB），`Human1`～`Human5` 留在整包內，manifest `not_extracted` 逐目錄記錄，交 Opus 判斷。三個整包（約 272 GB）依 r3-5 保留在 `_download/`，3b 驗證通過前不刪。論文插圖：PyMuPDF（scratchpad 獨立環境，未動 `.venv`）取內嵌原生 JPEG、未抽文字；留 6 張（Treated Fig.4×2／Fig.5×2 標 `partition_config`、Conference Fig.8×2）；圖號沿用 SURVEY、未對 PDF 圖說核對。
+- `ASSET_MANIFEST.json`：7,102 檔（每項只有路徑／位元組數／sha256）；磁碟檔集合＝manifest、抽樣 31 檔重算零不符。目錄結構摘要、官方目錄↔本地房間目錄對照（BUT 同一層；SoundCam 官方目錄在本地房間目錄下一層）、給 3b 的「怎麼讀」事實（`RIR/` 與 `silence/`、`env_meta_full.txt`／`spk_meta.txt`、官方 `.py` 不得執行、`read_me.txt` 未解出、SoundCam 無影像檔）都在 T-70 卡末交接筆記。**沒有建議修改 (a)(i)～(v)。**
+- 沒有打開任何資料集文字檔、沒有讀任何音檔／`.npy` header 或樣本、沒有 PIL 讀圖、沒有算任何殘響類數值；`src`／`scripts`／`data`／`output` 零 diff。四軸：工程：進行中（3a 完成）｜實驗／產品／MVP：不適用。下一步：另開 Sonnet 視窗跑 T-70 3b（前置 v2.1 `91efa75`、v2.2 `478fa4a` 均已寫入）。
+
 ## 2026-09-24 (197) ✅ Fable：T-63 v2.2 核准生效——`criteria: T-63 v2.2`（`478fa4a`）＋T-17-R3 卡補 K-1 落地收尾與 Opus N-1／N-2／N-3
 
 - 使用者核准原話「T-63 v2.2 核准」落在 Opus r3「可送使用者核准」（`ce35357`）之後 → 生效。獨立 `criteria: T-63 v2.2` commit `478fa4a`：SPEC §7-v2 只改 R9-2 第 231 行＋R8-2 第 243 行（機械刪 3 個 `〔v2.2：…〕` 標籤；無新增／刪除／搬移行；72 行）；取代前 `d3873772…8368`、含標籤 `a376b778…2885`、刪標籤後 `31ad16c9…fbd9` 三個 sha256 以程式重現（§7-v2 現第 208–279 行）；13 個門檻字串次數不變、無新增數字 token；版本 v0.5.2 → v0.5.3；§7 純新增一行 v0.5.3 註。TASKS 18-a(r5)(3) 以內容定位（全檔唯一）改 R8-2c 那一行＋「18-a（v2.2 生效）」指標行；WORKFLOW 不動。

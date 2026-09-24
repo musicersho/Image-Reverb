@@ -59,3 +59,10 @@ assets/photos_real_heldout/**
 
 # 2026-09-21 依使用者要求生成的合成候選：圖片留本機，資料表與提示詞進版控
 assets/incoming_synthetic_20260921/**/*.png
+
+# T-70 公開小房間 IR 資料集（步驟 3a；Sonnet 2026-09-24 依 r2-3a(1)）：資料集本體（IR、照片、tgz、官方說明檔）一律不進 git；
+# 只放行 assets/reference_rooms_heldout/ 頂層的 *.json／*.md（SURVEY／rooms／ASSET_MANIFEST／README）。
+# 資料集內部自帶的 *.json／*.md 不放行（可能含聲學欄位，且非本專案產物）。照片是否進 git 留到 3b 依授權決定，3a 一律不進。
+assets/reference_rooms_heldout/**
+!assets/reference_rooms_heldout/*.json
+!assets/reference_rooms_heldout/*.md
