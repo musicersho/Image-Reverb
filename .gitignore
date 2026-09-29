@@ -66,3 +66,8 @@ assets/incoming_synthetic_20260921/**/*.png
 assets/reference_rooms_heldout/**
 !assets/reference_rooms_heldout/*.json
 !assets/reference_rooms_heldout/*.md
+# 3b（Sonnet 2026-09-24 依 r2-3b(1)⑤）：白名單抽取產物 materials_official.txt 是本專案產物（只含白名單欄位、已過黑名單／數值樣式檢查），放行進 git；官方原檔仍不放行。
+# （先放行目錄層級，否則巢狀檔案的例外規則不會生效——git 對已忽略目錄不會往下比對規則）
+!assets/reference_rooms_heldout/*/
+!assets/reference_rooms_heldout/*/*/
+!assets/reference_rooms_heldout/*/*/materials_official.txt

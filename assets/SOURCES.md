@@ -216,3 +216,18 @@ Depth Anything V2 與 SegFormer 都是用一般透視影像訓練，
 ## 2026-09-21 新增：十個合成空間（非 T-64 真實素材）
 
 依使用者要求以內建 GPT Image 生成；共十張、五類各二。來源、完整提示詞與指紋見 [交付說明](incoming_synthetic_20260921/README.md)、[提示詞](incoming_synthetic_20260921/SCENE_SPECS.json)、[manifest](incoming_synthetic_20260921/ASSET_MANIFEST.json)。照片留本機、不上傳 GitHub；尺寸為提示詞設計，材質為設定與目視補註，非 user_measured 或使用者確認 GT。未參考／處理任何真實 held-out，未執行分析管線或 T-64 分組。
+
+## 2026-09-24 新增：T-70 公開小房間 IR 資料集（SoundCam／BUT ReverbDB；此為卡片所指「§6」）
+
+依 T-63 MVP 判準 v2 V2-2(a) 使用者授權下載（見 TASKS.md T-70 卡交接筆記第 10 點）。資料集本體（IR、照
+片、官方說明檔）不進 git，只有 `assets/reference_rooms_heldout/README.md`／`SURVEY.md`／`rooms.json`／
+`ASSET_MANIFEST.json` 與各房間白名單抽取的 `materials_official.txt` 進版控。
+
+| 資料集 | 版本／下載日 | 網址 | 授權 | 引用文獻 |
+|---|---|---|---|---|
+| SoundCam | preprocessed 包；下載日 2026-09-24 | Stanford Digital Repository `https://purl.stanford.edu/xq364hd5023`；GitHub `https://github.com/maswang32/soundcam` | MIT（Stanford PURL 頁面聲明） | Wang, Clarke, Wang, Gao, Wu, *SoundCam: A Dataset for Finding Humans Using Room Acoustics*, NeurIPS 2023 Datasets & Benchmarks; arXiv:2311.03517 |
+| BUT ReverbDB | rel_19_06；下載日 2026-09-24 | `https://speech.fit.vut.cz/software/but-speech-fit-reverb-database`；下載 `http://merlin.fit.vutbr.cz/ReverbDB/BUT_ReverbDB_rel_19_06_RIR-Only.tgz` | CC BY 4.0（官網頁面聲明；`read_me.txt` 檔頭 Apache 2.0 僅套用於說明檔／腳本本身） | Szöke et al., *Building and evaluation of a real room impulse response dataset*, IEEE JSTSP 2019；arXiv:1811.06795 |
+
+僅供本專案內部非商業使用；房間清單、五條件判定與是否入名單見 `assets/reference_rooms_heldout/rooms.json`
+（SoundCam 兩房間已判定 `included`；BUT 四房間因 T-70 3b 命中規則明文的「停，回 Fable」而暫列
+`blocked_pending_fable`，細節見 TASKS.md T-70 卡）。

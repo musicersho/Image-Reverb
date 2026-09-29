@@ -1,0 +1,407 @@
+{
+ "schema_note": "SPEC §7-v2 (a)~(e); 'included'=五條件全符合、已封存；'excluded'=不符至少一條、已確定；'blocked_pending_fable'=命中卡片明文『停，回 Fable』的規則觸發，尚未能判定、不得由執行者自行解讀（見各房間 stop_reasons）。3b 只把候選送到這三桶之一，不自行下最終結論。",
+ "included": {
+  "SoundCam_ConferenceRoom": {
+   "dataset": "SoundCam",
+   "official_room_name": "Conference Room",
+   "local_dir": "SoundCam/ConferenceRoom/",
+   "gt_dims_m": {
+    "length": 6.7,
+    "width": 3.3,
+    "height": 2.7
+   },
+   "gt_dims_source": "dataset_documented",
+   "gt_dims_provenance": "arXiv 2311.03517 正文原句 (SURVEY.md 已記): \"The Conference Room is rectangular, approximately 6.7×3.3 meters and 2.7 meters in height.\"",
+   "conditions": {
+    "i_max_dim_le_10m": {
+     "result": true,
+     "max_dim_m": 6.7
+    },
+    "ii_not_domain_out_non_room": {
+     "result": true,
+     "note": "室內會議室"
+    },
+    "iii_qualified_photo": {
+     "result": "mechanical_pass_pending_opus_eye_judgment",
+     "candidates": [
+      {
+       "path": "paper_figs/fig8_p14_xref514.jpeg",
+       "source": "B_paper_fig8",
+       "mode": "RGB",
+       "size_px": [
+        4752,
+        2672
+       ],
+       "long_side_px": 4752
+      },
+      {
+       "path": "paper_figs/fig8_p14_xref515.jpeg",
+       "source": "B_paper_fig8",
+       "mode": "RGB",
+       "size_px": [
+        4752,
+        2672
+       ],
+       "long_side_px": 4752
+      }
+     ],
+     "provenance": "arXiv 2311.03517 Fig.8 (page 14); T-70 3a 以 PyMuPDF 抽取內嵌原生影像；人眼比對房間僅初判為 Fig.8 對應 Conference Room，尚待 Opus 逐張人眼判定是否相機實拍、是否看得到地板與一面牆"
+    },
+    "iv_official_ir_after_filter": {
+     "result": true,
+     "supports_after_filter": ">=20 (見 reference_irs)"
+    },
+    "v_license_ok": {
+     "result": true,
+     "license": "MIT (Stanford PURL page)"
+    }
+   },
+   "suggest_photo_provisional": {
+    "path": "paper_figs/fig8_p14_xref514.jpeg",
+    "sha256": "08864f917a39ad7e057385357d2b0524e49cd86ac0ddea00b90fb7768f752245",
+    "note": "r6-2 暫填：目前唯一/最小相對路徑候選；Opus 人眼判定後如集合不變則寫死，如變動需重填"
+   },
+   "materials": {
+    "source": "官方文件無材質文字（SoundCam 沒有 env_meta 類說明檔）",
+    "confirmation_method": "僅看合格官方照片（V2-2(c)）"
+   },
+   "mic_official_doc": {
+    "M": 10,
+    "type": "Dayton Audio EMM6",
+    "directivity": "omnidirectional",
+    "sources": [
+     "GitHub maswang32/soundcam datasets/conference.py (main branch): mic_1..mic_10 座標明列，np.stack 成 (10,3)",
+     "arXiv 2311.03517 p.23: \"we used 10 omnidirectional Dayton Audio EMM6 microphones placed...\""
+    ]
+   },
+   "npy_axis_rule": {
+    "file": "ConferenceRoom_preprocessed/Empty/deconvolved.npy",
+    "shape": [
+     100,
+     10,
+     667200
+    ],
+    "dtype": "float32",
+    "sample_axis": {
+     "axis": 2,
+     "length": 667200,
+     "rule": "(甲) 長度最大的軸，唯一"
+    },
+    "channel_axis": {
+     "axis": 1,
+     "length": 10,
+     "rule": "(乙) M=10（官方文件），其餘軸中長度=10 者，唯一"
+    },
+    "position_axis": [
+     {
+      "axis": 0,
+      "length": 100
+     }
+    ],
+    "official_ir_designation": "README「An example for loading the ... dataset's Room Impulse Responses is shown in examples.ipynb」+ examples.ipynb 內對 deconvolved.npy 的載入示範；本檔名亦為 deconvolved（已解卷積）",
+    "not_used": {
+     "audio.npy": "解卷積前的原始多聲道錄音，非 IR",
+     "adjusted_audio.npy": "調整後錄音，非 IR",
+     "directlines.npy": "shape=(100,672000) 無 10 這一軸，且非官方標示為 IR 的檔"
+    }
+   },
+   "empty_room_filter": {
+    "method": "(A) 目錄名標示（bucket A）",
+    "basis": "只下載並使用 Empty/ 子目錄（Human1/Human2 未下載使用）"
+   },
+   "config_filter": "(丙) 配置：官方只有一種房型（無 Panels 變體），不適用",
+   "boxed_filter": "(乙) 非boxed：條文字面『BUT 只收』，不適用 SoundCam",
+   "reference_irs_top20_key": "(位置索引 tuple, 聲道索引 int)，相對路徑固定 1 檔",
+   "sha256_deconvolved_npy": "edcd06acc3ad60a982a018536dbe9f2aef24ab3fcfb7fa2062d30fd73b2e1fe4"
+  },
+  "SoundCam_TreatedRoom": {
+   "dataset": "SoundCam",
+   "official_room_name": "Treated Room (empty/no-partition configuration)",
+   "local_dir": "SoundCam/TreatedRoom/",
+   "gt_dims_m": {
+    "length": 4.9,
+    "width": 5.1,
+    "height": 2.7
+   },
+   "gt_dims_source": "dataset_documented",
+   "gt_dims_provenance": "arXiv 2311.03517 正文原句 (SURVEY.md 已記): \"The Treated Room is rectangular, approximately 4.9×5.1 meters and 2.7 meters in height.\"",
+   "conditions": {
+    "i_max_dim_le_10m": {
+     "result": true,
+     "max_dim_m": 5.1
+    },
+    "ii_not_domain_out_non_room": {
+     "result": true,
+     "note": "室內聲學實驗室"
+    },
+    "iii_qualified_photo": {
+     "result": "mechanical_pass_pending_opus_eye_judgment",
+     "candidates": [
+      {
+       "path": "paper_figs/fig4_p12_xref496.jpeg",
+       "source": "B_paper_fig4",
+       "mode": "RGB",
+       "size_px": [
+        7008,
+        4672
+       ],
+       "long_side_px": 7008
+      },
+      {
+       "path": "paper_figs/fig4_p12_xref497.jpeg",
+       "source": "B_paper_fig4",
+       "mode": "RGB",
+       "size_px": [
+        7008,
+        4672
+       ],
+       "long_side_px": 7008
+      }
+     ],
+     "provenance": "arXiv 2311.03517 Fig.4 (page 12, 空房配置); T-70 3a 以 PyMuPDF 抽取內嵌原生影像；Fig.5（布幔隔板配置）依 SPEC (a)(iii)①(B) 未列入候選來源，已排除"
+    },
+    "iv_official_ir_after_filter": {
+     "result": true,
+     "supports_after_filter": ">=20 (見 reference_irs)"
+    },
+    "v_license_ok": {
+     "result": true,
+     "license": "MIT (Stanford PURL page)"
+    }
+   },
+   "suggest_photo_provisional": {
+    "path": "paper_figs/fig4_p12_xref496.jpeg",
+    "sha256": "bf7750a685ca08f98673fc714521ab29e2c76049707e12b613a60d902984cdf2",
+    "note": "r6-2 暫填：目前最小相對路徑候選；Opus 人眼判定後如集合不變則寫死，如變動需重填"
+   },
+   "materials": {
+    "source": "官方文件無材質文字（SoundCam 沒有 env_meta 類說明檔）",
+    "confirmation_method": "僅看合格官方照片（V2-2(c)）"
+   },
+   "mic_official_doc": {
+    "M": 10,
+    "type": "Dayton Audio EMM6",
+    "directivity": "omnidirectional",
+    "sources": [
+     "GitHub maswang32/soundcam datasets/treatedroom.py (main branch): mic_1..mic_10 座標明列（mic_7 另有 occlusion 變體座標），np.stack 成 (10,3)",
+     "arXiv 2311.03517 p.23: \"we used 10 omnidirectional Dayton Audio EMM6 microphones placed...\""
+    ]
+   },
+   "npy_axis_rule": {
+    "file": "TreatedRoom_preprocessed/Empty/deconvolved.npy",
+    "shape": [
+     1000,
+     10,
+     667200
+    ],
+    "dtype": "float32",
+    "sample_axis": {
+     "axis": 2,
+     "length": 667200,
+     "rule": "(甲) 長度最大的軸，唯一"
+    },
+    "channel_axis": {
+     "axis": 1,
+     "length": 10,
+     "rule": "(乙) M=10（官方文件），其餘軸中長度=10 者，唯一"
+    },
+    "position_axis": [
+     {
+      "axis": 0,
+      "length": 1000
+     }
+    ],
+    "official_ir_designation": "同 Conference Room；另有 music_deconvolved.npy，但 README／examples.ipynb 均未把它標示為 Room Impulse Responses，本卡不採用，只記存在",
+    "not_used": {
+     "audio.npy": "解卷積前原始錄音",
+     "adjusted_audio.npy": "調整後錄音",
+     "directlines.npy": "shape=(1000,672000) 無 10 這一軸",
+     "music_audio.npy/adjusted_music.npy/music_directlines.npy/music_sources.npy": "音樂激勵訊號側支線，非官方標示 IR",
+     "music_deconvolved.npy": "未見官方文件標示為 IR，不採用（僅記存在，見 not_extracted 與本欄）"
+    }
+   },
+   "empty_room_filter": {
+    "method": "(A) 目錄名標示（bucket A）",
+    "basis": "只下載並使用 TreatedRoom_preprocessed（非 TreatedRoomPanels）的 Empty/ 子目錄；Human1~5 未下載使用"
+   },
+   "config_filter": {
+    "result": "無布幔隔板（空房配置）",
+    "basis": "3a 只下載 TreatedRoom_preprocessed 整包，未下載 TreatedRoomPanels_preprocessed；因此資料本身就不含隔板配置，(丙) 條件由下載範圍直接滿足，不需另外過濾"
+   },
+   "boxed_filter": "(乙) 非boxed：條文字面『BUT 只收』，不適用 SoundCam",
+   "reference_irs_top20_key": "(位置索引 tuple, 聲道索引 int)，相對路徑固定 1 檔",
+   "sha256_deconvolved_npy": "c587e9181dba25d71e88c8546d1a6b17f6904801ab5c877d6a2bc84619243342"
+  }
+ },
+ "blocked_pending_fable": {
+  "BUT_VUT_FIT_L207": {
+   "dataset": "BUT_ReverbDB",
+   "official_room_name": "L207",
+   "local_dir": "BUT_ReverbDB/VUT_FIT_L207/",
+   "gt_dims_m_extracted": {
+    "depth": 4.585,
+    "width": 6.903,
+    "height": 3.144,
+    "volume_m3": 99.50840172,
+    "second_box": "Not Defined (單一方塊)"
+   },
+   "gt_dims_source": "dataset_documented",
+   "gt_dims_provenance": "env_meta.txt 白名單抽取（欄位 $EnvDepth/$EnvWidth/$EnvHeight/$EnvVolume；單位未見官方明確標註，依 SURVEY.md 慣例與數值量級假設為公尺，待 Fable/Opus 核）",
+   "i_max_dim_le_10m_if_unblocked": {
+    "max_dim_m": 6.903,
+    "result_if_computed": true
+   },
+   "materials_official_txt": "BUT_ReverbDB/VUT_FIT_L207/materials_official.txt（已寫；r3-1 黑名單/數值樣式檢查 grep 為 0）",
+   "photo_candidates": "9 張（1.jpg~9.jpg）machanical (一)(二)(三) 全過，等 Opus 人眼判定",
+   "stop_reasons": [
+    {
+     "rule": "SPEC §7-v2 (d)②(甲)(B)；T-70 r4-3",
+     "issue": "空房判定的七關鍵字 grep -ci：資料集官方說明檔 read_me.txt 對關鍵字 occup 命中 1（資料集層級、四房共用，非本房間專屬）",
+     "evidence": {
+      "file": "read_me.txt (dataset root)",
+      "sha256": "6a5765cea90ae2157fc4d12095e444193922fa587184d952ecad6e975468ac89",
+      "line": 131,
+      "keyword": "occup",
+      "count": 1
+     },
+     "note": "只輸出計數與行號，未輸出該行內容（鐵則 18-a）；『任一檔任一計數>0→停，回Fable』字面適用；規則本身承認『誤觸如 personal 是安全方向』，仍須停"
+    }
+   ]
+  },
+  "BUT_VUT_FIT_L212": {
+   "dataset": "BUT_ReverbDB",
+   "official_room_name": "L212",
+   "local_dir": "BUT_ReverbDB/VUT_FIT_L212/",
+   "gt_dims_m_extracted": {
+    "depth": 7.5,
+    "width": 4.63,
+    "height": 3.1,
+    "volume_m3": 107.6475,
+    "second_box": "Not Defined (單一方塊)"
+   },
+   "gt_dims_source": "dataset_documented",
+   "gt_dims_provenance": "env_meta.txt 白名單抽取；單位假設同上，待核",
+   "i_max_dim_le_10m_if_unblocked": {
+    "max_dim_m": 7.5,
+    "result_if_computed": true
+   },
+   "materials_official_txt": "BUT_ReverbDB/VUT_FIT_L212/materials_official.txt（已寫；grep 為 0）",
+   "photo_candidates": "4 張（1.jpg~4.jpg）機械條件全過，等 Opus 人眼判定",
+   "stop_reasons": [
+    {
+     "rule": "SPEC §7-v2 (d)②(甲)(B)；T-70 r4-3",
+     "issue": "與 L207 相同的 read_me.txt occup=1 命中（資料集層級）",
+     "evidence": {
+      "file": "read_me.txt",
+      "sha256": "6a5765cea90ae2157fc4d12095e444193922fa587184d952ecad6e975468ac89",
+      "line": 131,
+      "keyword": "occup",
+      "count": 1
+     }
+    },
+    {
+     "rule": "SPEC §7-v2 (d)②(甲)(B)；T-70 r4-3",
+     "issue": "本房間官方目錄內全部 162 個 *.txt（155 個 mic_meta.txt + 5 個 spk_meta.txt + env_meta.txt + env_meta_full.txt）逐檔 people=1（每檔恰 1 次）；本房間專屬，L207/R112/C236 均為 0",
+     "evidence": {
+      "field_name": "$EnvDescription（該欄位的值命中，欄位名本身不含 people）",
+      "hit_file_count": 162,
+      "per_file_count": 1,
+      "line_in_file": 3,
+      "note": "只確認欄位名與命中行號，未讀取／轉述該欄位的值"
+     }
+    }
+   ]
+  },
+  "BUT_Hotel_SkalskyDvur_Room112": {
+   "dataset": "BUT_ReverbDB",
+   "official_room_name": "R112 (Hotel Skalsky Dvur)",
+   "local_dir": "BUT_ReverbDB/Hotel_SkalskyDvur_Room112/",
+   "non_cuboid": true,
+   "gt_dims_m_extracted": {
+    "box1": {
+     "depth": 4.433,
+     "width": 2.838,
+     "height": 2.637
+    },
+    "box2": {
+     "depth": 2.195,
+     "width": 1.174,
+     "height": 2.637
+    }
+   },
+   "gt_dims_source": "dataset_documented_bounding_box (未能計算——見 stop)",
+   "gt_dims_provenance": "env_meta.txt 白名單抽取（$EnvDepth/$EnvWidth/$EnvHeight 與 $Env2Depth/$Env2Width/$Env2Height）",
+   "materials_official_txt": "BUT_ReverbDB/Hotel_SkalskyDvur_Room112/materials_official.txt（已寫；grep 為 0）",
+   "photo_candidates": "5 張（1.jpg~5.jpg）機械條件全過，等 Opus 人眼判定",
+   "stop_reasons": [
+    {
+     "rule": "SPEC §7-v2 (d)②(甲)(B)；T-70 r4-3",
+     "issue": "與 L207 相同的 read_me.txt occup=1 命中（資料集層級）",
+     "evidence": {
+      "file": "read_me.txt",
+      "sha256": "6a5765cea90ae2157fc4d12095e444193922fa587184d952ecad6e975468ac89",
+      "line": 131,
+      "keyword": "occup",
+      "count": 1
+     }
+    },
+    {
+     "rule": "SPEC §7-v2 (a) 非方塊形房間段",
+     "issue": "官方 env_meta.txt／env_meta_full.txt 只給兩個方塊各自的 depth/width/height，找不到任何欄位記載兩方塊的相對位置（已核對 env_meta_full.txt 的完整欄位名清單，562 個欄位裡沒有 Env2 的位置/偏移欄位）；依規則『官方檔案不足以唯一決定外接盒→停，回Fable，不得自行假設擺放方式』",
+     "evidence": {
+      "box1_fields": [
+       "$EnvDepth",
+       "$EnvWidth",
+       "$EnvHeight"
+      ],
+      "box2_fields": [
+       "$Env2Depth",
+       "$Env2Width",
+       "$Env2Height"
+      ],
+      "position_fields_found": []
+     }
+    }
+   ]
+  },
+  "BUT_VUT_FIT_C236": {
+   "dataset": "BUT_ReverbDB",
+   "official_room_name": "C236",
+   "local_dir": "BUT_ReverbDB/VUT_FIT_C236/",
+   "gt_dims_m_extracted": {
+    "depth": 6.963,
+    "width": 4.115,
+    "height": 3.564,
+    "volume_m3": 102.11838318,
+    "second_box": "Not Defined (單一方塊)"
+   },
+   "gt_dims_source": "dataset_documented",
+   "gt_dims_provenance": "env_meta.txt 白名單抽取；單位假設同上，待核",
+   "i_max_dim_le_10m_if_unblocked": {
+    "max_dim_m": 6.963,
+    "result_if_computed": true
+   },
+   "materials_official_txt": "BUT_ReverbDB/VUT_FIT_C236/materials_official.txt（已寫；grep 為 0）",
+   "photo_candidates": "8 張（C236_1.jpg~C236_8.jpg）機械條件全過，等 Opus 人眼判定",
+   "stop_reasons": [
+    {
+     "rule": "SPEC §7-v2 (d)②(甲)(B)；T-70 r4-3",
+     "issue": "與 L207 相同的 read_me.txt occup=1 命中（資料集層級）",
+     "evidence": {
+      "file": "read_me.txt",
+      "sha256": "6a5765cea90ae2157fc4d12095e444193922fa587184d952ecad6e975468ac89",
+      "line": 131,
+      "keyword": "occup",
+      "count": 1
+     }
+    }
+   ]
+  }
+ },
+ "excluded": {},
+ "open_questions_for_fable": [
+  "①（擋住全部四個 BUT 房間）read_me.txt 對『occup』計數為 1（第 131 行）：資料集層級說明檔一旦命中，四房共用的空房判定全部卡住；且 L212 另外 162 個檔對『people』各命中 1 次（命中在 $EnvDescription 欄位的值，欄位名本身不含關鍵字）。執行者依規則不得解讀是否為誤觸，請 Fable 決定如何處置（是否需要看該行內容才能判斷、要不要走 (d)⑤ 補充規則、或改採其他判定路徑）。",
+  "②（只擋 R112）non-cuboid 外接盒缺兩方塊相對位置：env_meta.txt／env_meta_full.txt 都沒有這個資訊，是否有其他官方管道（例如官網頁面、read_me.txt 本文——但本文開放給誰讀需先解決①）可以取得，或直接依規則把 R112 移出候選，請 Fable 決定。",
+  "③（四房都有）SpeakerVisibility 的『非 boxed』判定：官方值除了單純的 visible／Non-visible／invisible／partly boxed／fully boxed／on furniture，還有複合值如「Non-visible, partly boxed」「visible, partly boxed」——規則字面『值不是 partly boxed／fully boxed』，這種複合值算不算『是』partly boxed？本卡未自行判斷，兩房間逐值分布已列在 3b 交接筆記，請 Fable 給一個可機械判定的讀法（例如：值裡『含』partly boxed／fully boxed 字串即算 boxed，不論是否還有其他描述）。"
+ ]
+}

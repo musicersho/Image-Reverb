@@ -1,0 +1,6 @@
+# materials_official.txt -- 依欄位白名單自官方說明檔抽出的材質欄位（T-70 r2-3b(1)；原檔不附）
+# 房間代號：VUT_FIT_L207　來源檔：env_meta.txt（欄位名+值；已過黑名單與數值樣式檢查）
+
+$EnvMatWall: Concrete, Glass, Plasterboard
+$EnvMatFloor: Linoleum
+$EnvMatCeiling: Concrete

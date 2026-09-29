@@ -1,5 +1,9 @@
 # To-Do
 
+- **2026-09-24 🔴 Sonnet：T-70 步驟 3b 進行中，卡關——SoundCam 兩房間 `included`（可送 Opus）；BUT 四房命中規則明文「停，回 Fable」，需使用者轉給 Fable 決定**（`rooms.json.open_questions_for_fable` 四條；細節在 T-70 卡末「【Sonnet 2026-09-24：步驟 3b 進行中，卡關】」）。**下一步：使用者把四條問題轉給 Fable**；Fable 決定後另開 Sonnet 視窗把 BUT 四房從 `blocked_pending_fable` 移到 `included`／`excluded`，再送 Opus 對整卡驗證。
+  **卡片現況**：T-70 工程：卡關（SoundCam 完整；BUT 四房卡關）｜確定名單目前 3 個（`mit_gym`＋SoundCam 兩房間，剛好 V2-2(f) 下限）｜T-63 產品：已裁決（v2/v2.1/v2.2 生效）｜T-64 ⬜ 路徑 S 可開跑｜T-65 ⬜｜T-66／T-67 ⬜｜T-69 ⏸、T-17-R3 ⏸（等 T-64/65/66/67/70）。硬碟：可用空間約 202 GiB（三個下載整包共 265 GB 待 T-70 全卡驗證通過才能刪）。
+  下方「🟡 Sonnet：T-70 步驟 3a 完成」的「T-70 3b」已進行但未完成（卡關，見上）。
+
 - **2026-09-24 🟡 Sonnet：T-70 步驟 3a 完成——BUT 四房＋SoundCam Conference 全解、Treated 只解 `Empty/`；三個下載整包保留；`ASSET_MANIFEST.json` v1（7,102 檔，只有路徑／位元組數／sha256）；3b 未開始**（細節與目錄結構摘要在 T-70 卡末「【Sonnet 2026-09-24：步驟 3a 完成】」）。**下一步：另開一個 Sonnet 視窗跑 T-70 3b**（前置 `criteria: T-63 v2.1`＝`91efa75`、v2.2＝`478fa4a` 均已寫入）；3b 經 Opus 驗證前不刪 `_download/` 三個整包（約 272 GB）；Treated 只解 `Empty/` 的偏離請 Opus 判斷。
   **卡片現況**：T-70 工程：進行中（3a 完成；3b、4 未開始）｜T-63 產品：已裁決（v2、v2.1、v2.2 生效；補訂完成）｜T-64 ⬜ 路徑 S 可開跑｜T-65 ⬜｜T-66／T-67 ⬜｜T-69 ⏸、T-17-R3 ⏸（`criteria:` 前置已齊；等 T-64／65／66／67／70）。硬碟：3a 後可用空間 202 GiB。
   下方「✅ Fable：T-63 v2.2 核准生效」的「T-70 3a 可跑」已完成。

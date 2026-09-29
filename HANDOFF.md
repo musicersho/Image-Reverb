@@ -1,4 +1,22 @@
 # 交接文件 — 給下一個視窗
+> ## 🔴 2026-09-24 Sonnet：T-70 步驟 3b 進行中，卡關——SoundCam 兩房間已判定完成（可送 Opus）；BUT 四房命中規則明文「停，回 Fable」——**現在該做的是：把下面四個問題轉給 Fable 決定**（開一個 Fable 新視窗，逐字貼）
+>
+> - **要貼給 Fable 的 Prompt（逐字）**：
+>   　你是 Fable（規劃者）。請先讀 CLAUDE.md、HANDOFF.md 頂端，再讀 TASKS.md T-70 卡末「【Sonnet 2026-09-24：步驟 3b 進行中，卡關】」全文與 `assets/reference_rooms_heldout/rooms.json` 的 `blocked_pending_fable` 與 `open_questions_for_fable`。請針對下列四個問題給出決定，並依需要走 SPEC §7-v2 (d)⑤ 的補充規則程序（獨立 `criteria:` commit、經 Opus 審 diff、早於任何 R3 量測；不得出現或變動任何門檻數字）：
+>   　① `read_me.txt`（BUT ReverbDB 資料集層級說明檔）對七關鍵字檢查的 `occup` 命中 1（第 131 行；只知道行號與計數，執行者未讀取該行內容）——這個命中擋住全部四個 BUT 房間的空房判定。要不要授權某個視窗去讀那一行的實際內容以判斷是否誤觸？還是有其他不需讀取內容就能處理的辦法？
+>   　② `VUT_FIT_L212` 房間目錄內全部 162 個 `*.txt`（`mic_meta.txt`／`spk_meta.txt`／`env_meta.txt`／`env_meta_full.txt`）對 `people` 各命中 1 次，命中在 `$EnvDescription` 欄位的值（欄位名本身不含關鍵字）——這是否要授權讀取 `$EnvDescription` 的實際文字內容？
+>   　③ R112（`Hotel_SkalskyDvur_Room112`）是非方塊形房間，官方 `env_meta.txt`／`env_meta_full.txt`（已核對全部 562 個欄位名）沒有任何欄位記載兩個方塊的相對位置，無法算外接盒——要繼續找其他官方管道（例如官網頁面），還是直接把 R112 移出候選？
+>   　④ BUT 麥克風 metadata 的 `SpeakerVisibility` 欄位除了單純的 `visible`／`Non-visible`／`invisible`／`partly boxed`／`fully boxed`／`on furniture`，還有複合值如「`Non-visible, partly boxed`」「`visible, partly boxed`」——SPEC (d)②(乙)「值不是 `partly boxed`／`fully boxed`」對這種複合值要怎麼判：精確比對（複合值都算「不是」，因此收）還是含子字串（複合值只要含 `partly boxed`／`fully boxed` 就算「是」，因此不收）？四房各值的檔數分布已列在 T-70 卡末。
+>   　輸出你的四項決定，只追加在 T-70 卡末（不要改 3b 已寫的判定文字），若涉及 SPEC 補充規則另開 `criteria:` commit 走完整程序。SoundCam 兩房間的 `included` 判定不受這四個問題影響，維持原樣。
+> - **這次做了什麼（白話）**：SoundCam 的兩個房間（Conference Room、Treated Room）已經完整判定完成，可以直接送 Opus 驗證——用了兩個獨立的官方文件互相印證麥克風數是 10、全向；哪個檔是官方標示的「已解卷積 IR」也有官方文件依據（README／範例筆記本）；照片候選、參考 IR 清單前 20 支都寫好了。BUT ReverbDB 的四個房間全部卡住：規則要求對官方說明檔做「有沒有人在場」的關鍵字計數，結果**空房說明檔本身**就命中一次「occup」，而 L212 房間額外命中很多次「people」——但規則明講「看到就要停，不能自己判斷是不是誤觸」，所以我沒有繼續解讀，也沒有去讀那一行到底寫了什麼。另外 R112 是個不規則形狀的房間，官方文件只給了兩塊各自的尺寸，沒給兩塊怎麼擺，算不出外接盒，規則也講「不能自己假設」。
+> - **現在的名單狀況**：確定的名單目前是 **3 個**（`mit_gym`＋SoundCam 兩間），剛好卡在 V2-2(f) 的下限。BUT 四間全部還在等您（透過 Fable）決定；不論最後怎麼決定，名單都不會低於這 3 個。
+> - **卡片變動**：T-70 追加「步驟 3b 進行中，卡關」行、四軸更新（工程：卡關）、卡末完整交接筆記；新增 `rooms.json`、`README.md`；`ASSET_MANIFEST.json` 升版加 `reference_irs`；`assets/SOURCES.md` 新增段；四個 `materials_official.txt`；`.gitignore` 一條放行規則。`src`／`scripts`／`data`／`output` 零 diff；沒有讀取、計算、轉述任何殘響類數值；沒有新增任何腳本。
+> - **時程**：不影響 T-64／T-65／T-66／T-67 這幾張可以同時排的卡（各開一個 Sonnet 視窗，一次一個）。T-70 全卡（3a+3b）要等 BUT 四房的問題都有決定之後才能送 Opus 驗證；驗證通過前，三個下載整包（約 265 GB）不能刪。
+> - **📌 給所有視窗（含 Codex）——兩條鐵則（TASKS.md Phase 1.10；請之後在頂端加新段的視窗把本條原樣保留，直到 Fable 寫下 R3 解除紀錄）**：
+>   **(18)** `assets/photos_real_heldout/`（T-64 就位後）內的檔不得以任何模型或分析／評測腳本處理，**沒有例外**（全套測試也不得掃到）；只准算 sha256、讀尺寸／EXIF、人眼看；不得複製、不得一批兩用。
+>   **(19)** `output/mvp_acceptance_r2/` 與 R2 本輪 18 個 `output/<run>/` 目錄唯讀，任何重跑寫新目錄（T-67 完成前，**不要**對 `scripts/t17r2_*.py` 下任何引數——它們不解析引數、會直接執行並覆寫）。
+>   **(18-a)** 鐵則 18 同樣適用 `assets/photos_synth_heldout/` 與 `assets/reference_rooms_heldout/`；**自 `7da4ca1` 起以 r5 版（TASKS.md Phase 1.10「18-a（r5）」）為準**；唯一授權＝T-17-R3 受驗 run（尚未開卡）；T-70 3a／3b 只做鐵則 18 原文「只准」的操作（3b 另含 r2-3b(1)～r6-5 明列的白名單抽取／header 讀取／關鍵字計數，皆已於 `criteria: T-63 v2.1`／`v2.2` 生效後可用）。
+
 > ## ✅ 2026-09-24 Sonnet：T-70 步驟 3a 完成（下載＋sha256＋目錄結構摘要＋manifest 第一版）——**現在該做的是：開一個 Sonnet 新視窗，逐字貼下面的 Prompt 跑 T-70 步驟 3b**（前置 `criteria: T-63 v2.1`＝`91efa75`、v2.2＝`478fa4a` 都已寫入；不必等 Opus 審 3a）。一次只開一個視窗
 >
 > - **要貼給 Sonnet 的 Prompt（逐字）**：

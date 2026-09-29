@@ -1,5 +1,13 @@
 # Dev Log
 
+## 2026-09-24 (199) 🔴 Sonnet：T-70 步驟 3b 進行中，卡關——SoundCam 兩房間 `included`（可送 Opus）；BUT 四房命中規則明文「停，回 Fable」
+
+- **SoundCam Conference Room／Treated Room 完整判定＝`included`**：M＝10、Dayton Audio EMM6、全向——GitHub `datasets/conference.py`／`treatedroom.py`（官方座標陣列）與論文 arXiv:2311.03517 p.23「10 omnidirectional Dayton Audio EMM6 microphones」互相印證。`.npy` 只讀 `.shape`／`.dtype`：`deconvolved.npy` 分別 `(100,10,667200)`／`(1000,10,667200)`；樣本軸／聲道軸機械判定唯一。官方 README／範例筆記本只標示 `deconvolved.npy` 為「Room Impulse Responses」，`audio.npy`／`directlines.npy`／`music_*.npy` 不採用。空房＝目錄名 `Empty/`（bucket A）；Treated 只用空房配置＝3a 只下載 `TreatedRoom_preprocessed`（非 Panels），資料本身不含隔板配置。照片候選＝論文 Fig.4／Fig.8（Fig.5 依 SPEC 不是授權來源，已排除）；機械 (一)(二)(三) 全過，逐張是否相機實拍留 Opus 人眼判定。`reference_irs` 前 20 支已寫入 `ASSET_MANIFEST.json`（位置 (0,)(1,)、聲道 0–9）。
+- **BUT 四房命中三個規則明文的「停，回 Fable」，未自行解讀**：①（四房共用）`read_me.txt` 對七關鍵字檢查 `occup` 命中 1（第 131 行，只記行號與計數，未讀取該行內容）；②（僅 L212）房間目錄全部 162 個 `*.txt` 對 `people` 各命中 1 次（命中在 `$EnvDescription` 欄位的**值**，欄位名本身不含關鍵字，未讀取該值）；③（僅 R112）非方塊形外接盒缺兩方塊相對位置——`env_meta.txt`／`env_meta_full.txt`（562 個欄位名逐一核對）沒有可用欄位，依規則「不得自行假設擺放方式」原樣停下。另一項需 Fable 給讀法（非「停」）：④ `SpeakerVisibility` 複合值（如「Non-visible, partly boxed」）算不算「是」boxed（899 個 `mic_meta.txt` 已全部抽取完成，值分布已記卡末）。四房暫列 `rooms.json.blocked_pending_fable`（三桶結構第三桶，請 Opus／Fable 核可）。
+- 白名單抽取（env_meta.txt 尺寸／材質、mic_meta.txt 的 `SpeakerVisibility` 完整鍵名）全數完成並過黑名單／數值樣式檢查；四個 `materials_official.txt` 已寫、`grep` 對殘響關鍵字與小數樣式皆為 0，已放行進 `.gitignore`。26 張 BUT 照片＋4 張 SoundCam 論文圖機械條件全過，逐張人眼判定留 Opus。
+- 寫入：`rooms.json`（新增）、`ASSET_MANIFEST.json`（升 `3b-v1`，加 `reference_irs`）、`README.md`（新增，鐵則 18＋18-a(r5) 全文）、`assets/SOURCES.md`（新增段＝卡片所稱 §6）、四個 `materials_official.txt`、`.gitignore`（放行 `materials_official.txt`）。沒有新增任何腳本；`src`／`scripts`／`data`／`output` 零 diff；沒有讀取、計算、轉述任何殘響類數值。
+- **給使用者的白話總結**：確定名單目前 3 個（`mit_gym`＋SoundCam 兩房間，剛好是下限）；BUT 四房全部卡在規則設計好的「停」，需要您找 Fable 決定（尤其 ①的 read_me.txt 命中擋住全部四房）。四軸：工程：**卡關**（部分完成）｜實驗／產品／MVP：不適用。下一步：使用者把 `rooms.json.open_questions_for_fable` 轉給 Fable。
+
 ## 2026-09-24 (198) 🟡 Sonnet：T-70 步驟 3a 完成（下載＋sha256＋目錄結構摘要＋`ASSET_MANIFEST.json` v1）；3b 未開始
 
 - 先改 `.gitignore`（`assets/reference_rooms_heldout/**` 忽略、只放行頂層 `*.json`／`*.md`；`git check-ignore` 驗證）再下載。BUT tgz 9,308,593,693 位元組（sha256 `d0d14cdd…f5b5`；官方無校驗碼）只解出 L207／L212／R112（`Hotel_SkalskyDvur_Room112`）／C236 四房目錄（檔數與 tar 清單逐項相同）。SoundCam 兩房間合計遠超 10 GB（官方只有整包、`*_preprocessed` 合計約 262.8 GB）→ 依卡停下問使用者，使用者選「兩房間 preprocessed 整包照卡下載」；兩包位元組數、md5、sha1 皆等於 Stanford PURL 官方值（傳輸改用 scratchpad 內的並行 Range 下載，單連線約 1.2 MB/s 要 2.5 天；工具不在 repo）。
