@@ -1,5 +1,13 @@
 # Dev Log
 
+## 2026-09-29 (200) 🔮 Fable：T-70 四題裁決＋「判準 v2.3 草案」起草（待 Opus 審 diff）
+
+- **起因**：T-70 3b（`988557a`）BUT 四房命中 SPEC §7-v2 明文「停，回 Fable」：`read_me.txt` 的 `occup` 命中、L212 162 個檔的 `people` 命中、R112 外接盒缺相對位置；另有 `SpeakerVisibility` 複合值讀法。
+- **決定**：①② 不授權整檔閱讀，改「命中複核」（只顯示命中行、數字遮成 `#`、含殘響類黑名單字串的行不顯示；Opus 人眼判定無關／有人／無法判定；後兩者＝涵蓋房間移出）；③ 使用者選「再找官方管道」（Fable 建議原為移出）→ 來源限四種官方文字、關鍵字取行、查無或不唯一即移出；④ 值含 `boxed` 即不收（收緊）。
+- **程序**：依 V2-2(d)⑤ 起草判準 v2.3（T-63 卡 R10-0～R10-5）：SPEC §7-v2 只改第 237、245 兩行（純插入）、18-a(r5)(1) 行末加一句；三個 sha256＝取代前 `31ad16c9…d8fbd9`、含標籤 `66a5fe9d…4019`、刪標籤後 `932985a9…d539`；門檻字串出現次數不變、數字 token 無新增。**SPEC／WORKFLOW 本次零 diff**，等 Opus「可送使用者核准」＋使用者「T-63 v2.3 核准」後才開 `criteria:` commit。
+- **卡片**：T-70 卡末追加四題裁決＋修訂 r7（3b 續跑規則；前置＝`criteria: T-63 v2.3`）；T-17-R3 開卡條件加 v2.3；`rooms.json` 第三桶核可為暫時結構。
+- Fable 沒有開啟 `read_me.txt` 或任何封存檔、沒有跑模型、沒有讀 IR、沒有算 T30。如實揭露：Q-1 是判準中唯一由人眼判定決定房間去留之處（R10-3 F-35）。
+
 ## 2026-09-24 (199) 🔴 Sonnet：T-70 步驟 3b 進行中，卡關——SoundCam 兩房間 `included`（可送 Opus）；BUT 四房命中規則明文「停，回 Fable」
 
 - **SoundCam Conference Room／Treated Room 完整判定＝`included`**：M＝10、Dayton Audio EMM6、全向——GitHub `datasets/conference.py`／`treatedroom.py`（官方座標陣列）與論文 arXiv:2311.03517 p.23「10 omnidirectional Dayton Audio EMM6 microphones」互相印證。`.npy` 只讀 `.shape`／`.dtype`：`deconvolved.npy` 分別 `(100,10,667200)`／`(1000,10,667200)`；樣本軸／聲道軸機械判定唯一。官方 README／範例筆記本只標示 `deconvolved.npy` 為「Room Impulse Responses」，`audio.npy`／`directlines.npy`／`music_*.npy` 不採用。空房＝目錄名 `Empty/`（bucket A）；Treated 只用空房配置＝3a 只下載 `TreatedRoom_preprocessed`（非 Panels），資料本身不含隔板配置。照片候選＝論文 Fig.4／Fig.8（Fig.5 依 SPEC 不是授權來源，已排除）；機械 (一)(二)(三) 全過，逐張是否相機實拍留 Opus 人眼判定。`reference_irs` 前 20 支已寫入 `ASSET_MANIFEST.json`（位置 (0,)(1,)、聲道 0–9）。

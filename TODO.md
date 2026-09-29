@@ -1,5 +1,9 @@
 # To-Do
 
+- **2026-09-29 🔮 Fable：T-70 四題已裁決＋「判準 v2.3 草案」已起草（T-63 卡 R10 段）——下一步：使用者開 Opus 新視窗貼 HANDOFF 頂端 Prompt 審 v2.3 的 diff**；Opus「可送使用者核准」後使用者回 Fable「T-63 v2.3 核准」→ Fable 開 `criteria: T-63 v2.3` commit → Sonnet 依 T-70 r7 續跑 3b（BUT 四房）→ Opus 驗證整卡。
+  **卡片現況**：T-70 工程：進行中（SoundCam 完整；BUT 四房等 v2.3）｜確定名單 3 個（`mit_gym`＋SoundCam 兩房間）｜T-63 產品：已裁決（v2／v2.1／v2.2 生效；v2.3 補訂中）｜T-64 ⬜ 路徑 S 可開跑｜T-65 ⬜｜T-66／T-67 ⬜｜T-69 ⏸、T-17-R3 ⏸（等 T-64/65/66/67/70＋`criteria: T-63 v2.3`）。三個下載整包（約 265 GB）待 T-70 全卡驗證通過才能刪。
+  下方「🔴 Sonnet：T-70 步驟 3b 進行中，卡關」的「轉給 Fable 決定」已處理（見上）。
+
 - **2026-09-24 🔴 Sonnet：T-70 步驟 3b 進行中，卡關——SoundCam 兩房間 `included`（可送 Opus）；BUT 四房命中規則明文「停，回 Fable」，需使用者轉給 Fable 決定**（`rooms.json.open_questions_for_fable` 四條；細節在 T-70 卡末「【Sonnet 2026-09-24：步驟 3b 進行中，卡關】」）。**下一步：使用者把四條問題轉給 Fable**；Fable 決定後另開 Sonnet 視窗把 BUT 四房從 `blocked_pending_fable` 移到 `included`／`excluded`，再送 Opus 對整卡驗證。
   **卡片現況**：T-70 工程：卡關（SoundCam 完整；BUT 四房卡關）｜確定名單目前 3 個（`mit_gym`＋SoundCam 兩房間，剛好 V2-2(f) 下限）｜T-63 產品：已裁決（v2/v2.1/v2.2 生效）｜T-64 ⬜ 路徑 S 可開跑｜T-65 ⬜｜T-66／T-67 ⬜｜T-69 ⏸、T-17-R3 ⏸（等 T-64/65/66/67/70）。硬碟：可用空間約 202 GiB（三個下載整包共 265 GB 待 T-70 全卡驗證通過才能刪）。
   下方「🟡 Sonnet：T-70 步驟 3a 完成」的「T-70 3b」已進行但未完成（卡關，見上）。
